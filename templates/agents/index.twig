@@ -8,9 +8,9 @@
   <div class="page-head">
     <div>
       <h1>Agentes</h1>
-      <p class="lead">Equipes fictícias de trânsito, guarda e polícia. A <strong>base</strong> é onde o agente trabalha; a <strong>última posição</strong> é a recebida pelo rádio simulado.</p>
+      <p class="lead">Equipes de trânsito, guarda e polícia. A <strong>base</strong> é onde o agente trabalha; a <strong>última posição</strong> é a recebida pelo rádio simulado.</p>
     </div>
-    {% if app.user %}<a class="btn btn--primary" href="{{ url('/agentes/novo') }}">{{ ui.icon('i-plus') }}Cadastrar agente</a>{% endif %}
+    {% if app.user %}<a class="btn btn--primary" href="{{ url('/agentes/novo') }}">{{ ui.icon('i-plus', null, 'icon icon--pop') }}<span>Cadastrar agente</span></a>{% endif %}
   </div>
   <details class="callout">
     <summary><strong>Agente não é conta de acesso</strong></summary>
@@ -25,10 +25,10 @@
       <div class="field"><label for="sit">Situação</label>
         <select id="sit" name="situacao[]"><option value="">Todas as situações</option>{% for s in options.statuses|filter(s => s.group == 'Agentes') %}<option value="{{ s.value }}" {{ s.value in filters.statuses ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select></div>
     </div>
-    <div class="toolbar__end">
-      <button class="btn btn--primary" type="submit">Filtrar</button>
+    <div class="filter-bar">
+      <button class="btn btn--primary" type="submit">{{ ui.icon('i-filter') }}<span>Filtrar</span></button>
       <details class="more-filters more-filters--inline" {{ moreActive > 0 ? 'open' }}>
-        <summary class="btn">{{ ui.icon('i-filter') }}<span>Mais filtros</span> {% if moreActive %}<span class="count-pill">{{ moreActive }}</span>{% endif %}</summary>
+        <summary class="chip">{{ ui.icon('i-layers') }}<span>Mais filtros</span> {% if moreActive %}<span class="count-pill">{{ moreActive }}</span>{% endif %}</summary>
         <div class="more-filters__body">
           <div class="field"><label for="org">Órgão</label>
             <select id="org" name="orgao[]"><option value="">Todos os órgãos</option>{% for a in options.agencies %}<option value="{{ a.id }}" {{ a.id in filters.agencies ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select></div>
@@ -38,7 +38,7 @@
         </div>
       </details>
       <p class="result-count"><strong>{{ total }}</strong> {{ total == 1 ? 'agente' : 'agentes' }}{{ filters.isEmpty and q == '' ? '' : ' no filtro' }}
-        {% if not (filters.isEmpty and q == '' and not archived and sort == 'codigo') %}<a class="btn btn--quiet btn--small" href="{{ url('/agentes') }}">Limpar filtros</a>{% endif %}</p>
+        {% if not (filters.isEmpty and q == '' and not archived and sort == 'codigo') %}<a class="btn btn--quiet btn--small" href="{{ url('/agentes') }}"><span>Limpar filtros</span></a>{% endif %}</p>
     </div>
   </form>
 

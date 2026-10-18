@@ -1,0 +1,48 @@
+{
+  "_toasts-DA38cNte.js": {
+    "file": "toasts-DA38cNte.js",
+    "name": "toasts"
+  },
+  "node_modules/@fontsource-variable/overpass/files/overpass-latin-ext-wght-normal.woff2": {
+    "file": "overpass-latin-ext-wght-normal-DvafStyF.woff2",
+    "src": "node_modules/@fontsource-variable/overpass/files/overpass-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2": {
+    "file": "overpass-latin-wght-normal-qAR8M_co.woff2",
+    "src": "node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2"
+  },
+  "resources/css/app.css": {
+    "file": "styles-Cd8L9dD3.css",
+    "name": "styles",
+    "names": [
+      "styles.css"
+    ],
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "assets": [
+      "overpass-latin-wght-normal-qAR8M_co.woff2",
+      "overpass-latin-ext-wght-normal-DvafStyF.woff2"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "app-Co1ijwv6.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "_toasts-DA38cNte.js"
+    ],
+    "dynamicImports": [
+      "resources/js/pages/central.js"
+    ]
+  },
+  "resources/js/pages/central.js": {
+    "file": "central-BhN4AuR5.js",
+    "name": "central",
+    "src": "resources/js/pages/central.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_toasts-DA38cNte.js"
+    ]
+  }
+}

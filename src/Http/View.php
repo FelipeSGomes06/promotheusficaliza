@@ -40,6 +40,9 @@ final class View
 
             return "{$base}/assets/{$path}?v={$version}";
         }));
+        $vite = new ViteAssets($this->publicDir . '/assets/build', $base . '/assets/build');
+        $this->twig->addFunction(new TwigFunction('vite_styles', $vite->styles(...), ['is_safe' => ['html']]));
+        $this->twig->addFunction(new TwigFunction('vite_script', $vite->script(...), ['is_safe' => ['html']]));
         $this->twig->addFilter(new TwigFilter('local_dt', static function (mixed $value, string $format = 'd/m/Y H:i'): string {
             $instant = $value instanceof \DateTimeImmutable ? $value : (is_string($value) && str_contains($value, 'T') ? new \DateTimeImmutable($value) : Time::fromDb($value));
 

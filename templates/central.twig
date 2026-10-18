@@ -1,181 +1,278 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
+{% set k = snapshot.kpis.equipment %}
+{% set ag = snapshot.kpis.agents %}
 {% block title %}Visão geral de Marília{% endblock %}
+{% block page %}central{% endblock %}
 {% block head %}<link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}">{% endblock %}
-{% block scripts %}
-  <script src="{{ asset('vendor/leaflet/leaflet.js') }}" defer></script>
-  <script src="{{ asset('js/central.js') }}" defer></script>
+{% block scripts %}<script src="{{ asset('vendor/leaflet/leaflet.js') }}" defer></script>{% endblock %}
+{% block main_attrs %}id="central" x-data="central"
+     data-api="{{ url('/api/central') }}" data-base="{{ app.base }}" data-mini="{{ app.base }}/assets/img/miniaturas/"
+     data-tiles="{{ app.map.tiles }}" data-attribution="{{ app.map.attribution }}" data-poll="{{ app.poll_seconds }}"
+     data-csrf="{{ app.csrf }}" data-can-edit="{{ app.user ? '1' : '0' }}"{% endblock %}
+
+{% macro kpis(k, snapshot, cls) %}
+<ul class="kpis {{ cls }}" aria-label="Resumo do filtro atual">
+  <li class="kpi"><span class="kpi__n"><span data-kpi="operational" x-text="kpi.operational">{{ k.operational }}</span><span class="muted">/</span><span data-kpi="in_service" x-text="kpi.in_service">{{ k.in_service }}</span></span><span class="kpi__label">funcionando<br>dos em serviço</span></li>
+  <li><a class="kpi" href="{{ url('/', {atencao: '1'}) }}" @click.prevent="showAttention"><span class="kpi__n kpi__n--fail" data-kpi="needs_attention" x-text="kpi.needs_attention">{{ snapshot.needs_attention }}</span><span class="kpi__label">precisam<br>de atenção</span></a></li>
+  <li><a class="kpi" href="{{ url('/manutencao') }}#urgentes"><span class="kpi__n kpi__n--warn" data-kpi="urgent" x-text="kpi.urgent">{{ snapshot.maintenance.urgent|length }}</span><span class="kpi__label">manutenções<br>urgentes</span></a></li>
+</ul>
+{% endmacro %}
+
+{% block topbar %}
+  <div class="topbar__title"><h1>Visão geral de Marília</h1><span class="topbar__sub">radares, câmeras, veículos e equipes no mapa</span></div>
+{% endblock %}
+
+{% block indicators %}
+<div class="popover popover--left">
+  <h2 class="panel-title">{{ ui.icon('i-chart') }} Indicadores do filtro atual</h2>
+  <dl class="indicators__body">
+    <div><dt>Disponibilidade registrada: <span class="n" x-text="kpi.availability">{{ k.availability|pct }}</span></dt>
+      <dd>Funcionando ÷ em serviço. "Em serviço" = funcionando + mau funcionamento + manutenção + furtados.</dd></div>
+    <div><dt>Confirmada por sinal recente: <span class="n" x-text="kpi.availability_confirmed">{{ k.availability_confirmed|pct }}</span></dt>
+      <dd>Só quem funciona e mandou sinal nos últimos 10 min. <span x-text="kpi.operational_unconfirmed">{{ k.operational_unconfirmed }}</span> funcionando sem sinal recente — não é falha.</dd></div>
+    <div><dt>Equipamentos no filtro: <span class="n" x-text="kpi.total">{{ k.total }}</span></dt>
+      <dd><span x-text="kpi.not_installed">{{ k.not_installed }}</span> não instalados e <span x-text="kpi.deactivated">{{ k.deactivated }}</span> desativados ficam fora da disponibilidade.</dd></div>
+    <div><dt>Indisponíveis: <span class="n" x-text="kpi.unavailable">{{ k.unavailable }}</span></dt>
+      <dd>Mau funcionamento <span x-text="kpi.failure">{{ k.failure }}</span> · manutenção <span x-text="kpi.maintenance">{{ k.maintenance }}</span> · furtados <span x-text="kpi.stolen">{{ k.stolen }}</span>.</dd></div>
+    <div><dt>Agentes em atividade: <span class="n" x-text="kpi.agents_active">{{ ag.active }}</span></dt>
+      <dd>De <span x-text="kpi.agents_total">{{ ag.total }}</span> no filtro; <span x-text="kpi.agents_stale">{{ ag.position_not_current }}</span> em turno sem posição recente. Nunca somados a equipamentos.</dd></div>
+    <div><dt>Manutenções em 7 dias: <span class="n" x-text="kpi.upcoming">{{ snapshot.maintenance.upcoming|length }}</span></dt>
+      <dd>Urgentes = imediatas ou vencidas (data local de Marília).</dd></div>
+  </dl>
+  <div class="table-wrap">
+    <table class="data">
+      <caption>Por bairro, com mais problemas primeiro (agrupamento da demonstração).</caption>
+      <thead><tr><th scope="col">Bairro</th><th scope="col">Equip.</th><th scope="col">Indisp.</th><th scope="col">Disp.</th><th scope="col">Agentes</th></tr></thead>
+      <tbody>
+        {% for r in snapshot.regions %}<tr data-ssr><th scope="row">{{ r.name }}</th><td>{{ r.equipment }}</td><td>{{ r.unavailable }}</td><td>{{ r.availability|pct }}</td><td>{{ r.agents_active }}</td></tr>{% endfor %}
+        <template x-for="g in regions" :key="g.name"><tr><th scope="row" x-text="g.name"></th><td x-text="g.equipment"></td><td x-text="g.unavailable"></td><td x-text="g.availabilityText"></td><td x-text="g.agents_active"></td></tr></template>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block topbar_end %}
+  <div class="sync desktop-only" data-state="live" :data-state="syncState" role="status">
+    <span class="sync__dot" aria-hidden="true"><span class="sync__ping"></span></span>
+    <span x-text="syncText">Atualizado às {{ snapshot.generated_at|local_dt('H:i:s') }}</span>
+    <span class="muted" x-text="'· ' + simText">· {{ snapshot.sync.simulator_running ? 'simulador ativo' : 'simulador parado' }}</span>
+  </div>
+  <button class="btn btn--small btn--ghost btn--icon desktop-only" type="button" @click="refreshNow" :aria-busy="refreshing ? 'true' : null" aria-label="Atualizar agora" title="Atualizar agora" x-cloak>{{ ui.icon('i-refresh', null, 'icon icon--spin') }}<span class="btn__spinner" aria-hidden="true"><span class="spinner"></span></span></button>
+  <button class="btn btn--small btn--ghost btn--icon desktop-only" type="button" @click="togglePause" :aria-pressed="pausePressed" :aria-label="pauseLabel + ' atualização automática'" title="Pausar ou retomar a atualização automática" x-cloak>
+    <span x-show="!paused">{{ ui.icon('i-pause') }}</span><span x-show="paused">{{ ui.icon('i-play') }}</span>
+  </button>
 {% endblock %}
 
 {% block content %}
-{% set k = snapshot.kpis.equipment %}
-{% set ag = snapshot.kpis.agents %}
-{% set moreActive = (filters.regions|length > 0 ? 1 : 0) + (filters.agencies|length > 0 ? 1 : 0) + (filters.attention ? 1 : 0) %}
-<div class="central" id="central"
-     data-api="{{ url('/api/central') }}" data-base="{{ app.base }}" data-mini="{{ app.base }}/assets/img/miniaturas/"
-     data-tiles="{{ app.map.tiles }}" data-attribution="{{ app.map.attribution }}" data-poll="{{ app.poll_seconds }}"
-     data-csrf="{{ app.csrf }}" data-can-edit="{{ app.user ? '1' : '0' }}">
-
-  <section class="overview" aria-labelledby="titulo">
-    <div class="overview__head">
-      <div>
-        <h1 id="titulo">Visão geral de Marília</h1>
-        <p class="lead">Radares, câmeras, veículos e equipes da demonstração no mapa da cidade.<span class="lead__more"> Escolha um ponto ou um item da lista para ver o que é, onde está e como está.</span></p>
-      </div>
-      <a class="btn btn--primary overview__cta" href="{{ url('/', {atencao: '1'}) }}" data-attention-link>Ver o que precisa de atenção</a>
+{% set categoryCount = filters.categories|length %}
+{% set statusCount = filters.statuses|length %}
+{% set moreCount = (filters.regions|length > 0 ? 1 : 0) + (filters.agencies|length > 0 ? 1 : 0) %}
+<div class="central">
+  <div class="page-title-row mobile-only">
+    <h1>Visão geral</h1>
+    <div class="sync" data-state="live" :data-state="syncState">
+      <span class="sync__dot" aria-hidden="true"><span class="sync__ping"></span></span>
+      <span x-text="syncState === 'offline' ? 'Sem conexão' : (syncState === 'paused' ? 'Pausado' : 'Ao vivo')">Ao vivo</span>
+      <button class="btn btn--small btn--ghost btn--icon" type="button" @click="refreshNow" :aria-busy="refreshing ? 'true' : null" aria-label="Atualizar agora" x-cloak>{{ ui.icon('i-refresh', null, 'icon icon--spin') }}<span class="btn__spinner" aria-hidden="true"><span class="spinner"></span></span></button>
     </div>
-    <ul class="summary" aria-label="Resumo dos resultados filtrados">
-      <li><span class="summary__n"><span data-n="operational">{{ k.operational }}</span> de <span data-n="in_service">{{ k.in_service }}</span></span><span class="summary__label">equipamentos em serviço funcionando</span></li>
-      <li><a class="summary__link" href="{{ url('/', {atencao: '1'}) }}" data-attention-link><span class="summary__n summary__n--fail" data-n="needs_attention">{{ snapshot.needs_attention }}</span> <span class="summary__label">precisam de atenção</span></a></li>
-      <li><a class="summary__link" href="{{ url('/manutencao') }}#urgentes"><span class="summary__n" data-n="urgent">{{ snapshot.maintenance.urgent|length }}</span> <span class="summary__label">manutenções urgentes</span></a></li>
-    </ul>
-    <details class="indicators">
-      <summary>Mais indicadores e como são calculados</summary>
-      <dl class="indicators__body">
-        <div><dt>Disponibilidade registrada: <span class="n" data-n="availability" data-format="pct">{{ k.availability|pct }}</span></dt>
-          <dd>Equipamentos funcionando ÷ em serviço (<span data-n="operational">{{ k.operational }}</span> ÷ <span data-n="in_service">{{ k.in_service }}</span>). "Em serviço" = funcionando + mau funcionamento + em manutenção + furtados. Sem nenhum em serviço: "não se aplica".</dd></div>
-        <div><dt>Confirmada por sinal recente: <span class="n" data-n="availability_confirmed" data-format="pct">{{ k.availability_confirmed|pct }}</span></dt>
-          <dd>Conta só quem funciona e mandou sinal nos últimos 10 minutos. <span data-n="operational_unconfirmed">{{ k.operational_unconfirmed }}</span> funcionando estão sem sinal recente — isso não significa falha.</dd></div>
-        <div><dt>Equipamentos no filtro: <span class="n" data-n="total">{{ k.total }}</span></dt>
-          <dd><span data-n="not_installed">{{ k.not_installed }}</span> não instalados e <span data-n="deactivated">{{ k.deactivated }}</span> desativados ficam fora da disponibilidade.</dd></div>
-        <div><dt>Indisponíveis: <span class="n" data-n="unavailable">{{ k.unavailable }}</span></dt>
-          <dd>Mau funcionamento <span data-n="failure">{{ k.failure }}</span> · em manutenção <span data-n="maintenance">{{ k.maintenance }}</span> · furtados <span data-n="stolen">{{ k.stolen }}</span>.</dd></div>
-        <div><dt>Agentes em atividade: <span class="n" data-n="agents_active">{{ ag.active }}</span></dt>
-          <dd>De <span data-n="agents_total">{{ ag.total }}</span> agentes no filtro; <span data-n="agents_stale">{{ ag.position_not_current }}</span> em turno sem posição recente. Agentes nunca são somados a equipamentos.</dd></div>
-        <div><dt>Manutenções nos próximos 7 dias: <span class="n" data-n="upcoming">{{ snapshot.maintenance.upcoming|length }}</span></dt>
-          <dd>Urgentes = imediatas ou com data vencida (data local de Marília). <a href="{{ url('/manutencao') }}">Ver manutenção</a>.</dd></div>
-      </dl>
-      <div class="table-wrap">
-        <table class="data">
-          <caption>Por bairro, com mais problemas primeiro. Zonas são um agrupamento da demonstração, não divisão oficial.</caption>
-          <thead><tr><th scope="col">Bairro</th><th scope="col">Equipamentos</th><th scope="col">Indisponíveis</th><th scope="col">Disponibilidade</th><th scope="col">Agentes em atividade</th><th scope="col">Alertas</th></tr></thead>
-          <tbody data-regions>
-            {% for r in snapshot.regions %}<tr><th scope="row">{{ r.name }}</th><td>{{ r.equipment }}</td><td>{{ r.unavailable }}</td><td>{{ r.availability|pct }}</td><td>{{ r.agents_active }}</td><td>{{ r.alerts }}</td></tr>{% endfor %}
-          </tbody>
-        </table>
+  </div>
+  {{ _self.kpis(k, snapshot, 'kpi-strip mobile-only') }}
+
+  <form class="toolbar" x-ref="filters" method="get" action="{{ url('/') }}" role="search" aria-label="Filtrar recursos" @change="onFilterChange" @submit="onSubmit">
+    <div class="search">
+      {{ ui.icon('i-search') }}
+      <label class="visually-hidden" for="f-q">Buscar</label>
+      <input id="f-q" type="search" name="q" value="{{ filters.text }}" placeholder="Buscar endereço, tipo, código ou nome" maxlength="60" autocomplete="off" @input="onSearchInput">
+    </div>
+    <div class="toolbar__chips">
+    <details class="menu" data-popover>
+      <summary class="chip">{{ ui.icon('i-layers') }}<span>Tipo</span><span class="count-pill" data-menu-count="categoria[]" {{ categoryCount == 0 ? 'hidden' }}>{{ categoryCount }}</span>{{ ui.icon('i-chevron-down', null, 'icon icon--caret') }}</summary>
+      <div class="popover popover--left menu__panel" role="group" aria-label="Filtrar por tipo">
+        {% for group in ['Equipamentos', 'Agentes'] %}
+          <p class="menu__group">{{ group }}</p>
+          {% for c in options.categories|filter(c => c.group == group) %}
+            <label class="option"><input type="checkbox" name="categoria[]" value="{{ c.value }}" data-label="{{ c.label }}" {{ c.value in filters.categories ? 'checked' }}>{{ ui.icon('i-' ~ c.value) }}<span>{{ c.label }}</span></label>
+          {% endfor %}
+        {% endfor %}
       </div>
     </details>
-  </section>
-
-  <form class="toolbar" method="get" action="{{ url('/') }}" role="search" aria-label="Filtrar recursos" data-filters>
-    <div class="filters">
-      <div class="field field--search">
-        <label for="f-q">Buscar</label>
-        <input id="f-q" type="search" name="q" value="{{ filters.text }}" placeholder="Endereço, tipo, código ou nome" maxlength="60" autocomplete="off">
-      </div>
-      <div class="field">
-        <label for="f-tipo">Tipo</label>
-        <select id="f-tipo" name="categoria[]">
-          <option value="">Todos os tipos</option>
-          {% if filters.categories|length > 1 %}<option value="" selected disabled>Vários tipos ({{ filters.categories|length }})</option>{% endif %}
-          {% for group in ['Equipamentos', 'Agentes'] %}
-            <optgroup label="{{ group }}">{% for c in options.categories|filter(c => c.group == group) %}<option value="{{ c.value }}" {{ filters.categories|length == 1 and c.value in filters.categories ? 'selected' }}>{{ c.label }}</option>{% endfor %}</optgroup>
+    <details class="menu" data-popover>
+      <summary class="chip">{{ ui.icon('i-signal') }}<span>Situação</span><span class="count-pill" data-menu-count="situacao[]" {{ statusCount == 0 ? 'hidden' }}>{{ statusCount }}</span>{{ ui.icon('i-chevron-down', null, 'icon icon--caret') }}</summary>
+      <div class="popover popover--left menu__panel" role="group" aria-label="Filtrar por situação">
+        {% for group in ['Equipamentos', 'Agentes'] %}
+          <p class="menu__group">{{ group }}</p>
+          {% for s in options.statuses|filter(s => s.group == group) %}
+            <label class="option"><input type="checkbox" name="situacao[]" value="{{ s.value }}" data-label="{{ s.label }}" {{ s.value in filters.statuses ? 'checked' }}>{{ ui.status(s.value, s.label) }}</label>
           {% endfor %}
-        </select>
+        {% endfor %}
       </div>
-      <div class="field">
-        <label for="f-situacao">Situação</label>
-        <select id="f-situacao" name="situacao[]">
-          <option value="">Todas as situações</option>
-          {% if filters.statuses|length > 1 %}<option value="" selected disabled>Várias situações ({{ filters.statuses|length }})</option>{% endif %}
-          {% for group in ['Equipamentos', 'Agentes'] %}
-            <optgroup label="{{ group }}">{% for s in options.statuses|filter(s => s.group == group) %}<option value="{{ s.value }}" {{ filters.statuses|length == 1 and s.value in filters.statuses ? 'selected' }}>{{ s.label }}</option>{% endfor %}</optgroup>
-          {% endfor %}
-        </select>
+    </details>
+    <label class="chip chip--attention chip--check"><input class="visually-hidden" type="checkbox" name="atencao" value="1" data-label="Só o que precisa de atenção" {{ filters.attention ? 'checked' }}>{{ ui.icon('i-flag') }}<span>Precisa de atenção</span></label>
+    <details class="menu" data-popover>
+      <summary class="chip">{{ ui.icon('i-filter') }}<span>Mais filtros</span><span class="count-pill" data-menu-count="bairro[],orgao[]" {{ moreCount == 0 ? 'hidden' }}>{{ moreCount }}</span>{{ ui.icon('i-chevron-down', null, 'icon icon--caret') }}</summary>
+      <div class="popover popover--left menu__panel stack">
+        <div class="field">
+          <label for="f-bairro">Bairro</label>
+          <select id="f-bairro" name="bairro[]" data-label="Bairro">
+            <option value="">Todos os bairros</option>
+            {% for r in options.regions %}<option value="{{ r.id }}" {{ r.id in filters.regions ? 'selected' }}>{{ r.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-orgao">Órgão responsável</label>
+          <select id="f-orgao" name="orgao[]" data-label="Órgão">
+            <option value="">Todos os órgãos</option>
+            {% for a in options.agencies %}<option value="{{ a.id }}" {{ a.id in filters.agencies ? 'selected' }}>{{ a.name }}</option>{% endfor %}
+          </select>
+        </div>
       </div>
+    </details>
     </div>
+    <noscript><button class="btn btn--small btn--primary" type="submit">Aplicar filtros</button> <a class="btn btn--small btn--quiet" href="{{ url('/') }}">Limpar</a></noscript>
     <div class="toolbar__end">
       <div class="seg" role="group" aria-label="Como ver os resultados">
-        <button type="button" data-view-btn="mapa" aria-pressed="{{ view == 'mapa' ? 'true' : 'false' }}">{{ ui.icon('i-map') }}Mapa</button>
-        <button type="button" data-view-btn="lista" aria-pressed="{{ view == 'lista' ? 'true' : 'false' }}">{{ ui.icon('i-list') }}Lista</button>
+        <button type="button" @click="viewMap" :aria-pressed="mapPressed" aria-pressed="{{ view == 'mapa' ? 'true' : 'false' }}" aria-label="Mapa">{{ ui.icon('i-map') }}<span>Mapa</span></button>
+        <button type="button" @click="viewList" :aria-pressed="listPressed" aria-pressed="{{ view == 'lista' ? 'true' : 'false' }}" aria-label="Lista">{{ ui.icon('i-list') }}<span>Lista</span></button>
       </div>
-      <details class="more-filters" data-more-filters>
-        <summary class="btn">{{ ui.icon('i-filter') }}<span>Mais filtros</span> <span class="count-pill" data-more-count {{ moreActive == 0 ? 'hidden' }}>{{ moreActive }}</span></summary>
-        <div class="more-filters__body">
-          <div class="field">
-            <label for="f-bairro">Bairro</label>
-            <select id="f-bairro" name="bairro[]">
-              <option value="">Todos os bairros</option>
-              {% for r in options.regions %}<option value="{{ r.id }}" {{ r.id in filters.regions ? 'selected' }}>{{ r.name }}</option>{% endfor %}
-            </select>
-          </div>
-          <div class="field">
-            <label for="f-orgao">Órgão responsável</label>
-            <select id="f-orgao" name="orgao[]">
-              <option value="">Todos os órgãos</option>
-              {% for a in options.agencies %}<option value="{{ a.id }}" {{ a.id in filters.agencies ? 'selected' }}>{{ a.name }}</option>{% endfor %}
-            </select>
-          </div>
-          <div class="checks">
-            <label><input type="checkbox" name="atencao" value="1" {{ filters.attention ? 'checked' }}> Só o que precisa de atenção</label>
-          </div>
-        </div>
-      </details>
-      <p class="result-count" role="status"><strong data-n="resources">{{ snapshot.resources|length }}</strong> <span data-n-label="resources">{{ snapshot.resources|length == 1 ? 'recurso' : 'recursos' }}</span><span data-filter-note>{{ filters.isEmpty ? '' : ' no filtro' }}</span>
-        <a class="btn btn--quiet btn--small" href="{{ url('/') }}" data-clear-filters {{ filters.isEmpty ? 'hidden' }}>Limpar filtros</a></p>
-      <noscript><button class="btn btn--small" type="submit">Aplicar filtros</button></noscript>
     </div>
   </form>
 
-  <div class="workspace" data-view="{{ view }}" data-workspace>
-    <section class="mapbox" aria-label="Mapa de Marília">
-      <div id="map" role="region" aria-label="Mapa interativo. A lista traz a mesma informação em texto."></div>
-      <noscript><div class="map-banner is-visible">O mapa precisa de JavaScript. Use a lista: ela traz os mesmos recursos.</div></noscript>
-      <div class="map-banner" data-tiles-banner role="status">O mapa de fundo não carregou. Os pontos, a lista e os resumos continuam atualizados.</div>
-      <details class="legend">
-        <summary>Legenda</summary>
-        <div class="legend__body">
-          <ul>
-            <li><span class="pin pin--OPERACIONAL" aria-hidden="true">{{ ui.icon('i-RADAR') }}</span><span>Equipamento no local de instalação. A borda mostra a situação; a ficha diz em texto.</span></li>
+  <div class="active-filters" x-show="hasChips" x-cloak>
+    <span class="active-filters__label">Filtros ativos</span>
+    <template x-for="c in chips" :key="c.id">
+      <button type="button" class="chip chip--removable" @click="removeChip(c.id)" :aria-label="'Remover filtro ' + c.label"><span x-text="c.label"></span><span class="chip__x">{{ ui.icon('i-close') }}</span></button>
+    </template>
+    <button class="btn btn--quiet btn--small" type="button" @click="clearFilters"><span>Limpar tudo</span></button>
+  </div>
+
+  <div class="workspace" data-view="{{ view }}" :data-view="view" :class="{ 'has-selection': panelOpen, 'has-active-filters': hasChips, 'is-loading': loading }">
+    <section class="listpanel" x-ref="listpanel" aria-labelledby="lista-titulo">
+      <div class="listpanel__busy" aria-hidden="true"></div>
+      <div class="listpanel__kpis desktop-only">
+        {{ _self.kpis(k, snapshot, 'kpi-strip') }}
+        <details class="indicators" data-popover>
+          <summary class="btn btn--small btn--quiet btn--icon" aria-label="Mais indicadores e como são calculados" title="Mais indicadores e como são calculados">{{ ui.icon('i-info') }}</summary>
+          {{ block('indicators') }}
+        </details>
+      </div>
+      <div class="listpanel__head">
+        <h2 id="lista-titulo">Resultados</h2>
+        <p class="toolbar__count m-0" role="status"><strong data-count x-text="count">{{ snapshot.resources|length }}</strong> <span x-text="countLabel">{{ snapshot.resources|length == 1 ? 'recurso' : 'recursos' }}</span><span x-text="filterNote">{{ filters.isEmpty ? '' : ' no filtro' }}</span></p>
+      </div>
+      <div class="listpanel__scroll">
+        <ul class="rows" x-ref="list" aria-labelledby="lista-titulo">
+          {# Sem JavaScript: linhas do servidor. Com JavaScript, o Alpine as substitui pela lista reativa. #}
+          {% set attentionItems = snapshot.resources|filter(r => r.attention is not empty) %}
+          {% set otherItems = snapshot.resources|filter(r => r.attention is empty) %}
+          {% if snapshot.resources is empty %}<li class="empty" data-ssr>Nenhum recurso atende a estes filtros. <a href="{{ url('/') }}">Limpar filtros</a></li>{% endif %}
+          {% for group, items in {'Precisam de atenção': attentionItems, 'Demais recursos': otherItems} %}
+            {% if items is not empty %}
+              <li class="group-label {{ loop.first ? 'group-label--attention' }}" data-ssr>{{ group }} ({{ items|length }})</li>
+              {% for r in items %}
+                <li data-ssr><a class="row" href="{{ url(r.kind == 'EQUIPAMENTO' ? '/equipamentos/' ~ r.id : '/agentes/' ~ r.id) }}">
+                  <span class="row__thumb {{ r.kind == 'AGENTE' ? 'row__thumb--agent' }}">{{ ui.icon('i-' ~ r.category) }}</span>
+                  <span class="row__main"><span class="row__title">{{ r.headline }}</span><span class="row__sub">{{ r.region ?? 'sem bairro' }}</span></span>
+                  <span class="row__meta">{{ ui.status(r.status, r.status_label, r.glyph) }}{% if r.position.lat is null %}<span class="fresh">Sem localização cadastrada</span>{% endif %}</span>
+                  {% set reasons = r.attention|filter(why => why != r.status_label) %}
+                  {% if reasons is not empty %}<span class="row__reasons">{% for why in reasons %}<span>{{ why }}</span>{% endfor %}</span>{% endif %}
+                </a></li>
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+
+          <li class="empty" x-show="emptyList" x-cloak>Nenhum recurso atende a estes filtros. <button class="link-btn" type="button" @click="clearFilters">Limpar filtros</button></li>
+          <li class="group-label group-label--attention" data-flip-id="grupo-atencao" x-show="attentionRows.length > 0" x-cloak><span>Precisam de atenção (<span x-text="attentionRows.length"></span>)</span></li>
+          <template x-for="r in attentionRows" :key="r.key">
+            <li :data-flip-id="r.key">
+              <a class="row" :href="r.url" :data-key="r.key" :aria-current="isSelected(r.key)" @click="rowClick($event, r.key)">
+                <span :class="r.thumbClass"><svg class="icon" aria-hidden="true" focusable="false"><use :href="r.iconHref"></use></svg></span>
+                <span class="row__main"><span class="row__title" x-text="r.title"></span><span class="row__sub" x-text="r.sub"></span></span>
+                <span class="row__meta"><span :class="r.stClass"><span class="st__g" aria-hidden="true" x-text="r.glyph"></span><span x-text="r.statusLabel"></span></span><span :class="r.noteClass" x-show="r.note" x-text="r.note"></span></span>
+                <span class="row__reasons" x-show="r.reasons"><span x-text="r.reasons"></span></span>
+              </a>
+            </li>
+          </template>
+          <li class="group-label" data-flip-id="grupo-demais" x-show="otherRows.length > 0" x-cloak><span>Demais recursos (<span x-text="otherRows.length + othersHidden"></span>)</span></li>
+          <template x-for="r in otherRows" :key="r.key">
+            <li :data-flip-id="r.key">
+              <a class="row" :href="r.url" :data-key="r.key" :aria-current="isSelected(r.key)" @click="rowClick($event, r.key)">
+                <span :class="r.thumbClass"><svg class="icon" aria-hidden="true" focusable="false"><use :href="r.iconHref"></use></svg></span>
+                <span class="row__main"><span class="row__title" x-text="r.title"></span><span class="row__sub" x-text="r.sub"></span></span>
+                <span class="row__meta"><span :class="r.stClass"><span class="st__g" aria-hidden="true" x-text="r.glyph"></span><span x-text="r.statusLabel"></span></span><span :class="r.noteClass" x-show="r.note" x-text="r.note"></span></span>
+              </a>
+            </li>
+          </template>
+        </ul>
+        <div class="listpanel__more" x-show="othersHidden > 0" x-cloak>
+          <button class="btn btn--small btn--ghost" type="button" @click="expandOthers">{{ ui.icon('i-list') }}<span x-text="'Ver os outros ' + othersHidden + ' recursos'"></span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="mapbox" x-ref="mapbox" aria-label="Mapa de Marília">
+      <div id="map" x-ref="map" x-ignore role="region" aria-label="Mapa interativo. A lista traz a mesma informação em texto."></div>
+      <noscript><div class="map-overlay map-banner is-visible">O mapa precisa de JavaScript. Use a lista: ela traz os mesmos recursos.</div></noscript>
+      <div class="map-overlay map-banner" data-tiles-banner role="status">{{ ui.icon('i-map') }}<span>Mapa de fundo indisponível nesta conexão. Pontos, lista e resumos seguem atualizados.</span></div>
+      <details class="map-overlay legend" data-popover>
+        <summary>{{ ui.icon('i-layers') }}<span>Legenda</span></summary>
+        <div class="popover">
+          <ul class="legend__list">
+            <li><span class="pin pin--OPERACIONAL" aria-hidden="true">{{ ui.icon('i-RADAR') }}</span><span>Equipamento no local de instalação. A borda mostra a situação.</span></li>
             <li><span class="pin pin--NAO_INSTALADO pin--planned" aria-hidden="true">{{ ui.icon('i-CAMERA') }}</span><span>Local planejado: ainda não instalado.</span></li>
             <li><span class="pin pin--agent pin--EM_ATIVIDADE" aria-hidden="true">{{ ui.icon('i-AG_TRANSITO') }}</span><span>Agente, veículo ou patinete na última posição recebida.</span></li>
             <li><span class="pin pin--agent pin--EM_ATIVIDADE pin--stale" aria-hidden="true">{{ ui.icon('i-VEICULO') }}<span class="pin__kind">⌛</span></span><span>Posição antiga (borda pontilhada): pode ter mudado.</span></li>
             <li><span class="pin pin--agent pin--FORA_DE_SERVICO pin--base" aria-hidden="true">{{ ui.icon('i-AG_GUARDA') }}<span class="pin__kind">B</span></span><span>Base de trabalho: não é posição recente.</span></li>
-            <li><span class="cluster" aria-hidden="true">5</span><span>Vários recursos próximos: ative para aproximar ou escolher um.</span></li>
+            <li><span class="cluster" aria-hidden="true">5</span><span>Vários recursos próximos: ative para aproximar.</span></li>
           </ul>
-          <p class="small muted">Cores: verde funcionando · vermelho mau funcionamento · amarelo manutenção · roxo furtado · cinza fora de serviço. O sinal "!" indica algo que precisa de atenção.</p>
+          <p class="small muted m-0">Verde funcionando · vermelho mau funcionamento · âmbar manutenção · roxo furtado · cinza fora de serviço. "!" = precisa de atenção.</p>
         </div>
       </details>
-      <p class="map-note" data-no-location {{ snapshot.without_location == 0 ? 'hidden' }}><span data-n="without_location">{{ snapshot.without_location }}</span> sem localização aparecem só na <button type="button" data-view-btn="lista">lista</button>.</p>
+      <p class="map-overlay map-note" x-show="noLocation > 0" x-cloak><span x-text="noLocation"></span> sem localização aparecem só na <button type="button" class="link-btn" @click="viewList">lista</button>.</p>
     </section>
 
-    <section class="listbox" aria-labelledby="lista-titulo" data-listbox>
-      <div class="aside__head"><h2 id="lista-titulo">Resultados</h2></div>
-      {% set attention = snapshot.resources|filter(r => r.attention is not empty) %}
-      {% set others = snapshot.resources|filter(r => r.attention is empty) %}
-      <ul class="rows" data-list>
-        {% if snapshot.resources is empty %}
-          <li class="empty">Nenhum recurso atende a estes filtros. <a href="{{ url('/') }}" data-clear-filters>Limpar filtros</a></li>
-        {% endif %}
-        {% for group, items in {'Precisam de atenção': attention, 'Demais recursos': others} %}
-          {% if items is not empty %}
-            <li class="group-label">{{ group }} ({{ items|length }})</li>
-            {% for r in items %}
-              <li><a class="row" href="{{ url(r.kind == 'EQUIPAMENTO' ? '/equipamentos/' ~ r.id : '/agentes/' ~ r.id) }}" data-key="{{ r.kind }}:{{ r.id }}">
-                <span class="row__thumb {{ r.kind == 'AGENTE' ? 'row__thumb--agent' }}">{{ ui.icon('i-' ~ r.category) }}</span>
-                <span class="row__main"><span class="row__title">{{ r.headline }}</span><span class="row__sub">{% if r.kind == 'EQUIPAMENTO' %}<span class="code-tag">{{ r.code }}</span> {% endif %}{{ r.region ?? 'sem bairro' }}</span></span>
-                <span class="row__meta">{{ ui.status(r.status, r.status_label, r.glyph) }}{% if r.position.lat is null %}<span class="fresh">Sem localização cadastrada</span>{% endif %}</span>
-                {% set reasons = r.attention|filter(why => why != r.status_label) %}
-                {% if reasons is not empty %}<span class="row__reasons">{% for why in reasons %}<span>{{ why }}</span>{% endfor %}</span>{% endif %}
-              </a></li>
-            {% endfor %}
-          {% endif %}
-        {% endfor %}
-      </ul>
-    </section>
-
-    <aside class="briefbox" aria-label="Ficha resumida" data-briefbox>
-      <div class="aside__hint" data-brief-hint>Escolha um recurso no mapa ou na lista para ver a ficha resumida aqui.</div>
-      <div class="brief" data-brief hidden tabindex="-1"></div>
+    <aside class="detail" x-ref="panel" aria-labelledby="panel-title" inert>
+      <div class="detail__grip" aria-hidden="true"></div>
+      <div class="detail__head" data-stagger>
+        <figure class="detail__thumb">
+          <img :src="panel.mini || null" alt="" width="92" height="69">
+          <figcaption class="visually-hidden" x-text="panel.miniCaption"></figcaption>
+        </figure>
+        <div class="detail__title">
+          <h2 id="panel-title" tabindex="-1" x-ref="panelTitle" x-text="panel.title"></h2>
+          <p class="small muted m-0" x-text="panel.line"></p>
+        </div>
+        <button class="btn btn--small btn--quiet btn--icon" type="button" @click="close" aria-label="Fechar ficha">{{ ui.icon('i-close') }}</button>
+      </div>
+      <div class="detail__body" x-ref="panelBody">
+        <div class="callout small" x-show="panel.gone">O recurso escolhido não está mais nos resultados deste filtro.</div>
+        <div class="detail__state" data-stagger>
+          <div><span :class="panel.stClass"><span class="st__g" aria-hidden="true" x-text="panel.glyph"></span><span x-text="panel.statusLabel"></span></span></div>
+          <div :class="panel.freshClass" x-show="panel.fresh" x-text="panel.fresh"></div>
+          <div class="fresh" x-text="panel.where"></div>
+        </div>
+        <div class="detail__attention" x-show="panel.attention" data-stagger>{{ ui.icon('i-alert') }}<span x-text="'Precisa de atenção: ' + panel.attention"></span></div>
+        <div data-stagger>
+          <template x-for="a in panel.alerts" :key="a.id">
+            <div :class="a.cls">
+              <p x-text="a.message"></p>
+              <span class="small muted" x-text="a.meta"></span>
+              <div x-show="a.canAck"><button class="btn btn--small" type="button" @click="acknowledge($event, a.id)">{{ ui.icon('i-check', null, 'icon icon--pop') }}<span>Registrar ciência</span></button></div>
+            </div>
+          </template>
+        </div>
+        <dl class="facts" data-stagger>
+          <template x-for="f in panel.facts" :key="f.label"><div class="contents"><dt x-text="f.label"></dt><dd x-text="f.value"></dd></div></template>
+        </dl>
+      </div>
+      <div class="detail__foot" data-stagger>
+        <a class="btn btn--primary" :href="panel.detailUrl"><span>Ver ficha completa</span>{{ ui.icon('i-arrow-right', null, 'icon icon--nudge') }}</a>
+        <button class="btn" type="button" x-show="view === 'lista' && panel.located" @click="showOnMap">{{ ui.icon('i-map') }}<span>Mostrar no mapa</span></button>
+        <button class="btn btn--danger" type="button" x-show="panel.canSimulate" @click="simulateFailure($event)" title="Recurso da demonstração: envia um evento fictício de falha pelo mesmo caminho do simulador">{{ ui.icon('i-bolt', null, 'icon icon--pop') }}<span>Simular falha</span></button>
+      </div>
     </aside>
   </div>
-  <div class="syncline syncline--page" data-sync data-state="live">
-    <span class="syncline__dot" aria-hidden="true"></span>
-    <span data-sync-text>Atualizado às {{ snapshot.generated_at|local_dt('H:i:s') }}</span>
-    <span data-sim-text>{{ snapshot.sync.simulator_running ? '· simulador ativo' : '· simulador parado (sem mudanças automáticas)' }}</span>
-    <button class="btn btn--quiet btn--small" type="button" data-pause aria-pressed="false" hidden>Pausar atualização</button>
-  </div>
-  <div class="visually-hidden" aria-live="polite" data-announcer></div>
 </div>
 <script type="application/json" id="snapshot-data">{{ snapshot|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_APOS') b-or constant('JSON_HEX_QUOT') b-or constant('JSON_UNESCAPED_UNICODE'))|raw }}</script>
 {% endblock %}

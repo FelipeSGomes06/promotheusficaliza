@@ -37,3 +37,12 @@ qualidade-e-testes:
     - vendor/bin/phpstan analyse --no-progress --memory-limit=512M
     - php scripts/ci-preparar-banco.php
     - vendor/bin/phpunit
+
+# Os arquivos da interface (public/assets/build) são versionados; o build precisa reproduzi-los a partir de resources/.
+assets:
+  stage: test
+  image: node:22-bookworm
+  script:
+    - npm ci
+    - npm run build
+    - test -z "$(git status --porcelain -- public/assets/build)" || (git status --porcelain -- public/assets/build; exit 1)

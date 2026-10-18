@@ -20,10 +20,12 @@ Navegador ──► provedor de tiles (somente imagens do mapa, origem liberada 
 ## Fluxos principais
 
 **Leitura da visão geral.** `GET /` renderiza no servidor (útil sem JavaScript) com o instantâneo de `CentralQuery`;
-`central.js` consulta `GET /api/central` a cada `POLL_INTERVAL_SECONDS`. O instantâneo é lido numa única transação
+o componente Alpine `central` ([`resources/js/pages/central.js`](../resources/js/pages/central.js)) consulta
+`GET /api/central` a cada `POLL_INTERVAL_SECONDS` — é o único dono da consulta; pedido novo cancela o anterior e só a
+resposta mais recente é aplicada. O instantâneo é lido numa única transação
 **SNAPSHOT somente leitura**: recursos, ordens, alertas e indicadores vêm do mesmo instante e do mesmo filtro — busca
-por texto e "só o que precisa de atenção" inclusive. A atualização reaproveita as linhas da lista por chave, preserva
-foco, seleção e posição do mapa; só ações da pessoa movem o mapa.
+por texto e "só o que precisa de atenção" inclusive. A atualização reaproveita as linhas da lista por chave (`x-for`
+com `:key`), preserva foco, seleção e posição do mapa e realça só o que mudou; só ações da pessoa movem o mapa.
 
 **Escrita manual.** Formulário → middleware de sessão/CSRF/papel → controlador → serviço de aplicação → validação
 (`Input`, esquema do tipo) → transação curta: `SELECT … WITH LOCK` quando há mudança de situação, gravação, evento de
@@ -97,21 +99,23 @@ estavam arquivados; ajusta o limiar numa janela, avalia em outra e grava a execu
 
 | Arquivo | Finalidade |
 |---|---|
-| `Demo/DemoScenario.php` | Dados sintéticos: órgãos, bairros, 48 equipamentos, bases e 21 agentes fictícios. |
+| `Demo/DemoScenario.php` | Dados sintéticos: órgãos, bairros, bases e os perfis **compacto** (16 equipamentos e 7 agentes, padrão) e **completo** (48 e 21) — [ADR-0013](adr/0013-perfil-compacto-de-demonstracao.md). |
 | `Demo/DemoSeeder.php` | Carga + 240 dias de histórico reproduzível (falhas, corretivas, preventivas com atraso). |
 | `Demo/Simulator.php` | Ciclo ao vivo: sinais, falhas/recuperações, deslocamentos, duplicatas e atrasos intencionais. |
-| `Cli/Console.php` | `migrate`, `demo:seed [--reset]`, `user:create`, `sim:tick`, `sim:run` (trava `var/simulador.lock` por ciclo), `analysis:run`. |
+| `Cli/Console.php` | `migrate`, `demo:seed [--reset] [--perfil=compacto\|completo]`, `user:create`, `sim:tick`, `sim:run` (trava `var/simulador.lock` por ciclo), `analysis:run`. |
 | `Services.php` | Raiz de composição: cria cada dependência uma vez; troca de identidade (aplicação × migração). |
 
 ### Apresentação
 
 | Caminho | Finalidade |
 |---|---|
-| `templates/*.twig` | Layout (cabeçalho compacto, menu no celular, aviso de demonstração), visão geral, inventários, fichas, formulários em etapas, manutenção, revisões recomendadas, sobre, login, contas, erro. |
-| `public/assets/js/central.js` | Mapa com agrupamento de marcadores, alternância mapa/lista, ficha resumida (painel inferior no celular), filtros com busca, consulta periódica com pausa/recuo que não rouba foco, anúncios `aria-live`. |
-| `public/assets/js/app.js` | Menu no celular, avisos sobrepostos (Esc/clique fora), preferência de movimento, campos por tipo, seletor de local no mapa, foco no resumo de erros, confirmação de ações. |
-| `public/assets/css/app.css` | Tokens do sistema visual ([ADR-0008](adr/0008-interface-para-iniciantes.md)), estados (cor + forma + texto), responsivo, movimento reduzido. |
-| `public/assets/img/` | Sprite de ícones, miniaturas claras por categoria e favicon (próprios). |
+| `templates/*.twig` | Layout de aplicação (trilho de navegação/gaveta, barra superior, aviso de demonstração, região de avisos), visão geral com chips de filtro e ficha sobre o mapa, inventários, fichas, formulários em etapas, manutenção, revisões, sobre, login, contas, erro. Sem JavaScript tudo continua navegável por links e formulários. |
+| `resources/css/app.css` | Tailwind 4: tokens (`@theme`, paleta fechada), reset, componentes; ajustes do Leaflet fora de camada; preferência de movimento ([ADR-0012](adr/0012-identidade-motion-e-build-de-assets.md)). |
+| `resources/js/app.js` | Entrada única: Alpine (build CSP), GSAP + Flip, gaveta do menu, botão de animações, avisos, formulários (carregando/sem envio duplicado), painéis sobrepostos, seletor de local; carrega o módulo da página. |
+| `resources/js/pages/central.js` | Componente `central`: filtros, lista reativa (Flip em mudança de filtro), mapa e agrupamento de marcadores, ficha interrompível, polling com cancelamento e recuo, realce do que mudou, ações com o servidor. |
+| `resources/js/lib/` | `motion` (preferência), `toasts` (avisos com deduplicação), `forms`, `popovers`, `shell` (gaveta), `picker` (mapa nos formulários), `dom`. |
+| `vite.config.js` · `src/Http/ViteAssets.php` | Build para `public/assets/build/` (versionado; produção sem Node) e tags a partir do manifesto respeitando `APP_BASE_PATH`. |
+| `public/assets/img/` | Sprite de ícones (inclui a marca `i-brand`), miniaturas por categoria e favicon (próprios). |
 | `scripts/capturar-telas.mjs` | Verificação visual sem dependências (Chrome headless via DevTools Protocol): capturas, medidas e erros de console. |
 
 ## Decisões

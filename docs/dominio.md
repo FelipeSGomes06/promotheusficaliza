@@ -108,7 +108,10 @@ oferecida: exigiria durações de estado com tratamento de lacunas, fora do esco
 
 ## Dados de demonstração
 
-[`DemoScenario`](../src/Demo/DemoScenario.php): 5 órgãos, 22 bairros, 48 equipamentos (todas as situações, ordens
-imediatas, vencidas e próximas, dois equipamentos sem comunicação, recurso móvel furtado com posição antiga, evento
-atrasado permanente), 21 agentes (um em atividade sem posição recente). [`DemoSeeder`](../src/Demo/DemoSeeder.php)
+[`DemoScenario`](../src/Demo/DemoScenario.php): 5 órgãos, 22 bairros e dois perfis
+([ADR-0013](adr/0013-perfil-compacto-de-demonstracao.md)). **Compacto (padrão): 16 equipamentos e 7 agentes** — todas
+as categorias e situações; manutenção em execução, imediata, vencida, próxima e futura (as três últimas com data fixa
+relativa à carga); sinal atual, atrasado (concentrador com 25 min de defasagem) e sem informação; recurso móvel furtado
+com posição antiga; evento atrasado permanente; câmera com histórico curto; agente em atividade sem posição recente.
+**Completo: 48 e 21**, para volume e para a metodologia da análise. `DEMO_PROFILE` ou `demo:seed --perfil=…` escolhem. [`DemoSeeder`](../src/Demo/DemoSeeder.php)
 gera 240 dias de histórico com semente fixa (`SIM_SEED`): mesmo cenário relativo à data da carga.

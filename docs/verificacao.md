@@ -3,6 +3,20 @@
 Ambiente: Windows 11 + Docker Desktop 29.7.2; contêineres `php:8.5.11-apache-trixie` (PDO_FIREBIRD, fbclient 4.0.5)
 e `firebirdsql/firebird:5.0.4-trixie`. Data: 18/10/2026. Só está listado aqui o que de fato rodou.
 
+## Identidade, motion e perfil compacto (18/10/2026, ~23:50 UTC)
+
+Contêiner de nuvem do Claude Code, projeto Compose isolado `fiscaliza-claude` (porta 8091), PHP 8.5.11, Firebird
+5.0.4 (cliente PDO_FIREBIRD montado localmente; ver a evidência). Detalhes, relatório do navegador, capturas e vídeos:
+[identidade e motion](evidencias/2026-10-18-identidade-e-motion.md).
+
+| Verificação | Resultado |
+|---|---|
+| `vendor/bin/phpunit` | **96 testes, 385 asserções, OK** |
+| `vendor/bin/phpstan analyse` (nível 6) · `php-cs-fixer --dry-run` | 0 erros · nenhum arquivo a corrigir |
+| `npm ci && npm run build` | build idêntico em duas execuções; é o que está versionado em `public/assets/build/` |
+| Navegador (Chromium 141, cabeçalhos reais): 34 carregamentos + 11 cenários de comportamento | 0 violações de CSP, 0 erros de console, sem rolagem horizontal; todos os cenários OK |
+| Avaliação das sementes 2027–2031 nos perfis compacto e completo | registrada em [avaliação das sementes](evidencias/2026-10-18-avaliacao-sementes.md#perfis-compacto-e-completo-18102026) |
+
 ## Depois das correções da auditoria e do redesenho (18/10/2026, 21:20 UTC)
 
 Projeto Compose isolado (`-p fiscaliza-claude`, porta 8091, volume próprio), PHP 8.5.11, Firebird 5.0.4. Detalhes,

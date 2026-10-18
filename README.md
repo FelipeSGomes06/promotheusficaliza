@@ -15,13 +15,15 @@ Endereço público pretendido: `https://devfelipegomes.com.br/promotheusfiscaliz
 | Parte do desafio | Entregue |
 |---|---|
 | **1. Inventário** | Equipamentos de 7 tipos (radar, câmera, balança, cancela, totem, veículo, patinete) com **características próprias validadas por tipo** (ex.: radar com funções e limite em km/h; câmera com resolução, visão noturna, imagem colorida, PTZ); série única **por fabricante** garantida pelo banco; endereço estruturado (CEP, logradouro, referência livre, bairro, cidade/UF fixas) e local marcado no mapa; local instalado × planejado × base de recurso móvel; situação operacional; manutenção imediata ou programada/periódica com **uma intervenção em execução por vez**; arquivamento sem perder histórico nem deixar ordens sem saída. Agentes de trânsito, guarda e polícia com órgão, situação, base e **última posição separada da base**. Histórico com antes/depois, autoria e origem. |
-| **2. Central operacional** | "Visão geral de Marília": mapa Leaflet com ilustrações por categoria, marcadores próximos agrupados, formas distintas para instalado, planejado, base e última posição; lista com o mesmo resultado; ficha resumida ligada a ambos. Três resumos (funcionando, precisam de atenção, manutenções urgentes) e os demais indicadores com fórmulas sob demanda. Busca, tipo e situação à mão; bairro, órgão e "só o que precisa de atenção" em mais filtros — tudo aplicado **ao mesmo conjunto** no servidor. Atualização por consulta a cada 5 s a partir de **eventos persistidos no Firebird** pelo simulador, sem roubar foco, fechar a seleção ou mover o mapa. |
+| **2. Central operacional** | "Visão geral de Marília": mapa Leaflet com ilustrações por categoria, marcadores próximos agrupados, formas distintas para instalado, planejado, base e última posição; lista com o mesmo resultado; ficha do recurso sobre o mapa (folha inferior no celular), que abre, fecha e aceita interrupção; filtros em chips com reorganização animada; avisos de sucesso/erro; realce só do que mudou a cada atualização. Três resumos (funcionando, precisam de atenção, manutenções urgentes) e os demais indicadores com fórmulas sob demanda. Busca, tipo e situação à mão; bairro, órgão e "só o que precisa de atenção" em mais filtros — tudo aplicado **ao mesmo conjunto** no servidor. Atualização por consulta a cada 5 s a partir de **eventos persistidos no Firebird** pelo simulador, sem roubar foco, fechar a seleção ou mover o mapa. |
 | **3. Cidade preditiva** | "Revisões recomendadas para os próximos 7 dias": o que revisar primeiro, por quê e o que fazer, com prioridade heurística explicável (falhas recentes, propensão em 180 dias, atraso da preventiva). Cada corte do passado usa só o que o sistema já sabia. Limiar escolhido numa janela de **ajuste** e medido numa janela de **avaliação** posterior, contra uma referência simples. Resultado honesto: ~2× o acaso, revocação baixa ([detalhes](docs/analise-preventiva.md)). |
 
 ## Stack (versões verificadas)
 
 PHP **8.5.11** · Slim **4.15.3** · Twig **3.30.0** · **Firebird 5.0.4** via PDO_FIREBIRD (fbclient 4.0.5) · Leaflet **1.9.4**
-(local) · JavaScript sem framework e sem build · Apache 2.4 (imagem `php:8.5.11-apache-trixie`) · PHPUnit 12.5 ·
+(local) · interface com **Tailwind CSS 4.3.3**, **Alpine.js 3.17.4 (build CSP)**, **GSAP 3.15.0** (Flip) e **Vite 8.3.2**
+— o build fica versionado em `public/assets/build/`, então a produção não precisa de Node
+([ADR-0012](docs/adr/0012-identidade-motion-e-build-de-assets.md)) · Apache 2.4 (imagem `php:8.5.11-apache-trixie`) · PHPUnit 12.5 ·
 PHPStan 2.3 (nível 6) · PHP-CS-Fixer 3.95 (PER Coding Style). Sem ORM: PDO direto com SQL Firebird em repositórios
 pequenos ([ADR-0002](docs/adr/0002-pdo-direto-sem-orm.md)).
 
@@ -47,6 +49,8 @@ docker compose exec app php bin/fiscaliza user:create avaliador --role=ADMIN --n
 docker compose --profile simulador up -d simulator
 ```
 
+`demo:seed` carrega o perfil **compacto** (16 equipamentos e 7 agentes que cobrem todas as categorias e situações);
+`demo:seed --perfil=completo` carrega os 48 e 21 usados na metodologia ([ADR-0013](docs/adr/0013-perfil-compacto-de-demonstracao.md)).
 O comando `user:create` mostra **uma única vez** a senha gerada. Abra
 <http://localhost:8080/promotheusfiscaliza/>. A leitura é pública; para cadastrar, editar, abrir ordens e registrar
 ciência de alertas, clique em **Entrar para editar**. A raiz <http://localhost:8080/> é uma página que simula o
@@ -62,13 +66,18 @@ docker compose exec app vendor/bin/phpstan analyse --memory-limit=512M
 docker compose exec app vendor/bin/php-cs-fixer fix --dry-run --diff
 ```
 
+Mudar o visual ou os scripts da interface (só para desenvolvimento): `npm ci && npm run build` (Node 20.19+), ou
+`docker run --rm -v "$PWD":/app -w /app node:22-bookworm sh -c "npm ci && npm run build"`. Fontes em `resources/`.
+
 Problemas comuns: as senhas do `.env` são lidas pelo Firebird **só na primeira criação do volume**; se mudá-las
 depois, recrie com `docker compose down -v` (apaga o banco local). Porta 8080 ocupada: defina `APP_PORT` no `.env`.
 
 ## Roteiro rápido de avaliação
 
-1. Visão geral: leia os três resumos, abra "Mais indicadores", toque em **Ver o que precisa de atenção**, escolha um
-   ponto (ou um grupo, que aproxima) e alterne entre Mapa e Lista com a mesma seleção; no celular, use o Menu.
+1. Visão geral: leia os três resumos (ⓘ abre as fórmulas), use os chips **Tipo**, **Situação** e **Precisa de
+   atenção**, escolha o radar da Av. Sampaio Vidal na lista ou no mapa (a ficha abre ao lado) e alterne entre Mapa e
+   Lista com a mesma seleção; no celular, use o botão de menu. O botão **Animações** no menu mostra se o movimento
+   está reduzido e por quê.
 2. Ficha de um equipamento: próxima ação, onde está, cadastro, manutenção e histórico (tracejado = registro que não
    alterou a situação, com o motivo).
 3. Entre com a conta criada: cadastre um radar (deixe "Velocidade" sem limite para ver o resumo de erros com a
@@ -84,8 +93,8 @@ Comandos úteis: `php bin/fiscaliza` lista os comandos (`sim:tick` para cron, `a
 
 | Situação | Itens |
 |---|---|
-| **Implementado e verificado** | Partes 1, 2 e 3 descritas acima; prova PHP/Firebird ([evidência](docs/evidencias/2026-10-18-prova-firebird.md)); **89 testes automatizados, 314 asserções** (unidade, integração no Firebird real, HTTP, concorrência com processos separados) ([verificação](docs/verificacao.md)); correções dos achados da auditoria de 18/10/2026 e redesenho com capturas antes/depois ([evidência](docs/evidencias/2026-10-18-correcoes-da-auditoria.md)); backup e restauração com gbak ([evidência](docs/evidencias/2026-10-18-backup-restauracao.md)); origem dedicada testada localmente. Rastreabilidade: [matriz de requisitos](docs/matriz-requisitos.md). |
-| **Pendente (depende do proprietário/infra)** | Publicação no endereço pretendido (DNS, TLS, redirecionamento no portal); repositório público (GitLab/GitHub) e varredura de segredos no histórico antes do primeiro push; ZIP de entrega gerado a partir do commit final; vídeo; conferência das condições finais da DSIN; teste com leitor de tela e com pessoa iniciante. |
+| **Implementado e verificado** | Partes 1, 2 e 3 descritas acima; identidade de trânsito, movimento e perfil compacto com capturas, vídeos e verificação no navegador ([evidência](docs/evidencias/2026-10-18-identidade-e-motion.md)); prova PHP/Firebird ([evidência](docs/evidencias/2026-10-18-prova-firebird.md)); **96 testes automatizados, 385 asserções** (unidade, integração no Firebird real, HTTP, concorrência com processos separados) ([verificação](docs/verificacao.md)); correções dos achados da auditoria de 18/10/2026 e redesenho com capturas antes/depois ([evidência](docs/evidencias/2026-10-18-correcoes-da-auditoria.md)); backup e restauração com gbak ([evidência](docs/evidencias/2026-10-18-backup-restauracao.md)); origem dedicada testada localmente. Rastreabilidade: [matriz de requisitos](docs/matriz-requisitos.md). |
+| **Pendente (depende do proprietário/infra)** | Publicação no endereço pretendido (DNS, TLS, redirecionamento no portal); repositório público (GitLab/GitHub) e varredura de segredos no histórico antes do primeiro push; ZIP de entrega gerado a partir do commit final; vídeo; conferência das condições finais da DSIN; teste com leitor de tela e com pessoa iniciante; conferir os termos da licença do GSAP; revisar as telas com o mapa de fundo real (as evidências desta rodada foram gravadas sem tiles). |
 | **Fora do escopo** | Integração real com IoT/órgãos, multas, reconhecimento de placas/faces, geolocalização de pessoas reais, app nativo, mensageria, alta disponibilidade, modelos 3D, heatmap e exportações. |
 
 ## Publicação
@@ -117,5 +126,6 @@ Code. Revisão, decisões e responsabilidade: autor do projeto. Detalhes em [doc
 
 ## Licença
 
-Código sob [licença MIT](LICENSE). Leaflet (BSD-2-Clause), fonte Space Grotesk (SIL OFL 1.1) e dados do
+Código sob [licença MIT](LICENSE). Leaflet (BSD-2-Clause), Alpine.js e Tailwind CSS (MIT), GSAP (licença "Standard 'no
+charge'" da GreenSock, não MIT — termos a conferir antes de publicar), fonte Overpass (SIL OFL 1.1) e dados do
 OpenStreetMap (ODbL) mantêm suas licenças — ver [docs/licencas-e-fontes.md](docs/licencas-e-fontes.md).

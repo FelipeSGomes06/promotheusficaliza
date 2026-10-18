@@ -13,6 +13,7 @@ use Fiscaliza\Application\EquipmentService;
 use Fiscaliza\Application\EventIngestor;
 use Fiscaliza\Application\History;
 use Fiscaliza\Application\MaintenanceService;
+use Fiscaliza\Demo\DemoScenario;
 use Fiscaliza\Demo\DemoSeeder;
 use Fiscaliza\Demo\Simulator;
 use Fiscaliza\Domain\Clock;
@@ -232,7 +233,7 @@ final class Services
 
     public function seeder(): DemoSeeder
     {
-        return new DemoSeeder($this, (int) $this->config->int('SIM_SEED', 2026));
+        return new DemoSeeder($this, (int) $this->config->int('SIM_SEED', 2026), DemoScenario::profile($this->config->get('DEMO_PROFILE', DemoScenario::COMPACT)));
     }
 
     public function simulator(): Simulator

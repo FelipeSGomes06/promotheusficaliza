@@ -1,9 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Balança de pesagem">
-<title>Balança de pesagem — ilustração da categoria (não representa um modelo comercial)</title>
-<rect width="160" height="120" rx="12" fill="#e6eef7"/><circle cx="138" cy="20" r="9" fill="#fbe7a6"/><path d="M0 94h160v14a12 12 0 0 1-12 12H12A12 12 0 0 1 0 108z" fill="#5c6774"/><path d="M0 94h160" stroke="#b8c1cc" stroke-width="2"/><path d="M12 107h16M44 107h16M76 107h16M108 107h16M140 107h12" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-<rect x="16" y="12" width="48" height="20" rx="4" fill="#18212c"/><text x="40" y="26" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#f2b705">18,4 t</text>
-<rect x="10" y="86" width="140" height="8" rx="2" fill="#9aa5b1" stroke="#18212c" stroke-width="2.5" stroke-linejoin="round"/>
-<rect x="22" y="42" width="80" height="40" rx="4" fill="#fff" stroke="#18212c" stroke-width="2.5" stroke-linejoin="round"/><path d="M34 52h56M34 62h56M34 72h56" stroke="#d9dfe6" stroke-width="3"/>
-<path d="M104 82V56a6 6 0 0 1 6-6h16l10 14v18z" fill="#1b5eab" stroke="#18212c" stroke-width="2.5" stroke-linejoin="round"/><path d="M111 56h13l6 9h-19z" fill="#e6eef7" stroke="#18212c" stroke-width="1.5"/>
-<circle cx="42" cy="86" r="8" fill="#18212c"/><circle cx="42" cy="86" r="3" fill="#9aa5b1"/><circle cx="122" cy="86" r="8" fill="#18212c"/><circle cx="122" cy="86" r="3" fill="#9aa5b1"/>
+<title>Balança de pesagem — ilustração da categoria (não representa um modelo comercial nem um local real)</title>
+<defs><clipPath id="c"><rect width="160" height="120" rx="14"/></clipPath></defs>
+<g clip-path="url(#c)">
+<rect width="160" height="120" fill="#EAF0F9"/>
+<path d="M0 32h160M0 66h160M46 0v94M118 0v94" stroke="#fff" stroke-width="7" opacity=".75"/>
+<rect y="94" width="160" height="26" fill="#17263B"/>
+<path d="M0 94h160" stroke="#2B3D57" stroke-width="2"/>
+<path d="M8 108h16M36 108h16M64 108h16M92 108h16M120 108h16M148 108h12" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".85"/>
+
+<rect x="14" y="86" width="132" height="9" rx="2" fill="#354A66"/>
+<path d="M14 86h132" stroke="#FFB21A" stroke-width="2.5" stroke-dasharray="6 5"/>
+<rect x="24" y="42" width="70" height="38" rx="4" fill="#fff" stroke="#0F1A2B" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M32 54h54M32 63h54M32 72h40" stroke="#D3DCE8" stroke-width="3" stroke-linecap="round"/>
+<path d="M94 50h18l12 15v15H94z" fill="#2152E8" stroke="#0F1A2B" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M100 56h10l7 9h-17z" fill="#EAF0F9"/>
+<circle cx="42" cy="82" r="7.5" fill="#0F1A2B"/><circle cx="42" cy="82" r="3" fill="#9BAEC8"/>
+<circle cx="110" cy="82" r="7.5" fill="#0F1A2B"/><circle cx="110" cy="82" r="3" fill="#9BAEC8"/>
+<rect x="98" y="10" width="52" height="22" rx="5" fill="#0F1A2B"/>
+<text x="124" y="26" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#FFB21A">18,4 t</text>
+<path d="M124 32v8" stroke="#0F1A2B" stroke-width="3"/>
+</g>
 </svg>

@@ -53,3 +53,27 @@ seguida com `demo:seed --reset`.
 Leitura: mesma conclusão de antes — cerca de 2× o acaso, um pouco acima da referência em precisão, abaixo em
 revocação, limiar instável entre sementes. A diferença em relação à primeira avaliação vem só da reconstrução
 temporal; nenhum parâmetro foi ajustado para melhorar o número.
+
+## Perfis compacto e completo (18/10/2026)
+
+Depois da [ADR-0013](../adr/0013-perfil-compacto-de-demonstracao.md), as mesmas sementes foram avaliadas nos dois
+perfis, no ambiente isolado (`php scripts/avaliar-sementes.php --perfil=… 2027 2028 2029 2030 2031`). O método não
+mudou; o cenário mudou em três pontos que entram no histórico de ordens: três preventivas abertas passaram a ter data
+fixa (vencida, próxima e futura), o que altera alguns cortes desses equipamentos também no perfil completo.
+
+| Perfil | Pares (falhas) | Índice TP/FP/FN | Precisão | Revocação | Referência TP/FP/FN | Precisão | Revocação | Prevalência |
+|---|---|---|---|---|---|---|---|---|
+| Completo (48) | 1.697 (67) | 11/118/56 | **0,085** | **0,164** | 15/190/52 | 0,073 | 0,224 | 0,039 |
+| Compacto (16) | 526 (30) | 4/54/26 | **0,069** | **0,133** | 8/94/22 | 0,078 | 0,267 | 0,057 |
+
+Por semente, completo — limiar · índice TP/FP/FN · referência TP/FP/FN: 2027 45 · 1/7/9 · 2/29/8; 2028 25 · 3/36/12 ·
+3/37/12; 2029 25 · 7/62/11 · 5/52/13; 2030 35 · 0/13/11 · 1/38/10; 2031 55 · 0/0/13 (nenhum alerta) · 4/34/9.
+Compacto: 2027 25 · 0/19/5 · 1/16/4; 2028 25 · 1/9/3 · 1/10/3; 2029 55 · 1/3/4 · 2/25/3; 2030 35 · 0/8/6 · 2/21/4;
+2031 25 · 2/15/8 · 2/22/8.
+
+Leitura: no completo a conclusão se mantém (≈2× o acaso, um pouco acima da referência em precisão, abaixo em
+revocação). No compacto, com ~6 falhas por semente, o índice **não** supera a referência — a amostra é pequena demais
+para avaliar o método, por isso a metodologia continua medida no perfil completo e a página "Revisões recomendadas"
+mostra os dois resultados. Nenhum parâmetro foi ajustado. Ao final, o cenário padrão (compacto, semente 2026) foi
+recarregado com `demo:seed --reset`.
+

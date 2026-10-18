@@ -18,8 +18,8 @@
   </div>
 
   <nav class="jump" aria-label="Ir para">
-    {% for key, s in sections %}<a href="#{{ s[0] }}">{{ s[1] }} <span class="count-pill">{{ groups[key]|length }}</span></a>{% endfor %}
-    <a href="#encerradas">Encerradas recentemente</a>
+    {% for key, s in sections %}<a class="chip {{ key == 'URGENTE' and groups[key] is not empty ? 'chip--urgent' }}" href="#{{ s[0] }}">{{ s[1] }} <span class="count-pill">{{ groups[key]|length }}</span></a>{% endfor %}
+    <a class="chip" href="#encerradas">Encerradas recentemente</a>
   </nav>
 
   {% for key, s in sections %}
@@ -49,7 +49,7 @@
                   <p class="order__effect">Aguardando: a ordem #{{ busy }} está em execução neste equipamento (uma intervenção por vez).</p>
                 {% else %}
                   <form method="post" action="{{ url('/manutencoes/' ~ o.id ~ '/iniciar') }}">{{ ui.csrf(app.csrf) }}<input type="hidden" name="voltar" value="/manutencao#{{ s[0] }}">
-                    <button class="btn btn--small {{ key == 'URGENTE' ? 'btn--primary' }}" type="submit">Iniciar intervenção</button>
+                    <button class="btn btn--small {{ key == 'URGENTE' ? 'btn--primary' }}" type="submit">{{ ui.icon('i-wrench') }}<span>Iniciar intervenção</span></button>
                     <span class="order__effect">O equipamento passa para "Em manutenção".</span>
                   </form>
                 {% endif %}
@@ -60,7 +60,7 @@
                     <div class="field"><label for="rs-{{ o.id }}">Como o equipamento ficou?</label>
                       <span class="hint" id="rs-{{ o.id }}-h">Esta situação passa a valer para o equipamento. Informe o resultado real, mesmo que o problema continue.</span>
                       <select id="rs-{{ o.id }}" name="result_status" required aria-describedby="rs-{{ o.id }}-h"><option value="">Escolha o resultado</option><option value="OPERACIONAL">Operacional (testado e funcionando)</option><option value="FALHA">Continua com mau funcionamento</option><option value="DESATIVADO">Desativado (retirado de uso)</option></select></div>
-                    <div><button class="btn btn--primary" type="submit">Concluir ordem</button></div>
+                    <div><button class="btn btn--primary" type="submit">{{ ui.icon('i-check') }}<span>Concluir ordem</span></button></div>
                   </form>
                 </details>
               {% endif %}

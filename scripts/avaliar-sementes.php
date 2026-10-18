@@ -4,7 +4,7 @@
 // ATENÇÃO: SUBSTITUI os dados de domínio do banco DB_DSN (equipamentos, agentes, ordens, eventos, alertas e análises;
 // contas são preservadas) pelo cenário de cada semente, em sequência. Ao terminar, fica carregado o cenário da
 // ÚLTIMA semente informada. Mesmas proteções de "demo:seed --reset": DEMO_ALLOW_RESET=true e, se houver dados,
-// o marcador do conjunto sintético. Uso: php scripts/avaliar-sementes.php 2027 2028 ...
+// o marcador do conjunto sintético. Uso: php scripts/avaliar-sementes.php [--perfil=compacto|completo] 2027 2028 ...
 declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -15,14 +15,18 @@ if (!$config->bool('DEMO_ALLOW_RESET') || ($hasData && $owner->metaRepository()-
     fwrite(STDERR, "Recusado: DEMO_ALLOW_RESET=true e o marcador do conjunto sintético são obrigatórios para substituir dados.\n");
     exit(1);
 }
-$seeds = array_map('intval', array_slice($argv, 1)) ?: [2027, 2028, 2029, 2030, 2031];
+$args = array_slice($argv, 1);
+$profileArg = array_values(array_filter($args, static fn(string $a) => str_starts_with($a, '--perfil=')));
+$profile = Fiscaliza\Demo\DemoScenario::profile($profileArg === [] ? $config->get('DEMO_PROFILE', 'compacto') : substr($profileArg[0], 9));
+$seeds = array_map('intval', array_values(array_filter($args, static fn(string $a) => !str_starts_with($a, '--')))) ?: [2027, 2028, 2029, 2030, 2031];
+fwrite(STDERR, "Perfil: {$profile}.\n");
 fwrite(STDERR, 'Substituindo os dados de demonstração pelas sementes ' . implode(', ', $seeds) . '; ao final ficará a semente ' . end($seeds) . ".\n");
 // Indefinido (denominador zero, ex.: nenhum alerta) aparece como "—", nunca como 0.
 $fmt = static fn(?float $v): string => $v === null ? '  —  ' : sprintf('%.3f', $v);
 $total = ['model' => ['tp' => 0, 'fp' => 0, 'fn' => 0, 'positives' => 0, 'pairs' => 0], 'base' => ['tp' => 0, 'fp' => 0, 'fn' => 0]];
 printf("%-6s %-6s %-30s %-30s %s\n", 'seed', 'limiar', 'modelo (tp/fp/fn p r)', 'referência (tp/fp/fn p r)', 'prevalência');
 foreach ($seeds as $seed) {
-    $services = (new Fiscaliza\Services($config->with(['SIM_SEED' => (string) $seed]), dirname(__DIR__)))->asMigrationIdentity();
+    $services = (new Fiscaliza\Services($config->with(['SIM_SEED' => (string) $seed, 'DEMO_PROFILE' => $profile]), dirname(__DIR__)))->asMigrationIdentity();
     $hasData = (int) $services->database()->value('SELECT COUNT(*) FROM EQUIPMENT') > 0;
     $services->seeder()->run($hasData);
     $ev = $services->analysisRepository()->latestRun()['evaluation'];
@@ -55,4 +59,4 @@ printf(
     $total['model']['pairs'],
     $total['model']['positives'],
 );
-printf("\nCenário carregado agora: semente %d. Para voltar ao padrão: php bin/fiscaliza demo:seed --reset (usa SIM_SEED).\n", end($seeds));
+printf("\nCenário carregado agora: semente %d, perfil %s. Para voltar ao padrão: php bin/fiscaliza demo:seed --reset (usa SIM_SEED e DEMO_PROFILE).\n", end($seeds), $profile);

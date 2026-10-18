@@ -168,9 +168,14 @@ final class EquipmentController extends Controller
         $uid = 'demo-' . bin2hex(random_bytes(10));
         $outcome = $this->services->ingestor()->equipmentStatus($uid, $id, EquipmentStatus::Falha, $this->services->clock()->now(), 'falha simulada pelo operador (demonstração)', 'SIMULADOR', $this->userId($request));
         $this->services->database()->transaction(fn() => $this->services->alerts()->reconcile());
-        $this->session($request)->flash($outcome === 'APLICADO' ? 'success' : 'warning', $outcome === 'APLICADO'
-            ? 'Falha simulada registrada: veja o alerta na central.'
-            : 'Evento registrado só no histórico: a situação atual prevalece (estado administrativo ou já em falha).');
+        $applied = $outcome === 'APLICADO';
+        $message = $applied
+            ? 'Falha simulada registrada: o equipamento passou para "Mau funcionamento" e um alerta foi aberto.'
+            : 'Evento registrado só no histórico: a situação atual prevalece (estado administrativo ou já em falha).';
+        if ($request->getHeaderLine('Accept') === 'application/json') {
+            return $this->json($response, ['ok' => $applied, 'message' => $message], $applied ? 200 : 409);
+        }
+        $this->session($request)->flash($applied ? 'success' : 'warning', $message);
 
         return $this->redirect($response, "/equipamentos/{$id}");
     }

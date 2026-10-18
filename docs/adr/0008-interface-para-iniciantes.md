@@ -1,6 +1,9 @@
 # ADR-0008 — Interface para quem nunca usou o sistema
 
-Data: 18/10/2026 · Situação: aceita
+Data: 18/10/2026 · Situação: **substituída em parte** pela [ADR-0012](0012-identidade-motion-e-build-de-assets.md)
+(paleta neutra, fonte do sistema, "sem framework nem biblioteca nova" e movimento só em CSS deram lugar à identidade de
+trânsito, Tailwind/Alpine CSP/GSAP e build Vite). Hierarquia, três resumos, filtros essenciais, mapa e lista com o
+mesmo conjunto, títulos "tipo · endereço" e estados com cor + forma + texto continuam valendo.
 
 **Contexto.** A avaliação de 18/10/2026 mostrou uma interface completa, mas intimidadora: fundo escuro com brilho
 laranja, faixa listrada de perigo permanente, seis indicadores com o mesmo peso, rótulos em caixa alta, códigos como
@@ -9,7 +12,7 @@ sem conhecimento de fiscalização.
 
 **Decisão.**
 
-- Fundo claro e um sistema pequeno de tokens ([`app.css`](../../public/assets/css/app.css)): 6 cores base
+- Fundo claro e um sistema pequeno de tokens (`public/assets/css/app.css`, removido na ADR-0012): 6 cores base
   (`--paper #f3f5f7`, `--surface #fff`, `--ink #18212c`, `--muted #4f5b69`, `--line #d9dfe6`, `--signal #1b5eab`)
   e cores de estado usadas só com significado operacional. O vocabulário vem da **sinalização viária brasileira**:
   azul de indicação para ações e navegação, amarelo de advertência e vermelho de regulamentação reservados a

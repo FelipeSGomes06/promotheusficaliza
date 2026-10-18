@@ -1,7 +1,7 @@
 {# Macros de interface. Todo valor é escapado pelo Twig; nenhum macro usa |raw com dado externo. #}
 
-{% macro icon(id, label = null) %}
-<svg class="icon" {% if label %}role="img" aria-label="{{ label }}"{% else %}aria-hidden="true"{% endif %} focusable="false"><use href="{{ asset('img/icons.svg') }}#{{ id }}"></use></svg>
+{% macro icon(id, label = null, cls = 'icon') %}
+<svg class="{{ cls }}" {% if label %}role="img" aria-label="{{ label }}"{% else %}aria-hidden="true"{% endif %} focusable="false"><use href="{{ asset('img/icons.svg') }}#{{ id }}"></use></svg>
 {%- endmacro %}
 
 {% macro status(code, label, glyph = null) %}

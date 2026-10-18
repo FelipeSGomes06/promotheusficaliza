@@ -28,12 +28,15 @@ final class DemoSeeder
     private const BASE_DAILY_FAILURE = 0.004;
     /** Equipamentos que param de enviar sinal (demonstra "sem comunicação" sem afirmar falha). */
     public const SILENT_SERIALS = ['OPB-1080-2290', 'TXC-0533'];
+    /** Equipamentos cujo concentrador entrega o sinal com atraso fixo (demonstra "sinal atrasado" com o simulador ligado). */
+    public const LAGGING_SERIALS = ['OPD-4K-1199'];
+    public const LAG_MINUTES = 25;
 
     private Randomizer $rng;
     private DateTimeImmutable $now;
     private int $eventCounter = 0;
 
-    public function __construct(private readonly Services $services, private readonly int $seed) {}
+    public function __construct(private readonly Services $services, private readonly int $seed, private readonly string $profile = DemoScenario::COMPACT) {}
 
     /** @return array<string, int> resumo do que foi gravado */
     public function run(bool $wipeFirst): array
@@ -56,19 +59,20 @@ final class DemoSeeder
                 $regionIds[$name] = $refs->insertRegion($name, $zone, $lat, $lng);
             }
             $counts = ['órgãos' => count($agencyIds), 'bairros' => count($regionIds), 'equipamentos' => 0, 'agentes' => 0, 'eventos' => 0, 'ordens de manutenção' => 0];
-            foreach (DemoScenario::equipment() as $item) {
+            foreach (DemoScenario::equipment($this->profile) as $item) {
                 [$events, $orders] = $this->seedEquipment($item, $agencyIds, $regionIds);
                 $counts['equipamentos']++;
                 $counts['eventos'] += $events;
                 $counts['ordens de manutenção'] += $orders;
             }
-            foreach (DemoScenario::agents() as $agent) {
+            foreach (DemoScenario::agents($this->profile) as $agent) {
                 $counts['eventos'] += $this->seedAgent($agent, $agencyIds, $regionIds);
                 $counts['agentes']++;
             }
             $meta = $this->services->metaRepository();
             $at = Time::toDb($this->now);
             $meta->set('dataset', MetaRepository::DATASET_MARKER, $this->seed, $at);
+            $meta->set('profile', $this->profile, null, $at);
             $meta->set('seeded_at', $at, null, $at);
             $meta->set('duplicates_ignored', null, 0, $at);
             $meta->set('late_events', null, 1, $at);
@@ -115,6 +119,7 @@ final class DemoSeeder
         $repo = $this->services->equipmentRepository();
         $code = $repo->nextCode($type->prefix);
         $silent = in_array($item['serial'], self::SILENT_SERIALS, true);
+        $lagging = in_array($item['serial'], self::LAGGING_SERIALS, true);
 
         $id = $repo->insert([
             'code' => $code, 'type_code' => $item['type'], 'manufacturer' => $item['maker'], 'model' => $item['model'], 'serial_number' => $item['serial'],
@@ -171,7 +176,7 @@ final class DemoSeeder
                 $opened = $at;
                 $started = $this->now->modify('-1 day')->setTime(8, 15);
                 $orders[] = ['kind' => 'CORRETIVA', 'priority' => 'IMEDIATA', 'state' => 'EM_EXECUCAO', 'due' => null, 'opened_at' => $opened, 'started_at' => $started,
-                    'closed_at' => null, 'result' => null, 'reason' => 'Revisão de freios e suspensão após inspeção (fictício).', 'resolution' => null];
+                    'closed_at' => null, 'result' => null, 'reason' => 'Revisão de freios e suspensão após inspeção.', 'resolution' => null];
                 $events[] = ['type' => 'MANUTENCAO_ABERTA', 'at' => $opened, 'summary' => 'Ordem corretiva imediata aberta: revisão de freios e suspensão.', 'payload' => []];
                 $events[] = $this->statusEvent($status, 'MANUTENCAO', $started, 'intervenção iniciada');
                 [$status, $changedAt] = ['MANUTENCAO', $started];
@@ -181,7 +186,11 @@ final class DemoSeeder
         // Estado atual: sinal recente para quem comunica; posição para móveis.
         $state = ['status' => $status, 'status_changed_at' => Time::toDb($changedAt)];
         if (in_array($status, ['OPERACIONAL', 'FALHA'], true)) {
-            $state['last_seen_at'] = Time::toDb($silent ? $this->now->modify('-' . $this->rng->getInt(130, 300) . ' minutes') : $this->now->modify('-' . $this->rng->getInt(3, 90) . ' seconds'));
+            $state['last_seen_at'] = Time::toDb(match (true) {
+                $silent => $this->now->modify('-' . $this->rng->getInt(130, 300) . ' minutes'),
+                $lagging => $this->now->modify('-' . self::LAG_MINUTES . ' minutes'),
+                default => $this->now->modify('-' . $this->rng->getInt(3, 90) . ' seconds'),
+            });
         }
         if ($type->mobile && $status === 'OPERACIONAL') {
             $state += $this->near((float) $item['lat'], (float) $item['lng'], 0.006) + ['pos_observed_at' => Time::toDb($this->now->modify('-' . $this->rng->getInt(5, 100) . ' seconds'))];
@@ -192,6 +201,16 @@ final class DemoSeeder
             $state += $this->near((float) $item['lat'], (float) $item['lng'], 0.01) + ['pos_observed_at' => Time::toDb($old), 'pos_received_at' => Time::toDb($old)];
         }
         $repo->updateState($id, $state);
+
+        // Preventiva aberta com data fixa (vencida, próxima ou futura), no lugar da que o histórico deixou em aberto.
+        $pending = $item['serial'] === null ? null : (DemoScenario::PENDING_PREVENTIVE[$item['serial']] ?? null);
+        if ($pending !== null && $item['interval'] !== null && !in_array($status, ['NAO_INSTALADO', 'DESATIVADO', 'FURTADO'], true)) {
+            $orders = array_values(array_filter($orders, static fn(array $o): bool => !($o['kind'] === 'PREVENTIVA' && $o['state'] === 'ABERTA')));
+            $due = $this->now->modify(sprintf('%+d days', $pending));
+            $orders[] = ['kind' => 'PREVENTIVA', 'priority' => 'PROGRAMADA', 'state' => 'ABERTA', 'due' => Time::localDate($due),
+                'opened_at' => min($this->now->modify('-1 hour'), $due->modify('-10 days')->setTime(9, 0)), 'started_at' => null, 'closed_at' => null, 'result' => null,
+                'reason' => "Preventiva periódica (a cada {$item['interval']} dias).", 'resolution' => null];
+        }
 
         $orderRepo = $this->services->maintenanceRepository();
         $db = $this->services->database();

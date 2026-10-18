@@ -1,15 +1,25 @@
 {% extends 'layout.twig' %}
+{% import '_ui.twig' as ui %}
 {% block title %}Erro {{ status }}{% endblock %}
 {% block content %}
 <div class="page">
-  <section class="auth panel stack" aria-labelledby="erro-titulo">
-    <p class="hint">Erro {{ status }}</p>
-    <h1 id="erro-titulo">{{ status == 404 ? 'Página não encontrada' : (status == 401 ? 'É preciso entrar' : (status == 403 ? 'Acesso não permitido' : (status == 409 ? 'Não foi possível concluir' : 'Algo deu errado'))) }}</h1>
-    <p>{{ message }}</p>
-    <p class="hint">Código de referência (para quem administra): <span class="code-tag">{{ reference }}</span></p>
-    <div class="btn-row">
-      <a class="btn btn--primary" href="{{ url('/') }}">Ir para a visão geral</a>
-      {% if status == 401 %}<a class="btn" href="{{ url('/entrar') }}">Entrar</a>{% endif %}
+  <section class="auth" aria-labelledby="erro-titulo">
+    <div class="auth__card">
+      <div class="auth__hero">
+        <svg class="brand-mark" aria-hidden="true" focusable="false"><use href="{{ asset('img/icons.svg') }}#i-brand"></use></svg>
+        <div>
+          <p class="m-0">Erro {{ status }}</p>
+          <h1 id="erro-titulo" class="m-0">{{ status == 404 ? 'Página não encontrada' : (status == 401 ? 'É preciso entrar' : (status == 403 ? 'Acesso não permitido' : (status == 409 ? 'Não foi possível concluir' : 'Algo deu errado'))) }}</h1>
+        </div>
+      </div>
+      <div class="auth__body stack">
+        <p>{{ message }}</p>
+        <p class="hint">Código de referência (para quem administra): <span class="code-tag">{{ reference }}</span></p>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="{{ url('/') }}">{{ ui.icon('i-overview') }}<span>Ir para a visão geral</span></a>
+          {% if status == 401 %}<a class="btn" href="{{ url('/entrar') }}"><span>Entrar</span></a>{% endif %}
+        </div>
+      </div>
     </div>
   </section>
 </div>

@@ -1,77 +1,88 @@
 {% import '_ui.twig' as ui %}
+{% set links = [['/', 'Visão geral', 'i-overview'], ['/equipamentos', 'Equipamentos', 'i-equipment'], ['/agentes', 'Agentes', 'i-agents'], ['/manutencao', 'Manutenção', 'i-wrench'], ['/antecipacao', 'Revisões recomendadas', 'i-chart'], ['/sobre', 'Sobre', 'i-info']] %}
+{% if app.user and app.user.role == 'ADMIN' %}{% set links = links|merge([['/contas', 'Contas', 'i-users']]) %}{% endif %}
 <!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}Visão geral{% endblock %} · Promotheus Fiscaliza</title>
-  <meta name="description" content="Central de recursos de fiscalização de Marília/SP — demonstração com dados fictícios (DSIN Coder Challenge 2026, etapa F.O.G.O.).">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Central de recursos de fiscalização de trânsito de Marília/SP — demonstração com dados fictícios (DSIN Coder Challenge 2026, etapa F.O.G.O.).">
+  <meta name="theme-color" content="#0f1a2b">
   <link rel="icon" href="{{ asset('img/favicon.svg') }}" type="image/svg+xml">
-  <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+  {{ vite_styles() }}
   {% block head %}{% endblock %}
-  <script src="{{ asset('js/app.js') }}" defer></script>
   {% block scripts %}{% endblock %}
+  {{ vite_script() }}
 </head>
-<body data-icons="{{ asset('img/icons.svg') }}">
+<body data-page="{% block page %}{% endblock %}" data-icons="{{ asset('img/icons.svg') }}">
   <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
-  <header class="site-header">
-    <div class="site-header__bar">
-      <a class="brand" href="{{ url('/') }}">
-        <img class="brand__mark" src="{{ asset('img/favicon.svg') }}" alt="" width="30" height="30">
-        <span class="brand__name">Promotheus <span class="brand__product">Fiscaliza</span><span class="brand__city">Marília · SP</span></span>
+  <div class="shell">
+    <aside class="rail" id="menu-principal" aria-label="Menu" x-data="nav" @keydown.escape="closeFromKey" @pf-nav-toggle.window="toggle">
+      <a class="rail__brand" href="{{ url('/') }}">
+        <svg class="brand-mark" aria-hidden="true" focusable="false"><use href="{{ asset('img/icons.svg') }}#i-brand"></use></svg>
+        <span class="brand-word"><span class="brand-word__a">Promotheus</span><span class="brand-word__b">Fiscaliza</span><span class="brand-word__city">Marília · SP</span></span>
       </a>
-      {% set links = [['/', 'Visão geral'], ['/equipamentos', 'Equipamentos'], ['/agentes', 'Agentes'], ['/manutencao', 'Manutenção'], ['/antecipacao', 'Revisões recomendadas'], ['/sobre', 'Sobre']] %}
-      {% if app.user and app.user.role == 'ADMIN' %}{% set links = links|merge([['/contas', 'Contas']]) %}{% endif %}
-      <nav class="site-nav" id="menu-principal" aria-label="Principal" data-nav>
-        <ul>
+      <nav aria-label="Principal">
+        <ul class="rail__nav">
           {% for link in links %}
             {% set active = link[0] == '/' ? app.path == '/' : app.path starts with link[0] %}
-            <li><a href="{{ url(link[0]) }}" {% if active %}aria-current="page"{% endif %}>{{ link[1] }}</a></li>
+            <li><a class="rail__link" href="{{ url(link[0]) }}" {% if active %}aria-current="page"{% endif %}>{{ ui.icon(link[2]) }}<span>{{ link[1] }}</span></a></li>
           {% endfor %}
-          <li class="nav-account">
-            {% if app.user %}
-              <span>{{ ui.icon('i-user') }} {{ app.user.display_name }}</span>
-              <form class="inline-form" method="post" action="{{ url('/sair') }}">{{ ui.csrf(app.csrf) }}<button class="btn btn--small" type="submit">Sair</button></form>
-            {% else %}
-              <a href="{{ url('/entrar', {voltar: app.base ~ app.path}) }}">Entrar para editar</a>
-            {% endif %}
-          </li>
         </ul>
       </nav>
-      <div class="site-header__end">
-        <details class="demo-badge">
-          <summary>Demonstração</summary>
-          <div class="demo-badge__text" role="note">
-            <p><strong>Tudo aqui é fictício.</strong> Dados, órgãos, marcas, modelos e agentes são inventados; os pontos em Marília/SP são ilustrativos.</p>
-            <p>Não há integração com prefeitura, polícia ou equipamentos reais. <a href="{{ url('/sobre') }}">O que é real, simulado e implementado</a></p>
-          </div>
-        </details>
+      <div class="rail__foot">
         {% if app.user %}
-          <span class="account header-only">{{ ui.icon('i-user') }}<span class="account__name"><strong>{{ app.user.display_name }}</strong></span></span>
-          <form class="inline-form header-only" method="post" action="{{ url('/sair') }}">{{ ui.csrf(app.csrf) }}<button class="btn btn--small" type="submit">Sair</button></form>
+          <div class="rail__account"><span class="avatar">{{ ui.icon('i-user') }}</span><span><strong>{{ app.user.display_name }}</strong><span>{{ app.user.role == 'ADMIN' ? 'Administrador' : 'Operador' }}</span></span></div>
+          <form class="inline-form" method="post" action="{{ url('/sair') }}">{{ ui.csrf(app.csrf) }}<button class="btn btn--small btn--dark" type="submit">{{ ui.icon('i-logout') }}<span>Sair</span></button></form>
         {% else %}
-          <a class="btn btn--small header-only" href="{{ url('/entrar', {voltar: app.base ~ app.path}) }}">Entrar para editar</a>
+          <a class="btn btn--small btn--primary" href="{{ url('/entrar', {voltar: app.base ~ app.path}) }}">{{ ui.icon('i-user') }}<span>Entrar para editar</span></a>
         {% endif %}
-        <button class="btn btn--small menu-toggle" type="button" aria-expanded="false" aria-controls="menu-principal" data-menu-toggle>{{ ui.icon('i-list') }}<span>Menu</span></button>
+        <button type="button" class="motion-pref" x-data="motionPref" @click="toggle" :aria-pressed="pressed" aria-describedby="motion-why">
+          {{ ui.icon('i-motion') }}
+          <span><span class="motion-pref__state" x-text="stateLabel">Animações</span><span class="motion-pref__why" id="motion-why" x-text="whyLabel">Segue a preferência do sistema</span></span>
+        </button>
+        <p class="m-0">Dados fictícios · mapa <a href="https://www.openstreetmap.org/copyright" rel="noopener">© OpenStreetMap</a> · <a href="{{ url('/sobre') }}">o que é real</a></p>
       </div>
-    </div>
-  </header>
-  <main id="conteudo" tabindex="-1">
-    {% block flash %}
-      {% if app.flash %}
-        <div class="flash-stack" role="status">
-          {% for f in app.flash %}<div class="flash flash--{{ f.type }}">{{ f.message }}</div>{% endfor %}
+    </aside>
+    <div class="rail-scrim" data-rail-scrim hidden></div>
+
+    <div class="main" {% block main_attrs %}{% endblock %}>
+      <header class="topbar">
+        <button class="btn btn--small btn--ghost btn--icon menu-btn" type="button" aria-controls="menu-principal" aria-expanded="false" aria-label="Abrir menu" data-menu-btn>{{ ui.icon('i-menu') }}</button>
+        <a class="topbar__brand" href="{{ url('/') }}">
+          <svg class="brand-mark" aria-hidden="true" focusable="false"><use href="{{ asset('img/icons.svg') }}#i-brand"></use></svg>
+          <span class="brand-word"><span class="brand-word__a">Promotheus</span><span class="brand-word__b">Fiscaliza</span></span>
+        </a>
+        {% block topbar %}
+          {% set current = links|filter(l => (l[0] == '/' ? app.path == '/' : app.path starts with l[0]))|first %}
+          <div class="topbar__title">{% if current %}{{ ui.icon(current[2]) }}<span>{{ current[1] }}</span>{% else %}{{ ui.icon('i-user') }}<span>{{ block('title') }}</span>{% endif %}</div>
+        {% endblock %}
+        <div class="topbar__end">
+          {% block topbar_end %}{% endblock %}
+          <details class="demo-badge" data-popover>
+            <summary>Demonstração</summary>
+            <div class="popover" role="note">
+              <p><strong>Tudo aqui é fictício.</strong> Dados, órgãos, marcas, modelos e agentes são inventados; os pontos em Marília/SP são ilustrativos.</p>
+              <p>Não há integração com prefeitura, polícia ou equipamentos reais. <a href="{{ url('/sobre') }}">O que é real, simulado e implementado</a></p>
+            </div>
+          </details>
         </div>
-      {% endif %}
-    {% endblock %}
-    {% block content %}{% endblock %}
-  </main>
-  <footer class="site-footer">
-    <div class="site-footer__inner">
-      <p>Promotheus Fiscaliza — demonstração com dados fictícios para o DSIN Coder Challenge 2026 (etapa F.O.G.O.). <a href="{{ url('/sobre') }}">O que é real, simulado e implementado</a>.</p>
-      <p>Mapa: <a href="https://www.openstreetmap.org/copyright" rel="noopener">© colaboradores do OpenStreetMap</a> · <button type="button" class="motion-toggle" data-motion-toggle aria-pressed="false"><span>Reduzir animações</span></button></p>
+      </header>
+      <main id="conteudo" tabindex="-1">
+        {% block flash %}
+          {% if app.flash %}
+            <div class="flash-stack" data-flash-stack>
+              {% for f in app.flash %}<div class="flash flash--{{ f.type }}" role="{{ f.type == 'error' ? 'alert' : 'status' }}" data-flash data-type="{{ f.type }}">{{ f.message }}</div>{% endfor %}
+            </div>
+          {% endif %}
+        {% endblock %}
+        {% block content %}{% endblock %}
+      </main>
     </div>
-  </footer>
+  </div>
+  <div class="toasts" data-toasts></div>
+  <div class="visually-hidden" aria-live="polite" data-live-polite></div>
+  <div class="visually-hidden" aria-live="assertive" data-live-assertive></div>
 </body>
 </html>
