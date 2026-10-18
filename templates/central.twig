@@ -1,0 +1,204 @@
+{% extends 'layout.twig' %}
+{% import '_ui.twig' as ui %}
+{% block title %}Central operacional{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}">{% endblock %}
+{% block scripts %}
+  <script src="{{ asset('vendor/leaflet/leaflet.js') }}" defer></script>
+  <script src="{{ asset('js/central.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+{% set k = snapshot.kpis.equipment %}
+{% set ag = snapshot.kpis.agents %}
+<div class="central" id="central"
+     data-api="{{ url('/api/central') }}" data-base="{{ app.base }}" data-mini="{{ app.base }}/assets/img/miniaturas/"
+     data-tiles="{{ app.map.tiles }}" data-attribution="{{ app.map.attribution }}" data-poll="{{ app.poll_seconds }}"
+     data-csrf="{{ app.csrf }}" data-can-edit="{{ app.user ? '1' : '0' }}">
+
+  <h1 class="visually-hidden">Central operacional de Marília</h1>
+
+  <section class="kpis" aria-label="Indicadores do filtro atual" aria-live="off">
+    <article class="kpi kpi--ember">
+      <div class="kpi__label">Equipamentos</div>
+      <div class="kpi__value" data-kpi="equipment.total">{{ k.total }}</div>
+      <div class="kpi__hint"><span data-kpi="equipment.not_installed">{{ k.not_installed }}</span> não instalados · <span data-kpi="equipment.deactivated">{{ k.deactivated }}</span> desativados</div>
+      <details class="formula"><summary>Como é contado</summary><p>Equipamentos não arquivados que atendem aos filtros. Não instalados e desativados aparecem aqui, mas ficam fora do denominador da disponibilidade.</p></details>
+    </article>
+    <article class="kpi kpi--ok">
+      <div class="kpi__label">Operacionais</div>
+      <div class="kpi__value" data-kpi="equipment.operational">{{ k.operational }}</div>
+      <div class="kpi__hint"><span data-kpi="equipment.operational_unconfirmed">{{ k.operational_unconfirmed }}</span> sem sinal recente</div>
+      <details class="formula"><summary>Como é contado</summary><p>Situação "operacional". Sem sinal há mais de 10 min, o equipamento continua contado aqui, mas não entra na disponibilidade confirmada.</p></details>
+    </article>
+    <article class="kpi kpi--fail">
+      <div class="kpi__label">Indisponíveis</div>
+      <div class="kpi__value" data-kpi="equipment.unavailable">{{ k.unavailable }}</div>
+      <div class="kpi__hint">falha <span data-kpi="equipment.failure">{{ k.failure }}</span> · manut. <span data-kpi="equipment.maintenance">{{ k.maintenance }}</span> · furto <span data-kpi="equipment.stolen">{{ k.stolen }}</span></div>
+      <details class="formula"><summary>Como é contado</summary><p>Deveriam estar em serviço, mas estão em mau funcionamento, em manutenção ou furtados.</p></details>
+    </article>
+    <article class="kpi kpi--ok">
+      <div class="kpi__label">Disponibilidade</div>
+      <div class="kpi__value" data-kpi="equipment.availability" data-format="pct">{{ k.availability|pct }}</div>
+      <div class="kpi__hint">confirmada por sinal: <span data-kpi="equipment.availability_confirmed" data-format="pct">{{ k.availability_confirmed|pct }}</span></div>
+      <details class="formula"><summary>Fórmula</summary><p>Operacionais ÷ em serviço (<span data-kpi="equipment.operational">{{ k.operational }}</span> ÷ <span data-kpi="equipment.in_service">{{ k.in_service }}</span>). Em serviço = operacionais + falha + manutenção + furto. Confirmada usa só operacionais com sinal atual. Sem equipamentos em serviço: "não se aplica".</p></details>
+    </article>
+    <article class="kpi kpi--agents">
+      <div class="kpi__label">Agentes ativos</div>
+      <div class="kpi__value" data-kpi="agents.active">{{ ag.active }}</div>
+      <div class="kpi__hint">de <span data-kpi="agents.total">{{ ag.total }}</span> no filtro · <span data-kpi="agents.position_not_current">{{ ag.position_not_current }}</span> sem posição recente</div>
+      <details class="formula"><summary>Como é contado</summary><p>Agentes não arquivados "em atividade" no filtro. Unidade diferente: nunca é somado aos equipamentos.</p></details>
+    </article>
+    <article class="kpi kpi--maint">
+      <div class="kpi__label">Manutenção urgente</div>
+      <div class="kpi__value" data-kpi="maintenance.urgent">{{ snapshot.maintenance.urgent|length }}</div>
+      <div class="kpi__hint"><span data-kpi="maintenance.upcoming">{{ snapshot.maintenance.upcoming|length }}</span> próximas em 7 dias</div>
+      <details class="formula"><summary>Como é contado</summary><p>Ordens abertas imediatas ou com data vencida (data local de Marília). Próximas: programadas para hoje até 7 dias.</p></details>
+    </article>
+  </section>
+
+  <aside class="filters card card--tight" aria-labelledby="filtros-titulo">
+    <details open data-filters-details>
+    <summary><h2 id="filtros-titulo" class="small">{{ ui.icon('i-filter') }} Filtros</h2></summary>
+    <form method="get" action="{{ url('/') }}" data-filters>
+      <fieldset>
+        <legend>Tipo</legend>
+        <div class="chips">
+          {% set group = '' %}
+          {% for c in options.categories %}
+            {% if c.group != group %}{% set group = c.group %}<p class="chip-group-label">{{ group }}</p>{% endif %}
+            <label class="chip"><input type="checkbox" name="categoria[]" value="{{ c.value }}" {{ c.value in filters.categories ? 'checked' }}><span>{{ ui.icon('i-' ~ c.value) }}{{ c.label }}</span></label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Situação</legend>
+        <div class="chips">
+          {% set group = '' %}
+          {% for s in options.statuses %}
+            {% if s.group != group %}{% set group = s.group %}<p class="chip-group-label">{{ group }}</p>{% endif %}
+            <label class="chip"><input type="checkbox" name="situacao[]" value="{{ s.value }}" {{ s.value in filters.statuses ? 'checked' }}><span>{{ s.label }}</span></label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      <div class="field">
+        <label for="f-bairro">Bairro</label>
+        <select id="f-bairro" name="bairro[]">
+          <option value="">Todos os bairros</option>
+          {% for r in options.regions %}<option value="{{ r.id }}" {{ r.id in filters.regions ? 'selected' }}>{{ r.name }} ({{ r.zone|lower }})</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-orgao">Órgão</label>
+        <select id="f-orgao" name="orgao[]">
+          <option value="">Todos os órgãos</option>
+          {% for a in options.agencies %}<option value="{{ a.id }}" {{ a.id in filters.agencies ? 'selected' }}>{{ a.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="filters__foot">
+        <a class="btn btn--ghost btn--sm" href="{{ url('/') }}" data-clear-filters>Limpar</a>
+        <button class="btn btn--sm" type="submit" data-filters-submit>Aplicar</button>
+      </div>
+      <p class="small faint" data-scope-note>{% if not snapshot.scope.agents %}Agentes fora do filtro atual.{% elseif not snapshot.scope.equipment %}Equipamentos fora do filtro atual.{% endif %}</p>
+    </form>
+    </details>
+  </aside>
+
+  <section class="map-wrap" aria-label="Mapa de Marília com equipamentos e agentes">
+    <div id="map" role="region" aria-label="Mapa interativo (alternativa acessível: aba Lista)"></div>
+    <noscript><div class="map-banner is-visible">O mapa precisa de JavaScript. A lista, os indicadores e os alertas ao lado continuam completos.</div></noscript>
+    <div class="map-banner" data-tiles-banner role="status">O mapa base não carregou (provedor de tiles indisponível). Marcadores, lista e indicadores seguem atualizados.</div>
+    <div class="map-legend">
+      <details>
+        <summary>Legenda</summary>
+        <ul>
+          <li><span class="mk mk--OPERACIONAL" aria-hidden="true">{{ ui.icon('i-RADAR') }}</span> Equipamento (quadrado)</li>
+          <li><span class="mk mk--AGENTE mk--EM_ATIVIDADE" aria-hidden="true">{{ ui.icon('i-AG_GUARDA') }}</span> Agente (círculo)</li>
+          <li>{{ ui.equipment_status('OPERACIONAL') }}</li>
+          <li>{{ ui.equipment_status('FALHA') }}</li>
+          <li>{{ ui.equipment_status('MANUTENCAO') }}</li>
+          <li>{{ ui.equipment_status('FURTADO') }}</li>
+          <li>{{ ui.equipment_status('NAO_INSTALADO') }} contorno tracejado</li>
+          <li><span aria-hidden="true">⌛</span> observação antiga (tracejado)</li>
+        </ul>
+      </details>
+    </div>
+    <div class="syncbar" data-sync data-state="live" role="status" aria-live="polite">
+      <span class="syncbar__dot" aria-hidden="true"></span>
+      <span data-sync-text>Dados de {{ snapshot.generated_at|local_dt('H:i:s') }} · último evento {{ snapshot.sync.last_event_received_at|local_dt('H:i:s') }}</span>
+      <span data-sim-text class="faint">{{ snapshot.sync.simulator_running ? 'Simulador ativo' : 'Simulador parado: dados sem mudanças automáticas' }}</span>
+      <button class="btn btn--sm" type="button" data-pause aria-pressed="false" hidden>{{ ui.icon('i-pause') }}<span>Pausar atualização</span></button>
+      <button class="btn btn--sm btn--ghost" type="button" data-refresh hidden>{{ ui.icon('i-refresh') }}<span class="visually-hidden">Atualizar agora</span></button>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Painel operacional">
+    <div class="tabs" role="tablist" aria-label="Visões do painel">
+      <button role="tab" id="tab-lista" aria-controls="tp-lista" aria-selected="true">{{ ui.icon('i-list') }}Lista <span class="count" data-count="resources">{{ snapshot.resources|length }}</span></button>
+      <button role="tab" id="tab-alertas" aria-controls="tp-alertas" aria-selected="false" tabindex="-1">{{ ui.icon('i-alert') }}Alertas <span class="count {{ snapshot.alerts ? 'count--hot' }}" data-count="alerts">{{ snapshot.alerts|length }}</span></button>
+      <button role="tab" id="tab-manut" aria-controls="tp-manut" aria-selected="false" tabindex="-1">{{ ui.icon('i-wrench') }}Manut.</button>
+      <button role="tab" id="tab-bairros" aria-controls="tp-bairros" aria-selected="false" tabindex="-1">{{ ui.icon('i-pin') }}Bairros</button>
+    </div>
+
+    <div class="tabpanel" id="tp-lista" role="tabpanel" aria-labelledby="tab-lista" data-list>
+      {% if snapshot.resources is empty %}
+        <div class="empty">Nenhum recurso atende a estes filtros. <a href="{{ url('/') }}">Limpar filtros</a></div>
+      {% else %}
+        <ul class="res-list">
+          {% for r in snapshot.resources %}
+            <li><a class="res" href="{{ url(r.kind == 'EQUIPAMENTO' ? '/equipamentos/' ~ r.id : '/agentes/' ~ r.id) }}" data-key="{{ r.kind }}:{{ r.id }}">
+              <span class="res__icon {{ r.kind == 'AGENTE' ? 'res__icon--agent' }}">{{ ui.icon('i-' ~ r.category) }}</span>
+              <span><span class="res__title">{{ r.title }}</span><span class="res__sub">{{ r.category_label }} · {{ r.region ?? 'sem bairro' }}</span></span>
+              <span class="res__meta">{{ ui.status(r.status, r.status_label, r.glyph) }}</span>
+            </a></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    <div class="tabpanel" id="tp-alertas" role="tabpanel" aria-labelledby="tab-alertas" hidden data-alerts>
+      {% for a in snapshot.alerts %}
+        <article class="alert-item alert-item--{{ a.severity }}">
+          <div class="alert-item__top">{{ ui.status(a.severity, a.severity|capitalize) }}<span class="small faint">{{ a.opened_at|local_dt }}</span></div>
+          <p>{{ a.message }}</p>
+          <span class="small muted">{{ a.state == 'RECONHECIDO' ? 'Reconhecido por ' ~ a.ack_by : 'Aguardando reconhecimento' }}</span>
+        </article>
+      {% else %}
+        <div class="empty">Nenhum alerta aberto neste filtro.</div>
+      {% endfor %}
+    </div>
+
+    <div class="tabpanel" id="tp-manut" role="tabpanel" aria-labelledby="tab-manut" hidden data-maintenance>
+      <p class="res-group">Urgentes</p>
+      {% for o in snapshot.maintenance.urgent %}
+        <div class="order"><div class="order__head"><a href="{{ url('/equipamentos/' ~ o.equipment_id) }}"><strong>{{ o.equipment_code }}</strong></a>{{ ui.status(o.urgency, o.urgency_label) }}</div><p class="small muted">{{ o.reason }}</p></div>
+      {% else %}<div class="empty">Nenhuma manutenção urgente.</div>{% endfor %}
+      <p class="res-group">Próximos 7 dias</p>
+      {% for o in snapshot.maintenance.upcoming %}
+        <div class="order"><div class="order__head"><a href="{{ url('/equipamentos/' ~ o.equipment_id) }}"><strong>{{ o.equipment_code }}</strong></a><span class="small">{{ o.due_date|br_date }}</span></div><p class="small muted">{{ o.reason }}</p></div>
+      {% else %}<div class="empty">Nada programado para os próximos 7 dias.</div>{% endfor %}
+    </div>
+
+    <div class="tabpanel" id="tp-bairros" role="tabpanel" aria-labelledby="tab-bairros" hidden data-regions>
+      <table class="region-table">
+        <caption class="small faint">Bairros com mais problemas primeiro. Zonas são agrupamento da demonstração, não divisão oficial.</caption>
+        <thead><tr><th scope="col">Bairro</th><th scope="col">Equip.</th><th scope="col">Indisp.</th><th scope="col">Disp.</th><th scope="col">Agentes</th><th scope="col">Alertas</th></tr></thead>
+        <tbody>
+          {% for r in snapshot.regions %}
+            <tr><th scope="row">{{ r.name }}</th><td>{{ r.equipment }}</td><td>{{ r.unavailable }}</td><td>{{ r.availability|pct }}</td><td>{{ r.agents_active }}</td><td>{{ r.alerts }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="drawer" data-drawer role="dialog" aria-modal="false" aria-labelledby="drawer-title" tabindex="-1">
+      <div class="drawer__head">
+        <h2 id="drawer-title" data-drawer-title>Detalhes</h2>
+        <button class="btn btn--ghost btn--sm" type="button" data-drawer-close>{{ ui.icon('i-close') }}<span class="visually-hidden">Fechar detalhes</span></button>
+      </div>
+      <div class="drawer__body" data-drawer-body></div>
+    </div>
+  </section>
+  <div class="visually-hidden" aria-live="polite" data-announcer></div>
+</div>
+<script type="application/json" id="snapshot-data">{{ snapshot|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_APOS') b-or constant('JSON_HEX_QUOT') b-or constant('JSON_UNESCAPED_UNICODE'))|raw }}</script>
+{% endblock %}

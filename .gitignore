@@ -1,0 +1,23 @@
+# Dependências e caches reinstaláveis
+/vendor/
+/node_modules/
+/.phpunit.cache/
+/.php-cs-fixer.cache
+/var/
+
+# Configuração e segredos locais (exemplos ficam em .env.example)
+.env
+.env.*
+!.env.example
+
+# Banco, backups e arquivos de execução nunca entram no Git
+*.fdb
+*.fbk
+*.gbk
+/backups/
+
+# Notas privadas do proprietário (contexto do portal, hospedagem)
+/docs/privado/
+
+# Pacote de entrega gerado
+/dist/

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Veículo">
+<title>Veículo — ilustração da categoria (não representa um modelo comercial)</title>
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2433"/><stop offset="1" stop-color="#2b3548"/></linearGradient>
+<radialGradient id="glow" cx=".8" cy=".15" r=".6"><stop offset="0" stop-color="#ff8a2b" stop-opacity=".35"/><stop offset="1" stop-color="#ff8a2b" stop-opacity="0"/></radialGradient></defs>
+<rect width="160" height="120" rx="14" fill="url(#sky)"/><rect width="160" height="120" rx="14" fill="url(#glow)"/>
+<path d="M0 96h160v10a14 14 0 0 1-14 14H14A14 14 0 0 1 0 106z" fill="#222b3b"/>
+<path d="M18 82V66l12-20h66l22 20h18v16z" fill="#e8edf5"/><path d="M36 50h26v16H26zM68 50h24l16 16H68z" fill="#7fd3ff"/>
+<rect x="18" y="70" width="128" height="8" fill="#ff7a1a"/><rect x="50" y="36" width="30" height="8" rx="4" fill="#2e384b"/><rect x="51" y="37" width="13" height="6" rx="3" fill="#ff5a4e"/><rect x="66" y="37" width="13" height="6" rx="3" fill="#4ea8ff"/>
+<circle cx="46" cy="84" r="11" fill="#11161f" stroke="#8a96ab" stroke-width="4"/><circle cx="118" cy="84" r="11" fill="#11161f" stroke="#8a96ab" stroke-width="4"/>
+</svg>

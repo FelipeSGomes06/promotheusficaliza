@@ -1,0 +1,54 @@
+{% extends 'layout.twig' %}
+{% import '_ui.twig' as ui %}
+{% block title %}Equipamentos{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Inventário</p>
+      <h1>Equipamentos</h1>
+      <p>{{ total }} {{ archived ? 'arquivado(s)' : 'em operação ou cadastrados' }}{{ filters.isEmpty and q == '' ? '' : ' no filtro atual' }}. Radares, câmeras, balanças, cancelas, totens, veículos e patinetes, com características próprias por tipo.</p>
+    </div>
+    {% if app.user %}<a class="btn btn--primary" href="{{ url('/equipamentos/novo') }}">{{ ui.icon('i-plus') }}Novo equipamento</a>{% endif %}
+  </div>
+
+  <form class="toolbar card card--tight" method="get" action="{{ url('/equipamentos') }}">
+    <div class="field"><label for="q">Buscar</label><input id="q" type="search" name="q" value="{{ q }}" placeholder="Código, série, marca, rua…" maxlength="60"></div>
+    <div class="field"><label for="tipo">Tipo</label>
+      <select id="tipo" name="categoria[]"><option value="">Todos</option>{% for t in types %}<option value="{{ t.code }}" {{ t.code in filters.categories ? 'selected' }}>{{ t.label }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="sit">Situação</label>
+      <select id="sit" name="situacao[]"><option value="">Todas</option>{% for s in options.statuses|filter(s => s.group == 'Equipamentos') %}<option value="{{ s.value }}" {{ s.value in filters.statuses ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="bai">Bairro</label>
+      <select id="bai" name="bairro[]"><option value="">Todos</option>{% for r in options.regions %}<option value="{{ r.id }}" {{ r.id in filters.regions ? 'selected' }}>{{ r.name }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="org">Órgão</label>
+      <select id="org" name="orgao[]"><option value="">Todos</option>{% for a in options.agencies %}<option value="{{ a.id }}" {{ a.id in filters.agencies ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="ord">Ordenar</label>
+      <select id="ord" name="ordem">{% for k, l in {codigo: 'Código', tipo: 'Tipo', situacao: 'Situação', bairro: 'Bairro', atualizado: 'Atualização recente'} %}<option value="{{ k }}" {{ sort == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
+    <label class="checks"><span><input type="checkbox" name="arquivados" value="1" {{ archived ? 'checked' }}> Arquivados</span></label>
+    <button class="btn" type="submit">Filtrar</button>
+  </form>
+
+  {% if rows is empty %}
+    <div class="empty">Nenhum equipamento encontrado. <a href="{{ url('/equipamentos') }}">Limpar filtros</a></div>
+  {% else %}
+  <div class="table-wrap">
+    <table class="data">
+      <caption>Equipamentos — página {{ page }} de {{ pages }}</caption>
+      <thead><tr><th scope="col">Equipamento</th><th scope="col">Marca / modelo</th><th scope="col">Situação</th><th scope="col">Local</th><th scope="col">Órgão</th></tr></thead>
+      <tbody>
+      {% for e in rows %}
+        <tr>
+          <td><div class="type-cell"><span class="res__icon">{{ ui.icon('i-' ~ e.type_code) }}</span><span><a href="{{ url('/equipamentos/' ~ e.id) }}"><strong>{{ e.code }}</strong></a><br><span class="small muted">{{ types[e.type_code].label ?? e.type_code }}</span></span></div></td>
+          <td>{{ e.manufacturer }}<br><span class="small muted">{{ e.model }}{{ e.serial_number ? ' · série ' ~ e.serial_number : ' · série desconhecida' }}</span></td>
+          <td>{{ ui.equipment_status(e.status) }}</td>
+          <td>{{ e.street ?? '—' }}<br><span class="small muted">{{ e.region_name ?? 'sem bairro' }}{{ e.lat is null ? ' · sem localização' : '' }}</span></td>
+          <td class="small">{{ e.agency_name }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {{ ui.pagination(page, pages, filters.toArray|merge({q: q, ordem: sort, arquivados: archived ? '1' : null}), '/equipamentos') }}
+  {% endif %}
+</div>
+{% endblock %}

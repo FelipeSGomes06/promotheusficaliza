@@ -1,0 +1,229 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Fiscaliza\Application;
+
+use Fiscaliza\Domain\Clock;
+use Fiscaliza\Domain\EquipmentCatalog;
+use Fiscaliza\Domain\EquipmentStatus;
+use Fiscaliza\Domain\RuleViolation;
+use Fiscaliza\Domain\Time;
+use Fiscaliza\Domain\ValidationFailed;
+use Fiscaliza\Infrastructure\ConcurrencyConflict;
+use Fiscaliza\Infrastructure\ConstraintViolation;
+use Fiscaliza\Infrastructure\Database;
+use Fiscaliza\Infrastructure\Repository\EquipmentRepository;
+use Fiscaliza\Infrastructure\Repository\ReferenceRepository;
+
+/** Casos de uso do inventário de equipamentos: cadastro, edição, mudança de situação e arquivamento. */
+final class EquipmentService
+{
+    /** Campos do formulário comparados no histórico de alterações. */
+    private const TRACKED = ['type_code', 'manufacturer', 'model', 'serial_number', 'asset_tag', 'agency_id', 'cep', 'street', 'address_ref',
+        'region_id', 'lat', 'lng', 'location_kind', 'maint_interval_days', 'installed_on', 'notes', 'specs'];
+
+    public function __construct(
+        private readonly Database $db,
+        private readonly EquipmentRepository $equipment,
+        private readonly ReferenceRepository $references,
+        private readonly History $history,
+        private readonly AlertService $alerts,
+        private readonly Clock $clock,
+    ) {}
+
+    /** @param array<string, mixed> $data campos do formulário */
+    public function create(array $data, ?int $actorId, string $source = 'MANUAL'): int
+    {
+        $input = new Input($data);
+        $status = EquipmentStatus::tryFrom((string) $input->choice('status', array_map(static fn($s) => $s->value, EquipmentStatus::cases()))) ?? EquipmentStatus::NaoInstalado;
+        $values = $this->validate($input, $status);
+        $now = Time::toDb($this->clock->now());
+        $type = EquipmentCatalog::get($values['type_code']) ?? throw new \LogicException('tipo validado');
+
+        return $this->db->transaction(function () use ($values, $status, $now, $type, $actorId, $source): int {
+            $row = $values + [
+                'code' => $this->equipment->nextCode($type->prefix),
+                'status' => $status->value,
+                'status_changed_at' => $now,
+                'last_seen_at' => $status->expectsSignal() ? $now : null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+            $id = $this->persist(fn() => $this->equipment->insert($row));
+            $this->history->record('EQUIPAMENTO', $id, 'CADASTRO', $actorId, "Cadastro de {$type->label} {$row['code']} ({$status->label()}).", ['valores' => array_intersect_key($row, array_flip(self::TRACKED))], $source);
+            $this->alerts->reconcile();
+
+            return $id;
+        });
+    }
+
+    /** @param array<string, mixed> $data campos do formulário, incluindo "version" lido ao abrir o formulário */
+    public function update(int $id, array $data, int $actorId): void
+    {
+        $input = new Input($data);
+        $version = $input->int('version', 1, PHP_INT_MAX);
+        $current = $this->equipment->find($id) ?? throw new NotFound('Equipamento não encontrado.');
+        if ($current['archived_at'] !== null) {
+            throw new RuleViolation('Equipamento arquivado não pode ser editado.');
+        }
+        $values = $this->validate($input, EquipmentStatus::from($current['status']));
+
+        $this->db->transaction(function () use ($id, $version, $values, $current, $actorId): void {
+            $saved = $this->persist(fn() => $this->equipment->updateVersioned($id, (int) $version, $values + ['updated_at' => Time::toDb($this->clock->now())]));
+            if (!$saved) {
+                throw new ConcurrencyConflict('Outra pessoa alterou este equipamento depois que você abriu o formulário. Recarregue para ver a versão atual.');
+            }
+            $changes = History::diff(array_intersect_key($current, array_flip(self::TRACKED)), $values);
+            if ($changes !== []) {
+                $this->history->record('EQUIPAMENTO', $id, 'ALTERACAO', $actorId, 'Cadastro alterado: ' . implode(', ', array_keys($changes)) . '.', ['alteracoes' => $changes]);
+            }
+        });
+    }
+
+    public function changeStatus(int $id, string $target, string $note, int $actorId): void
+    {
+        $status = EquipmentStatus::tryFrom($target) ?? throw new ValidationFailed(['status' => 'Situação inválida.']);
+        $note = trim($note);
+        if ($note === '' || mb_strlen($note) > 300) {
+            throw new ValidationFailed(['note' => 'Descreva o motivo (até 300 caracteres).']);
+        }
+        $this->db->transaction(function () use ($id, $status, $note, $actorId): void {
+            $current = $this->equipment->lock($id) ?? throw new NotFound('Equipamento não encontrado.');
+            $this->applyStatus($current, $status, $note, $actorId, 'MANUAL');
+            $this->alerts->reconcile();
+        });
+    }
+
+    /**
+     * Aplica uma transição de situação já dentro de transação, com histórico antes/depois.
+     * Usado também pelas ordens de manutenção (início e conclusão da intervenção).
+     *
+     * @param array<string, mixed> $current linha bloqueada do equipamento
+     */
+    public function applyStatus(array $current, EquipmentStatus $target, string $note, ?int $actorId, string $source): void
+    {
+        if ($current['archived_at'] !== null) {
+            throw new RuleViolation('Equipamento arquivado não muda de situação.');
+        }
+        $from = EquipmentStatus::from($current['status']);
+        if ($from === $target) {
+            return;
+        }
+        if (!$from->canTransitionTo($target)) {
+            throw new RuleViolation("Transição não permitida: {$from->label()} → {$target->label()}.");
+        }
+        $now = Time::toDb($this->clock->now());
+        $changes = ['status' => $target->value, 'status_changed_at' => $now, 'updated_at' => $now];
+        if ($target === EquipmentStatus::Operacional && $current['location_kind'] === 'PLANEJADO') {
+            // Instalação concluída: a posição planejada passa a ser a de instalação.
+            $changes['location_kind'] = 'INSTALADO';
+            $changes['installed_on'] = Time::localDate($this->clock->now());
+        }
+        if ($target->expectsSignal()) {
+            $changes['last_seen_at'] = $now;
+        }
+        $this->equipment->updateState((int) $current['id'], $changes);
+        $this->history->record('EQUIPAMENTO', (int) $current['id'], 'SITUACAO', $actorId, "{$from->label()} → {$target->label()}: {$note}", [
+            'de' => $from->value, 'para' => $target->value, 'motivo' => $note,
+        ], $source);
+    }
+
+    public function archive(int $id, string $reason, int $actorId): void
+    {
+        $reason = trim($reason);
+        if ($reason === '' || mb_strlen($reason) > 300) {
+            throw new ValidationFailed(['reason' => 'Informe o motivo do arquivamento (até 300 caracteres).']);
+        }
+        $this->db->transaction(function () use ($id, $reason, $actorId): void {
+            $current = $this->equipment->lock($id) ?? throw new NotFound('Equipamento não encontrado.');
+            if ($current['archived_at'] !== null) {
+                throw new RuleViolation('Equipamento já está arquivado.');
+            }
+            $now = Time::toDb($this->clock->now());
+            $this->equipment->updateState($id, ['archived_at' => $now, 'updated_at' => $now]);
+            $this->history->record('EQUIPAMENTO', $id, 'ARQUIVAMENTO', $actorId, "Arquivado: {$reason}", ['motivo' => $reason]);
+            $this->alerts->reconcile();
+        });
+    }
+
+    /**
+     * Valida os campos do formulário (criação e edição) e devolve os valores prontos para gravar.
+     *
+     * @return array<string, mixed>
+     */
+    private function validate(Input $input, EquipmentStatus $status): array
+    {
+        $typeCode = $input->choice('type_code', array_keys(EquipmentCatalog::all()));
+        $type = $typeCode === null ? null : EquipmentCatalog::get($typeCode);
+        $values = [
+            'type_code' => $typeCode,
+            'manufacturer' => $input->text('manufacturer', 80),
+            'model' => $input->text('model', 80),
+            'serial_number' => $input->text('serial_number', 60, false),
+            'asset_tag' => $input->text('asset_tag', 30, false),
+            'agency_id' => $input->int('agency_id', 1, PHP_INT_MAX),
+            'cep' => $input->cep('cep'),
+            'street' => $input->text('street', 120, false),
+            'address_ref' => $input->text('address_ref', 160, false),
+            'region_id' => $input->int('region_id', 1, PHP_INT_MAX, false),
+            'lat' => $input->coordinate('lat', 'lat', false),
+            'lng' => $input->coordinate('lng', 'lng', false),
+            'location_kind' => $input->choice('location_kind', ['INSTALADO', 'PLANEJADO', 'BASE']),
+            'maint_interval_days' => $input->int('maint_interval_days', 7, 730, false),
+            'installed_on' => $input->date('installed_on', false),
+            'notes' => $input->text('notes', 500, false),
+        ];
+        if (($values['lat'] === null) !== ($values['lng'] === null)) {
+            $input->fail('lat', 'Informe latitude e longitude juntas, ou nenhuma (recurso fica em "sem localização").');
+        }
+        if ($values['street'] === null && $values['address_ref'] === null && $values['lat'] === null) {
+            $input->fail('street', 'Informe logradouro, referência ou coordenadas.');
+        }
+        if ($values['agency_id'] !== null && !$this->references->agencyExists($values['agency_id'])) {
+            $input->fail('agency_id', 'Órgão inexistente.');
+        }
+        if ($values['region_id'] !== null && !$this->references->regionExists($values['region_id'])) {
+            $input->fail('region_id', 'Bairro inexistente.');
+        }
+        if ($type !== null && $values['location_kind'] !== null) {
+            if ($type->mobile && $values['location_kind'] !== 'BASE') {
+                $input->fail('location_kind', 'Recurso móvel usa o endereço como base; a posição atual vem das observações.');
+            } elseif (!$type->mobile && $values['location_kind'] === 'BASE') {
+                $input->fail('location_kind', 'Equipamento fixo usa local instalado ou planejado.');
+            } elseif ($status === EquipmentStatus::NaoInstalado && $values['location_kind'] === 'INSTALADO') {
+                $input->fail('location_kind', 'Equipamento ainda não instalado: use "planejado".');
+            }
+        }
+        if ($type !== null) {
+            $specsInput = $input->raw('specs');
+            [$specs, $errors] = $type->validateSpecs(is_array($specsInput) ? $specsInput : []);
+            $input->merge($errors);
+            $values['specs'] = $specs;
+        }
+        $input->assertValid();
+
+        return $values;
+    }
+
+    /**
+     * Traduz violações de unicidade em erros de campo compreensíveis.
+     *
+     * @template T
+     * @param callable(): T $write
+     * @return T
+     */
+    private function persist(callable $write): mixed
+    {
+        try {
+            return $write();
+        } catch (ConstraintViolation $e) {
+            throw match ($e->constraint) {
+                'UX_EQUIPMENT_SERIAL' => new ValidationFailed(['serial_number' => 'Já existe equipamento deste fabricante com esta série.']),
+                'UQ_EQUIPMENT_ASSET_TAG' => new ValidationFailed(['asset_tag' => 'Patrimônio já cadastrado em outro equipamento.']),
+                'UQ_EQUIPMENT_CODE' => new ConcurrencyConflict('Outro cadastro simultâneo usou o mesmo código. Envie novamente.'),
+                default => $e,
+            };
+        }
+    }
+}

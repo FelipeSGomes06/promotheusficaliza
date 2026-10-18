@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Cancela automática">
+<title>Cancela automática — ilustração da categoria (não representa um modelo comercial)</title>
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2433"/><stop offset="1" stop-color="#2b3548"/></linearGradient>
+<radialGradient id="glow" cx=".8" cy=".15" r=".6"><stop offset="0" stop-color="#ff8a2b" stop-opacity=".35"/><stop offset="1" stop-color="#ff8a2b" stop-opacity="0"/></radialGradient></defs>
+<rect width="160" height="120" rx="14" fill="url(#sky)"/><rect width="160" height="120" rx="14" fill="url(#glow)"/>
+<path d="M0 96h160v10a14 14 0 0 1-14 14H14A14 14 0 0 1 0 106z" fill="#222b3b"/>
+<rect x="22" y="44" width="26" height="52" rx="6" fill="#e8edf5"/><rect x="27" y="52" width="16" height="10" rx="3" fill="#2e384b"/><circle cx="35" cy="73" r="4" fill="#3ddc97"/>
+<g transform="rotate(-8 46 50)"><rect x="44" y="45" width="104" height="10" rx="5" fill="#e8edf5"/>
+<path d="M58 45h10l-6 10h-10zM82 45h10l-6 10h-10zM106 45h10l-6 10h-10zM130 45h10l-6 10h-10z" fill="#ff5a4e"/></g>
+<circle cx="35" cy="34" r="6" fill="#ffc24b"/><path d="M31 96h8" stroke="#6d788c" stroke-width="6" stroke-linecap="round"/>
+</svg>

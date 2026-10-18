@@ -1,0 +1,15 @@
+# Para hospedagens Apache em que o diretório public/ desta aplicação é servido sob /promotheusfiscaliza
+# (requer AllowOverride FileInfo/Indexes/Options). No Docker deste projeto o equivalente está em docker/php/apache-site.conf.
+Options -Indexes -MultiViews
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Cross-Origin-Resource-Policy "same-origin"
+    <FilesMatch "\.(css|js|svg|woff2|png)$">
+        Header set Cache-Control "public, max-age=604800"
+    </FilesMatch>
+</IfModule>

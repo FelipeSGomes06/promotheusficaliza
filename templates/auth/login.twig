@@ -1,0 +1,20 @@
+{% extends 'layout.twig' %}
+{% import '_ui.twig' as ui %}
+{% block title %}Entrar{% endblock %}
+{% block content %}
+<div class="page">
+  <section class="card login-card" aria-labelledby="login-titulo">
+    <p class="eyebrow">Área de operação</p>
+    <h1 id="login-titulo">Entrar para editar</h1>
+    <p class="muted small">A consulta é pública. Cadastros, manutenção e alertas exigem uma conta criada na própria instalação (<code>php bin/fiscaliza user:create</code>). Não há cadastro público.</p>
+    {% if error is defined %}<div class="flash flash--error" role="alert">{{ error }}</div>{% endif %}
+    <form method="post" action="{{ url('/entrar') }}" class="stack">
+      {{ ui.csrf(app.csrf) }}
+      <input type="hidden" name="voltar" value="{{ back }}">
+      <div class="field"><label for="u">Usuário</label><input id="u" name="username" value="{{ username }}" autocomplete="username" required maxlength="40" autofocus></div>
+      <div class="field"><label for="p">Senha</label><input id="p" type="password" name="password" autocomplete="current-password" required maxlength="200"></div>
+      <button class="btn btn--primary" type="submit">Entrar</button>
+    </form>
+  </section>
+</div>
+{% endblock %}
