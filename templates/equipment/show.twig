@@ -1,177 +1,253 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
-{% block title %}{{ e.code }}{% endblock %}
+{% set place = [e.street, e.address_ref]|filter(v => v)|join(', ') %}
+{% set headline = (type ? type.shortLabel : e.type_code) ~ ' · ' ~ (place ?: (e.region_name ?? 'sem endereço cadastrado')) %}
+{% block title %}{{ headline }}{% endblock %}
 {% block content %}
+{% set running = orders|filter(o => o.state == 'EM_EXECUCAO')|first %}
+{% set scheduled = orders|filter(o => o.state == 'ABERTA') %}
+{% set urgent = scheduled|filter(o => o.priority == 'IMEDIATA' or o.due_date < today)|first %}
+{% set nextOrder = urgent ?: scheduled|sort((a, b) => (a.due_date ?? '') <=> (b.due_date ?? ''))|first %}
+{% set editable = app.user and not e.archived_at %}
+{% set eventLabels = {CADASTRO: 'Cadastro', ALTERACAO: 'Alteração do cadastro', SITUACAO: 'Situação', MANUTENCAO_ABERTA: 'Ordem aberta', MANUTENCAO_INICIADA: 'Intervenção iniciada', MANUTENCAO_CONCLUIDA: 'Ordem concluída', MANUTENCAO_CANCELADA: 'Ordem cancelada', ARQUIVAMENTO: 'Arquivamento', POSICAO: 'Posição'} %}
+{% set sourceLabels = {MANUAL: 'por pessoa', SIMULADOR: 'pelo simulador', SEMENTE: 'carga da demonstração', SISTEMA: 'pelo sistema'} %}
+{% set stateLabels = {ABERTA: 'Agendada', EM_EXECUCAO: 'Em execução', CONCLUIDA: 'Concluída', CANCELADA: 'Cancelada'} %}
+{% set resultLabels = {OPERACIONAL: 'operacional (testado)', FALHA: 'continuou com mau funcionamento', DESATIVADO: 'desativado'} %}
 <div class="page">
-  <div class="page-head">
+  <div class="detail-head">
+    <figure>
+      <img src="{{ app.base }}/assets/img/miniaturas/{{ e.type_code|lower }}.svg" alt="" width="168" height="126">
+      <figcaption>Ilustração da categoria — não representa o modelo {{ e.model }}.</figcaption>
+    </figure>
     <div>
-      <p class="eyebrow"><a href="{{ url('/equipamentos') }}">Equipamentos</a> · {{ type.label ?? e.type_code }}</p>
-      <h1>{{ e.code }} {{ ui.equipment_status(e.status) }}</h1>
-      <p>{{ e.manufacturer }} {{ e.model }} · {{ e.agency_name }}{% if e.archived_at %} · <span class="tag tag--warn">Arquivado em {{ e.archived_at|local_dt }}</span>{% endif %}</p>
-    </div>
-    {% if app.user and not e.archived_at %}
-      <div class="btn-row">
-        <a class="btn" href="{{ url('/equipamentos/' ~ e.id ~ '/editar') }}">{{ ui.icon('i-edit') }}Editar cadastro</a>
-        <a class="btn btn--ghost" href="{{ url('/', {categoria: [e.type_code]}) }}">{{ ui.icon('i-map') }}Ver na central</a>
+      <p class="crumbs"><a href="{{ url('/equipamentos') }}">Equipamentos</a> · {{ type.label ?? e.type_code }}</p>
+      <h1>{{ headline }}</h1>
+      <p class="muted"><span class="code-tag">{{ e.code }}</span> {{ e.manufacturer }} {{ e.model }} · {{ e.agency_name }}</p>
+      <div class="state">
+        {{ ui.equipment_status(e.status) }}
+        {{ ui.freshness(freshness.value, e.last_seen_at) }}
+        {% if e.archived_at %}<span class="tag tag--warn">Arquivado em {{ e.archived_at|local_dt }}: fora da operação; histórico preservado</span>{% endif %}
       </div>
-    {% endif %}
+    </div>
   </div>
 
-  <div class="grid-2">
+  <div class="split section">
     <div class="stack">
-      <section class="card hero-card" aria-labelledby="ficha">
-        <figure>
-          <img src="{{ app.base }}/assets/img/miniaturas/{{ e.type_code|lower }}.svg" alt="Ilustração: {{ type.label ?? e.type_code }}" width="200" height="150">
-          <figcaption>Ilustração da categoria — não é o modelo comercial {{ e.model }}.</figcaption>
-        </figure>
-        <div>
-          <h2 id="ficha">Ficha</h2>
-          <dl class="facts">
-            <dt>Código interno</dt><dd class="mono">{{ e.code }}</dd>
-            <dt>Patrimônio</dt><dd>{{ e.asset_tag ?? '—' }}</dd>
-            <dt>Série do fabricante</dt><dd>{{ e.serial_number ?? 'desconhecida' }}</dd>
-            <dt>Marca / modelo</dt><dd>{{ e.manufacturer }} / {{ e.model }}</dd>
-            <dt>Órgão</dt><dd>{{ e.agency_name }}</dd>
-            <dt>Endereço</dt><dd>{{ e.street ?? '—' }}{{ e.address_ref ? ' · ' ~ e.address_ref : '' }}<br><span class="small muted">{{ e.region_name ?? 'sem bairro' }} · {{ e.city }}/{{ e.uf }}{{ e.cep ? ' · CEP ' ~ e.cep : '' }}</span></dd>
-            <dt>{{ type.mobile ? 'Base' : (e.location_kind == 'PLANEJADO' ? 'Local planejado' : 'Local de instalação') }}</dt>
-            <dd>{{ e.lat is null ? 'sem coordenadas (pendente)' : e.lat|number_format(6, ',', '') ~ ', ' ~ e.lng|number_format(6, ',', '') }}</dd>
-            {% if type.mobile %}<dt>Última posição</dt><dd>{{ e.pos_lat is null ? 'sem observação' : e.pos_lat|number_format(6, ',', '') ~ ', ' ~ e.pos_lng|number_format(6, ',', '') ~ ' · ' ~ e.pos_observed_at|local_dt }}</dd>{% endif %}
-            <dt>Último sinal</dt><dd>{{ e.last_seen_at|local_dt('d/m/Y H:i:s') }}</dd>
-            <dt>Instalado em</dt><dd>{{ e.installed_on|br_date }}</dd>
-            <dt>Preventiva</dt><dd>{{ e.maint_interval_days ? 'a cada ' ~ e.maint_interval_days ~ ' dias' : 'sem periodicidade' }}</dd>
-          </dl>
-        </div>
-      </section>
+      {# Próxima ação: uma só, a mais importante agora. #}
+      {% if e.archived_at %}
+        <section class="next-action next-action--calm" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2><p class="next-action__what">Nenhuma: equipamento arquivado.</p><p class="muted">Ele não aparece na visão geral nem recebe ordens. Ordens, alertas e histórico continuam consultáveis abaixo.</p></section>
+      {% elseif running %}
+        <section class="next-action" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
+          <p class="next-action__what">Concluir a intervenção da ordem #{{ running.id }}</p>
+          <p class="muted">Em execução desde {{ running.started_at|local_dt }}. Ao concluir, a situação que você informar passa a valer para o equipamento — concluir não prova que ele voltou a funcionar.</p>
+          {% if editable %}<a class="btn btn--primary" href="#ordem-{{ running.id }}">Ir para a conclusão</a>{% else %}<a class="btn" href="{{ url('/entrar', {voltar: app.base ~ app.path}) }}">Entrar para registrar</a>{% endif %}
+        </section>
+      {% elseif urgent %}
+        <section class="next-action next-action--urgent" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
+          <p class="next-action__what">Iniciar a ordem #{{ urgent.id }}: {{ urgent.kind == 'PREVENTIVA' ? 'preventiva' : 'corretiva' }} {{ urgent.priority == 'IMEDIATA' ? 'imediata' : 'vencida em ' ~ urgent.due_date|br_date }}</p>
+          <p class="muted">Motivo: {{ urgent.reason }}</p>
+          {% if editable %}<a class="btn btn--primary" href="#ordem-{{ urgent.id }}">Ver a ordem</a>{% else %}<a class="btn" href="{{ url('/entrar', {voltar: app.base ~ app.path}) }}">Entrar para registrar</a>{% endif %}
+        </section>
+      {% elseif e.status == 'FALHA' %}
+        <section class="next-action next-action--urgent" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
+          <p class="next-action__what">Abrir uma ordem corretiva</p>
+          <p class="muted">Está em mau funcionamento e não há ordem aberta.</p>
+          {% if editable %}<a class="btn btn--primary" href="#nova-ordem">Abrir ordem</a>{% else %}<a class="btn" href="{{ url('/entrar', {voltar: app.base ~ app.path}) }}">Entrar para registrar</a>{% endif %}
+        </section>
+      {% elseif e.status == 'NAO_INSTALADO' %}
+        <section class="next-action" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
+          <p class="next-action__what">Registrar a instalação quando ela acontecer</p>
+          <p class="muted">Ao mudar a situação para "Operacional", o local planejado passa a ser o local de instalação.</p>
+          {% if editable %}<a class="btn" href="#mais-acoes">Mudar situação</a>{% endif %}
+        </section>
+      {% else %}
+        <section class="next-action next-action--calm" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
+          <p class="next-action__what">{{ nextOrder ? 'Próxima manutenção: ordem #' ~ nextOrder.id ~ (nextOrder.due_date ? ', programada para ' ~ nextOrder.due_date|br_date : '') : 'Nada pendente agora' }}</p>
+          <p class="muted">{{ nextOrder ? 'Agendar não tira o equipamento de operação.' : 'Sem ordens abertas. Acompanhe o sinal e as revisões recomendadas.' }}</p>
+        </section>
+      {% endif %}
 
-      <section class="card" aria-labelledby="caracteristicas">
-        <h2 id="caracteristicas">Características do tipo</h2>
-        {% if specs is empty %}<p class="muted">Sem características registradas.</p>{% else %}
-        <dl class="facts">{% for s in specs %}<dt>{{ s.label }}</dt><dd>{{ s.value }}</dd>{% endfor %}</dl>{% endif %}
-        {% if e.notes %}<p class="small muted">Observações: {{ e.notes }}</p>{% endif %}
-      </section>
-
-      <section class="card" id="manutencao" aria-labelledby="manut-titulo">
+      <section class="section" id="manutencao" aria-labelledby="manut-titulo">
         <h2 id="manut-titulo">{{ ui.icon('i-wrench') }} Manutenção</h2>
-        {% for o in orders %}
-          <div class="order">
-            <div class="order__head">
-              <strong>#{{ o.id }} · {{ o.kind|capitalize }} {{ o.priority|lower }}</strong>
-              <span class="btn-row">
-                {% if o.state in ['ABERTA', 'EM_EXECUCAO'] %}
-                  {% if o.priority == 'IMEDIATA' %}{{ ui.status('IMEDIATA', 'Imediata') }}{% elseif o.due_date < today %}{{ ui.status('VENCIDA', 'Vencida ' ~ o.due_date|br_date) }}{% else %}{{ ui.status('PROXIMA', 'Para ' ~ o.due_date|br_date) }}{% endif %}
-                {% endif %}
-                <span class="tag">{{ o.state|replace({'_': ' '})|lower }}</span>
-              </span>
-            </div>
-            <p class="small">{{ o.reason }}</p>
-            <p class="small faint">Aberta {{ o.opened_at|local_dt }}{{ o.opened_by_name ? ' por ' ~ o.opened_by_name : ' (' ~ o.source|lower ~ ')' }}{% if o.started_at %} · iniciada {{ o.started_at|local_dt }}{% endif %}{% if o.closed_at %} · encerrada {{ o.closed_at|local_dt }}{{ o.closed_by_name ? ' por ' ~ o.closed_by_name }}{% endif %}</p>
-            {% if o.resolution %}<p class="small muted">Resolução: {{ o.resolution }}{{ o.result_status ? ' → ' ~ o.result_status|lower }}</p>{% endif %}
-            {% if app.user and not e.archived_at %}
-              {% if o.state == 'ABERTA' %}
-                <div class="btn-row">
-                  <form method="post" action="{{ url('/manutencoes/' ~ o.id ~ '/iniciar') }}">{{ ui.csrf(app.csrf) }}<input type="hidden" name="voltar" value="/equipamentos/{{ e.id }}#manutencao"><button class="btn btn--sm" type="submit">Iniciar intervenção</button></form>
-                  <details><summary>Cancelar ordem</summary>
-                    <form method="post" action="{{ url('/manutencoes/' ~ o.id ~ '/cancelar') }}" data-confirm="Cancelar a ordem #{{ o.id }}?">{{ ui.csrf(app.csrf) }}<input type="hidden" name="voltar" value="/equipamentos/{{ e.id }}#manutencao">
-                      <div class="field"><label for="cr-{{ o.id }}">Motivo</label><input id="cr-{{ o.id }}" name="reason" required maxlength="500"></div><button class="btn btn--danger btn--sm" type="submit">Cancelar ordem</button></form>
-                  </details>
-                </div>
-              {% elseif o.state == 'EM_EXECUCAO' %}
-                <details open><summary>Concluir intervenção</summary>
-                  <form method="post" action="{{ url('/manutencoes/' ~ o.id ~ '/concluir') }}">{{ ui.csrf(app.csrf) }}<input type="hidden" name="voltar" value="/equipamentos/{{ e.id }}#manutencao">
-                    <div class="field"><label for="res-{{ o.id }}">O que foi feito</label><textarea id="res-{{ o.id }}" name="resolution" required maxlength="500"></textarea></div>
-                    <div class="field"><label for="rs-{{ o.id }}">Situação do equipamento após a intervenção</label>
-                      <select id="rs-{{ o.id }}" name="result_status" required><option value="">Escolha — concluir não prova que voltou a funcionar</option><option value="OPERACIONAL">Operacional (testado)</option><option value="FALHA">Continua com mau funcionamento</option><option value="DESATIVADO">Desativado</option></select></div>
-                    <button class="btn btn--primary btn--sm" type="submit">Concluir ordem</button>
+        {% set openOrders = orders|filter(o => o.state in ['ABERTA', 'EM_EXECUCAO']) %}
+        {% set closedOrders = orders|filter(o => o.state not in ['ABERTA', 'EM_EXECUCAO']) %}
+        {% if orders is empty %}<p class="muted">Nenhuma ordem registrada.</p>{% else %}
+        <ul class="rows">
+          {% for o in openOrders|merge(closedOrders|slice(0, 3)) %}
+            <li class="order" id="ordem-{{ o.id }}">
+              <div class="order__head">
+                <span class="order__title">Ordem #{{ o.id }} · {{ o.kind == 'PREVENTIVA' ? 'Preventiva' : 'Corretiva' }} {{ o.priority == 'IMEDIATA' ? 'imediata' : (o.due_date ? 'para ' ~ o.due_date|br_date : '') }}</span>
+                <span class="btn-row">{{ ui.status(o.state, stateLabels[o.state] ?? o.state) }}{% if o.state == 'ABERTA' and (o.priority == 'IMEDIATA' or o.due_date < today) %}{{ ui.status(o.priority == 'IMEDIATA' ? 'IMEDIATA' : 'VENCIDA', o.priority == 'IMEDIATA' ? 'Imediata' : 'Vencida') }}{% endif %}</span>
+              </div>
+              <p class="order__reason">{{ o.reason }}</p>
+              <p class="order__meta">Aberta {{ o.opened_at|local_dt }}{{ o.opened_by_name ? ' por ' ~ o.opened_by_name : ' (' ~ (sourceLabels[o.source] ?? o.source|lower) ~ ')' }}{% if o.started_at %} · iniciada {{ o.started_at|local_dt }}{% endif %}{% if o.closed_at %} · encerrada {{ o.closed_at|local_dt }}{{ o.closed_by_name ? ' por ' ~ o.closed_by_name }}{% endif %}</p>
+              {% if o.resolution %}<p class="order__meta">{{ o.state == 'CANCELADA' ? 'Motivo do cancelamento' : 'O que foi feito' }}: {{ o.resolution }}{% if o.result_status %} · resultado: {{ resultLabels[o.result_status] ?? o.result_status|lower }}{% endif %}</p>{% endif %}
+              {% if editable and o.state == 'ABERTA' %}
+                {% if running %}
+                  <p class="order__effect">Para iniciar, conclua antes a ordem #{{ running.id }}: só uma intervenção fica em execução por equipamento.</p>
+                {% else %}
+                  <form method="post" action="{{ url('/manutencoes/' ~ o.id ~ '/iniciar') }}">{{ ui.csrf(app.csrf) }}<input type="hidden" name="voltar" value="/equipamentos/{{ e.id }}#manutencao">
+                    <button class="btn btn--small {{ urgent and urgent.id == o.id ? 'btn--primary' }}" type="submit">Iniciar intervenção</button>
+                    <span class="order__effect">O equipamento passa para "Em manutenção" até a conclusão.</span>
                   </form>
+                {% endif %}
+                <details><summary>Cancelar esta ordem</summary>
+                  <form method="post" action="{{ url('/manutencoes/' ~ o.id ~ '/cancelar') }}" class="complete-form" data-confirm="Cancelar a ordem #{{ o.id }}? Ela fica no histórico como cancelada.">{{ ui.csrf(app.csrf) }}<input type="hidden" name="voltar" value="/equipamentos/{{ e.id }}#manutencao">
+                    <div class="field"><label for="cr-{{ o.id }}">Por que cancelar?</label><input id="cr-{{ o.id }}" name="reason" required maxlength="500"></div>
+                    <div><button class="btn btn--danger btn--small" type="submit">Cancelar ordem</button></div></form>
                 </details>
+              {% elseif editable and o.state == 'EM_EXECUCAO' %}
+                <form method="post" action="{{ url('/manutencoes/' ~ o.id ~ '/concluir') }}" class="complete-form">{{ ui.csrf(app.csrf) }}<input type="hidden" name="voltar" value="/equipamentos/{{ e.id }}#manutencao">
+                  <div class="field"><label for="res-{{ o.id }}">O que foi feito</label><textarea id="res-{{ o.id }}" name="resolution" required maxlength="500"></textarea></div>
+                  <div class="field"><label for="rs-{{ o.id }}">Como o equipamento ficou?</label>
+                    <span class="hint" id="rs-{{ o.id }}-h">Esta situação passa a valer para o equipamento. Concluir não prova que voltou a funcionar: informe o resultado real.</span>
+                    <select id="rs-{{ o.id }}" name="result_status" required aria-describedby="rs-{{ o.id }}-h"><option value="">Escolha o resultado</option><option value="OPERACIONAL">Operacional (testado e funcionando)</option><option value="FALHA">Continua com mau funcionamento</option><option value="DESATIVADO">Desativado (retirado de uso)</option></select></div>
+                  <div><button class="btn btn--primary" type="submit">Concluir ordem</button></div>
+                </form>
               {% endif %}
-            {% endif %}
-          </div>
-        {% else %}
-          <p class="muted">Nenhuma ordem registrada.</p>
-        {% endfor %}
-        {% if app.user and not e.archived_at %}
-          <details class="order"><summary>Abrir ordem de manutenção</summary>
-            <form method="post" action="{{ url('/equipamentos/' ~ e.id ~ '/manutencoes') }}" class="form-grid">{{ ui.csrf(app.csrf) }}
-              <div class="field"><label for="mk">Tipo</label><select id="mk" name="kind"><option value="CORRETIVA">Corretiva</option><option value="PREVENTIVA">Preventiva</option></select></div>
-              <div class="field"><label for="mp">Prioridade</label><select id="mp" name="priority"><option value="IMEDIATA">Imediata</option><option value="PROGRAMADA">Programada (exige data)</option></select></div>
-              <div class="field"><label for="md">Data programada</label><input id="md" type="date" name="due_date" min="{{ today }}"><span class="help">Data local de Marília. Agendar não tira o equipamento de operação.</span></div>
+            </li>
+          {% endfor %}
+        </ul>
+        {% if closedOrders|length > 3 %}
+          <details class="more-actions"><summary>Ver ordens encerradas mais antigas ({{ closedOrders|length - 3 }})</summary>
+            <div class="table-wrap"><table class="data">
+              <thead><tr><th scope="col">Ordem</th><th scope="col">Resultado</th><th scope="col">Encerrada</th></tr></thead>
+              <tbody>{% for o in closedOrders|slice(3) %}<tr><td>#{{ o.id }} {{ o.kind == 'PREVENTIVA' ? 'preventiva' : 'corretiva' }}<br><span class="hint">{{ o.reason }}</span></td><td>{{ o.state == 'CANCELADA' ? 'Cancelada' : 'Concluída: ' ~ (resultLabels[o.result_status] ?? o.result_status|lower) }}</td><td>{{ o.closed_at|local_dt }}</td></tr>{% endfor %}</tbody>
+            </table></div>
+          </details>
+        {% endif %}
+        {% endif %}
+        {% if editable %}
+          <details class="more-actions" id="nova-ordem" {{ e.status == 'FALHA' and not running and not urgent ? 'open' }}><summary>Abrir ordem de manutenção</summary>
+            <form method="post" action="{{ url('/equipamentos/' ~ e.id ~ '/manutencoes') }}" class="panel form-grid">{{ ui.csrf(app.csrf) }}
+              <div class="field"><label for="mk">Tipo</label><select id="mk" name="kind"><option value="CORRETIVA">Corretiva (consertar)</option><option value="PREVENTIVA">Preventiva (revisar)</option></select></div>
+              <div class="field"><label for="mp">Quando</label><select id="mp" name="priority"><option value="IMEDIATA">Imediata</option><option value="PROGRAMADA">Programada (escolha a data)</option></select></div>
+              <div class="field"><label for="md">Data programada <span class="optional">(só para programada)</span></label><input id="md" type="date" name="due_date" min="{{ today }}"><span class="hint">Data local de Marília. Agendar não tira o equipamento de operação.</span></div>
               <div class="field span-2"><label for="mr">Motivo</label><input id="mr" name="reason" required maxlength="300"></div>
-              <div class="span-2"><button class="btn btn--primary btn--sm" type="submit">Abrir ordem</button></div>
+              <div class="span-2"><button class="btn btn--primary" type="submit">Abrir ordem</button></div>
             </form>
           </details>
         {% endif %}
       </section>
+
+      <section class="section" aria-labelledby="historico-titulo">
+        <h2 id="historico-titulo">{{ ui.icon('i-clock') }} Histórico</h2>
+        <p class="hint">Cada registro mostra quando aconteceu e quem registrou. Linha tracejada: registro que <strong>não alterou</strong> a situação atual — o motivo aparece no item (evento atrasado, situação definida por pessoa, equipamento arquivado ou nenhuma mudança).</p>
+        {% for chunk in [events|slice(0, 12), events|slice(12)] %}
+        {% if loop.index == 2 and chunk is not empty %}<details class="more-actions"><summary>Ver registros mais antigos ({{ chunk|length }})</summary>{% endif %}
+        {% if loop.index == 1 or chunk is not empty %}
+        <ol class="timeline">
+          {% for ev in chunk %}
+            <li class="{{ ev.outcome == 'APLICADO' ? 'is-applied' : 'is-historical' }}">
+              <time datetime="{{ ev.occurred_at }}">{{ ev.occurred_at|local_dt('d/m/Y H:i') }}</time> · <strong>{{ eventLabels[ev.event_type] ?? ev.event_type|replace({'_': ' '})|lower }}</strong> <span class="small muted">{{ ev.actor_name ? 'por ' ~ ev.actor_name : (sourceLabels[ev.source] ?? ev.source|lower) }}</span>
+              <p>{{ ev.summary }}</p>
+              {% if ev.outcome == 'HISTORICO' %}<p class="why">Não alterou a situação atual{{ ev.payload.ignorado_porque is defined ? ': ' ~ ev.payload.ignorado_porque : '' }}. Recebido em {{ ev.received_at|local_dt('d/m H:i') }}.</p>{% endif %}
+            </li>
+          {% else %}<li>Sem registros.</li>{% endfor %}
+        </ol>
+        {% endif %}
+        {% if loop.index == 2 and chunk is not empty %}</details>{% endif %}
+        {% endfor %}
+      </section>
     </div>
 
     <div class="stack">
-      {% if app.user and not e.archived_at %}
-      <section class="card" aria-labelledby="situacao-titulo">
-        <h2 id="situacao-titulo">Mudar situação</h2>
-        <form method="post" action="{{ url('/equipamentos/' ~ e.id ~ '/situacao') }}">{{ ui.csrf(app.csrf) }}
-          <div class="field"><label for="ns">Nova situação</label>
-            <select id="ns" name="status" required><option value="">Escolha…</option>{% for t in transitions %}<option value="{{ t.value }}">{{ t.label }}</option>{% endfor %}</select>
-            <span class="help">Só aparecem transições permitidas a partir de "{{ status.label }}".</span></div>
-          <div class="field"><label for="nn">Motivo</label><input id="nn" name="note" required maxlength="300"></div>
-          <button class="btn btn--sm" type="submit">Registrar</button>
-        </form>
-        <hr class="faint">
-        <form method="post" action="{{ url('/equipamentos/' ~ e.id ~ '/simular-falha') }}">{{ ui.csrf(app.csrf) }}
-          <button class="btn btn--sm btn--ghost" type="submit">{{ ui.icon('i-alert') }}Simular falha de telemetria (demonstração)</button>
-          <p class="small faint">Envia um evento fictício pelo mesmo caminho do simulador. Estados administrativos prevalecem.</p>
-        </form>
+      <section class="panel" aria-labelledby="onde">
+        <h2 id="onde">{{ ui.icon('i-pin') }} Onde está</h2>
+        <dl class="facts">
+          <dt>Endereço</dt><dd>{{ place ?: 'não cadastrado' }}</dd>
+          <dt>Bairro</dt><dd>{{ e.region_name ?? 'sem bairro' }} · {{ e.city }}/{{ e.uf }}{{ e.cep ? ' · CEP ' ~ e.cep }}</dd>
+          {% if type and type.mobile %}
+            <dt>Base</dt><dd>{{ e.lat is null ? 'sem coordenadas' : 'endereço acima (onde o recurso fica guardado)' }}</dd>
+            <dt>Última posição</dt><dd>{{ e.pos_lat is null ? 'nenhuma recebida' : 'recebida ' ~ e.pos_observed_at|local_dt }}{% if e.pos_lat is not null %} · {{ ui.freshness(position_freshness.value, e.pos_observed_at, 'Posição') }}{% endif %}</dd>
+          {% else %}
+            <dt>Local</dt><dd>{{ e.lat is null ? 'sem coordenadas: aparece só na lista' : (e.location_kind == 'PLANEJADO' ? 'planejado (ainda não instalado)' : 'local de instalação') }}</dd>
+          {% endif %}
+        </dl>
+        {% if e.lat is not null and not e.archived_at %}<p><a class="btn btn--small" href="{{ url('/', {selecionar: 'EQUIPAMENTO:' ~ e.id}) }}">{{ ui.icon('i-map') }}Ver no mapa</a></p>{% endif %}
+        {% if e.lat is not null %}<p class="hint">Coordenadas: {{ e.lat|number_format(6, ',', '') }}, {{ e.lng|number_format(6, ',', '') }}</p>{% endif %}
       </section>
-      {% endif %}
+
+      <section class="panel" aria-labelledby="cadastro">
+        <h2 id="cadastro">Cadastro</h2>
+        <dl class="facts">
+          <dt>Tipo</dt><dd>{{ type.label ?? e.type_code }}</dd>
+          <dt>Marca e modelo</dt><dd>{{ e.manufacturer }} {{ e.model }} <span class="hint">(fictícios)</span></dd>
+          <dt>Série</dt><dd>{{ e.serial_number ?? 'desconhecida' }}</dd>
+          <dt>Patrimônio</dt><dd>{{ e.asset_tag ?? '—' }}</dd>
+          <dt>Órgão</dt><dd>{{ e.agency_name }}</dd>
+          <dt>Instalado em</dt><dd>{{ e.installed_on|br_date }}</dd>
+          <dt>Preventiva</dt><dd>{{ e.maint_interval_days ? 'a cada ' ~ e.maint_interval_days ~ ' dias' : 'sem periodicidade' }}</dd>
+          {% for s in specs %}<dt>{{ s.label }}</dt><dd>{{ s.value }}</dd>{% endfor %}
+        </dl>
+        {% if e.notes %}<p class="hint">Observações: {{ e.notes }}</p>{% endif %}
+        {% if editable %}<p><a class="btn btn--small" href="{{ url('/equipamentos/' ~ e.id ~ '/editar') }}">{{ ui.icon('i-edit') }}Editar cadastro</a></p>{% endif %}
+      </section>
 
       {% if analysis %}
-      <section class="card" aria-labelledby="antecipacao-titulo">
-        <h2 id="antecipacao-titulo">{{ ui.icon('i-chart') }} Atenção preventiva (7 dias)</h2>
-        <p>{{ ui.status(analysis.attention, analysis.attention|capitalize) }} {% if analysis.score is not null %}<span class="muted">índice {{ analysis.score }}/100 (heurístico, não é probabilidade)</span>{% endif %}</p>
+      <section class="panel" aria-labelledby="revisao">
+        <h2 id="revisao">{{ ui.icon('i-chart') }} Revisão recomendada (7 dias)</h2>
+        {% set attentionLabels = {ALTA: 'Revisar primeiro', MODERADA: 'Acompanhar', BAIXA: 'Sem destaque', INSUFICIENTE: 'Histórico curto', CORRETIVA: 'Já indisponível', NAO_AVALIADO: 'Não avaliado'} %}
+        <p>{{ ui.status(analysis.attention, attentionLabels[analysis.attention] ?? analysis.attention|capitalize) }}{% if analysis.score is not null %} <span class="hint">prioridade sugerida {{ analysis.score }}/100 — índice heurístico, não é probabilidade</span>{% endif %}</p>
         <ul class="factor-list">{% for f in analysis.factors %}<li>{{ f.label }}{% if f.points %} (+{{ f.points }}){% endif %}</li>{% else %}<li>Nenhum fator de risco no histórico.</li>{% endfor %}
           {% for a in analysis.admin_flags %}<li class="muted">{{ a }}</li>{% endfor %}</ul>
-        <p class="small muted">{{ analysis.recommendation }} Calculado em {{ analysis.as_of|local_dt }}. <a href="{{ url('/antecipacao') }}">Método e limitações</a></p>
+        <p class="hint">{{ analysis.recommendation }} Calculado em {{ analysis.as_of|local_dt }} sobre histórico sintético. <a href="{{ url('/antecipacao') }}">Como funciona</a></p>
       </section>
       {% endif %}
 
-      <section class="card" aria-labelledby="alertas-titulo">
+      <section class="panel" aria-labelledby="alertas-titulo">
         <h2 id="alertas-titulo">{{ ui.icon('i-alert') }} Alertas</h2>
+        {% set alertStates = {ABERTO: 'Aberto', RECONHECIDO: 'Ciência registrada', RESOLVIDO: 'Resolvido'} %}
         {% for a in alerts %}
-          <div class="alert-item alert-item--{{ a.severity }}">
-            <div class="alert-item__top">{{ ui.status(a.state == 'RESOLVIDO' ? 'BAIXA' : a.severity, a.state|capitalize) }}<span class="small faint">{{ a.opened_at|local_dt }}</span></div>
+          <div class="brief__alert brief__alert--{{ a.severity }}">
+            <p>{{ ui.status(a.state == 'RESOLVIDO' ? 'RESOLVIDO' : a.severity, alertStates[a.state] ?? a.state) }} <span class="hint">{{ a.opened_at|local_dt }}</span></p>
             <p>{{ a.message }}</p>
-            <span class="small muted">{% if a.state == 'RESOLVIDO' %}Resolvido automaticamente em {{ a.resolved_at|local_dt }}{% elseif a.state == 'RECONHECIDO' %}Reconhecido por {{ a.ack_by_name }} em {{ a.ack_at|local_dt }}{% endif %}</span>
+            <span class="hint">{% if a.state == 'RESOLVIDO' %}Resolvido automaticamente em {{ a.resolved_at|local_dt }}, quando a causa acabou.{% elseif a.state == 'RECONHECIDO' %}Ciência registrada por {{ a.ack_by_name }} em {{ a.ack_at|local_dt }}; resolve sozinho quando a causa acabar.{% else %}Registrar ciência não resolve a causa.{% endif %}</span>
             {% if app.user and a.state == 'ABERTO' %}
-              <form method="post" action="{{ url('/alertas/' ~ a.id ~ '/reconhecer') }}">{{ ui.csrf(app.csrf) }}<input type="hidden" name="voltar" value="/equipamentos/{{ e.id }}"><button class="btn btn--sm" type="submit">Reconhecer</button></form>
+              <form method="post" action="{{ url('/alertas/' ~ a.id ~ '/reconhecer') }}">{{ ui.csrf(app.csrf) }}<input type="hidden" name="voltar" value="/equipamentos/{{ e.id }}"><button class="btn btn--small" type="submit">Registrar ciência</button></form>
             {% endif %}
           </div>
         {% else %}<p class="muted">Nenhum alerta registrado.</p>{% endfor %}
       </section>
 
-      <section class="card" aria-labelledby="historico-titulo">
-        <h2 id="historico-titulo">{{ ui.icon('i-clock') }} Histórico</h2>
-        <p class="small faint">Eventos tracejados ficaram só no histórico (atrasados ou sobrepostos por estado administrativo).</p>
-        <ol class="timeline">
-          {% for ev in events %}
-            <li class="{{ ev.outcome == 'APLICADO' ? 'is-applied' : 'is-historical' }}">
-              <time datetime="{{ ev.occurred_at }}">{{ ev.occurred_at|local_dt('d/m/Y H:i') }}</time>
-              <span class="tag">{{ ev.event_type|replace({'_': ' '})|lower }}</span>
-              <span class="tag">{{ ev.source|lower }}{{ ev.actor_name ? ' · ' ~ ev.actor_name }}</span>
-              {% if ev.outcome == 'HISTORICO' %}<span class="tag tag--warn">recebido {{ ev.received_at|local_dt('d/m H:i') }} · só histórico</span>{% endif %}
-              <p>{{ ev.summary }}</p>
-            </li>
-          {% else %}<li>Sem eventos.</li>{% endfor %}
-        </ol>
-      </section>
-
-      {% if app.user and not e.archived_at %}
-      <section class="card" aria-labelledby="arquivar-titulo">
-        <h2 id="arquivar-titulo">Arquivar</h2>
-        <p class="small muted">Retira da operação atual. O histórico, as ordens e os alertas continuam consultáveis.</p>
-        <form method="post" action="{{ url('/equipamentos/' ~ e.id ~ '/arquivar') }}" data-confirm="Arquivar {{ e.code }}? Ele sai da central, mas o histórico é preservado.">{{ ui.csrf(app.csrf) }}
-          <div class="field"><label for="ar">Motivo</label><input id="ar" name="reason" required maxlength="300"></div>
-          <button class="btn btn--danger btn--sm" type="submit">Arquivar equipamento</button>
-        </form>
-      </section>
+      {% if editable %}
+      <details class="panel more-actions" id="mais-acoes">
+        <summary>Mais ações: situação, simulação e arquivamento</summary>
+        <div class="stack">
+          <form method="post" action="{{ url('/equipamentos/' ~ e.id ~ '/situacao') }}" class="stack">{{ ui.csrf(app.csrf) }}
+            <h3>Mudar situação</h3>
+            {% if running %}
+              <p class="hint">Há uma intervenção em execução (ordem #{{ running.id }}): a situação será definida ao concluí-la.</p>
+            {% else %}
+              <div class="field"><label for="ns">Nova situação</label>
+                <select id="ns" name="status" required><option value="">Escolha…</option>{% for t in transitions %}<option value="{{ t.value }}">{{ t.label }}</option>{% endfor %}</select>
+                <span class="hint">Só aparecem as mudanças possíveis a partir de "{{ status.label }}". Fica no histórico com o motivo.</span></div>
+              <div class="field"><label for="nn">Motivo</label><input id="nn" name="note" required maxlength="300"></div>
+              <div><button class="btn btn--small" type="submit">Registrar mudança</button></div>
+            {% endif %}
+          </form>
+          <hr class="divider">
+          <form method="post" action="{{ url('/equipamentos/' ~ e.id ~ '/simular-falha') }}">{{ ui.csrf(app.csrf) }}
+            <h3>Simular falha de telemetria</h3>
+            <p class="hint">Recurso da demonstração: envia um evento fictício pelo mesmo caminho do simulador. Situações definidas por pessoas (manutenção, desativado, furtado, não instalado) prevalecem.</p>
+            <button class="btn btn--small" type="submit">{{ ui.icon('i-alert') }}Simular falha</button>
+          </form>
+          <hr class="divider">
+          <form method="post" action="{{ url('/equipamentos/' ~ e.id ~ '/arquivar') }}" class="stack" data-confirm="Arquivar este equipamento? Ele sai da operação; o histórico é preservado.">{{ ui.csrf(app.csrf) }}
+            <h3>Arquivar</h3>
+            <p class="hint">Retira da operação atual (some da visão geral e não recebe ordens). Histórico, ordens e alertas continuam consultáveis. Não há como desarquivar pela interface.</p>
+            {% if running %}
+              <p class="error">Não é possível arquivar com a intervenção da ordem #{{ running.id }} em execução: conclua-a informando o resultado real.</p>
+            {% else %}
+              <div class="field"><label for="ar">Motivo do arquivamento</label><input id="ar" name="reason" required maxlength="300"></div>
+              {% if scheduled is not empty %}
+                <div class="checks"><label><input type="checkbox" name="cancelar_agendadas" value="1" required> Cancelar também {{ scheduled|length == 1 ? 'a ordem agendada' : 'as ' ~ scheduled|length ~ ' ordens agendadas' }} ({% for o in scheduled %}#{{ o.id }}{{ not loop.last ? ', ' }}{% endfor %}), com este motivo</label></div>
+              {% endif %}
+              <div><button class="btn btn--danger btn--small" type="submit">Arquivar equipamento</button></div>
+            {% endif %}
+          </form>
+        </div>
+      </details>
       {% endif %}
     </div>
   </div>

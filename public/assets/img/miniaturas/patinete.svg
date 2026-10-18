@@ -1,11 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Patinete elétrico">
 <title>Patinete elétrico — ilustração da categoria (não representa um modelo comercial)</title>
-<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2433"/><stop offset="1" stop-color="#2b3548"/></linearGradient>
-<radialGradient id="glow" cx=".8" cy=".15" r=".6"><stop offset="0" stop-color="#ff8a2b" stop-opacity=".35"/><stop offset="1" stop-color="#ff8a2b" stop-opacity="0"/></radialGradient></defs>
-<rect width="160" height="120" rx="14" fill="url(#sky)"/><rect width="160" height="120" rx="14" fill="url(#glow)"/>
-<path d="M0 96h160v10a14 14 0 0 1-14 14H14A14 14 0 0 1 0 106z" fill="#222b3b"/>
-<path d="M98 22h18M106 22l-14 64" stroke="#e8edf5" stroke-width="6" stroke-linecap="round"/><path d="M40 86h54" stroke="#e8edf5" stroke-width="8" stroke-linecap="round"/>
-<circle cx="40" cy="88" r="12" fill="#11161f" stroke="#8a96ab" stroke-width="4"/><circle cx="104" cy="88" r="12" fill="#11161f" stroke="#8a96ab" stroke-width="4"/>
-<rect x="52" y="78" width="30" height="5" rx="2.5" fill="#3ddc97"/><circle cx="116" cy="22" r="4" fill="#ffc24b"/>
-<path d="M124 48h18M128 56h14M120 64h22" stroke="#7fd3ff" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+<rect width="160" height="120" rx="12" fill="#e6eef7"/><circle cx="138" cy="20" r="9" fill="#fbe7a6"/><path d="M0 94h160v14a12 12 0 0 1-12 12H12A12 12 0 0 1 0 108z" fill="#5c6774"/><path d="M0 94h160" stroke="#b8c1cc" stroke-width="2"/><path d="M12 107h16M44 107h16M76 107h16M108 107h16M140 107h12" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+<path d="M76 40 l-8 14 h7 l-5 12 13-17 h-7 l5-9z" fill="#f2b705" stroke="#18212c" stroke-width="1.5"/>
+<path d="M110 86 L124 30" stroke="#18212c" stroke-width="5" stroke-linecap="round"/><path d="M115 29h20" stroke="#18212c" stroke-width="5" stroke-linecap="round"/>
+<rect x="40" y="80" width="72" height="8" rx="3" fill="#18212c"/><rect x="56" y="74" width="36" height="6" rx="2" fill="#1c7c46" stroke="#18212c" stroke-width="1.5"/>
+<circle cx="44" cy="90" r="9" fill="#fff" stroke="#18212c" stroke-width="3"/><circle cx="112" cy="90" r="9" fill="#fff" stroke="#18212c" stroke-width="3"/>
 </svg>

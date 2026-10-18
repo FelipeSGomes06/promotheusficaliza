@@ -8,6 +8,7 @@
 <span class="st st--{{ code }}"><span class="st__g" aria-hidden="true">{{ glyph ?: '•' }}</span>{{ label }}</span>
 {%- endmacro %}
 
+{# Mesmos rótulos e símbolos em todas as telas (EquipmentStatus/AgentStatus). #}
 {% macro equipment_status(code) %}
 {% set labels = {NAO_INSTALADO: ['Não instalado', '◌'], OPERACIONAL: ['Operacional', '✓'], FALHA: ['Mau funcionamento', '!'], MANUTENCAO: ['Em manutenção', '⚙'], DESATIVADO: ['Desativado', '–'], FURTADO: ['Furtado', '✕']} %}
 {{ _self.status(code, labels[code][0] ?? code, labels[code][1] ?? '•') }}
@@ -18,24 +19,33 @@
 {{ _self.status(code, labels[code][0] ?? code, labels[code][1] ?? '•') }}
 {%- endmacro %}
 
+{# Atualidade: "sem informação recente" não é falha — o texto diz isso. #}
+{% macro freshness(code, at, what = 'Sinal') %}
+{% if code == 'ATUAL' %}<span class="fresh fresh--ATUAL">{{ what }} atual · {{ at|local_dt('d/m H:i') }}</span>
+{% elseif code == 'ATRASADA' %}<span class="fresh fresh--ATRASADA">{{ what }} {{ what == 'Sinal' ? 'atrasado' : 'atrasada' }} · recebido(a) em {{ at|local_dt('d/m H:i') }}</span>
+{% elseif code == 'SEM_INFORMACAO' %}<span class="fresh fresh--SEM_INFORMACAO">Sem informação recente{{ at ? ' (último em ' ~ at|local_dt('d/m H:i') ~ ')' : '' }} — não indica falha</span>
+{% else %}<span class="fresh">{{ what }}: não se aplica nesta situação</span>{% endif %}
+{%- endmacro %}
+
 {% macro field_error(errors, name) %}
 {% if errors[name] is defined %}<span class="error" id="err-{{ name|replace({'.': '-'}) }}">{{ errors[name] }}</span>{% endif %}
 {%- endmacro %}
 
 {% macro input(name, label, values, errors, opts = {}) %}
 {% set id = 'f-' ~ name|replace({'.': '-', '[': '-', ']': ''}) %}
+{% set described = (errors[name] is defined ? 'err-' ~ name|replace({'.': '-'}) : '') ~ (opts.help is defined ? ' ' ~ id ~ '-help' : '') %}
 <div class="field {{ opts.class ?? '' }} {{ errors[name] is defined ? 'has-error' }}">
-  <label for="{{ id }}">{{ label }}{% if opts.required ?? false %} <span class="req" aria-hidden="true">*</span>{% endif %}</label>
+  <label for="{{ id }}">{{ label }}{% if opts.required ?? false %} <span class="req" aria-hidden="true">*</span>{% else %} <span class="optional">(opcional)</span>{% endif %}</label>
+  {% if opts.help is defined %}<span class="hint" id="{{ id }}-help">{{ opts.help }}</span>{% endif %}
   {% if opts.type ?? 'text' == 'textarea' %}
-    <textarea id="{{ id }}" name="{{ opts.fieldName ?? name }}" maxlength="{{ opts.max ?? 500 }}" {% if opts.required ?? false %}required{% endif %} {% if errors[name] is defined %}aria-invalid="true" aria-describedby="err-{{ name|replace({'.': '-'}) }}"{% endif %}>{{ values[name] ?? '' }}</textarea>
+    <textarea id="{{ id }}" name="{{ opts.fieldName ?? name }}" maxlength="{{ opts.max ?? 500 }}" {% if opts.required ?? false %}required{% endif %} {% if errors[name] is defined %}aria-invalid="true"{% endif %} {% if described|trim %}aria-describedby="{{ described|trim }}"{% endif %}>{{ values[name] ?? '' }}</textarea>
   {% else %}
     <input id="{{ id }}" name="{{ opts.fieldName ?? name }}" type="{{ opts.type ?? 'text' }}" value="{{ values[name] ?? '' }}"
       {% if opts.max is defined %}maxlength="{{ opts.max }}"{% endif %} {% if opts.inputmode is defined %}inputmode="{{ opts.inputmode }}"{% endif %}
       {% if opts.placeholder is defined %}placeholder="{{ opts.placeholder }}"{% endif %} {% if opts.required ?? false %}required{% endif %}
       {% if opts.autocomplete is defined %}autocomplete="{{ opts.autocomplete }}"{% endif %}
-      {% if errors[name] is defined %}aria-invalid="true" aria-describedby="err-{{ name|replace({'.': '-'}) }}"{% elseif opts.help is defined %}aria-describedby="{{ id }}-help"{% endif %}>
+      {% if errors[name] is defined %}aria-invalid="true"{% endif %} {% if described|trim %}aria-describedby="{{ described|trim }}"{% endif %}>
   {% endif %}
-  {% if opts.help is defined %}<span class="help" id="{{ id }}-help">{{ opts.help }}</span>{% endif %}
   {{ _self.field_error(errors, name) }}
 </div>
 {%- endmacro %}
@@ -44,21 +54,32 @@
 {% set id = 'f-' ~ name|replace({'.': '-'}) %}
 <div class="field {{ opts.class ?? '' }} {{ errors[name] is defined ? 'has-error' }}">
   <label for="{{ id }}">{{ label }}{% if opts.required ?? false %} <span class="req" aria-hidden="true">*</span>{% endif %}</label>
-  <select id="{{ id }}" name="{{ opts.fieldName ?? name }}" {% if opts.required ?? false %}required{% endif %} {% if opts.dataAttr is defined %}data-{{ opts.dataAttr }}{% endif %} {% if errors[name] is defined %}aria-invalid="true" aria-describedby="err-{{ name|replace({'.': '-'}) }}"{% endif %}>
+  {% if opts.help is defined %}<span class="hint" id="{{ id }}-help">{{ opts.help }}</span>{% endif %}
+  <select id="{{ id }}" name="{{ opts.fieldName ?? name }}" {% if opts.required ?? false %}required{% endif %} {% if opts.dataAttr is defined %}data-{{ opts.dataAttr }}{% endif %} {% if errors[name] is defined %}aria-invalid="true" aria-describedby="err-{{ name|replace({'.': '-'}) }}"{% elseif opts.help is defined %}aria-describedby="{{ id }}-help"{% endif %}>
     {% if opts.empty is defined %}<option value="">{{ opts.empty }}</option>{% endif %}
     {% for value, text in options %}<option value="{{ value }}" {{ (selected ~ '') == (value ~ '') ? 'selected' }}>{{ text }}</option>{% endfor %}
   </select>
-  {% if opts.help is defined %}<span class="help">{{ opts.help }}</span>{% endif %}
   {{ _self.field_error(errors, name) }}
 </div>
 {%- endmacro %}
 
+{# Resumo de erros no topo do formulário, com links para cada campo. #}
+{% macro error_summary(errors, labels, specPrefix = 's-') %}
+{% set fieldErrors = errors|filter((v, k) => k != '_form') %}
+{% if fieldErrors is not empty %}
+<div class="error-summary" role="alert" tabindex="-1" data-error-summary>
+  <h2>Corrija {{ fieldErrors|length == 1 ? 'o campo abaixo' : 'os ' ~ fieldErrors|length ~ ' campos abaixo' }}. O que você digitou foi mantido.</h2>
+  <ul>{% for k, msg in fieldErrors %}<li><a href="#{{ k starts with 'specs.' ? specPrefix ~ k|replace({'specs.': ''}) : 'f-' ~ k|replace({'.': '-'}) }}">{{ labels[k] ?? (k starts with 'specs.' ? 'Característica' : k) }}: {{ msg }}</a></li>{% endfor %}</ul>
+</div>
+{% endif %}
+{%- endmacro %}
+
 {% macro pagination(page, pages, base_query, path) %}
 {% if pages > 1 %}
-<nav class="pagination" aria-label="Paginação">
-  {% if page > 1 %}<a class="btn btn--sm" href="{{ url(path, base_query|merge({pagina: page - 1})) }}" rel="prev">← Anterior</a>{% endif %}
+<nav class="btn-row pager" aria-label="Paginação">
+  {% if page > 1 %}<a class="btn btn--small" href="{{ url(path, base_query|merge({pagina: page - 1})) }}" rel="prev">Página anterior</a>{% endif %}
   <span class="muted small">Página {{ page }} de {{ pages }}</span>
-  {% if page < pages %}<a class="btn btn--sm" href="{{ url(path, base_query|merge({pagina: page + 1})) }}" rel="next">Próxima →</a>{% endif %}
+  {% if page < pages %}<a class="btn btn--small" href="{{ url(path, base_query|merge({pagina: page + 1})) }}" rel="next">Próxima página</a>{% endif %}
 </nav>
 {% endif %}
 {%- endmacro %}

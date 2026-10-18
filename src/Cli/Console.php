@@ -10,6 +10,8 @@ use Fiscaliza\Services;
 /** Comandos de operação. Saída curta em texto; segredos nunca são impressos, exceto a senha gerada na criação de conta. */
 final class Console
 {
+    private const SKIPPED = 'Ciclo ignorado: outro ciclo do simulador ainda está em execução (var/simulador.lock).';
+
     public function __construct(private readonly Services $services) {}
 
     /** @param list<string> $args */
@@ -95,10 +97,34 @@ final class Console
 
     private function simTick(): int
     {
-        $stats = $this->services->simulator()->tick();
-        echo json_encode($stats, JSON_UNESCAPED_UNICODE) . PHP_EOL;
+        $stats = $this->exclusiveTick();
+        echo $stats === null ? self::SKIPPED . PHP_EOL : json_encode($stats, JSON_UNESCAPED_UNICODE) . PHP_EOL;
 
         return 0;
+    }
+
+    /**
+     * Executa um ciclo só se nenhum outro processo do mesmo diretório (cron com sim:tick ou sim:run) estiver no meio
+     * de um: trava exclusiva em var/simulador.lock, liberada ao fim do ciclo (ou se o processo morrer).
+     *
+     * @return array<string, int|string>|null null quando o ciclo foi ignorado por sobreposição
+     */
+    private function exclusiveTick(): ?array
+    {
+        $dir = $this->services->root . '/var';
+        if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+            throw new \RuntimeException('Não foi possível criar var/ para a trava do simulador.');
+        }
+        // Abrir só para leitura basta para flock: o arquivo pode ter sido criado por outro usuário do sistema.
+        $lock = @fopen($dir . '/simulador.lock', 'c') ?: @fopen($dir . '/simulador.lock', 'r');
+        if ($lock === false) {
+            throw new \RuntimeException('Não foi possível abrir var/simulador.lock.');
+        }
+        try {
+            return flock($lock, LOCK_EX | LOCK_NB) ? $this->services->simulator()->tick() : null;
+        } finally {
+            fclose($lock);
+        }
     }
 
     /** @param array<string, string|bool> $options */
@@ -111,8 +137,8 @@ final class Console
         do {
             $began = microtime(true);
             try {
-                $stats = $this->services->simulator()->tick();
-                echo date('H:i:s') . ' ' . json_encode($stats, JSON_UNESCAPED_UNICODE) . PHP_EOL;
+                $stats = $this->exclusiveTick();
+                echo date('H:i:s') . ' ' . ($stats === null ? self::SKIPPED : json_encode($stats, JSON_UNESCAPED_UNICODE)) . PHP_EOL;
             } catch (\RuntimeException $e) {
                 // Banco indisponível: registra e tenta de novo no próximo ciclo.
                 fwrite(STDERR, date('H:i:s') . ' ciclo falhou: ' . $e->getMessage() . PHP_EOL);
@@ -141,9 +167,10 @@ final class Console
               demo:seed [--reset]             carrega o cenário sintético de Marília (--reset apaga e recarrega)
               user:create <usuario> [--role=ADMIN|OPERADOR] [--name="Nome"]
                                               cria conta com senha gerada (exibida uma vez)
-              sim:tick                        executa um ciclo do simulador (para cron)
+              sim:tick                        executa um ciclo do simulador (para cron); ignora o ciclo se
+                                              outro ainda estiver rodando (trava em var/simulador.lock)
               sim:run [--interval=5] [--duration=0]
-                                              executa o simulador continuamente
+                                              executa o simulador continuamente (mesma trava por ciclo)
               analysis:run                    recalcula a análise preventiva de 7 dias
 
             TXT;

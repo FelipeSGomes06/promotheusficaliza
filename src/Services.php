@@ -153,6 +153,7 @@ final class Services
             $this->database(),
             $this->equipmentRepository(),
             $this->referenceRepository(),
+            $this->maintenanceRepository(),
             $this->history(),
             $this->alerts(),
             $this->clock(),

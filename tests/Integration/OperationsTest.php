@@ -147,6 +147,26 @@ final class OperationsTest extends FirebirdTestCase
         self::assertSame('CONCLUIDA', $this->services->maintenanceRepository()->find($order)['state']);
     }
 
+    public function testSimulatorTickIsSkippedWhileAnotherTickHoldsTheLock(): void
+    {
+        $console = new \Fiscaliza\Cli\Console($this->services);
+        $lock = fopen(self::ROOT . '/var/simulador.lock', 'c');
+        self::assertNotFalse($lock);
+        self::assertTrue(flock($lock, LOCK_EX | LOCK_NB));
+        try {
+            ob_start();
+            $console->run(['sim:tick']);
+            self::assertStringContainsString('Ciclo ignorado', (string) ob_get_clean());
+            self::assertSame(0, $this->services->metaRepository()->number('sim_tick'), 'nenhum ciclo concorrente foi executado');
+        } finally {
+            fclose($lock);
+        }
+        ob_start();
+        $console->run(['sim:tick']);
+        ob_end_clean();
+        self::assertSame(1, $this->services->metaRepository()->number('sim_tick'));
+    }
+
     private function userId(): int
     {
         return $this->uid ??= $this->services->auth()->createUser('operadora', 'Operadora de Teste', 'OPERADOR', 'senha-de-teste-longa')['id'];

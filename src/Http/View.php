@@ -64,6 +64,7 @@ final class View
             'csrf' => $session !== null && ($session->isStarted() || $request->getAttribute('user') !== null || ($data['needs_csrf'] ?? false)) ? $session->csrfToken() : '',
             'map' => ['tiles' => $this->config->get('MAP_TILE_URL', 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'), 'attribution' => $this->config->get('MAP_TILE_ATTRIBUTION', '&copy; colaboradores do OpenStreetMap')],
             'poll_seconds' => max(3, $this->config->int('POLL_INTERVAL_SECONDS', 5)),
+            'sim_seconds' => max(2, $this->config->int('SIM_INTERVAL_SECONDS', 5)),
         ];
         $response->getBody()->write($this->twig->render($template, $data));
 

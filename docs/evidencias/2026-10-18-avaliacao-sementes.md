@@ -28,3 +28,28 @@ Referência = "falhou nos últimos 30 dias". 1.681 pares (equipamento × corte),
 - Utilidade: priorizar uma rota semanal de inspeção, não garantir prevenção. Não é probabilidade calibrada.
 - Tudo é cenário sintético gerado por regras conhecidas (`DemoSeeder`): o resultado mede coerência do método com
   esse gerador, **não** acurácia em equipamentos reais.
+
+## Reavaliação após as correções OP-04 e OP-05 (18/10/2026)
+
+Mesmo comando e mesmas sementes, em Compose isolado (projeto `fiscaliza-claude`, banco de demonstração descartável),
+PHP 8.5.11 e Firebird 5.0.4, depois de: cortes que só conhecem eventos **recebidos** antes deles, periodicidade
+vigente reconstruída pelo histórico, população que inclui quem foi arquivado depois do corte, métricas calculadas
+direto das contagens e "não avaliado" para fora de serviço. O método `atencao-v1` (pesos, janelas, grade de limiares)
+não mudou.
+
+| Semente | Limiar escolhido | Modelo TP/FP/FN | Precisão | Revocação | Referência TP/FP/FN | Precisão | Revocação | Prevalência |
+|---|---|---|---|---|---|---|---|---|
+| 2027 | 45 | 1/10/11 | 0,091 | 0,083 | 3/42/9 | 0,067 | 0,250 | 0,036 |
+| 2028 | 25 | 2/31/12 | 0,061 | 0,143 | 2/32/12 | 0,059 | 0,143 | 0,041 |
+| 2029 | 25 | 7/52/9 | 0,119 | 0,438 | 5/46/11 | 0,098 | 0,312 | 0,047 |
+| 2030 | 35 | 1/19/10 | 0,050 | 0,091 | 0/39/11 | 0,000 | 0,000 | 0,032 |
+| 2031 | 55 | 0/0/13 | — (nenhum alerta) | 0,000 | 4/33/9 | 0,108 | 0,308 | 0,038 |
+| **Agregado** | | 11/112/55 | **0,089** | **0,167** | 14/192/52 | **0,068** | **0,212** | **0,039** |
+
+1.696 pares (equipamento × corte), 66 com falha. O script agora imprime "—" para precisão indefinida (antes mostrava
+0,000 por usar `?? 0`). Ao terminar, o script deixa carregada a semente 2031; o cenário padrão foi recarregado em
+seguida com `demo:seed --reset`.
+
+Leitura: mesma conclusão de antes — cerca de 2× o acaso, um pouco acima da referência em precisão, abaixo em
+revocação, limiar instável entre sementes. A diferença em relação à primeira avaliação vem só da reconstrução
+temporal; nenhum parâmetro foi ajustado para melhorar o número.

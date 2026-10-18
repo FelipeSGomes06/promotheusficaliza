@@ -10,8 +10,9 @@ use Fiscaliza\Domain\EquipmentCatalog;
 use Fiscaliza\Domain\EquipmentStatus;
 
 /**
- * Filtros combinados da central e das listas (tipo/categoria, situação, bairro e órgão).
- * Valores desconhecidos ou malformados são descartados; o servidor devolve os filtros efetivamente aplicados.
+ * Filtros combinados da central e das listas (tipo/categoria, situação, bairro, órgão e, na central, busca por
+ * texto e "só o que precisa de atenção"). Valores desconhecidos ou malformados são descartados; o servidor devolve
+ * os filtros efetivamente aplicados.
  *
  * Um tipo de recurso (equipamento ou agente) entra no resultado somente se o filtro de categoria e o de situação,
  * quando preenchidos, contiverem ao menos um valor daquele tipo. Ex.: categoria "Radar" exclui agentes.
@@ -31,6 +32,8 @@ final readonly class Filters
         public array $statuses = [],
         public array $regions = [],
         public array $agencies = [],
+        public string $text = '',
+        public bool $attention = false,
     ) {}
 
     /** @param array<string, mixed> $query */
@@ -47,6 +50,8 @@ final readonly class Filters
             self::pick($query['situacao'] ?? null, $statusOptions),
             self::ids($query['bairro'] ?? null),
             self::ids($query['orgao'] ?? null),
+            is_string($query['q'] ?? null) ? mb_substr(trim($query['q']), 0, 60) : '',
+            ($query['atencao'] ?? '') === '1',
         );
     }
 
@@ -88,13 +93,14 @@ final readonly class Filters
 
     public function isEmpty(): bool
     {
-        return $this->categories === [] && $this->statuses === [] && $this->regions === [] && $this->agencies === [];
+        return $this->categories === [] && $this->statuses === [] && $this->regions === [] && $this->agencies === [] && $this->text === '' && !$this->attention;
     }
 
-    /** @return array<string, list<string|int>> */
+    /** @return array<string, list<string|int>|string> */
     public function toArray(): array
     {
-        return ['categoria' => $this->categories, 'situacao' => $this->statuses, 'bairro' => $this->regions, 'orgao' => $this->agencies];
+        return ['categoria' => $this->categories, 'situacao' => $this->statuses, 'bairro' => $this->regions, 'orgao' => $this->agencies,
+            'q' => $this->text, 'atencao' => $this->attention ? '1' : ''];
     }
 
     /** Query string equivalente (para links e paginação). */

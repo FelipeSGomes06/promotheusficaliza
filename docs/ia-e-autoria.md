@@ -6,6 +6,8 @@ O regulamento pede a declaração das ferramentas de IA usadas. Registro do que 
 |---|---|---|
 | Planejamento | **Codex (OpenAI)** | Pacote de planejamento sem código: requisitos, arquitetura, segurança, experiência e critérios de aceite ([cópia](planejamento-codex-2026-10-18/00-LEIA-PRIMEIRO.md)). |
 | Implementação | **Claude (Anthropic), modelo Opus 5.5, no Claude Code** (aplicativo desktop, 18/10/2026) | Prova PHP/Firebird, código, migração, testes, ícones e miniaturas SVG, documentação e verificações registradas em [verificacao.md](verificacao.md). |
+| Auditoria (18/10/2026) | **Codex (OpenAI)**, com o plugin Codex Security | Revisão de código, documentação e interface sobre uma cópia do projeto: cinco defeitos funcionais (OP-01 a OP-05), um achado de segurança de baixa gravidade (SEC-01) e uma avaliação da interface. Não alterou o projeto. |
+| Correções e redesenho (18/10/2026) | **Claude (Anthropic), Opus 5.5, no Claude Code** | Correção dos achados com testes de regressão (inclusive concorrência real), migração 0002, redesenho da interface, novas ilustrações, guia de uso, ADRs 0008–0011 e evidências ([correções](evidencias/2026-10-18-correcoes-da-auditoria.md)). |
 | Decisões e responsabilidade | Autor do projeto | Escolha do desafio, preferência por PHP/Firebird, Marília como cenário, publicação e revisão final. |
 
 Ferramentas auxiliares sem IA: Docker, Composer, PHPUnit, PHPStan, PHP-CS-Fixer, navegador embutido do Claude Code

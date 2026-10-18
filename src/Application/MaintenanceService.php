@@ -8,6 +8,7 @@ use Fiscaliza\Domain\Clock;
 use Fiscaliza\Domain\EquipmentStatus;
 use Fiscaliza\Domain\RuleViolation;
 use Fiscaliza\Domain\Time;
+use Fiscaliza\Infrastructure\ConstraintViolation;
 use Fiscaliza\Infrastructure\Database;
 use Fiscaliza\Infrastructure\Repository\EquipmentRepository;
 use Fiscaliza\Infrastructure\Repository\MaintenanceRepository;
@@ -16,6 +17,7 @@ use Fiscaliza\Infrastructure\Repository\MaintenanceRepository;
  * Ciclo de vida das ordens de manutenção: ABERTA → EM_EXECUCAO → CONCLUIDA, ou ABERTA → CANCELADA.
  *
  * Regras: agendar não tira o equipamento de operação; iniciar a intervenção o coloca "em manutenção";
+ * só uma intervenção fica em execução por equipamento (serviço + índice parcial UX_MAINT_ONE_RUNNING);
  * concluir exige declarar explicitamente a situação resultante (concluir não prova que voltou a funcionar);
  * concluir uma preventiva de equipamento com periodicidade agenda a próxima.
  */
@@ -65,12 +67,26 @@ final class MaintenanceService
     public function start(int $orderId, ?int $actorId, string $source = 'MANUAL'): void
     {
         $this->db->transaction(function () use ($orderId, $actorId, $source): void {
-            $order = $this->orders->lock($orderId) ?? throw new NotFound('Ordem não encontrada.');
+            [$order, $equipment] = $this->lockOrder($orderId);
             if ($order['state'] !== 'ABERTA') {
                 throw new RuleViolation('Somente ordens abertas podem ser iniciadas (esta está ' . strtolower((string) $order['state']) . ').');
             }
-            $equipment = $this->equipment->lock((int) $order['equipment_id']) ?? throw new NotFound('Equipamento não encontrado.');
-            $this->orders->markStarted($orderId, Time::toDb($this->clock->now()));
+            if ($equipment['archived_at'] !== null) {
+                throw new RuleViolation('Equipamento arquivado não recebe intervenção.');
+            }
+            // Uma intervenção por vez: a conclusão declara a situação real do equipamento, e duas intervenções
+            // simultâneas tornariam esse resultado ambíguo (a primeira a terminar liberaria o equipamento).
+            foreach ($this->orders->openFor((int) $equipment['id']) as $other) {
+                if ($other['state'] === 'EM_EXECUCAO') {
+                    throw self::alreadyRunning((int) $other['id']);
+                }
+            }
+            try {
+                $this->orders->markStarted($orderId, Time::toDb($this->clock->now()));
+            } catch (ConstraintViolation $e) {
+                // Barreira do banco (UX_MAINT_ONE_RUNNING) para qualquer caminho que escape da verificação acima.
+                throw $e->constraint === 'UX_MAINT_ONE_RUNNING' ? self::alreadyRunning(null) : $e;
+            }
             $this->equipmentService->applyStatus($equipment, EquipmentStatus::Manutencao, "intervenção da ordem #{$orderId} iniciada", $actorId, $source);
             $this->history->record('EQUIPAMENTO', (int) $order['equipment_id'], 'MANUTENCAO_INICIADA', $actorId, "Ordem #{$orderId} em execução.", ['ordem' => $orderId], $source);
             $this->alerts->reconcile();
@@ -86,12 +102,11 @@ final class MaintenanceService
         $input->assertValid();
 
         return $this->db->transaction(function () use ($orderId, $resolution, $result, $actorId, $source): ?int {
-            $order = $this->orders->lock($orderId) ?? throw new NotFound('Ordem não encontrada.');
+            [$order, $equipment] = $this->lockOrder($orderId);
             if ($order['state'] !== 'EM_EXECUCAO') {
                 throw new RuleViolation('Inicie a intervenção antes de concluí-la (estado atual: ' . strtolower((string) $order['state']) . ').');
             }
             $equipmentId = (int) $order['equipment_id'];
-            $equipment = $this->equipment->lock($equipmentId) ?? throw new NotFound('Equipamento não encontrado.');
             $now = $this->clock->now();
             $this->orders->markClosed($orderId, 'CONCLUIDA', Time::toDb($now), $actorId, (string) $resolution, $result);
             $this->equipmentService->applyStatus($equipment, EquipmentStatus::from((string) $result), "ordem #{$orderId} concluída", $actorId, $source);
@@ -120,7 +135,7 @@ final class MaintenanceService
             throw new \Fiscaliza\Domain\ValidationFailed(['reason' => 'Informe o motivo do cancelamento.']);
         }
         $this->db->transaction(function () use ($orderId, $reason, $actorId): void {
-            $order = $this->orders->lock($orderId) ?? throw new NotFound('Ordem não encontrada.');
+            [$order] = $this->lockOrder($orderId);
             if ($order['state'] !== 'ABERTA') {
                 throw new RuleViolation('Somente ordens abertas podem ser canceladas; uma intervenção iniciada deve ser concluída com o resultado real.');
             }
@@ -128,5 +143,27 @@ final class MaintenanceService
             $this->history->record('EQUIPAMENTO', (int) $order['equipment_id'], 'MANUTENCAO_CANCELADA', $actorId, "Ordem #{$orderId} cancelada: {$reason}", ['ordem' => $orderId]);
             $this->alerts->reconcile();
         });
+    }
+
+    /**
+     * Bloqueia o equipamento e depois a ordem — sempre nesta ordem, também no arquivamento e na abertura —, de modo
+     * que operações concorrentes sobre o mesmo equipamento se enfileirem em vez de travarem umas às outras.
+     *
+     * @return array{0: array<string, mixed>, 1: array<string, mixed>} ordem e equipamento bloqueados
+     */
+    private function lockOrder(int $orderId): array
+    {
+        $equipmentId = $this->orders->equipmentOf($orderId) ?? throw new NotFound('Ordem não encontrada.');
+        $equipment = $this->equipment->lock($equipmentId) ?? throw new NotFound('Equipamento não encontrado.');
+        $order = $this->orders->lock($orderId) ?? throw new NotFound('Ordem não encontrada.');
+
+        return [$order, $equipment];
+    }
+
+    private static function alreadyRunning(?int $orderId): RuleViolation
+    {
+        $which = $orderId === null ? 'Outra ordem' : "A ordem #{$orderId}";
+
+        return new RuleViolation("{$which} já está em execução neste equipamento. Conclua-a, informando o resultado, antes de iniciar outra intervenção.");
     }
 }

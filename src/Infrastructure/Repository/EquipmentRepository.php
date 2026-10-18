@@ -19,6 +19,10 @@ final class EquipmentRepository
         'POS_OBSERVED_AT', 'POS_RECEIVED_AT', 'LAST_SEEN_AT', 'MAINT_INTERVAL_DAYS', 'SPECS', 'NOTES', 'INSTALLED_ON',
         'ARCHIVED_AT', 'CREATED_AT', 'UPDATED_AT'];
 
+    /** Colunas do formulário de cadastro, mais o arquivamento: mudá-las avança VERSION_NO. */
+    private const CADASTRAL = ['ASSET_TAG', 'TYPE_CODE', 'MANUFACTURER', 'MODEL', 'SERIAL_NUMBER', 'AGENCY_ID', 'CEP', 'STREET', 'ADDRESS_REF',
+        'REGION_ID', 'LAT', 'LNG', 'LOCATION_KIND', 'MAINT_INTERVAL_DAYS', 'SPECS', 'NOTES', 'INSTALLED_ON', 'ARCHIVED_AT'];
+
     /** Ordenações permitidas: chave pública => ORDER BY fixo. */
     public const SORTS = [
         'codigo' => 'e.CODE',
@@ -84,8 +88,10 @@ final class EquipmentRepository
     }
 
     /**
-     * Atualização de estado operacional (situação, posição, sinal) sem exigir versão do formulário,
-     * mas incrementando-a para que um formulário aberto detecte a mudança.
+     * Atualização de estado operacional (situação, posição, sinal, arquivamento) sem exigir versão do formulário.
+     * VERSION_NO é a versão do CADASTRO: só avança quando a mudança toca uma coluna cadastral (ex.: instalação
+     * concluída troca o local planejado pelo instalado; arquivamento). Posição e situação não invalidam um
+     * formulário aberto, porque ele não edita esses campos.
      *
      * @param array<string, mixed> $values
      */
@@ -93,7 +99,8 @@ final class EquipmentRepository
     {
         $values = self::onlyWritable($values);
         $set = implode(', ', array_map(static fn($c) => "{$c} = ?", array_keys($values)));
-        $this->db->execute("UPDATE EQUIPMENT SET {$set}, VERSION_NO = VERSION_NO + 1 WHERE ID = ?", [...array_values($values), $id]);
+        $bump = array_intersect(array_keys($values), self::CADASTRAL) === [] ? '' : ', VERSION_NO = VERSION_NO + 1';
+        $this->db->execute("UPDATE EQUIPMENT SET {$set}{$bump} WHERE ID = ?", [...array_values($values), $id]);
     }
 
     /** Batimento de sinal: não altera versão nem gera histórico (volume controlado). */
@@ -143,6 +150,16 @@ final class EquipmentRepository
     public function allActive(): array
     {
         return array_map(self::hydrate(...), $this->db->all(self::SELECT . ' WHERE e.ARCHIVED_AT IS NULL ORDER BY e.ID'));
+    }
+
+    /**
+     * Todos, inclusive arquivados: a avaliação retrospectiva precisa de quem existia em cada corte.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function allIncludingArchived(): array
+    {
+        return array_map(self::hydrate(...), $this->db->all(self::SELECT . ' ORDER BY e.ID'));
     }
 
     /** @return array{0: string, 1: list<mixed>} */

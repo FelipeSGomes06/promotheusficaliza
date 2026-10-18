@@ -2,49 +2,65 @@
 {% import '_ui.twig' as ui %}
 {% block title %}Agentes{% endblock %}
 {% block content %}
+{% set moreActive = (filters.agencies|length > 0 ? 1 : 0) + (archived ? 1 : 0) + (sort != 'codigo' ? 1 : 0) %}
+{% set roles = {TRANSITO: 'Agente de trânsito', GUARDA: 'Guarda municipal', POLICIA: 'Policial'} %}
 <div class="page">
   <div class="page-head">
     <div>
-      <p class="eyebrow">Inventário</p>
       <h1>Agentes</h1>
-      <p>{{ total }} agente(s) fictício(s) de trânsito, guarda e polícia. Agente é recurso operacional — não é conta de acesso. A base é o endereço de trabalho; a posição vem das observações.</p>
+      <p class="lead">Equipes fictícias de trânsito, guarda e polícia. A <strong>base</strong> é onde o agente trabalha; a <strong>última posição</strong> é a recebida pelo rádio simulado.</p>
     </div>
-    {% if app.user %}<a class="btn btn--primary" href="{{ url('/agentes/novo') }}">{{ ui.icon('i-plus') }}Novo agente</a>{% endif %}
+    {% if app.user %}<a class="btn btn--primary" href="{{ url('/agentes/novo') }}">{{ ui.icon('i-plus') }}Cadastrar agente</a>{% endif %}
   </div>
-  <form class="toolbar card card--tight" method="get" action="{{ url('/agentes') }}">
-    <div class="field"><label for="q">Buscar</label><input id="q" type="search" name="q" value="{{ q }}" placeholder="Indicativo, código, base…" maxlength="60"></div>
-    <div class="field"><label for="fn">Função</label>
-      <select id="fn" name="categoria[]"><option value="">Todas</option>{% for c in options.categories|filter(c => c.group == 'Agentes') %}<option value="{{ c.value }}" {{ c.value in filters.categories ? 'selected' }}>{{ c.label }}</option>{% endfor %}</select></div>
-    <div class="field"><label for="sit">Situação</label>
-      <select id="sit" name="situacao[]"><option value="">Todas</option>{% for s in options.statuses|filter(s => s.group == 'Agentes') %}<option value="{{ s.value }}" {{ s.value in filters.statuses ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select></div>
-    <div class="field"><label for="org">Órgão</label>
-      <select id="org" name="orgao[]"><option value="">Todos</option>{% for a in options.agencies %}<option value="{{ a.id }}" {{ a.id in filters.agencies ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select></div>
-    <div class="field"><label for="ord">Ordenar</label>
-      <select id="ord" name="ordem">{% for k, l in {codigo: 'Código', nome: 'Indicativo', funcao: 'Função', situacao: 'Situação', bairro: 'Bairro da base'} %}<option value="{{ k }}" {{ sort == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
-    <label class="checks"><span><input type="checkbox" name="arquivados" value="1" {{ archived ? 'checked' }}> Arquivados</span></label>
-    <button class="btn" type="submit">Filtrar</button>
+  <details class="callout">
+    <summary><strong>Agente não é conta de acesso</strong></summary>
+    <p>Agentes são recursos operacionais mostrados no mapa. Quem entra no sistema para editar usa uma conta (operador ou administrador), que é outra coisa e não aparece aqui.</p>
+  </details>
+
+  <form class="stack section" method="get" action="{{ url('/agentes') }}" role="search" aria-label="Filtrar agentes">
+    <div class="filters">
+      <div class="field field--search"><label for="q">Buscar</label><input id="q" type="search" name="q" value="{{ q }}" placeholder="Nome, código ou base" maxlength="60"></div>
+      <div class="field"><label for="fn">Função</label>
+        <select id="fn" name="categoria[]"><option value="">Todas as funções</option>{% for c in options.categories|filter(c => c.group == 'Agentes') %}<option value="{{ c.value }}" {{ c.value in filters.categories ? 'selected' }}>{{ c.label }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="sit">Situação</label>
+        <select id="sit" name="situacao[]"><option value="">Todas as situações</option>{% for s in options.statuses|filter(s => s.group == 'Agentes') %}<option value="{{ s.value }}" {{ s.value in filters.statuses ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select></div>
+    </div>
+    <div class="toolbar__end">
+      <button class="btn btn--primary" type="submit">Filtrar</button>
+      <details class="more-filters more-filters--inline" {{ moreActive > 0 ? 'open' }}>
+        <summary class="btn">{{ ui.icon('i-filter') }}<span>Mais filtros</span> {% if moreActive %}<span class="count-pill">{{ moreActive }}</span>{% endif %}</summary>
+        <div class="more-filters__body">
+          <div class="field"><label for="org">Órgão</label>
+            <select id="org" name="orgao[]"><option value="">Todos os órgãos</option>{% for a in options.agencies %}<option value="{{ a.id }}" {{ a.id in filters.agencies ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select></div>
+          <div class="field"><label for="ord">Ordenar por</label>
+            <select id="ord" name="ordem">{% for k, l in {codigo: 'Código', nome: 'Nome', funcao: 'Função', situacao: 'Situação', bairro: 'Bairro da base'} %}<option value="{{ k }}" {{ sort == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
+          <div class="checks"><label><input type="checkbox" name="arquivados" value="1" {{ archived ? 'checked' }}> Mostrar só arquivados</label></div>
+        </div>
+      </details>
+      <p class="result-count"><strong>{{ total }}</strong> {{ total == 1 ? 'agente' : 'agentes' }}{{ filters.isEmpty and q == '' ? '' : ' no filtro' }}
+        {% if not (filters.isEmpty and q == '' and not archived and sort == 'codigo') %}<a class="btn btn--quiet btn--small" href="{{ url('/agentes') }}">Limpar filtros</a>{% endif %}</p>
+    </div>
   </form>
+
+  <div class="section">
   {% if rows is empty %}
-    <div class="empty">Nenhum agente encontrado. <a href="{{ url('/agentes') }}">Limpar filtros</a></div>
+    <div class="empty">Nenhum agente encontrado com estes filtros. <a href="{{ url('/agentes') }}">Limpar filtros</a></div>
   {% else %}
-  <div class="table-wrap">
-    <table class="data">
-      <caption>Agentes — página {{ page }} de {{ pages }}</caption>
-      <thead><tr><th scope="col">Agente</th><th scope="col">Órgão</th><th scope="col">Situação</th><th scope="col">Base</th><th scope="col">Posição</th></tr></thead>
-      <tbody>
+    <ul class="rows" aria-label="Agentes, página {{ page }} de {{ pages }}">
       {% for a in rows %}
-        <tr>
-          <td><div class="type-cell"><span class="res__icon res__icon--agent">{{ ui.icon('i-AG_' ~ a.role) }}</span><span><a href="{{ url('/agentes/' ~ a.id) }}"><strong>{{ a.call_sign }}</strong></a><br><span class="small muted mono">{{ a.code }}</span></span></div></td>
-          <td class="small">{{ a.agency_name }}</td>
-          <td>{{ ui.agent_status(a.status) }}</td>
-          <td>{{ a.base_name }}<br><span class="small muted">{{ a.region_name ?? 'sem bairro' }}</span></td>
-          <td>{{ ui.status(a.freshness.value, a.freshness.label) }}<br><span class="small faint">{{ a.pos_observed_at|local_dt('d/m H:i') }}</span></td>
-        </tr>
+        <li><a class="row" href="{{ url('/agentes/' ~ a.id) }}">
+          <span class="row__thumb row__thumb--agent">{{ ui.icon('i-AG_' ~ a.role) }}</span>
+          <span class="row__main">
+            <span class="row__title">{{ roles[a.role] ?? a.role }} · {{ a.call_sign }}</span>
+            <span class="row__sub"><span class="code-tag">{{ a.code }}</span> Base: {{ a.base_name }}{{ a.region_name ? ' · ' ~ a.region_name }}</span>
+          </span>
+          <span class="row__meta">{{ ui.agent_status(a.status) }}
+            {% if a.freshness.value == 'ATUAL' %}<span class="fresh">Posição atual</span>{% elseif a.freshness.value == 'ATRASADA' %}<span class="fresh fresh--ATRASADA">Posição atrasada</span>{% elseif a.freshness.value == 'SEM_INFORMACAO' %}<span class="fresh">Sem posição recente (não indica problema)</span>{% else %}<span class="fresh">Fora de turno: posição não se aplica</span>{% endif %}</span>
+        </a></li>
       {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {{ ui.pagination(page, pages, filters.toArray|merge({q: q, ordem: sort, arquivados: archived ? '1' : null}), '/agentes') }}
+    </ul>
+    {{ ui.pagination(page, pages, filters.toArray|merge({q: q, ordem: sort, arquivados: archived ? '1' : null}), '/agentes') }}
   {% endif %}
+  </div>
 </div>
 {% endblock %}

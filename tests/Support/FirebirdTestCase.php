@@ -34,6 +34,7 @@ abstract class FirebirdTestCase extends TestCase
             return;
         }
         $owner = self::ownerDatabase();
+        self::assertSeparateFromMainDatabase($owner);
         $migrator = new Migrator($owner, self::ROOT . '/database/migrations');
         $migrator->dropEverything();
         $migrator->migrate();
@@ -58,11 +59,37 @@ abstract class FirebirdTestCase extends TestCase
         $this->regionId = $refs->insertRegion('Centro', 'CENTRO', '-22.214000', '-49.950500');
     }
 
-    protected static function config(): Config
+    /** Configuração dos testes (também usada pelos processos de tests/Support/parallel-worker.php). */
+    public static function config(): Config
     {
         $config = Config::load(self::ROOT);
 
         return $config->with(['DB_DSN' => $config->require('DB_TEST_DSN'), 'DB_STATEMENT_TIMEOUT_SECONDS' => '2', 'DEMO_ALLOW_RESET' => 'true']);
+    }
+
+    /**
+     * Recusa apagar o esquema sem evidência de que DB_TEST_DSN não é o banco principal (DB_DSN). Se o principal
+     * não estiver acessível (CI sem banco principal), vale a comparação dos DSNs.
+     */
+    private static function assertSeparateFromMainDatabase(Database $testOwner): void
+    {
+        $raw = Config::load(self::ROOT);
+        $main = $raw->get('DB_DSN');
+        $mainFile = null;
+        if ($main !== '' && DatabaseSeparation::problem($main, $raw->get('DB_TEST_DSN')) === null) {
+            try {
+                $mainOwner = new Database($main, $raw->require('DB_MIGRATION_USER'), $raw->require('DB_MIGRATION_PASSWORD'), 5);
+                $mainFile = (string) $mainOwner->value('SELECT MON$DATABASE_NAME FROM MON$DATABASE');
+                $mainOwner->disconnect();
+            } catch (\RuntimeException) {
+                // Principal inexistente ou inacessível: não há arquivo para comparar.
+            }
+        }
+        $testFile = $mainFile === null ? null : (string) $testOwner->value('SELECT MON$DATABASE_NAME FROM MON$DATABASE');
+        $problem = DatabaseSeparation::problem($main, $raw->get('DB_TEST_DSN'), $mainFile, $testFile);
+        if ($problem !== null) {
+            throw new \RuntimeException("Testes destrutivos recusados: {$problem} Configure um banco de testes dedicado.");
+        }
     }
 
     protected static function ownerDatabase(): Database

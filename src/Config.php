@@ -10,6 +10,9 @@ namespace Fiscaliza;
  */
 final class Config
 {
+    /** Credenciais de dono do esquema e do servidor: só migração e carga da demonstração as usam. */
+    public const PRIVILEGED = ['DB_MIGRATION_USER', 'DB_MIGRATION_PASSWORD', 'FIREBIRD_ROOT_PASSWORD'];
+
     /** @param array<string, string> $values */
     public function __construct(private array $values) {}
 
@@ -48,6 +51,12 @@ final class Config
     public function with(array $overrides): self
     {
         return new self(array_merge($this->values, $overrides));
+    }
+
+    /** @param list<string> $keys */
+    public function without(array $keys): self
+    {
+        return new self(array_diff_key($this->values, array_flip($keys)));
     }
 
     public function get(string $key, string $default = ''): string

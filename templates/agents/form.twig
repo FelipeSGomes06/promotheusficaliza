@@ -1,28 +1,27 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
-{% block title %}{{ existing ? 'Editar ' ~ existing.call_sign : 'Novo agente' }}{% endblock %}
+{% block title %}{{ existing ? 'Editar ' ~ existing.call_sign : 'Cadastrar agente' }}{% endblock %}
 {% block head %}<link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}">{% endblock %}
 {% block scripts %}<script src="{{ asset('vendor/leaflet/leaflet.js') }}" defer></script>{% endblock %}
 {% block content %}
 {% set v = values %}
-<div class="page">
-  <div class="page-head"><div>
-    <p class="eyebrow"><a href="{{ url('/agentes') }}">Agentes</a></p>
-    <h1>{{ existing ? 'Editar ' ~ existing.call_sign : 'Novo agente' }}</h1>
-    <p>Use apenas dados fictícios: nada de nomes, matrículas, CPF ou contatos reais.</p>
-  </div></div>
-  {% if errors._form is defined %}<div class="flash flash--error" role="alert">{{ errors._form }}</div>{% elseif errors %}<div class="flash flash--error" role="alert">Revise os campos destacados.</div>{% endif %}
-  <form method="post" action="{{ existing ? url('/agentes/' ~ existing.id) : url('/agentes') }}" class="stack" novalidate>
+{% set labels = {call_sign: 'Nome de exibição', role: 'Função', agency_id: 'Órgão', status: 'Situação inicial', base_name: 'Nome da base', base_street: 'Logradouro', base_ref: 'Número ou referência', base_cep: 'CEP', region_id: 'Bairro', base_lat: 'Latitude da base', base_lng: 'Longitude da base'} %}
+<div class="page page--narrow">
+  <p class="crumbs"><a href="{{ url('/agentes') }}">Agentes</a>{% if existing %} · <a href="{{ url('/agentes/' ~ existing.id) }}">{{ existing.call_sign }}</a>{% endif %}</p>
+  <h1>{{ existing ? 'Editar ' ~ existing.call_sign : 'Cadastrar agente' }}</h1>
+  <p class="lead">Use apenas dados fictícios: nada de nomes, matrículas, documentos ou contatos reais. Campos com <span class="req">*</span> são obrigatórios.</p>
+  {% if errors._form is defined %}<div class="{{ existing and errors|length == 1 ? 'conflict' : 'flash flash--error' }} section" role="alert">{{ errors._form }}</div>{% endif %}
+  {{ ui.error_summary(errors, labels) }}
+  <form method="post" action="{{ existing ? url('/agentes/' ~ existing.id) : url('/agentes') }}" class="stack section" novalidate>
     {{ ui.csrf(app.csrf) }}
     {% if existing %}<input type="hidden" name="version" value="{{ v.version ?? existing.version_no }}">{% endif %}
-    <fieldset class="group"><legend>Identificação</legend>
+    <fieldset class="form-step"><legend><span class="form-step__n" aria-hidden="true">1</span> Quem é</legend>
       <div class="form-grid">
-        {{ ui.input('call_sign', 'Indicativo / nome de exibição (fictício)', v, errors, {required: true, max: 40, placeholder: 'Ex.: Hermes 09'}) }}
-        {% set roleOptions = {TRANSITO: 'Agente de trânsito', GUARDA: 'Guarda municipal', POLICIA: 'Policial'} %}
-        {{ ui.select('role', 'Função', roleOptions, v.role ?? 'TRANSITO', errors, {required: true}) }}
+        {{ ui.input('call_sign', 'Nome de exibição (fictício)', v, errors, {required: true, max: 40, placeholder: 'Ex.: Hermes 09'}) }}
+        {{ ui.select('role', 'Função', {TRANSITO: 'Agente de trânsito', GUARDA: 'Guarda municipal', POLICIA: 'Policial'}, v.role ?? 'TRANSITO', errors, {required: true}) }}
         <div class="field {{ errors.agency_id is defined ? 'has-error' }}">
-          <label for="f-agency_id">Órgão <span class="req">*</span></label>
-          <select id="f-agency_id" name="agency_id" required><option value="">Escolha…</option>{% for a in agencies %}<option value="{{ a.id }}" {{ ((v.agency_id ?? '') ~ '') == (a.id ~ '') ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select>
+          <label for="f-agency_id">Órgão <span class="req" aria-hidden="true">*</span></label>
+          <select id="f-agency_id" name="agency_id" required {% if errors.agency_id is defined %}aria-invalid="true" aria-describedby="err-agency_id"{% endif %}><option value="">Escolha…</option>{% for a in agencies %}<option value="{{ a.id }}" {{ ((v.agency_id ?? '') ~ '') == (a.id ~ '') ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select>
           {{ ui.field_error(errors, 'agency_id') }}
         </div>
         {% if not existing %}
@@ -30,22 +29,30 @@
         {% endif %}
       </div>
     </fieldset>
-    <fieldset class="group"><legend>Base de trabalho</legend>
+    <fieldset class="form-step"><legend><span class="form-step__n" aria-hidden="true">2</span> Base de trabalho</legend>
+      <p class="hint">A base é o endereço fixo de trabalho. A posição atual não é digitada: vem das observações recebidas enquanto o agente está em turno.</p>
+      <div class="picker" id="picker" data-picker data-lat="f-base_lat" data-lng="f-base_lng" data-status="picker-status" data-tiles="{{ app.map.tiles }}" data-attribution="{{ app.map.attribution }}" role="application" aria-label="Mapa para marcar a base. Use também os campos de coordenadas em Opções avançadas."></div>
+      <p class="picker-status" id="picker-status" aria-live="polite"></p>
       <div class="form-grid">
-        {{ ui.input('base_name', 'Nome da base', v, errors, {required: true, max: 80}) }}
+        {{ ui.input('base_name', 'Nome da base', v, errors, {required: true, max: 80, placeholder: 'Ex.: Base Norte (fictícia)'}) }}
         {{ ui.input('base_street', 'Logradouro', v, errors, {max: 120}) }}
         {{ ui.input('base_ref', 'Número ou referência', v, errors, {max: 160}) }}
         {{ ui.input('base_cep', 'CEP', v, errors, {max: 9, inputmode: 'numeric', placeholder: '17500-000'}) }}
-        <div class="field"><label for="f-region_id">Bairro</label>
+        <div class="field"><label for="f-region_id">Bairro <span class="optional">(opcional)</span></label>
           <select id="f-region_id" name="region_id"><option value="">Sem bairro</option>{% for r in regions %}<option value="{{ r.id }}" {{ ((v.region_id ?? '') ~ '') == (r.id ~ '') ? 'selected' }}>{{ r.name }}</option>{% endfor %}</select>{{ ui.field_error(errors, 'region_id') }}</div>
-        <div class="field"><span class="label">Cidade / UF</span><span>Marília / SP</span></div>
-        {{ ui.input('base_lat', 'Latitude da base', v, errors, {required: true, max: 20, inputmode: 'decimal'}) }}
-        {{ ui.input('base_lng', 'Longitude da base', v, errors, {required: true, max: 20, inputmode: 'decimal'}) }}
-        <div class="span-2"><div class="picker" data-picker data-lat="f-base_lat" data-lng="f-base_lng" data-tiles="{{ app.map.tiles }}" data-attribution="{{ app.map.attribution }}" role="application" aria-label="Clique no mapa para preencher a base"></div></div>
+        <div class="field"><span class="label">Cidade</span><span>Marília / SP</span></div>
       </div>
+      <details class="advanced" {{ errors.base_lat is defined or errors.base_lng is defined or not (v.base_lat ?? false) ? 'open' }}>
+        <summary>Coordenadas da base <span class="req" aria-hidden="true">*</span></summary>
+        <p class="hint">Obrigatórias para agentes: o mapa preenche estes campos (graus decimais, WGS84).</p>
+        <div class="form-grid">
+          {{ ui.input('base_lat', 'Latitude da base', v, errors, {required: true, max: 20, inputmode: 'decimal'}) }}
+          {{ ui.input('base_lng', 'Longitude da base', v, errors, {required: true, max: 20, inputmode: 'decimal'}) }}
+        </div>
+      </details>
     </fieldset>
     <div class="form-actions">
-      <a class="btn btn--ghost" href="{{ existing ? url('/agentes/' ~ existing.id) : url('/agentes') }}">Cancelar</a>
+      <a class="btn btn--quiet" href="{{ existing ? url('/agentes/' ~ existing.id) : url('/agentes') }}">Cancelar</a>
       <button class="btn btn--primary" type="submit">{{ existing ? 'Salvar alterações' : 'Cadastrar agente' }}</button>
     </div>
   </form>

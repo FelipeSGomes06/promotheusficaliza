@@ -5,13 +5,13 @@ painel de hospedagem ou dado pessoal na tela. A duração é sugestão deste rot
 
 | Tempo | Cena | Fala/mostrar |
 |---|---|---|
-| 0:00 | Central | "Promotheus Fiscaliza: inventário, central e antecipação para Marília. Tudo aqui é fictício — veja a faixa." Mostrar KPIs e abrir a fórmula da disponibilidade (registrada × confirmada por sinal). |
-| 0:35 | Mapa | Ícones por categoria (quadrado = equipamento, círculo = agente), glifo + cor de situação, tracejado = observação antiga. Clicar num radar → ficha com miniatura e limite em km/h. |
-| 1:05 | Filtros | Filtrar "Radar" + "Mau funcionamento": mapa, lista e cartões mudam juntos; agentes saem do escopo com aviso. Aba Bairros. |
-| 1:30 | Tempo real | Barra de sincronização (horário dos dados, último evento, duplicatas e atrasos ignorados). Pausar e retomar. |
-| 1:50 | Cadastro | Entrar. Novo radar: tentar "velocidade" sem limite (erro), série já usada pelo fabricante (erro do banco), salvar. Instalar (Não instalado → Operacional) e mostrar o histórico com autor. |
-| 2:40 | Alerta | "Simular falha" num equipamento → alerta na central (anúncio acessível). Reconhecer: continua aberto até a causa sumir. |
-| 3:05 | Manutenção | Abrir ordem, iniciar (equipamento vai para manutenção), concluir declarando a situação real; preventiva periódica agenda a próxima. |
-| 3:35 | Antecipação | Lista de atenção com fatores e ação; método; avaliação ajuste × avaliação com a referência; dizer em voz alta: "índice heurístico, histórico sintético, ~2× o acaso, revocação baixa". |
-| 4:10 | Engenharia | Terminal: `docker compose exec app vendor/bin/phpunit` (62 testes no Firebird real). Abrir README e docs. |
-| 4:30 | Fecho | Publicação proposta em origem dedicada; IA declarada (Codex no plano, Claude na implementação). |
+| 0:00 | Visão geral | "Promotheus Fiscaliza: inventário, central e revisões preventivas para Marília. Tudo aqui é fictício" — abrir o aviso "Demonstração". Mostrar os três resumos e abrir "Mais indicadores" (disponibilidade registrada × confirmada por sinal). |
+| 0:35 | Mapa | Tocar num grupo (aproxima), num radar → ficha resumida: tipo e endereço primeiro, código como plaqueta, situação, "Sinal atual · há…", ilustração da categoria. Abrir a legenda: instalado, planejado, base, última posição. |
+| 1:05 | Atenção | "Ver o que precisa de atenção": mapa, lista e números mudam juntos, cada item com o motivo ("Sem sinal recente — não confirma falha"). Alternar para Lista e voltar ao Mapa com a mesma seleção. |
+| 1:30 | Tempo real | Linha "Atualizado às…" abaixo do mapa; a ficha aberta continua aberta e o mapa não se move. Pausar e retomar. |
+| 1:50 | Cadastro | Entrar. Cadastrar radar: marcar no mapa, deixar "Velocidade" sem limite (erro com resumo, digitação mantida), corrigir e salvar. Instalar (Não instalado → Operacional) e mostrar o histórico com autor. |
+| 2:40 | Alerta | "Simular falha" → aparece em "precisam de atenção". Registrar ciência: continua aberto até a causa sumir. |
+| 3:05 | Manutenção | Lista por andamento e urgência; iniciar uma urgente (efeito escrito ao lado); mostrar que outra ordem do mesmo equipamento fica "Aguardando"; concluir informando "Continua com mau funcionamento". |
+| 3:35 | Revisões recomendadas | "Revisar primeiro" com o porquê e o que fazer; abrir o retrospecto e dizer: "prioridade heurística, histórico sintético, cerca de 2× o acaso, revocação baixa". |
+| 4:10 | Engenharia | Terminal: `docker compose exec app vendor/bin/phpunit` (testes no Firebird real, inclusive concorrência com processos separados). Abrir README e docs. |
+| 4:30 | Fecho | Publicação proposta em origem dedicada; IA declarada (Codex no plano e na auditoria, Claude na implementação). |

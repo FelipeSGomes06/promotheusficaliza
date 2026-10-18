@@ -7,7 +7,9 @@ namespace Fiscaliza\Http\Controller;
 use Fiscaliza\Application\Filters;
 use Fiscaliza\Domain\EquipmentCatalog;
 use Fiscaliza\Domain\EquipmentStatus;
+use Fiscaliza\Domain\Freshness;
 use Fiscaliza\Domain\RuleViolation;
+use Fiscaliza\Domain\Time;
 use Fiscaliza\Domain\ValidationFailed;
 use Fiscaliza\Http\HttpError;
 use Fiscaliza\Infrastructure\ConcurrencyConflict;
@@ -29,6 +31,11 @@ final class EquipmentController extends Controller
         $archived = ($query['arquivados'] ?? '') === '1';
         $page = self::pageNumber($query);
         $result = $this->services->equipmentRepository()->search($filters, $text, $archived, $sort, $page, self::PER_PAGE);
+        $now = $this->services->clock()->now();
+        foreach ($result['rows'] as &$row) {
+            $row['freshness'] = Freshness::of(Time::fromDb($row['last_seen_at']), $now, EquipmentStatus::from($row['status'])->expectsSignal());
+        }
+        unset($row);
 
         return $this->render($request, $response, 'equipment/index.twig', [
             'rows' => $result['rows'], 'total' => $result['total'], 'page' => $page, 'pages' => max(1, (int) ceil($result['total'] / self::PER_PAGE)),
@@ -43,9 +50,12 @@ final class EquipmentController extends Controller
         $id = self::id($args);
         $equipment = $this->services->equipmentRepository()->find($id) ?? throw new HttpError(404, 'Equipamento não encontrado.');
         $status = EquipmentStatus::from($equipment['status']);
+        $now = $this->services->clock()->now();
 
         return $this->render($request, $response, 'equipment/show.twig', [
             'e' => $equipment,
+            'freshness' => Freshness::of(Time::fromDb($equipment['last_seen_at']), $now, $status->expectsSignal()),
+            'position_freshness' => Freshness::of(Time::fromDb($equipment['pos_observed_at']), $now, true, Freshness::POSITION_CURRENT, Freshness::POSITION_STALE),
             'type' => EquipmentCatalog::get($equipment['type_code']),
             'status' => $status,
             'transitions' => $status->allowedTransitions(),
@@ -54,7 +64,7 @@ final class EquipmentController extends Controller
             'orders' => $this->services->maintenanceRepository()->forEquipment($id),
             'alerts' => $this->services->alertRepository()->forResource('EQUIPAMENTO', $id),
             'analysis' => $this->services->analysisRepository()->latestForEquipment($id),
-            'today' => \Fiscaliza\Domain\Time::localDate($this->services->clock()->now()),
+            'today' => Time::localDate($now),
         ]);
     }
 
@@ -102,8 +112,10 @@ final class EquipmentController extends Controller
             $this->services->equipment()->update($id, $data, $this->userId($request));
         } catch (ValidationFailed $e) {
             return $this->form($request, $response, $data + ['code' => $equipment['code']], $e->errors, $equipment, 422);
-        } catch (ConcurrencyConflict|RuleViolation $e) {
+        } catch (RuleViolation $e) {
             return $this->form($request, $response, $data + ['code' => $equipment['code']], ['_form' => $e->getMessage()], $equipment, 409);
+        } catch (ConcurrencyConflict $e) {
+            return $this->conflict($request, $response, $id, $data);
         }
         $this->session($request)->flash('success', 'Alterações salvas.');
 
@@ -131,9 +143,11 @@ final class EquipmentController extends Controller
     public function archive(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $id = self::id($args);
+        $body = $this->body($request);
         try {
-            $this->services->equipment()->archive($id, (string) ($this->body($request)['reason'] ?? ''), $this->userId($request));
-            $this->session($request)->flash('success', 'Equipamento arquivado. O histórico foi preservado.');
+            $cancelled = $this->services->equipment()->archive($id, (string) ($body['reason'] ?? ''), $this->userId($request), ($body['cancelar_agendadas'] ?? '') === '1');
+            $this->session($request)->flash('success', 'Equipamento arquivado. O histórico foi preservado.'
+                . ($cancelled === [] ? '' : ' Ordens agendadas canceladas: #' . implode(', #', $cancelled) . '.'));
         } catch (ValidationFailed $e) {
             $this->session($request)->flash('error', implode(' ', $e->errors));
         } catch (RuleViolation|ConcurrencyConflict $e) {
@@ -162,16 +176,45 @@ final class EquipmentController extends Controller
     }
 
     /**
+     * Conflito de edição: o cadastro mudou depois que o formulário foi aberto. A digitação é mantida, as diferenças
+     * em relação ao que está salvo aparecem campo a campo e o formulário passa a carregar a versão atual — salvar
+     * de novo é então uma decisão consciente de manter a própria versão.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function conflict(ServerRequestInterface $request, ResponseInterface $response, int $id, array $data): ResponseInterface
+    {
+        $current = $this->services->equipmentRepository()->find($id) ?? throw new HttpError(404, 'Equipamento não encontrado.');
+        if ($current['archived_at'] !== null) {
+            $this->session($request)->flash('error', 'Este equipamento foi arquivado enquanto você editava; o cadastro não pode mais ser alterado.');
+
+            return $this->redirect($response, "/equipamentos/{$id}");
+        }
+        $last = null;
+        foreach ($this->services->eventRepository()->forResource('EQUIPAMENTO', $id, 20) as $event) {
+            if (in_array($event['event_type'], ['ALTERACAO', 'SITUACAO'], true)) {
+                $last = $event;
+                break;
+            }
+        }
+
+        return $this->form($request, $response, ['version' => $current['version_no'], 'code' => $current['code']] + $data, [
+            '_form' => 'O cadastro foi alterado (por outra pessoa ou em outra aba) depois que você abriu este formulário. Seus dados continuam abaixo.',
+        ], $current, 409, ['changes' => $this->services->equipment()->pendingChanges($id, $data), 'last' => $last]);
+    }
+
+    /**
      * @param array<string, mixed> $values
      * @param array<string, string> $errors
      * @param array<string, mixed>|null $existing
+     * @param array{changes: array<string, array{antes: mixed, depois: mixed}>, last: array<string, mixed>|null}|null $conflict
      */
-    private function form(ServerRequestInterface $request, ResponseInterface $response, array $values, array $errors, ?array $existing, int $status = 200): ResponseInterface
+    private function form(ServerRequestInterface $request, ResponseInterface $response, array $values, array $errors, ?array $existing, int $status = 200, ?array $conflict = null): ResponseInterface
     {
         $refs = $this->services->referenceRepository();
 
         return $this->render($request, $response, 'equipment/form.twig', [
-            'values' => $values, 'errors' => $errors, 'existing' => $existing, 'types' => EquipmentCatalog::all(),
+            'values' => $values, 'errors' => $errors, 'existing' => $existing, 'conflict' => $conflict, 'types' => EquipmentCatalog::all(),
             'statuses' => EquipmentStatus::cases(), 'agencies' => $refs->agencies(), 'regions' => $refs->regions(),
         ], $status);
     }

@@ -1,0 +1,10 @@
+# Sobreposição para servir a aplicação na RAIZ de uma origem dedicada (opção A de docs/operacao.md).
+# Uso: docker compose -f compose.yaml -f compose.origem-dedicada.yaml up -d
+# APP_BASE_PATH vazio sozinho não basta: o Apache padrão do projeto serve um portal simulado na raiz e a aplicação
+# só sob /promotheusfiscaliza. Aqui o site do Apache é trocado por docker/php/apache-origem-dedicada.conf.
+services:
+  app:
+    environment:
+      APP_BASE_PATH: ""
+    volumes:
+      - ./docker/php/apache-origem-dedicada.conf:/etc/apache2/sites-available/000-default.conf:ro

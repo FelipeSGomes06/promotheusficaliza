@@ -70,12 +70,18 @@ final class AgentRepository
         ) === 1;
     }
 
-    /** @param array<string, mixed> $values */
+    /**
+     * Situação e arquivamento. Como em equipamentos, VERSION_NO é a versão do cadastro: a troca de situação
+     * (inclusive a do simulador) não invalida um formulário aberto; o arquivamento invalida.
+     *
+     * @param array<string, mixed> $values
+     */
     public function updateState(int $id, array $values): void
     {
         $values = self::onlyWritable($values);
         $set = implode(', ', array_map(static fn($c) => "{$c} = ?", array_keys($values)));
-        $this->db->execute("UPDATE AGENT SET {$set}, VERSION_NO = VERSION_NO + 1 WHERE ID = ?", [...array_values($values), $id]);
+        $bump = array_key_exists('ARCHIVED_AT', $values) ? ', VERSION_NO = VERSION_NO + 1' : '';
+        $this->db->execute("UPDATE AGENT SET {$set}{$bump} WHERE ID = ?", [...array_values($values), $id]);
     }
 
     /** Posição observada: só avança no tempo (evento atrasado não regride a posição atual). */

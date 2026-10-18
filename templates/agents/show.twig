@@ -1,69 +1,81 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
-{% block title %}{{ a.call_sign }}{% endblock %}
+{% block title %}{{ role.label }} · {{ a.call_sign }}{% endblock %}
 {% block content %}
+{% set eventLabels = {CADASTRO: 'Cadastro', ALTERACAO: 'Alteração do cadastro', SITUACAO: 'Situação', ARQUIVAMENTO: 'Arquivamento', POSICAO: 'Posição'} %}
+{% set sourceLabels = {MANUAL: 'por pessoa', SIMULADOR: 'pelo simulador', SEMENTE: 'carga da demonstração', SISTEMA: 'pelo sistema'} %}
+{% set alertStates = {ABERTO: 'Aberto', RECONHECIDO: 'Ciência registrada', RESOLVIDO: 'Resolvido'} %}
+{% set editable = app.user and not a.archived_at %}
 <div class="page">
-  <div class="page-head">
+  <div class="detail-head">
+    <figure>
+      <img src="{{ app.base }}/assets/img/miniaturas/ag_{{ a.role|lower }}.svg" alt="" width="168" height="126">
+      <figcaption>Ilustração da função; pessoa fictícia.</figcaption>
+    </figure>
     <div>
-      <p class="eyebrow"><a href="{{ url('/agentes') }}">Agentes</a> · {{ role.label }}</p>
-      <h1>{{ a.call_sign }} {{ ui.agent_status(a.status) }}</h1>
-      <p><span class="mono">{{ a.code }}</span> · {{ a.agency_name }} · agente fictício{% if a.archived_at %} · <span class="tag tag--warn">Arquivado em {{ a.archived_at|local_dt }}</span>{% endif %}</p>
+      <p class="crumbs"><a href="{{ url('/agentes') }}">Agentes</a> · {{ role.label }}</p>
+      <h1>{{ role.label }} · {{ a.call_sign }}</h1>
+      <p class="muted"><span class="code-tag">{{ a.code }}</span> {{ a.agency_name }} · agente fictício (não é conta de acesso)</p>
+      <div class="state">
+        {{ ui.agent_status(a.status) }}
+        {% if freshness.value == 'NAO_SE_APLICA' %}<span class="fresh">Fora de turno: posição não se aplica</span>{% else %}{{ ui.freshness(freshness.value, a.pos_observed_at, 'Posição') }}{% endif %}
+        {% if a.archived_at %}<span class="tag tag--warn">Arquivado em {{ a.archived_at|local_dt }}</span>{% endif %}
+      </div>
     </div>
-    {% if app.user and not a.archived_at %}<a class="btn" href="{{ url('/agentes/' ~ a.id ~ '/editar') }}">{{ ui.icon('i-edit') }}Editar cadastro</a>{% endif %}
   </div>
-  <div class="grid-2">
+
+  <div class="split section">
     <div class="stack">
-      <section class="card hero-card">
-        <figure>
-          <img src="{{ app.base }}/assets/img/miniaturas/ag_{{ a.role|lower }}.svg" alt="Ilustração: {{ role.label }}" width="200" height="150">
-          <figcaption>Ilustração da função; pessoa fictícia.</figcaption>
-        </figure>
-        <div>
-          <h2>Ficha</h2>
-          <dl class="facts">
-            <dt>Função</dt><dd>{{ role.label }}</dd>
-            <dt>Órgão</dt><dd>{{ a.agency_name }}</dd>
-            <dt>Base</dt><dd>{{ a.base_name }}<br><span class="small muted">{{ a.base_street ?? '' }}{{ a.base_ref ? ' · ' ~ a.base_ref }} · {{ a.region_name ?? 'sem bairro' }}{{ a.base_cep ? ' · CEP ' ~ a.base_cep }}</span></dd>
-            <dt>Coordenadas da base</dt><dd>{{ a.base_lat|number_format(6, ',', '') }}, {{ a.base_lng|number_format(6, ',', '') }}</dd>
-            <dt>Última posição</dt><dd>{% if a.pos_lat is null %}sem observação{% else %}{{ a.pos_lat|number_format(6, ',', '') }}, {{ a.pos_lng|number_format(6, ',', '') }}<br><span class="small muted">observada {{ a.pos_observed_at|local_dt('d/m/Y H:i:s') }} · recebida {{ a.pos_received_at|local_dt('H:i:s') }}</span>{% endif %}</dd>
-            <dt>Atualidade</dt><dd>{{ ui.status(freshness.value, freshness.label) }}</dd>
-            <dt>Situação desde</dt><dd>{{ a.status_changed_at|local_dt }}</dd>
-          </dl>
-        </div>
+      <section class="panel" aria-labelledby="onde">
+        <h2 id="onde">{{ ui.icon('i-pin') }} Onde está</h2>
+        <dl class="facts">
+          <dt>Base de trabalho</dt><dd>{{ a.base_name }}<br><span class="hint">{{ [a.base_street, a.base_ref]|filter(v => v)|join(', ') ?: 'sem endereço' }} · {{ a.region_name ?? 'sem bairro' }}{{ a.base_cep ? ' · CEP ' ~ a.base_cep }}</span><br><span class="hint">Endereço fixo cadastrado. Não indica onde o agente está agora.</span></dd>
+          <dt>Última posição recebida</dt><dd>{% if a.pos_lat is null %}nenhuma recebida{% else %}{{ a.pos_observed_at|local_dt('d/m/Y H:i') }}<br><span class="hint">Recebida pelo rádio simulado às {{ a.pos_received_at|local_dt('H:i:s') }}. No mapa, aparece só enquanto o agente está em turno.</span>{% endif %}</dd>
+          <dt>Situação desde</dt><dd>{{ a.status_changed_at|local_dt }}</dd>
+        </dl>
+        {% if not a.archived_at %}<p><a class="btn btn--small" href="{{ url('/', {selecionar: 'AGENTE:' ~ a.id}) }}">{{ ui.icon('i-map') }}Ver no mapa</a></p>{% endif %}
+        <p class="hint">Coordenadas da base: {{ a.base_lat|number_format(6, ',', '') }}, {{ a.base_lng|number_format(6, ',', '') }}{% if a.pos_lat is not null %} · última posição: {{ a.pos_lat|number_format(6, ',', '') }}, {{ a.pos_lng|number_format(6, ',', '') }}{% endif %}</p>
       </section>
-      {% if app.user and not a.archived_at %}
-      <section class="card">
-        <h2>Mudar situação</h2>
-        <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/situacao') }}" class="btn-row">{{ ui.csrf(app.csrf) }}
-          <label class="visually-hidden" for="ns">Nova situação</label>
-          <select id="ns" name="status">{% for s in statuses %}<option value="{{ s.value }}" {{ s == status ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select>
-          <button class="btn btn--sm" type="submit">Registrar</button>
-        </form>
-      </section>
-      <section class="card">
-        <h2>Arquivar</h2>
-        <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/arquivar') }}" data-confirm="Arquivar {{ a.call_sign }}? O histórico é preservado.">{{ ui.csrf(app.csrf) }}
-          <div class="field"><label for="ar">Motivo</label><input id="ar" name="reason" required maxlength="300"></div>
-          <button class="btn btn--danger btn--sm" type="submit">Arquivar agente</button>
-        </form>
-      </section>
-      {% endif %}
-    </div>
-    <div class="stack">
-      <section class="card">
-        <h2>{{ ui.icon('i-alert') }} Alertas</h2>
-        {% for al in alerts %}
-          <div class="alert-item alert-item--{{ al.severity }}"><div class="alert-item__top">{{ ui.status(al.state == 'RESOLVIDO' ? 'BAIXA' : al.severity, al.state|capitalize) }}<span class="small faint">{{ al.opened_at|local_dt }}</span></div><p>{{ al.message }}</p></div>
-        {% else %}<p class="muted">Nenhum alerta registrado.</p>{% endfor %}
-      </section>
-      <section class="card">
-        <h2>{{ ui.icon('i-clock') }} Histórico</h2>
+
+      <section class="section" aria-labelledby="historico">
+        <h2 id="historico">{{ ui.icon('i-clock') }} Histórico</h2>
+        <p class="hint">Linha tracejada: registro que não alterou o estado atual (por exemplo, posição mais antiga que a atual).</p>
         <ol class="timeline">
           {% for ev in events %}
-            <li class="{{ ev.outcome == 'APLICADO' ? 'is-applied' : 'is-historical' }}"><time datetime="{{ ev.occurred_at }}">{{ ev.occurred_at|local_dt('d/m/Y H:i') }}</time> <span class="tag">{{ ev.event_type|lower }}</span> <span class="tag">{{ ev.source|lower }}{{ ev.actor_name ? ' · ' ~ ev.actor_name }}</span><p>{{ ev.summary }}</p></li>
-          {% else %}<li>Sem eventos.</li>{% endfor %}
+            <li class="{{ ev.outcome == 'APLICADO' ? 'is-applied' : 'is-historical' }}"><time datetime="{{ ev.occurred_at }}">{{ ev.occurred_at|local_dt('d/m/Y H:i') }}</time> · <strong>{{ eventLabels[ev.event_type] ?? ev.event_type|lower }}</strong> <span class="small muted">{{ ev.actor_name ? 'por ' ~ ev.actor_name : (sourceLabels[ev.source] ?? ev.source|lower) }}</span><p>{{ ev.summary }}</p></li>
+          {% else %}<li>Sem registros.</li>{% endfor %}
         </ol>
       </section>
+    </div>
+    <div class="stack">
+      <section class="panel" aria-labelledby="alertas">
+        <h2 id="alertas">{{ ui.icon('i-alert') }} Alertas</h2>
+        {% for al in alerts %}
+          <div class="brief__alert brief__alert--{{ al.severity }}"><p>{{ ui.status(al.state == 'RESOLVIDO' ? 'RESOLVIDO' : al.severity, alertStates[al.state] ?? al.state) }} <span class="hint">{{ al.opened_at|local_dt }}</span></p><p>{{ al.message }}</p></div>
+        {% else %}<p class="muted">Nenhum alerta registrado.</p>{% endfor %}
+      </section>
+      {% if editable %}
+      <section class="panel" aria-labelledby="situacao">
+        <h2 id="situacao">Mudar situação</h2>
+        <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/situacao') }}" class="stack">{{ ui.csrf(app.csrf) }}
+          <div class="field"><label for="ns">Situação</label>
+            <select id="ns" name="status">{% for s in statuses %}<option value="{{ s.value }}" {{ s == status ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select>
+            <span class="hint">Em atividade e em pausa contam como "em turno": a posição recebida é esperada.</span></div>
+          <div><button class="btn btn--small" type="submit">Registrar situação</button></div>
+        </form>
+      </section>
+      <details class="panel more-actions">
+        <summary>Mais ações: editar e arquivar</summary>
+        <div class="stack">
+          <p><a class="btn btn--small" href="{{ url('/agentes/' ~ a.id ~ '/editar') }}">{{ ui.icon('i-edit') }}Editar cadastro</a></p>
+          <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/arquivar') }}" class="stack" data-confirm="Arquivar este agente? O histórico é preservado.">{{ ui.csrf(app.csrf) }}
+            <p class="hint">Arquivar retira o agente da operação; o histórico continua consultável.</p>
+            <div class="field"><label for="ar">Motivo do arquivamento</label><input id="ar" name="reason" required maxlength="300"></div>
+            <div><button class="btn btn--danger btn--small" type="submit">Arquivar agente</button></div>
+          </form>
+        </div>
+      </details>
+      {% endif %}
     </div>
   </div>
 </div>

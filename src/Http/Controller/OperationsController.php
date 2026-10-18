@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fiscaliza\Http\Controller;
 
+use Fiscaliza\Domain\EquipmentCatalog;
 use Fiscaliza\Domain\MaintenanceUrgency;
 use Fiscaliza\Domain\RuleViolation;
 use Fiscaliza\Domain\Time;
@@ -18,14 +19,23 @@ final class OperationsController extends Controller
     public function maintenance(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $today = Time::localDate($this->services->clock()->now());
-        $groups = ['IMEDIATA' => [], 'VENCIDA' => [], 'PROXIMA' => [], 'FUTURA' => []];
+        // Uma lista por andamento e urgência: primeiro o que está em execução, depois o que precisa começar.
+        $groups = ['EM_EXECUCAO' => [], 'URGENTE' => [], 'PROXIMA' => [], 'FUTURA' => []];
+        $running = [];
         foreach ($this->services->maintenanceRepository()->open() as $order) {
             $urgency = MaintenanceUrgency::classify((string) $order['priority'], $order['due_date'], $today);
-            $groups[$urgency->value][] = $order + ['urgency' => $urgency];
+            $row = $order + ['urgency' => $urgency];
+            if ($order['state'] === 'EM_EXECUCAO') {
+                $groups['EM_EXECUCAO'][] = $row;
+                $running[(int) $order['equipment_id']] = (int) $order['id'];
+            } else {
+                $groups[$urgency->isUrgent() ? 'URGENTE' : $urgency->value][] = $row;
+            }
         }
 
         return $this->render($request, $response, 'maintenance/index.twig', [
-            'groups' => $groups, 'today' => $today, 'closed' => $this->services->maintenanceRepository()->recentlyClosed(),
+            'groups' => $groups, 'running' => $running, 'today' => $today, 'types' => EquipmentCatalog::all(),
+            'closed' => $this->services->maintenanceRepository()->recentlyClosed(),
         ]);
     }
 
@@ -111,6 +121,7 @@ final class OperationsController extends Controller
         return $this->render($request, $response, 'analysis/index.twig', [
             'run' => $run,
             'results' => $run === null ? [] : $this->services->analysisRepository()->results((int) $run['id']),
+            'types' => EquipmentCatalog::all(),
         ]);
     }
 

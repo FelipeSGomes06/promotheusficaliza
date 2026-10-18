@@ -105,8 +105,16 @@ final class AgentController extends Controller
             $this->services->agents()->update($id, $data, $this->userId($request));
         } catch (ValidationFailed $e) {
             return $this->form($request, $response, $data + ['code' => $agent['code']], $e->errors, $agent, 422);
-        } catch (ConcurrencyConflict|RuleViolation $e) {
+        } catch (RuleViolation $e) {
             return $this->form($request, $response, $data + ['code' => $agent['code']], ['_form' => $e->getMessage()], $agent, 409);
+        } catch (ConcurrencyConflict) {
+            // Mantém a digitação e passa a versão atual: salvar de novo é a decisão consciente de manter esta versão.
+            $agents = $this->services->agentRepository();
+            $current = $agents->find($id) ?? $agent;
+
+            return $this->form($request, $response, ['version' => $current['version_no'], 'code' => $agent['code']] + $data, [
+                '_form' => 'O cadastro deste agente foi alterado (por outra pessoa ou em outra aba) depois que você abriu o formulário. Confira a ficha atual antes de salvar de novo; seus dados continuam abaixo.',
+            ], $current, 409);
         }
         $this->session($request)->flash('success', 'Alterações salvas.');
 

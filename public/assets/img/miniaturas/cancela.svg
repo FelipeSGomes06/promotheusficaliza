@@ -1,11 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Cancela automática">
 <title>Cancela automática — ilustração da categoria (não representa um modelo comercial)</title>
-<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2433"/><stop offset="1" stop-color="#2b3548"/></linearGradient>
-<radialGradient id="glow" cx=".8" cy=".15" r=".6"><stop offset="0" stop-color="#ff8a2b" stop-opacity=".35"/><stop offset="1" stop-color="#ff8a2b" stop-opacity="0"/></radialGradient></defs>
-<rect width="160" height="120" rx="14" fill="url(#sky)"/><rect width="160" height="120" rx="14" fill="url(#glow)"/>
-<path d="M0 96h160v10a14 14 0 0 1-14 14H14A14 14 0 0 1 0 106z" fill="#222b3b"/>
-<rect x="22" y="44" width="26" height="52" rx="6" fill="#e8edf5"/><rect x="27" y="52" width="16" height="10" rx="3" fill="#2e384b"/><circle cx="35" cy="73" r="4" fill="#3ddc97"/>
-<g transform="rotate(-8 46 50)"><rect x="44" y="45" width="104" height="10" rx="5" fill="#e8edf5"/>
-<path d="M58 45h10l-6 10h-10zM82 45h10l-6 10h-10zM106 45h10l-6 10h-10zM130 45h10l-6 10h-10z" fill="#ff5a4e"/></g>
-<circle cx="35" cy="34" r="6" fill="#ffc24b"/><path d="M31 96h8" stroke="#6d788c" stroke-width="6" stroke-linecap="round"/>
+<rect width="160" height="120" rx="12" fill="#e6eef7"/><circle cx="138" cy="20" r="9" fill="#fbe7a6"/><path d="M0 94h160v14a12 12 0 0 1-12 12H12A12 12 0 0 1 0 108z" fill="#5c6774"/><path d="M0 94h160" stroke="#b8c1cc" stroke-width="2"/><path d="M12 107h16M44 107h16M76 107h16M108 107h16M140 107h12" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+<rect x="16" y="46" width="32" height="48" rx="4" fill="#fff" stroke="#18212c" stroke-width="2.5" stroke-linejoin="round"/><rect x="22" y="54" width="20" height="13" rx="2" fill="#e6eef7" stroke="#18212c" stroke-width="1.5"/>
+<rect x="55" y="56" width="13" height="38" rx="3" fill="#6b7480" stroke="#18212c" stroke-width="2.5" stroke-linejoin="round"/><circle cx="61.5" cy="50" r="4.5" fill="#c42b2b" stroke="#18212c" stroke-width="2"/>
+<rect x="64" y="58" width="86" height="10" rx="5" fill="#fff" stroke="#18212c" stroke-width="2.5" stroke-linejoin="round"/><path d="M78 58v10M90 58v10M102 58v10M114 58v10M126 58v10M138 58v10" stroke="#c42b2b" stroke-width="6"/>
+<rect x="64" y="58" width="86" height="10" rx="5" fill="none" stroke="#18212c" stroke-width="2.5" stroke-linejoin="round"/>
 </svg>

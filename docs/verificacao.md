@@ -3,7 +3,29 @@
 Ambiente: Windows 11 + Docker Desktop 29.7.2; contêineres `php:8.5.11-apache-trixie` (PDO_FIREBIRD, fbclient 4.0.5)
 e `firebirdsql/firebird:5.0.4-trixie`. Data: 18/10/2026. Só está listado aqui o que de fato rodou.
 
-## Automatizado
+## Depois das correções da auditoria e do redesenho (18/10/2026, 21:20 UTC)
+
+Projeto Compose isolado (`-p fiscaliza-claude`, porta 8091, volume próprio), PHP 8.5.11, Firebird 5.0.4. Detalhes,
+contraprova e defeitos encontrados no caminho: [correções da auditoria](evidencias/2026-10-18-correcoes-da-auditoria.md).
+
+| Verificação | Resultado |
+|---|---|
+| `vendor/bin/phpunit` | **89 testes, 314 asserções, OK** (inclui testes concorrentes com processos separados, repetidos 3 vezes sem falha) |
+| `vendor/bin/phpstan analyse` (nível 6) | 0 erros |
+| `vendor/bin/php-cs-fixer fix --dry-run` | 0 de 85 arquivos a corrigir |
+| `composer validate --strict` · `composer audit` | válido · nenhum aviso nas bases consultadas |
+| Migração 0001 → 0002 com falhas de login antigas | OK |
+| Navegador: 22 telas (1440×900 e 390×844), teclado, atualização com simulador, movimento reduzido, console | OK; mapa no celular em y≈475 px; sem rolagem horizontal; console sem erros |
+| Origem dedicada (`compose.origem-dedicada.yaml`) local | OK (raiz 200; caminho antigo 301) |
+
+Novas coberturas: uma intervenção por vez (inclusive concorrente e no banco), arquivamento × intervenção, versão do
+cadastro × telemetria, conflito HTTP recuperável, periodicidade/recebimento/arquivamento nos cortes da análise,
+convenções de F1, cota de login concorrente (serviço e HTTP com sessões e CSRF distintos), separação do banco de
+testes, trava do simulador, busca e "precisa de atenção" no instantâneo.
+
+As seções abaixo registram a verificação anterior (62 testes), mantida como histórico.
+
+## Automatizado (primeira entrega)
 
 | Verificação | Comando | Resultado |
 |---|---|---|
@@ -43,9 +65,11 @@ e `firebirdsql/firebird:5.0.4-trixie`. Data: 18/10/2026. Só está listado aqui 
 
 - Instalação a partir de **clone limpo** do repositório público (repositório ainda não criado) — ver pendências.
 - Publicação, varredura de segredos no histórico Git, CI remota, ZIP final e vídeo.
-- Leitor de tela real e ferramenta automática de acessibilidade (axe/Lighthouse); feitas só checagens de estrutura
-  (rótulos, landmarks, abas ARIA, foco visível, movimento reduzido).
-- Medição de desempenho em rede real; no ambiente local o instantâneo da central (69 recursos) tem ~66 KB de JSON.
+- Leitor de tela real e ferramenta automática de acessibilidade (axe/Lighthouse); feitas checagens de estrutura,
+  teclado, foco visível, contraste calculado e movimento reduzido.
+- Teste de usabilidade com pessoa iniciante: as cinco tarefas foram percorridas por mim, sem participante real.
+- Medição de desempenho em rede real; no ambiente local o instantâneo da visão geral (69 recursos) tinha ~66 KB de JSON na primeira entrega e ~78 KB depois do redesenho (títulos, endereços e motivos de atenção).
+- Ensaio de backup/restauração depois da migração 0002 (o script não mudou; a evidência é da primeira entrega).
 
 ## Ambiente limpo (18/10/2026)
 

@@ -6,5 +6,7 @@ declare(strict_types=1);
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-$services = new Fiscaliza\Services(Fiscaliza\Config::load(dirname(__DIR__)), dirname(__DIR__));
+// A web nunca usa a identidade de dono do esquema: as credenciais privilegiadas não chegam aos objetos da aplicação.
+$config = Fiscaliza\Config::load(dirname(__DIR__))->without(Fiscaliza\Config::PRIVILEGED);
+$services = new Fiscaliza\Services($config, dirname(__DIR__));
 Fiscaliza\Http\WebApp::create($services)->run();
