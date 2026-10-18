@@ -15,8 +15,11 @@ namespace Fiscaliza\Domain;
  *       ≥ 0,8 → 6   ≥ 1,0 → 15   ≥ 1,5 → 25
  *   sem periodicidade definida e > 120 dias sem manutenção concluída → 10
  *
- * Classes: ALTA (≥ limiar ajustado), MODERADA (≥ metade do limiar), BAIXA (abaixo);
- * INSUFICIENTE com menos de 60 dias de histórico; CORRETIVA quando já está em falha/manutenção (fora da previsão).
+ * Classes avaliadas (só para equipamento OPERACIONAL): ALTA (≥ limiar ajustado), MODERADA (≥ metade do limiar),
+ * BAIXA (abaixo); INSUFICIENTE com menos de 60 dias de histórico (pontua, mas não classifica).
+ * Classes não avaliadas (sem pontuação): CORRETIVA quando o equipamento já está indisponível — mau funcionamento,
+ * manutenção ou furto: a ação é corretiva ou reposição, não antecipação; NAO_AVALIADO quando está fora de serviço
+ * (não instalado ou desativado).
  * Ordem preventiva vencida aparece como sinal administrativo, separado da tendência de falha.
  */
 final class AttentionModel
@@ -40,12 +43,14 @@ final class AttentionModel
         $adminFlags = $f['overdue_preventive_since'] !== null ? ["Ordem preventiva vencida desde {$f['overdue_preventive_since']} (sinal administrativo)"] : [];
         $status = EquipmentStatus::from($f['status_at']);
         if (!$status->isInService()) {
-            return ['attention' => 'BAIXA', 'score' => null, 'factors' => [['label' => "Fora de serviço ({$status->label()}): não avaliado", 'points' => 0]],
+            return ['attention' => 'NAO_AVALIADO', 'score' => null, 'factors' => [['label' => "Fora de serviço ({$status->label()}): não avaliado", 'points' => 0]],
                 'admin_flags' => [], 'recommendation' => 'Sem previsão: equipamento fora de serviço.'];
         }
         if ($status !== EquipmentStatus::Operacional) {
             return ['attention' => 'CORRETIVA', 'score' => null, 'factors' => [['label' => "Situação atual: {$status->label()}", 'points' => 0]],
-                'admin_flags' => $adminFlags, 'recommendation' => 'Já em falha ou manutenção: tratar como corretiva (não é antecipação).'];
+                'admin_flags' => $adminFlags, 'recommendation' => $status === EquipmentStatus::Furtado
+                    ? 'Furtado: registrar a ocorrência e repor o equipamento (não é antecipação de falha).'
+                    : 'Já em falha ou manutenção: tratar como corretiva (não é antecipação).'];
         }
 
         $factors = [];
@@ -90,7 +95,10 @@ final class AttentionModel
     }
 
     /**
-     * Métricas de uma regra binária sobre pares (equipamento, data de corte).
+     * Métricas de uma regra binária sobre pares (equipamento, data de corte), calculadas direto das contagens e sem
+     * arredondamento (a apresentação arredonda). Convenção: null = indefinido, quando o denominador é zero —
+     * precisão sem nenhum alerta (TP+FP = 0), revocação sem nenhuma falha (TP+FN = 0) e F1 = 2TP/(2TP+FP+FN) só
+     * quando não há falha nem alerta. Erros sem acerto dão F1 = 0,0: desempenho nulo é diferente de ausência de dados.
      *
      * @param list<array{flag: bool, failed: bool}> $pairs
      * @return array{pairs: int, positives: int, flagged: int, tp: int, fp: int, fn: int, precision: ?float, recall: ?float, f1: ?float, prevalence: ?float}
@@ -104,11 +112,11 @@ final class AttentionModel
             $fp += (int) ($p['flag'] && !$p['failed']);
             $fn += (int) (!$p['flag'] && $p['failed']);
         }
-        $precision = $tp + $fp === 0 ? null : round($tp / ($tp + $fp), 3);
-        $recall = $tp + $fn === 0 ? null : round($tp / ($tp + $fn), 3);
-        $f1 = ($precision === null || $recall === null || $precision + $recall == 0.0) ? null : round(2 * $precision * $recall / ($precision + $recall), 3);
+        $precision = $tp + $fp === 0 ? null : (float) $tp / ($tp + $fp);
+        $recall = $tp + $fn === 0 ? null : (float) $tp / ($tp + $fn);
+        $f1 = 2 * $tp + $fp + $fn === 0 ? null : (float) (2 * $tp) / (2 * $tp + $fp + $fn);
 
         return ['pairs' => count($pairs), 'positives' => $positives, 'flagged' => $tp + $fp, 'tp' => $tp, 'fp' => $fp, 'fn' => $fn,
-            'precision' => $precision, 'recall' => $recall, 'f1' => $f1, 'prevalence' => $pairs === [] ? null : round($positives / count($pairs), 3)];
+            'precision' => $precision, 'recall' => $recall, 'f1' => $f1, 'prevalence' => $pairs === [] ? null : (float) $positives / count($pairs)];
     }
 }

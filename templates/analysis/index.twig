@@ -1,88 +1,124 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
-{% block title %}Antecipação{% endblock %}
+{% block title %}Revisões recomendadas{% endblock %}
 {% block content %}
+{% set groups = {
+  ALTA: ['Revisar primeiro', 'Agendar uma inspeção preventiva nos próximos 7 dias.'],
+  MODERADA: ['Acompanhar', 'Incluir na próxima rota de inspeção.']
+} %}
+{% set others = {
+  CORRETIVA: ['Já indisponíveis', 'Em mau funcionamento, em manutenção ou furtados: a ação é corretiva ou reposição, não revisão preventiva.'],
+  INSUFICIENTE: ['Histórico curto', 'Menos de 60 dias de histórico: aparecem com a pontuação, mas sem classificação.'],
+  NAO_AVALIADO: ['Não avaliados', 'Fora de serviço (não instalados ou desativados): não faz sentido prever falha.'],
+  BAIXA: ['Sem destaque', 'Avaliados, sem sinais suficientes para priorizar.']
+} %}
 <div class="page">
   <div class="page-head">
     <div>
-      <p class="eyebrow">Cidade preditiva · parte 3</p>
-      <h1>Quais equipamentos merecem revisão nos próximos 7 dias?</h1>
-      <p>Índice heurístico explicável a partir do histórico de falhas e manutenção. Apoio à decisão humana: nada é alterado automaticamente.</p>
+      <p class="crumbs">Parte 3 do desafio · antecipação de problemas</p>
+      <h1>Revisões recomendadas para os próximos 7 dias</h1>
+      <p class="lead">Quais equipamentos inspecionar primeiro e por quê. É uma sugestão para planejar a rota: nada muda sozinho no sistema.</p>
     </div>
     {% if app.user %}<form method="post" action="{{ url('/antecipacao/recalcular') }}">{{ ui.csrf(app.csrf) }}<button class="btn" type="submit">{{ ui.icon('i-refresh') }}Recalcular agora</button></form>{% endif %}
   </div>
 
-  <div class="callout section-gap-bottom">
-    <strong>Leia antes:</strong> o índice (0–100) <strong>não é probabilidade calibrada de falha</strong>. O histórico é <strong>sintético</strong>,
-    gerado por regras conhecidas; a avaliação abaixo mede a coerência do método nesse cenário, não acurácia em equipamentos reais.
+  <div class="callout">
+    <p><strong>Como ler:</strong> a prioridade sugerida, de 0 a 100, soma sinais do histórico de cada equipamento (falhas recentes e antigas, preventiva atrasada). <strong>Não é a chance de falhar.</strong> O histórico desta demonstração é sintético, e o método acerta pouco: veja o retrospecto no fim da página.</p>
   </div>
 
   {% if run is null %}
-    <div class="empty">Ainda não há análise calculada{% if app.user %}. Use "Recalcular agora"{% endif %}.</div>
+    <div class="empty section">Ainda não há análise calculada{% if app.user %}. Use "Recalcular agora"{% endif %}.</div>
   {% else %}
   {% set ev = run.evaluation %}
-  <div class="grid-2">
-    <section class="card" aria-labelledby="ranking">
-      <h2 id="ranking">{{ ui.icon('i-chart') }} Resultado em {{ run.as_of|local_dt }}</h2>
-      <p class="small muted">Execução #{{ run.id }} · método <span class="mono">{{ run.method_version }}</span> · horizonte {{ run.horizon_days }} dias · {{ run.events_used }} eventos de situação de {{ run.data_from|local_dt('d/m/Y') }} a {{ run.data_to|local_dt('d/m/Y') }}{{ run.created_by_name ? ' · por ' ~ run.created_by_name }}.</p>
-      {% set shown = results|filter(r => r.attention in ['ALTA', 'MODERADA', 'CORRETIVA', 'INSUFICIENTE']) %}
-      {% if shown is empty %}<div class="empty">Nenhum equipamento acima do nível baixo.</div>{% endif %}
-      <ol class="res-list">
-        {% for r in shown %}
-          <li class="order">
+  <p class="hint section">Calculado em {{ run.as_of|local_dt }}{{ run.created_by_name ? ' por ' ~ run.created_by_name }} · execução #{{ run.id }}, método {{ run.method_version }}.</p>
+
+  {% for key, g in groups %}
+    {% set items = results|filter(r => r.attention == key) %}
+    <section class="section" aria-labelledby="g-{{ key }}">
+      <div class="list-head"><h2 id="g-{{ key }}">{{ g[0] }} ({{ items|length }})</h2><p class="hint">{{ g[1] }}</p></div>
+      {% if items is empty %}<div class="empty">Nenhum equipamento nesta faixa agora.</div>{% else %}
+      <ul class="rows">
+        {% for r in items %}
+          {% set type = types[r.type_code] ?? null %}
+          {% set place = [r.street, r.address_ref]|filter(v => v)|join(', ') %}
+          <li class="reco">
             <div class="order__head">
-              <a href="{{ url('/equipamentos/' ~ r.equipment_id) }}"><strong>{{ r.code }}</strong></a>
-              <span class="btn-row">{{ ui.status(r.attention, r.attention|capitalize) }}
-                {% if r.score is not null %}<span class="score" title="índice heurístico"><span class="score__bar" aria-hidden="true"><i class="w-{{ (r.score / 10)|round(0, 'floor') * 10 }}"></i></span><span class="small">{{ r.score }}/100</span></span>{% endif %}</span>
+              <span class="order__title"><a href="{{ url('/equipamentos/' ~ r.equipment_id) }}">{{ type ? type.shortLabel : r.type_code }} · {{ place ?: (r.region_name ?? 'sem endereço cadastrado') }}</a></span>
+              {% if r.score is not null %}<span class="score" title="Prioridade sugerida (índice heurístico)"><span class="score__bar" aria-hidden="true"><i class="w-{{ (r.score / 10)|round(0, 'floor') * 10 }}"></i></span>prioridade {{ r.score }}/100</span>{% endif %}
             </div>
-            <p class="small muted">{{ r.manufacturer }} {{ r.model }} · {{ r.region_name ?? 'sem bairro' }} · {{ r.history_days }} dias de histórico</p>
-            <ul class="factor-list">
-              {% for f in r.factors %}<li>{{ f.label }}{% if f.points %} <span class="faint">(+{{ f.points }})</span>{% endif %}</li>{% endfor %}
-              {% for a in r.admin_flags %}<li class="muted">{{ a }}</li>{% endfor %}
+            <p class="order__meta"><span class="code-tag">{{ r.code }}</span> {{ r.region_name ?? 'sem bairro' }} · {{ r.history_days }} dias de histórico</p>
+            <p class="order__reason"><strong>Por quê:</strong></p>
+            <ul class="reco__why">
+              {% for f in r.factors %}<li>{{ f.label }}{% if f.points %} <span class="hint">(+{{ f.points }})</span>{% endif %}</li>{% endfor %}
+              {% for a in r.admin_flags %}<li>{{ a }}</li>{% endfor %}
             </ul>
-            <p class="small"><strong>Ação:</strong> {{ r.recommendation }}</p>
+            <p class="reco__action">O que fazer: {{ r.recommendation }}</p>
           </li>
         {% endfor %}
-      </ol>
-      <details class="section-gap"><summary>Ver todos os {{ results|length }} equipamentos avaliados</summary>
-        <div class="table-wrap"><table class="data"><thead><tr><th scope="col">Equipamento</th><th scope="col">Atenção</th><th scope="col">Índice</th></tr></thead><tbody>
-          {% for r in results %}<tr><td><a href="{{ url('/equipamentos/' ~ r.equipment_id) }}">{{ r.code }}</a></td><td>{{ r.attention|lower }}</td><td>{{ r.score ?? '—' }}</td></tr>{% endfor %}
-        </tbody></table></div>
-      </details>
+      </ul>
+      {% endif %}
     </section>
+  {% endfor %}
 
-    <div class="stack">
-      <section class="card" aria-labelledby="metodo">
-        <h2 id="metodo">Método</h2>
-        <ul class="factor-list">
-          <li>Falhas nos últimos 30 dias: <strong>{{ run.params.weights.falha_30d }}</strong> pontos cada (máx. {{ run.params.weights.falha_30d * 2 }}).</li>
-          <li>Falhas entre 31 e {{ run.params.long_window_days }} dias: <strong>{{ run.params.weights.falha_31_180d }}</strong> cada (máx. {{ run.params.weights.falha_31_180d * 5 }}) — propensão do aparelho.</li>
-          <li>Tempo desde a última preventiva ÷ intervalo: ≥ 0,8 → {{ run.params.weights.preventiva_0_8x }}; ≥ 1,0 → {{ run.params.weights.preventiva_1x }}; ≥ 1,5 → {{ run.params.weights.preventiva_1_5x }}.</li>
-          <li>Sem periodicidade e &gt; 120 dias sem manutenção: {{ run.params.weights.sem_periodicidade_120d }}.</li>
-          <li><strong>Alta</strong> ≥ {{ run.params.high_threshold }} · <strong>moderada</strong> ≥ {{ run.params.moderate_threshold }}. Menos de {{ run.params.min_history_days }} dias de histórico: <strong>insuficiente</strong> (sem classificação).</li>
-          <li>Já em falha ou manutenção: <strong>corretiva</strong> — não é antecipação.</li>
-          <li>Ordem preventiva vencida aparece como sinal administrativo, separado da tendência de falha.</li>
+  <div class="stack section">
+  {% for key, g in others %}
+    {% set items = results|filter(r => r.attention == key) %}
+    <details class="method">
+      <summary>{{ g[0] }} ({{ items|length }})</summary>
+      <div>
+        <p class="hint">{{ g[1] }}</p>
+        {% if items is not empty %}
+        <ul class="rows">
+          {% for r in items %}
+            {% set type = types[r.type_code] ?? null %}
+            {% set place = [r.street, r.address_ref]|filter(v => v)|join(', ') %}
+            <li><a class="row" href="{{ url('/equipamentos/' ~ r.equipment_id) }}">
+              <span class="row__thumb">{{ ui.icon('i-' ~ r.type_code) }}</span>
+              <span class="row__main"><span class="row__title">{{ type ? type.shortLabel : r.type_code }} · {{ place ?: (r.region_name ?? 'sem endereço cadastrado') }}</span><span class="row__sub"><span class="code-tag">{{ r.code }}</span> {{ r.recommendation }}</span></span>
+              <span class="row__meta">{{ ui.equipment_status(r.status) }}{% if r.score is not null %}<span class="hint">prioridade {{ r.score }}/100</span>{% endif %}</span>
+            </a></li>
+          {% endfor %}
         </ul>
-      </section>
+        {% endif %}
+      </div>
+    </details>
+  {% endfor %}
+  </div>
 
-      <section class="card" aria-labelledby="avaliacao">
-        <h2 id="avaliacao">Avaliação retrospectiva</h2>
-        <p class="small muted">{{ ev.note }}</p>
-        <p class="small">Limiar de “alta” escolhido <strong>só na janela de ajuste</strong> ({{ ev.fit_window.cutoffs }} cortes semanais, {{ ev.fit_window.from|local_dt('d/m') }}–{{ ev.fit_window.to|local_dt('d/m') }}): <strong>{{ ev.chosen_threshold }}</strong>.
-          Medido depois na <strong>janela de avaliação</strong> ({{ ev.eval_window.cutoffs }} cortes, {{ ev.eval_window.from|local_dt('d/m') }}–{{ ev.eval_window.to|local_dt('d/m') }}). Rótulo: falha nos 7 dias seguintes ao corte.</p>
+  <div class="stack section">
+    <details class="method">
+      <summary>Como a prioridade é calculada</summary>
+      <div>
+        <ul class="factor-list">
+          <li>Falhas nos últimos 30 dias: <strong>{{ run.params.weights.falha_30d }}</strong> pontos cada (no máximo {{ run.params.weights.falha_30d * 2 }}) — repetição recente.</li>
+          <li>Falhas entre 31 e {{ run.params.long_window_days }} dias atrás: <strong>{{ run.params.weights.falha_31_180d }}</strong> cada (no máximo {{ run.params.weights.falha_31_180d * 5 }}) — tendência do próprio aparelho.</li>
+          <li>Tempo desde a última preventiva dividido pela periodicidade: a partir de 0,8 → {{ run.params.weights.preventiva_0_8x }}; de 1,0 → {{ run.params.weights.preventiva_1x }}; de 1,5 → {{ run.params.weights.preventiva_1_5x }}.</li>
+          <li>Sem periodicidade e mais de 120 dias sem manutenção concluída: {{ run.params.weights.sem_periodicidade_120d }}.</li>
+          <li><strong>Revisar primeiro</strong> a partir de {{ run.params.high_threshold }}; <strong>acompanhar</strong> a partir de {{ run.params.moderate_threshold }}. Menos de {{ run.params.min_history_days }} dias de histórico: <strong>histórico curto</strong>, sem classificação.</li>
+          <li>Equipamentos fora de operação (indisponíveis ou fora de serviço) não recebem prioridade: veja as listas acima.</li>
+          <li>Ordem preventiva vencida aparece como aviso administrativo, separado da tendência de falha.</li>
+        </ul>
+        <p class="hint">Nos nomes técnicos (documentação e banco): revisar primeiro = ALTA, acompanhar = MODERADA, sem destaque = BAIXA, histórico curto = INSUFICIENTE, já indisponível = CORRETIVA, não avaliado = NAO_AVALIADO.</p>
+      </div>
+    </details>
+    <details class="method">
+      <summary>Retrospecto: o método acertaria no passado?</summary>
+      <div>
+        <p class="hint">{{ ev.note }}</p>
+        <p>O limiar de "revisar primeiro" foi escolhido <strong>só</strong> com cortes semanais de {{ ev.fit_window.from|local_dt('d/m') }} a {{ ev.fit_window.to|local_dt('d/m') }} ({{ ev.fit_window.cutoffs }} cortes): <strong>{{ ev.chosen_threshold }}</strong>{{ ev.fit_note ?? null ? ' — ' ~ ev.fit_note : '' }}. Depois foi medido em {{ ev.eval_window.cutoffs }} cortes de {{ ev.eval_window.from|local_dt('d/m') }} a {{ ev.eval_window.to|local_dt('d/m') }}. Cada corte usa apenas o que o sistema já tinha recebido até ali, inclusive a periodicidade vigente; o acerto é "houve falha nos 7 dias seguintes".</p>
         <div class="table-wrap"><table class="data">
-          <caption>Pares equipamento × corte: {{ ev.model.pairs }} · com falha: {{ ev.model.positives }} (prevalência {{ ev.model.prevalence is null ? '—' : (ev.model.prevalence * 100)|number_format(1, ',') ~ '%' }})</caption>
-          <thead><tr><th scope="col">Regra</th><th scope="col">Alertas</th><th scope="col">Acertos</th><th scope="col">Falsos alertas</th><th scope="col">Não antecipadas</th><th scope="col">Precisão</th><th scope="col">Revocação</th></tr></thead>
+          <caption>{{ ev.model.pairs }} pares equipamento × corte, {{ ev.model.positives }} com falha (prevalência {{ ev.model.prevalence is null ? '—' : ev.model.prevalence|pct }})</caption>
+          <thead><tr><th scope="col">Regra</th><th scope="col">Alertas</th><th scope="col">Acertos</th><th scope="col">Falsos alertas</th><th scope="col">Falhas não antecipadas</th><th scope="col">Precisão</th><th scope="col">Revocação</th><th scope="col">F1</th></tr></thead>
           <tbody>
-            {% for label, m in {'Índice (alta)': ev.model, 'Referência: falhou nos últimos 30 dias': ev.baseline_recent_failure} %}
-              <tr><th scope="row">{{ label }}</th><td>{{ m.flagged }}</td><td>{{ m.tp }}</td><td>{{ m.fp }}</td><td>{{ m.fn }}</td>
-                <td>{{ m.precision is null ? '—' : (m.precision * 100)|number_format(1, ',') ~ '%' }}</td><td>{{ m.recall is null ? '—' : (m.recall * 100)|number_format(1, ',') ~ '%' }}</td></tr>
+            {% for label, m in {'Prioridade (revisar primeiro)': ev.model, 'Referência: falhou nos últimos 30 dias': ev.baseline_recent_failure} %}
+              <tr><th scope="row">{{ label }}</th><td>{{ m.flagged }}</td><td>{{ m.tp }}</td><td>{{ m.fp }}</td><td>{{ m.fn }}</td><td>{{ m.precision is null ? '—' : m.precision|pct }}</td><td>{{ m.recall is null ? '—' : m.recall|pct }}</td><td>{{ m.f1 is defined and m.f1 is not null ? m.f1|pct : '—' }}</td></tr>
             {% endfor %}
           </tbody>
         </table></div>
-        <p class="small muted">Leitura: com poucas falhas por janela, as taxas oscilam muito. Em cinco cenários sintéticos inéditos (sementes 2027–2031), o índice teve precisão agregada de 8,2% contra 6,3% da referência e prevalência de 3,9% — cerca de 2× o acaso, perdendo a maioria das falhas (revocação 15%). Serve para priorizar uma rota de inspeção, não para garantir prevenção.</p>
-      </section>
-    </div>
+        <p class="hint">"—" = indefinido: sem alertas não há precisão; sem falhas não há revocação; F1 só é indefinido sem falhas e sem alertas. Errar sem acertar dá 0%, que é diferente de "—".</p>
+        <p>Em cinco cenários sintéticos que não foram usados no desenvolvimento (sementes 2027–2031, reavaliadas em 18/10/2026 com a separação temporal corrigida), a prioridade teve precisão agregada de 8,9% contra 6,8% da referência, com prevalência de 3,9% — cerca de duas vezes o acaso — e deixou passar a maioria das falhas (revocação de 16,7%). Serve para ordenar uma rota de inspeção, não para garantir prevenção.</p>
+      </div>
+    </details>
   </div>
   {% endif %}
 </div>

@@ -88,6 +88,26 @@ final class MaintenanceRepository
         return array_map(self::trim(...), $this->db->all(self::SELECT . " WHERE m.STATE IN ('CONCLUIDA', 'CANCELADA') ORDER BY m.CLOSED_AT DESC ROWS ?", [$limit]));
     }
 
+    public function equipmentOf(int $orderId): ?int
+    {
+        $id = $this->db->value('SELECT EQUIPMENT_ID FROM MAINTENANCE_ORDER WHERE ID = ?', [$orderId]);
+
+        return $id === null ? null : (int) $id;
+    }
+
+    /**
+     * Ordens ABERTA/EM_EXECUCAO de um equipamento, inclusive arquivado (para as regras de início e arquivamento).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function openFor(int $equipmentId): array
+    {
+        return array_map(self::trim(...), $this->db->all(
+            "SELECT ID, KIND, PRIORITY, STATE, DUE_DATE, REASON FROM MAINTENANCE_ORDER WHERE EQUIPMENT_ID = ? AND STATE IN ('ABERTA', 'EM_EXECUCAO') ORDER BY ID",
+            [$equipmentId],
+        ));
+    }
+
     public function hasOpenOfKind(int $equipmentId, string $kind): bool
     {
         return (int) $this->db->value("SELECT COUNT(*) FROM MAINTENANCE_ORDER WHERE EQUIPMENT_ID = ? AND KIND = ? AND STATE IN ('ABERTA', 'EM_EXECUCAO')", [$equipmentId, $kind]) > 0;

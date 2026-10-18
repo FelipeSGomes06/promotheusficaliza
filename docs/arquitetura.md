@@ -19,21 +19,26 @@ Navegador ──► provedor de tiles (somente imagens do mapa, origem liberada 
 
 ## Fluxos principais
 
-**Leitura da central.** `GET /` renderiza no servidor (útil sem JavaScript) com o instantâneo de `CentralQuery`;
+**Leitura da visão geral.** `GET /` renderiza no servidor (útil sem JavaScript) com o instantâneo de `CentralQuery`;
 `central.js` consulta `GET /api/central` a cada `POLL_INTERVAL_SECONDS`. O instantâneo é lido numa única transação
-**SNAPSHOT somente leitura**: recursos, ordens, alertas e indicadores vêm do mesmo instante e do mesmo filtro.
+**SNAPSHOT somente leitura**: recursos, ordens, alertas e indicadores vêm do mesmo instante e do mesmo filtro — busca
+por texto e "só o que precisa de atenção" inclusive. A atualização reaproveita as linhas da lista por chave, preserva
+foco, seleção e posição do mapa; só ações da pessoa movem o mapa.
 
 **Escrita manual.** Formulário → middleware de sessão/CSRF/papel → controlador → serviço de aplicação → validação
 (`Input`, esquema do tipo) → transação curta: `SELECT … WITH LOCK` quando há mudança de situação, gravação, evento de
 histórico (`History`) e reconciliação de alertas → commit. Conflito de lock vira `ConcurrencyConflict` (409) pelo
-timeout de instrução; edição com versão antiga também.
+timeout de instrução; edição com versão de cadastro antiga também, e a tela de conflito mostra o que mudou
+([ADR-0010](adr/0010-versao-do-cadastro-separada-da-telemetria.md)). Tudo o que envolve ordens de manutenção bloqueia
+primeiro o equipamento e depois a ordem ([ADR-0009](adr/0009-uma-intervencao-por-vez-e-arquivamento-explicito.md)).
 
 **Simulação.** `sim:run` (contêiner `simulator`) ou `sim:tick` (cron) chama `Simulator::tick()`, que entrega
 observações fictícias pelos mesmos casos de uso (`EventIngestor`, `AgentService`), grava no Firebird e reconcilia
 alertas. Ciclos numerados + semente = sequência reproduzível.
 
-**Análise preventiva.** `AnalysisService::run()` lê eventos de situação e ordens, calcula características por
-equipamento só com dados anteriores a cada corte, ajusta o limiar numa janela e avalia em outra, grava a execução.
+**Análise preventiva.** `AnalysisService::run()` lê eventos de situação, ordens e alterações de periodicidade; em
+cada corte usa só o que tinha sido recebido antes dele, a periodicidade vigente e os equipamentos que existiam e não
+estavam arquivados; ajusta o limiar numa janela, avalia em outra e grava a execução.
 
 ## Referência dos módulos
 
@@ -58,14 +63,14 @@ equipamento só com dados anteriores a cada corte, ajusta o limiar numa janela e
 |---|---|---|
 | `Input.php` | dados crus → valores normalizados + erros por campo | Lê só as chaves pedidas; CEP, coordenadas na área de Marília, datas, controle de tamanho. |
 | `Filters.php` | query string → filtros válidos | Descarta valores desconhecidos; decide se equipamentos/agentes entram no escopo. |
-| `EquipmentService.php` | formulário → id / alteração / transição / arquivamento | Traduz restrições do Firebird em erros de campo; histórico antes/depois. |
+| `EquipmentService.php` | formulário → id / alteração / transição / arquivamento | Traduz restrições do Firebird em erros de campo; histórico antes/depois; recusa mudar situação ou arquivar com intervenção em execução; cancela ordens agendadas no arquivamento só com confirmação; `pendingChanges` para a tela de conflito. |
 | `AgentService.php` | idem para agentes | Base ≠ posição observada. |
-| `MaintenanceService.php` | abrir, iniciar, concluir, cancelar ordens | Iniciar põe em manutenção; concluir exige situação resultante; preventiva periódica agenda a próxima. |
+| `MaintenanceService.php` | abrir, iniciar, concluir, cancelar ordens | Uma intervenção em execução por equipamento (serviço + índice parcial); iniciar põe em manutenção; concluir exige situação resultante; preventiva periódica agenda a próxima. |
 | `EventIngestor.php` | observação (uid, instante) → APLICADO / HISTORICO / DUPLICADO | Duplicata por `EVENT_UID`; atrasado não regride; estado administrativo prevalece; posição só avança. |
 | `AlertService.php` | estado atual → alertas abertos/resolvidos | Idempotente; reconhecer ≠ resolver. |
-| `CentralQuery.php` | filtros → instantâneo da central | Transação SNAPSHOT; resumo por bairro; listas de manutenção; dados de sincronização. |
-| `AnalysisService.php` | histórico → execução da análise + avaliação | Separação temporal ajuste/avaliação. |
-| `AuthService.php` | credenciais → conta | Argon2id, limite por usuário/IP, contas só por CLI/admin. |
+| `CentralQuery.php` | filtros → instantâneo da visão geral | Transação SNAPSHOT; título "tipo · endereço"; motivos de atenção em linguagem comum; busca sem acentos; resumo por bairro; listas de manutenção; dados de sincronização. |
+| `AnalysisService.php` | histórico → execução da análise + avaliação | Separação temporal ajuste/avaliação por disponibilidade da informação; `load()` monta os índices usados por `features()`. |
+| `AuthService.php` | credenciais → conta | Argon2id; vaga de tentativa reservada antes do hashing (cota atômica por usuário/IP, [ADR-0011](adr/0011-cota-de-login-atomica.md)); contas só por CLI/admin. |
 | `History.php` | registro de eventos manuais/sistema | Também calcula diferença campo a campo. |
 
 ### `src/Infrastructure` — Firebird
@@ -95,18 +100,19 @@ equipamento só com dados anteriores a cada corte, ajusta o limiar numa janela e
 | `Demo/DemoScenario.php` | Dados sintéticos: órgãos, bairros, 48 equipamentos, bases e 21 agentes fictícios. |
 | `Demo/DemoSeeder.php` | Carga + 240 dias de histórico reproduzível (falhas, corretivas, preventivas com atraso). |
 | `Demo/Simulator.php` | Ciclo ao vivo: sinais, falhas/recuperações, deslocamentos, duplicatas e atrasos intencionais. |
-| `Cli/Console.php` | `migrate`, `demo:seed [--reset]`, `user:create`, `sim:tick`, `sim:run`, `analysis:run`. |
+| `Cli/Console.php` | `migrate`, `demo:seed [--reset]`, `user:create`, `sim:tick`, `sim:run` (trava `var/simulador.lock` por ciclo), `analysis:run`. |
 | `Services.php` | Raiz de composição: cria cada dependência uma vez; troca de identidade (aplicação × migração). |
 
 ### Apresentação
 
 | Caminho | Finalidade |
 |---|---|
-| `templates/*.twig` | Layout, central, inventário, fichas, formulários, manutenção, antecipação, sobre, login, contas, erro. |
-| `public/assets/js/central.js` | Mapa, marcadores, ficha lateral, abas acessíveis, consulta periódica com pausa/recuo, anúncios `aria-live`. |
-| `public/assets/js/app.js` | Preferência de movimento, campos por tipo, seletor de coordenadas, confirmação de ações. |
-| `public/assets/css/app.css` | Identidade visual, estados (cor + forma + texto), responsivo, movimento reduzido. |
-| `public/assets/img/` | Sprite de ícones, miniaturas por categoria e favicon (próprios). |
+| `templates/*.twig` | Layout (cabeçalho compacto, menu no celular, aviso de demonstração), visão geral, inventários, fichas, formulários em etapas, manutenção, revisões recomendadas, sobre, login, contas, erro. |
+| `public/assets/js/central.js` | Mapa com agrupamento de marcadores, alternância mapa/lista, ficha resumida (painel inferior no celular), filtros com busca, consulta periódica com pausa/recuo que não rouba foco, anúncios `aria-live`. |
+| `public/assets/js/app.js` | Menu no celular, avisos sobrepostos (Esc/clique fora), preferência de movimento, campos por tipo, seletor de local no mapa, foco no resumo de erros, confirmação de ações. |
+| `public/assets/css/app.css` | Tokens do sistema visual ([ADR-0008](adr/0008-interface-para-iniciantes.md)), estados (cor + forma + texto), responsivo, movimento reduzido. |
+| `public/assets/img/` | Sprite de ícones, miniaturas claras por categoria e favicon (próprios). |
+| `scripts/capturar-telas.mjs` | Verificação visual sem dependências (Chrome headless via DevTools Protocol): capturas, medidas e erros de console. |
 
 ## Decisões
 

@@ -22,6 +22,7 @@ final class CentralController extends Controller
         return $this->render($request, $response, 'central.twig', [
             'snapshot' => $this->services->central()->snapshot($filters),
             'filters' => $filters,
+            'view' => ($request->getQueryParams()['visao'] ?? '') === 'lista' ? 'lista' : 'mapa',
             'options' => self::filterOptions($this->services->referenceRepository()->regions(), $this->services->referenceRepository()->agencies()),
         ]);
     }

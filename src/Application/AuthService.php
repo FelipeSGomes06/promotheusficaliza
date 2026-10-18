@@ -8,6 +8,7 @@ use Fiscaliza\Domain\Clock;
 use Fiscaliza\Domain\RuleViolation;
 use Fiscaliza\Domain\Time;
 use Fiscaliza\Domain\ValidationFailed;
+use Fiscaliza\Infrastructure\ConcurrencyConflict;
 use Fiscaliza\Infrastructure\ConstraintViolation;
 use Fiscaliza\Infrastructure\Database;
 use Fiscaliza\Infrastructure\Repository\UserRepository;
@@ -15,6 +16,7 @@ use Fiscaliza\Infrastructure\Repository\UserRepository;
 /**
  * Autenticação com password_hash/password_verify do PHP (Argon2id quando disponível, senão bcrypt), limite de
  * tentativas por usuário e por IP (valores guardados como hash) e mensagens que não revelam se a conta existe.
+ * O limite vale também para tentativas simultâneas: cada verificação reserva sua vaga antes do hashing.
  */
 final class AuthService
 {
@@ -45,23 +47,19 @@ final class AuthService
         $userKey = hash('sha256', 'u:' . mb_strtolower($username));
         $ipKey = hash('sha256', 'ip:' . $ip);
         $now = $this->clock->now();
-        $since = Time::toDb($now->modify('-' . self::WINDOW_MINUTES . ' minutes'));
-
-        if ($this->users->failuresSince($userKey, $since) >= self::MAX_FAILURES_PER_USER || $this->users->failuresSince($ipKey, $since) >= self::MAX_FAILURES_PER_IP) {
-            throw new AuthenticationFailed('Muitas tentativas. Aguarde ' . self::WINDOW_MINUTES . ' minutos e tente novamente.');
-        }
+        // A vaga é reservada (e confirmada no banco) antes do hashing; ela conta como falha até um login correto quitá-la.
+        $reservations = $this->reserve($userKey, $ipKey, Time::toDb($now), Time::toDb($now->modify('-' . self::WINDOW_MINUTES . ' minutes')));
 
         $user = $username === '' ? null : $this->users->findByUsername($username);
         // Verifica um hash fictício quando a conta não existe, para o tempo de resposta não revelar isso.
         $valid = password_verify($password, $user['password_hash'] ?? self::DUMMY_HASH);
         if ($user === null || !$valid || $user['active'] !== true) {
-            $this->db->transaction(function () use ($userKey, $ipKey, $now): void {
-                $this->users->recordFailure($userKey, Time::toDb($now));
-                $this->users->recordFailure($ipKey, Time::toDb($now));
-            });
             throw new AuthenticationFailed('Usuário ou senha inválidos.');
         }
-        $this->db->transaction(function () use ($user, $password, $now): void {
+        $this->db->transaction(function () use ($user, $password, $now, $reservations): void {
+            foreach ($reservations as $id) {
+                $this->users->settleAttempt($id, Time::toDb($now));
+            }
             if (password_needs_rehash($user['password_hash'], defined('PASSWORD_ARGON2ID') ? PASSWORD_ARGON2ID : PASSWORD_DEFAULT)) {
                 $this->users->updateHash((int) $user['id'], self::hash($password));
             }
@@ -70,6 +68,36 @@ final class AuthService
         unset($user['password_hash']);
 
         return $user;
+    }
+
+    /**
+     * Confere a cota e reserva uma vaga por usuário e por IP numa transação curta (o hashing fica fora dela).
+     * Se outra tentativa simultânea pegou a mesma vaga, recomeça com contagem nova; persistindo a disputa, recusa.
+     *
+     * @return array{0: int, 1: int} ids das reservas (usuário, IP)
+     */
+    private function reserve(string $userKey, string $ipKey, string $at, string $since): array
+    {
+        $blocked = new AuthenticationFailed('Muitas tentativas. Aguarde ' . self::WINDOW_MINUTES . ' minutos e tente novamente.');
+        for ($try = 0; $try < 5; $try++) {
+            try {
+                return $this->db->transaction(function () use ($userKey, $ipKey, $at, $since, $blocked): array {
+                    if ($this->users->failuresSince($userKey, $since) >= self::MAX_FAILURES_PER_USER || $this->users->failuresSince($ipKey, $since) >= self::MAX_FAILURES_PER_IP) {
+                        throw $blocked;
+                    }
+
+                    return [$this->users->reserveAttempt($userKey, $at), $this->users->reserveAttempt($ipKey, $at)];
+                });
+            } catch (ConstraintViolation $e) {
+                if ($e->constraint !== 'UX_LOGIN_ATTEMPT_SLOT') {
+                    throw $e;
+                }
+            } catch (ConcurrencyConflict) {
+                // Espera de bloqueio esgotada: trata como disputa e reconta.
+            }
+        }
+
+        throw $blocked;
     }
 
     /** @return array<string, mixed>|null conta ativa ou null */

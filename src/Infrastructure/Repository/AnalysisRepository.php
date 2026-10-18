@@ -51,7 +51,7 @@ final class AnalysisRepository
     public function results(int $runId): array
     {
         $rows = $this->db->all(
-            "SELECT ar.*, e.CODE, e.TYPE_CODE, e.STATUS, e.MANUFACTURER, e.MODEL, r.NAME AS REGION_NAME
+            "SELECT ar.*, e.CODE, e.TYPE_CODE, e.STATUS, e.MANUFACTURER, e.MODEL, e.STREET, e.ADDRESS_REF, r.NAME AS REGION_NAME
              FROM ANALYSIS_RESULT ar JOIN EQUIPMENT e ON e.ID = ar.EQUIPMENT_ID LEFT JOIN REGION r ON r.ID = e.REGION_ID
              WHERE ar.RUN_ID = ?
              ORDER BY CASE ar.ATTENTION WHEN 'ALTA' THEN 0 WHEN 'MODERADA' THEN 1 WHEN 'CORRETIVA' THEN 2 WHEN 'INSUFICIENTE' THEN 3 ELSE 4 END, ar.SCORE DESC NULLS LAST, e.CODE",

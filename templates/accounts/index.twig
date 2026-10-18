@@ -4,30 +4,29 @@
 {% block content %}
 <div class="page">
   <div class="page-head"><div>
-    <p class="eyebrow">Administração</p>
     <h1>Contas de acesso</h1>
-    <p>Contas do sistema (operadores e administradores). Não confundir com agentes de campo.</p>
+    <p class="lead">Quem pode entrar para editar: operadores (cadastro, manutenção e alertas) e administradores (também gerenciam contas). Não confundir com agentes de campo.</p>
   </div></div>
   {% if created %}
     <div class="flash flash--success" role="status">Conta <strong>{{ created.username }}</strong> criada. Senha gerada (mostrada só agora): <code>{{ created.password }}</code></div>
   {% endif %}
-  <div class="grid-2">
-    <section class="card">
+  <div class="split">
+    <section>
       <div class="table-wrap"><table class="data">
-        <thead><tr><th scope="col">Usuário</th><th scope="col">Papel</th><th scope="col">Último acesso</th><th scope="col">Situação</th></tr></thead>
+        <thead><tr><th scope="col">Usuário</th><th scope="col">Papel</th><th scope="col">Último acesso</th><th scope="col">Ação</th></tr></thead>
         <tbody>{% for u in users %}<tr>
-          <td><strong>{{ u.username }}</strong><br><span class="small muted">{{ u.display_name }}</span></td><td>{{ u.role|lower }}</td><td>{{ u.last_login_at|local_dt }}</td>
+          <td><strong>{{ u.username }}</strong><br><span class="hint">{{ u.display_name }}</span></td><td>{{ u.role == 'ADMIN' ? 'Administrador' : 'Operador' }}{{ u.active ? '' : ' · desativada' }}</td><td>{{ u.last_login_at|local_dt }}</td>
           <td><form method="post" action="{{ url('/contas/' ~ u.id ~ '/situacao') }}">{{ ui.csrf(app.csrf) }}<input type="hidden" name="active" value="{{ u.active ? '0' : '1' }}"><button class="btn btn--sm {{ u.active ? 'btn--danger' : '' }}" type="submit">{{ u.active ? 'Desativar' : 'Reativar' }}</button></form></td>
         </tr>{% endfor %}</tbody>
       </table></div>
     </section>
-    <section class="card">
+    <section class="panel">
       <h2>Nova conta</h2>
       <form method="post" action="{{ url('/contas') }}" class="stack">{{ ui.csrf(app.csrf) }}
         {{ ui.input('username', 'Usuário', values ?? {}, errors, {required: true, max: 40, help: '3 a 40 letras, números, ponto, hífen ou sublinhado.'}) }}
         {{ ui.input('display_name', 'Nome de exibição', values ?? {}, errors, {required: true, max: 80}) }}
         {{ ui.select('role', 'Papel', {OPERADOR: 'Operador', ADMIN: 'Administrador'}, (values ?? {}).role ?? 'OPERADOR', errors) }}
-        <p class="small faint">A senha é gerada aleatoriamente e exibida uma única vez.</p>
+        <p class="hint">A senha é gerada aleatoriamente e mostrada uma única vez, nesta tela. Entregue-a à pessoa por um canal seguro.</p>
         <button class="btn btn--primary" type="submit">Criar conta</button>
       </form>
     </section>

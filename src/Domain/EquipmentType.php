@@ -25,6 +25,12 @@ final readonly class EquipmentType
         public array $fields,
     ) {}
 
+    /** "Radar de fiscalização" → "Radar": o nome curto lidera os títulos; o completo aparece na ficha. */
+    public function shortLabel(): string
+    {
+        return explode(' ', $this->label, 2)[0];
+    }
+
     /**
      * Valida e normaliza as características enviadas. Campos desconhecidos são ignorados; o cliente não escolhe
      * o formato gravado.

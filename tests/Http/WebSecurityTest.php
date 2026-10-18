@@ -149,12 +149,35 @@ final class WebSecurityTest extends FirebirdTestCase
         self::assertSame(200, $this->request('GET', '/equipamentos?ordem=CODE;DROP%20TABLE%20X&pagina=-5&categoria[]=%27OR%201=1')->getStatusCode());
         $api = $this->request('GET', '/api/central?bairro=abc&situacao[]=<x>');
         self::assertSame(200, $api->getStatusCode());
-        self::assertSame(['categoria' => [], 'situacao' => [], 'bairro' => [], 'orgao' => []], json_decode((string) $api->getBody(), true)['filters']);
+        self::assertSame(['categoria' => [], 'situacao' => [], 'bairro' => [], 'orgao' => [], 'q' => '', 'atencao' => ''], json_decode((string) $api->getBody(), true)['filters']);
 
         $missing = $this->request('GET', '/equipamentos/999999');
         self::assertSame(404, $missing->getStatusCode());
         self::assertStringNotContainsString('SQLSTATE', (string) $missing->getBody());
         self::assertSame(404, $this->request('GET', '/equipamentos/abc')->getStatusCode());
+    }
+
+    /** OP-03: o conflito mantém o que a pessoa digitou, mostra o que mudou e permite salvar conscientemente. */
+    public function testEditConflictKeepsTypingShowsDifferencesAndCarriesTheCurrentVersion(): void
+    {
+        $id = $this->createEquipment();
+        $old = (string) $this->services->equipmentRepository()->find($id)['version_no'];
+        $ana = $this->services->auth()->createUser('ana', 'Ana', 'OPERADOR', 'senha-de-teste-bem-longa')['id'];
+        $this->services->equipment()->update($id, $this->equipmentData(['model' => 'Versão de Ana', 'version' => $old]), $ana);
+        $this->services->ingestor()->position('conflito-pos', 'EQUIPAMENTO', $id, '-22.2', '-49.9', $this->clock->now()->modify('+1 minute'), false);
+        $current = (string) $this->services->equipmentRepository()->find($id)['version_no'];
+        $this->loginAs('OPERADOR');
+
+        $conflict = $this->request('POST', "/equipamentos/{$id}", ['_csrf' => $this->session->csrfToken(), 'version' => $old] + $this->equipmentData(['model' => 'Minha versão']));
+        $html = (string) $conflict->getBody();
+        self::assertSame(409, $conflict->getStatusCode());
+        self::assertStringContainsString('value="Minha versão"', $html, 'a digitação é mantida');
+        self::assertStringContainsString('Versão de Ana', $html, 'o valor salvo agora aparece para comparação');
+        self::assertStringContainsString('name="version" value="' . $current . '"', $html, 'o formulário passa a carregar a versão atual');
+
+        $saved = $this->request('POST', "/equipamentos/{$id}", ['_csrf' => $this->session->csrfToken(), 'version' => $current] + $this->equipmentData(['model' => 'Minha versão']));
+        self::assertSame(303, $saved->getStatusCode());
+        self::assertSame('Minha versão', $this->services->equipmentRepository()->find($id)['model']);
     }
 
     public function testAcknowledgeAlertViaJsonUsesHeaderToken(): void

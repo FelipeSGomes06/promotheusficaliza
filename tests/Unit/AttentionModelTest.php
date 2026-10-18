@@ -49,7 +49,38 @@ final class AttentionModelTest extends TestCase
     public function testAlreadyFailingIsCorrectiveNotPrediction(): void
     {
         self::assertSame('CORRETIVA', AttentionModel::assess(self::features(['status_at' => 'FALHA']), 35)['attention']);
-        self::assertNull(AttentionModel::assess(self::features(['status_at' => 'DESATIVADO']), 35)['score']);
+        $stolen = AttentionModel::assess(self::features(['status_at' => 'FURTADO']), 35);
+        self::assertSame('CORRETIVA', $stolen['attention']);
+        self::assertStringContainsString('repor', $stolen['recommendation']);
+        $off = AttentionModel::assess(self::features(['status_at' => 'DESATIVADO']), 35);
+        self::assertSame('NAO_AVALIADO', $off['attention'], 'fora de serviço não é "baixa atenção"');
+        self::assertNull($off['score']);
+    }
+
+    /** OP-05: F1 sai das contagens; zero (erros sem acerto) é diferente de indefinido (sem falhas nem alertas). */
+    public function testF1ComesFromCountsAndKeepsZeroDistinctFromUndefined(): void
+    {
+        $pair = static fn(bool $flag, bool $failed): array => ['flag' => $flag, 'failed' => $failed];
+
+        $wrong = AttentionModel::metrics([$pair(true, false), $pair(false, true)]);
+        self::assertSame([0.0, 0.0, 0.0], [$wrong['precision'], $wrong['recall'], $wrong['f1']]);
+
+        $empty = AttentionModel::metrics([]);
+        self::assertSame([null, null, null, null], [$empty['precision'], $empty['recall'], $empty['f1'], $empty['prevalence']]);
+
+        $quiet = AttentionModel::metrics([$pair(false, false), $pair(false, false)]);
+        self::assertSame([null, null, null, 0.0], [$quiet['precision'], $quiet['recall'], $quiet['f1'], $quiet['prevalence']], 'sem falhas e sem alertas: indefinido');
+
+        $falseAlarms = AttentionModel::metrics([$pair(true, false)]);
+        self::assertSame([0.0, null, 0.0], [$falseAlarms['precision'], $falseAlarms['recall'], $falseAlarms['f1']]);
+
+        $misses = AttentionModel::metrics([$pair(false, true)]);
+        self::assertSame([null, 0.0, 0.0], [$misses['precision'], $misses['recall'], $misses['f1']]);
+
+        // TP=2, FP=1, FN=4: F1 = 4/9 exatamente (precisão e revocação não são arredondadas antes).
+        $mixed = AttentionModel::metrics([$pair(true, true), $pair(true, true), $pair(true, false), ...array_fill(0, 4, $pair(false, true))]);
+        self::assertSame(4 / 9, $mixed['f1']);
+        self::assertSame(2 / 3, $mixed['precision']);
     }
 
     public function testMetricsHandleEmptyAndCountConfusionMatrix(): void

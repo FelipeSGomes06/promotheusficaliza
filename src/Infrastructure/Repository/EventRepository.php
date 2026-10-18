@@ -71,15 +71,32 @@ final class EventRepository
     }
 
     /**
-     * Eventos de mudança de situação de equipamentos até $until (exclusivo), em ordem cronológica — base da análise.
+     * Eventos de mudança de situação de equipamentos recebidos até $until (exclusivo), em ordem de ocorrência —
+     * base da análise. OCCURRED_AT diz quando aconteceu; RECEIVED_AT, quando o sistema passou a saber.
      *
      * @return list<array<string, mixed>>
      */
     public function equipmentStatusHistory(string $until): array
     {
         return array_map(self::decode(...), $this->db->all(
-            "SELECT ID, RESOURCE_ID, OCCURRED_AT, OUTCOME, PAYLOAD FROM RESOURCE_EVENT
-             WHERE RESOURCE_KIND = 'EQUIPAMENTO' AND EVENT_TYPE = 'SITUACAO' AND OCCURRED_AT < ? ORDER BY OCCURRED_AT, ID",
+            "SELECT ID, RESOURCE_ID, OCCURRED_AT, RECEIVED_AT, OUTCOME, PAYLOAD FROM RESOURCE_EVENT
+             WHERE RESOURCE_KIND = 'EQUIPAMENTO' AND EVENT_TYPE = 'SITUACAO' AND RECEIVED_AT < ? ORDER BY OCCURRED_AT, ID",
+            [$until],
+        ));
+    }
+
+    /**
+     * Alterações de cadastro de equipamentos que mudaram a periodicidade preventiva, em ordem de registro:
+     * permitem reconstruir a configuração válida em cada corte da avaliação retrospectiva.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function equipmentIntervalChanges(string $until): array
+    {
+        return array_map(self::decode(...), $this->db->all(
+            "SELECT ID, RESOURCE_ID, RECEIVED_AT, PAYLOAD FROM RESOURCE_EVENT
+             WHERE RESOURCE_KIND = 'EQUIPAMENTO' AND EVENT_TYPE = 'ALTERACAO' AND RECEIVED_AT < ? AND PAYLOAD CONTAINING 'maint_interval_days'
+             ORDER BY RECEIVED_AT, ID",
             [$until],
         ));
     }

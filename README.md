@@ -14,9 +14,9 @@ Endereço público pretendido: `https://devfelipegomes.com.br/promotheusfiscaliz
 
 | Parte do desafio | Entregue |
 |---|---|
-| **1. Inventário** | Equipamentos de 7 tipos (radar, câmera, balança, cancela, totem, veículo, patinete) com **características próprias validadas por tipo** (ex.: radar com funções e limite em km/h; câmera com resolução, visão noturna, imagem colorida, PTZ); série única **por fabricante** garantida pelo banco; endereço estruturado (CEP, logradouro, referência livre, bairro, cidade/UF fixas) e coordenadas; local instalado × planejado × base de recurso móvel; situação operacional; manutenção imediata ou programada/periódica; arquivamento sem perder histórico. Agentes de trânsito, guarda e polícia com órgão, situação, base e **última posição separada da base**. Histórico com antes/depois, autoria e origem. |
-| **2. Central operacional** | Mapa Leaflet de Marília com ícones distintos por categoria e forma por tipo de recurso, ficha lateral com miniatura, lista acessível, alertas, manutenções urgentes/próximas e consolidação por bairro. Filtros combinados (tipo, situação, bairro, órgão) aplicados **ao mesmo conjunto** que alimenta mapa, lista e indicadores. Indicadores calculados no servidor com fórmulas visíveis e "não se aplica" para denominador zero. Atualização por consulta a cada 5 s a partir de **eventos persistidos no Firebird** pelo simulador, com horário de dados/último evento, pausa, recuo em falha e tratamento de duplicatas e eventos atrasados. |
-| **3. Cidade preditiva** | "Quais equipamentos merecem revisão nos próximos 7 dias?" — índice heurístico explicável (falhas recentes, propensão em 180 dias, atraso da preventiva), com classe *insuficiente* para pouco histórico e *corretiva* para quem já falhou. Limiar escolhido numa janela de **ajuste** e medido numa janela de **avaliação** posterior, contra uma referência simples. Resultado honesto: ~2× o acaso, revocação baixa ([detalhes](docs/analise-preventiva.md)). |
+| **1. Inventário** | Equipamentos de 7 tipos (radar, câmera, balança, cancela, totem, veículo, patinete) com **características próprias validadas por tipo** (ex.: radar com funções e limite em km/h; câmera com resolução, visão noturna, imagem colorida, PTZ); série única **por fabricante** garantida pelo banco; endereço estruturado (CEP, logradouro, referência livre, bairro, cidade/UF fixas) e local marcado no mapa; local instalado × planejado × base de recurso móvel; situação operacional; manutenção imediata ou programada/periódica com **uma intervenção em execução por vez**; arquivamento sem perder histórico nem deixar ordens sem saída. Agentes de trânsito, guarda e polícia com órgão, situação, base e **última posição separada da base**. Histórico com antes/depois, autoria e origem. |
+| **2. Central operacional** | "Visão geral de Marília": mapa Leaflet com ilustrações por categoria, marcadores próximos agrupados, formas distintas para instalado, planejado, base e última posição; lista com o mesmo resultado; ficha resumida ligada a ambos. Três resumos (funcionando, precisam de atenção, manutenções urgentes) e os demais indicadores com fórmulas sob demanda. Busca, tipo e situação à mão; bairro, órgão e "só o que precisa de atenção" em mais filtros — tudo aplicado **ao mesmo conjunto** no servidor. Atualização por consulta a cada 5 s a partir de **eventos persistidos no Firebird** pelo simulador, sem roubar foco, fechar a seleção ou mover o mapa. |
+| **3. Cidade preditiva** | "Revisões recomendadas para os próximos 7 dias": o que revisar primeiro, por quê e o que fazer, com prioridade heurística explicável (falhas recentes, propensão em 180 dias, atraso da preventiva). Cada corte do passado usa só o que o sistema já sabia. Limiar escolhido numa janela de **ajuste** e medido numa janela de **avaliação** posterior, contra uma referência simples. Resultado honesto: ~2× o acaso, revocação baixa ([detalhes](docs/analise-preventiva.md)). |
 
 ## Stack (versões verificadas)
 
@@ -48,11 +48,13 @@ docker compose --profile simulador up -d simulator
 ```
 
 O comando `user:create` mostra **uma única vez** a senha gerada. Abra
-<http://localhost:8080/promotheusfiscaliza/>. A leitura é pública; para cadastrar, editar, abrir ordens e reconhecer
-alertas, clique em **Entrar para editar**. A raiz <http://localhost:8080/> é uma página que simula o portal, para
-mostrar que a aplicação fica restrita ao prefixo.
+<http://localhost:8080/promotheusfiscaliza/>. A leitura é pública; para cadastrar, editar, abrir ordens e registrar
+ciência de alertas, clique em **Entrar para editar**. A raiz <http://localhost:8080/> é uma página que simula o
+portal, para mostrar que a aplicação fica restrita ao prefixo. Banco já existente de uma versão anterior: rode
+`migrate` de novo (aplica a migração 0002; ver [operação](docs/operacao.md#atualizar-um-banco-existente-para-a-migração-0002)).
 
-Testes, análise estática e estilo (usam o banco de testes `fiscaliza_test.fdb`, recriado a cada execução):
+Testes, análise estática e estilo (usam o banco de testes `fiscaliza_test.fdb`, recriado a cada execução; os testes
+recusam rodar se o banco de testes for o mesmo do `DB_DSN`):
 
 ```bash
 docker compose exec app vendor/bin/phpunit
@@ -65,14 +67,16 @@ depois, recrie com `docker compose down -v` (apaga o banco local). Porta 8080 oc
 
 ## Roteiro rápido de avaliação
 
-1. Central: veja os indicadores, abra a fórmula da disponibilidade, filtre por "Radar" (os agentes saem do escopo e
-   o cartão explica), clique num marcador e na lista; pause e retome a atualização.
-2. Ficha de um equipamento: características do tipo, histórico (eventos tracejados = atrasados, só no histórico),
-   manutenção e atenção preventiva.
-3. Entre com a conta criada: cadastre um radar (tente "velocidade" sem limite e uma série já usada pelo mesmo
-   fabricante), instale-o (Não instalado → Operacional), abra e conclua uma ordem, use **Simular falha** e veja o
-   alerta surgir na central; reconheça o alerta — ele só resolve quando a causa some.
-4. Antecipação: método, fatores por equipamento e a avaliação retrospectiva com a referência.
+1. Visão geral: leia os três resumos, abra "Mais indicadores", toque em **Ver o que precisa de atenção**, escolha um
+   ponto (ou um grupo, que aproxima) e alterne entre Mapa e Lista com a mesma seleção; no celular, use o Menu.
+2. Ficha de um equipamento: próxima ação, onde está, cadastro, manutenção e histórico (tracejado = registro que não
+   alterou a situação, com o motivo).
+3. Entre com a conta criada: cadastre um radar (deixe "Velocidade" sem limite para ver o resumo de erros com a
+   digitação mantida), instale-o (Não instalado → Operacional), inicie e conclua uma ordem (tente iniciar outra do
+   mesmo equipamento), use **Simular falha** e registre ciência do alerta — ele só resolve quando a causa some.
+4. Revisões recomendadas: o que revisar e por quê; abra o método e o retrospecto com a referência.
+
+Passo a passo de cada tela, mensagens e erros: [guia de uso](docs/guia-de-uso.md).
 
 Comandos úteis: `php bin/fiscaliza` lista os comandos (`sim:tick` para cron, `analysis:run`, `demo:seed --reset`).
 
@@ -80,34 +84,36 @@ Comandos úteis: `php bin/fiscaliza` lista os comandos (`sim:tick` para cron, `a
 
 | Situação | Itens |
 |---|---|
-| **Implementado e verificado** | Partes 1, 2 e 3 descritas acima; prova PHP/Firebird ([evidência](docs/evidencias/2026-10-18-prova-firebird.md)); 62 testes automatizados (unidade, integração no Firebird real, HTTP) ([verificação](docs/verificacao.md)); backup e restauração com gbak ([evidência](docs/evidencias/2026-10-18-backup-restauracao.md)); cabeçalhos efetivos no Apache; fluxo de cadastro/instalação/login no navegador. |
-| **Pendente (depende do proprietário/infra)** | Publicação no endereço pretendido; repositório público (GitLab/GitHub) e varredura de segredos no histórico antes do primeiro push; ZIP de entrega gerado a partir do commit final; vídeo; conferência das condições finais da DSIN. |
+| **Implementado e verificado** | Partes 1, 2 e 3 descritas acima; prova PHP/Firebird ([evidência](docs/evidencias/2026-10-18-prova-firebird.md)); **89 testes automatizados, 314 asserções** (unidade, integração no Firebird real, HTTP, concorrência com processos separados) ([verificação](docs/verificacao.md)); correções dos achados da auditoria de 18/10/2026 e redesenho com capturas antes/depois ([evidência](docs/evidencias/2026-10-18-correcoes-da-auditoria.md)); backup e restauração com gbak ([evidência](docs/evidencias/2026-10-18-backup-restauracao.md)); origem dedicada testada localmente. Rastreabilidade: [matriz de requisitos](docs/matriz-requisitos.md). |
+| **Pendente (depende do proprietário/infra)** | Publicação no endereço pretendido (DNS, TLS, redirecionamento no portal); repositório público (GitLab/GitHub) e varredura de segredos no histórico antes do primeiro push; ZIP de entrega gerado a partir do commit final; vídeo; conferência das condições finais da DSIN; teste com leitor de tela e com pessoa iniciante. |
 | **Fora do escopo** | Integração real com IoT/órgãos, multas, reconhecimento de placas/faces, geolocalização de pessoas reais, app nativo, mensageria, alta disponibilidade, modelos 3D, heatmap e exportações. |
 
 ## Publicação
 
 A hospedagem compartilhada do portal não oferece servidor Firebird nem `pdo_firebird` com garantia, e uma subpasta
-compartilha a **mesma origem** do portal. A proposta concreta (VPS/contêiner em origem dedicada, com o caminho do
-portal redirecionando para ela) está em [docs/seguranca.md](docs/seguranca.md#publicação-e-limite-de-mesma-origem)
-e [docs/operacao.md](docs/operacao.md#publicação). Nada foi publicado.
+compartilha a **mesma origem** do portal. A proposta concreta (VPS/contêiner em origem dedicada com
+`compose.origem-dedicada.yaml`, e o caminho do portal redirecionando para ela) e a alternativa com proxy e prefixo
+estão em [docs/operacao.md](docs/operacao.md#publicação) e [docs/seguranca.md](docs/seguranca.md#publicação-e-limite-de-mesma-origem).
+Esvaziar `APP_BASE_PATH` sozinho não basta: o Apache padrão serve a aplicação só sob o prefixo. Nada foi publicado.
 
 ## Documentação
 
+- [Guia de uso por tela](docs/guia-de-uso.md)
 - [Arquitetura e referência do código](docs/arquitetura.md)
 - [Domínio, modelo de dados e indicadores](docs/dominio.md)
-- [Rotas HTTP e permissões](docs/http.md)
+- [Rotas HTTP, permissões e contratos de escrita](docs/http.md)
 - [Análise preventiva](docs/analise-preventiva.md)
 - [Segurança e privacidade](docs/seguranca.md)
 - [Operação: configuração, simulador, backup e publicação](docs/operacao.md)
-- [Verificação executada](docs/verificacao.md)
+- [Verificação executada](docs/verificacao.md) · [Matriz de requisitos](docs/matriz-requisitos.md)
 - [Decisões (ADRs)](docs/adr/)
 - [IA e autoria](docs/ia-e-autoria.md) · [Licenças e fontes](docs/licencas-e-fontes.md) · [Roteiro do vídeo](docs/roteiro-video.md)
 - Planejamento original recebido: [docs/planejamento-codex-2026-10-18](docs/planejamento-codex-2026-10-18/00-LEIA-PRIMEIRO.md)
 
 ## Uso de IA
 
-Planejamento: Codex (OpenAI). Implementação: Claude (Anthropic), modelo Opus 5.5, no Claude Code. Revisão, decisões e
-responsabilidade: autor do projeto. Detalhes em [docs/ia-e-autoria.md](docs/ia-e-autoria.md).
+Planejamento e auditoria: Codex (OpenAI). Implementação e correções: Claude (Anthropic), modelo Opus 5.5, no Claude
+Code. Revisão, decisões e responsabilidade: autor do projeto. Detalhes em [docs/ia-e-autoria.md](docs/ia-e-autoria.md).
 
 ## Licença
 

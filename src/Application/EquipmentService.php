@@ -14,6 +14,7 @@ use Fiscaliza\Infrastructure\ConcurrencyConflict;
 use Fiscaliza\Infrastructure\ConstraintViolation;
 use Fiscaliza\Infrastructure\Database;
 use Fiscaliza\Infrastructure\Repository\EquipmentRepository;
+use Fiscaliza\Infrastructure\Repository\MaintenanceRepository;
 use Fiscaliza\Infrastructure\Repository\ReferenceRepository;
 
 /** Casos de uso do inventário de equipamentos: cadastro, edição, mudança de situação e arquivamento. */
@@ -27,6 +28,7 @@ final class EquipmentService
         private readonly Database $db,
         private readonly EquipmentRepository $equipment,
         private readonly ReferenceRepository $references,
+        private readonly MaintenanceRepository $orders,
         private readonly History $history,
         private readonly AlertService $alerts,
         private readonly Clock $clock,
@@ -72,13 +74,33 @@ final class EquipmentService
         $this->db->transaction(function () use ($id, $version, $values, $current, $actorId): void {
             $saved = $this->persist(fn() => $this->equipment->updateVersioned($id, (int) $version, $values + ['updated_at' => Time::toDb($this->clock->now())]));
             if (!$saved) {
-                throw new ConcurrencyConflict('Outra pessoa alterou este equipamento depois que você abriu o formulário. Recarregue para ver a versão atual.');
+                // Só mudanças de cadastro avançam a versão (ver EquipmentRepository::updateState): posição e situação não chegam aqui.
+                throw new ConcurrencyConflict('O cadastro foi alterado depois que você abriu o formulário.');
             }
             $changes = History::diff(array_intersect_key($current, array_flip(self::TRACKED)), $values);
             if ($changes !== []) {
                 $this->history->record('EQUIPAMENTO', $id, 'ALTERACAO', $actorId, 'Cadastro alterado: ' . implode(', ', array_keys($changes)) . '.', ['alteracoes' => $changes]);
             }
         });
+    }
+
+    /**
+     * O que salvar $data mudaria no cadastro gravado agora — base da tela de conflito de edição, que mostra
+     * "salvo agora" ao lado de "sua versão" sem descartar o que a pessoa digitou.
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, array{antes: mixed, depois: mixed}> vazio se os dados enviados não forem válidos
+     */
+    public function pendingChanges(int $id, array $data): array
+    {
+        $current = $this->equipment->find($id) ?? throw new NotFound('Equipamento não encontrado.');
+        try {
+            $values = $this->validate(new Input($data), EquipmentStatus::from($current['status']));
+        } catch (ValidationFailed) {
+            return [];
+        }
+
+        return History::diff(array_intersect_key($current, array_flip(self::TRACKED)), $values);
     }
 
     public function changeStatus(int $id, string $target, string $note, int $actorId): void
@@ -90,6 +112,11 @@ final class EquipmentService
         }
         $this->db->transaction(function () use ($id, $status, $note, $actorId): void {
             $current = $this->equipment->lock($id) ?? throw new NotFound('Equipamento não encontrado.');
+            foreach ($this->orders->openFor($id) as $order) {
+                if ($order['state'] === 'EM_EXECUCAO') {
+                    throw new RuleViolation("A intervenção da ordem #{$order['id']} está em execução: a situação será definida ao concluí-la, com o resultado real.");
+                }
+            }
             $this->applyStatus($current, $status, $note, $actorId, 'MANUAL');
             $this->alerts->reconcile();
         });
@@ -129,21 +156,45 @@ final class EquipmentService
         ], $source);
     }
 
-    public function archive(int $id, string $reason, int $actorId): void
+    /**
+     * Retira o equipamento da operação. Recusado com intervenção em execução (ela precisa ser concluída com o
+     * resultado real). Ordens apenas agendadas só são canceladas se $cancelScheduled confirmar isso explicitamente;
+     * cada cancelamento recebe o motivo do arquivamento, autoria e histórico próprios.
+     *
+     * @return list<int> ordens agendadas canceladas junto com o arquivamento
+     */
+    public function archive(int $id, string $reason, int $actorId, bool $cancelScheduled = false): array
     {
         $reason = trim($reason);
         if ($reason === '' || mb_strlen($reason) > 300) {
             throw new ValidationFailed(['reason' => 'Informe o motivo do arquivamento (até 300 caracteres).']);
         }
-        $this->db->transaction(function () use ($id, $reason, $actorId): void {
+
+        return $this->db->transaction(function () use ($id, $reason, $actorId, $cancelScheduled): array {
             $current = $this->equipment->lock($id) ?? throw new NotFound('Equipamento não encontrado.');
             if ($current['archived_at'] !== null) {
                 throw new RuleViolation('Equipamento já está arquivado.');
             }
+            $open = $this->orders->openFor($id);
+            foreach ($open as $order) {
+                if ($order['state'] === 'EM_EXECUCAO') {
+                    throw new RuleViolation("A ordem #{$order['id']} está em execução. Conclua a intervenção, informando o resultado, antes de arquivar.");
+                }
+            }
+            $scheduled = array_map(static fn(array $o): int => (int) $o['id'], $open);
+            if ($scheduled !== [] && !$cancelScheduled) {
+                throw new RuleViolation('Há ' . count($scheduled) . ' ordem(ns) agendada(s) (#' . implode(', #', $scheduled) . '). Confirme o cancelamento delas para arquivar.');
+            }
             $now = Time::toDb($this->clock->now());
+            foreach ($scheduled as $orderId) {
+                $this->orders->markClosed($orderId, 'CANCELADA', $now, $actorId, "Cancelada no arquivamento do equipamento: {$reason}", null);
+                $this->history->record('EQUIPAMENTO', $id, 'MANUTENCAO_CANCELADA', $actorId, "Ordem #{$orderId} cancelada no arquivamento: {$reason}", ['ordem' => $orderId]);
+            }
             $this->equipment->updateState($id, ['archived_at' => $now, 'updated_at' => $now]);
-            $this->history->record('EQUIPAMENTO', $id, 'ARQUIVAMENTO', $actorId, "Arquivado: {$reason}", ['motivo' => $reason]);
+            $this->history->record('EQUIPAMENTO', $id, 'ARQUIVAMENTO', $actorId, "Arquivado: {$reason}", ['motivo' => $reason] + ($scheduled === [] ? [] : ['ordens_canceladas' => $scheduled]));
             $this->alerts->reconcile();
+
+            return $scheduled;
         });
     }
 

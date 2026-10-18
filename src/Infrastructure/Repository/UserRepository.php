@@ -57,14 +57,34 @@ final class UserRepository
         return (int) $this->db->value("SELECT COUNT(*) FROM APP_USER WHERE ROLE = 'ADMIN' AND ACTIVE = TRUE");
     }
 
-    public function recordFailure(string $keyHash, string $at): void
+    /**
+     * Reserva a próxima vaga numerada da chave. Duas conexões que calculem a mesma vaga colidem no índice único
+     * UX_LOGIN_ATTEMPT_SLOT: a segunda espera a primeira terminar e recebe ConstraintViolation (deve recontar).
+     *
+     * @return int id da reserva, que conta como falha até ser quitada
+     */
+    public function reserveAttempt(string $keyHash, string $at): int
     {
-        $this->db->execute('INSERT INTO LOGIN_ATTEMPT (KEY_HASH, ATTEMPTED_AT) VALUES (?, ?)', [$keyHash, $at]);
+        return $this->db->insert(
+            'INSERT INTO LOGIN_ATTEMPT (KEY_HASH, ATTEMPTED_AT, SLOT_NO) VALUES (?, ?, (SELECT COALESCE(MAX(SLOT_NO), 0) + 1 FROM LOGIN_ATTEMPT WHERE KEY_HASH = ?))',
+            [$keyHash, $at, $keyHash],
+        );
     }
 
+    /** Quita uma reserva (login correto) acrescentando uma linha: o histórico de tentativas nunca é alterado. */
+    public function settleAttempt(int $reservationId, string $at): void
+    {
+        $this->db->execute('INSERT INTO LOGIN_ATTEMPT (KEY_HASH, ATTEMPTED_AT, SETTLES_ID) SELECT KEY_HASH, ?, ID FROM LOGIN_ATTEMPT WHERE ID = ?', [$at, $reservationId]);
+    }
+
+    /** Falhas e reservas ainda não quitadas (verificações em andamento contam: é isso que torna a cota atômica). */
     public function failuresSince(string $keyHash, string $since): int
     {
-        return (int) $this->db->value('SELECT COUNT(*) FROM LOGIN_ATTEMPT WHERE KEY_HASH = ? AND ATTEMPTED_AT >= ?', [$keyHash, $since]);
+        return (int) $this->db->value(
+            'SELECT COUNT(*) FROM LOGIN_ATTEMPT a WHERE a.KEY_HASH = ? AND a.ATTEMPTED_AT >= ? AND a.SETTLES_ID IS NULL
+             AND NOT EXISTS (SELECT 1 FROM LOGIN_ATTEMPT s WHERE s.SETTLES_ID = a.ID)',
+            [$keyHash, $since],
+        );
     }
 
     /**

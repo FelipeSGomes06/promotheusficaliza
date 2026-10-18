@@ -4,52 +4,69 @@
 {% block content %}
 <div class="page">
   <div class="page-head"><div>
-    <p class="eyebrow">Transparência</p>
     <h1>O que é real, simulado e implementado</h1>
-    <p>Promotheus Fiscaliza é a proposta para a etapa bônus F.O.G.O. do DSIN Coder Challenge 2026: inventário, central operacional e antecipação de problemas para a mobilidade e a segurança de Marília/SP.</p>
+    <p class="lead">Promotheus Fiscaliza é a proposta para a etapa bônus F.O.G.O. do DSIN Coder Challenge 2026: inventário, central de recursos e antecipação de problemas para a mobilidade e a segurança de Marília/SP.</p>
   </div></div>
-  <div class="grid-2">
+  <div class="split">
     <div class="stack">
-      <section class="card">
+      <section class="panel">
         <h2>Dados</h2>
         <ul class="factor-list">
-          <li><strong>Fictícios:</strong> órgãos, marcas, modelos, séries, patrimônios, agentes (indicativos inspirados no mito de Prometeu), histórico, falhas e posições.</li>
-          <li><strong>Referências geográficas públicas:</strong> nomes de bairros, avenidas e CEPs de logradouro de Marília. Coordenadas obtidas numa consulta pontual ao Nominatim (© colaboradores do OpenStreetMap, ODbL) e usadas como ilustração.</li>
+          <li><strong>Fictícios:</strong> órgãos, marcas, modelos, séries, patrimônios, agentes (nomes inspirados no mito de Prometeu), histórico, falhas e posições.</li>
+          <li><strong>Referências geográficas públicas:</strong> nomes de bairros, avenidas e CEPs de logradouro de Marília. Coordenadas obtidas numa consulta pontual ao Nominatim (© colaboradores do OpenStreetMap, ODbL), usadas como ilustração.</li>
           <li><strong>Nenhum</strong> ponto representa radar, câmera, base ou pessoa real, e não há integração com prefeitura, polícia ou equipamentos.</li>
           <li>Zonas (centro, norte, sul, leste, oeste) são um agrupamento da demonstração, não uma divisão oficial.</li>
         </ul>
       </section>
-      <section class="card">
+      <section class="panel">
         <h2>Atualização em tempo quase real</h2>
-        <p>O simulador grava eventos fictícios no banco (Firebird) a cada {{ app.poll_seconds }} s pelos mesmos casos de uso da aplicação; a central consulta o servidor a cada {{ app.poll_seconds }} s. Atraso esperado: até um intervalo de consulta mais o tempo de rede. Duplicatas são descartadas pelo identificador do evento; eventos atrasados entram só no histórico e não regridem o estado atual.</p>
+        <p>Um simulador grava eventos fictícios no banco (Firebird) a cada {{ app.sim_seconds }} s, pelos mesmos casos de uso da aplicação. Separadamente, a visão geral consulta o servidor a cada {{ app.poll_seconds }} s. Um evento aparece na tela, no máximo, um intervalo de consulta depois de gravado (mais o tempo de rede).</p>
+        <p>Eventos repetidos são descartados pelo identificador. Eventos atrasados entram só no histórico e não desfazem a situação atual. Silêncio de um aparelho aparece como "sem informação recente", nunca como falha confirmada.</p>
+        <table class="data">
+          <caption>Quando a informação é considerada atual</caption>
+          <thead><tr><th scope="col">Informação</th><th scope="col">Atual</th><th scope="col">Atrasada</th><th scope="col">Depois disso</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Sinal de equipamento</th><td>até 10 min</td><td>até 60 min</td><td>sem informação recente</td></tr>
+            <tr><th scope="row">Posição de agente, veículo ou patinete</th><td>até 5 min</td><td>até 30 min</td><td>sem informação recente</td></tr>
+          </tbody>
+        </table>
       </section>
-      <section class="card">
+      <section class="panel">
         <h2>Indicadores</h2>
         <ul class="factor-list">
-          <li><strong>Disponibilidade</strong> = operacionais ÷ em serviço (operacionais + mau funcionamento + manutenção + furto). Não instalados e desativados ficam fora do denominador.</li>
-          <li><strong>Confirmada</strong> usa só operacionais com sinal nos últimos 10 min. Sem denominador: “não se aplica”.</li>
-          <li><strong>Agentes ativos</strong> = agentes em atividade no filtro; nunca somados a equipamentos.</li>
+          <li><strong>Disponibilidade</strong> = funcionando ÷ em serviço (funcionando + mau funcionamento + manutenção + furto). Não instalados e desativados ficam fora da conta.</li>
+          <li><strong>Confirmada por sinal</strong> usa só quem funciona e mandou sinal nos últimos 10 min. Sem nenhum em serviço: "não se aplica".</li>
+          <li><strong>Precisa de atenção</strong> = mau funcionamento, manutenção ou furto; manutenção imediata ou vencida; ou um alerta aberto (inclusive "sem sinal recente", que não confirma falha).</li>
+          <li><strong>Agentes em atividade</strong> nunca são somados a equipamentos.</li>
         </ul>
       </section>
     </div>
     <div class="stack">
-      <section class="card">
-        <h2>Categorias e ilustrações</h2>
-        <p class="small muted">Ícones e miniaturas próprios. A ilustração representa a categoria, não o modelo comercial cadastrado.</p>
-        <ul class="res-list">
-          {% for t in types %}<li class="res"><span class="res__icon">{{ ui.icon('i-' ~ t.code) }}</span><span><span class="res__title">{{ t.label }}</span><span class="res__sub">{{ t.description }}</span></span><span></span></li>{% endfor %}
-          {% for code, label in {AG_TRANSITO: 'Agente de trânsito', AG_GUARDA: 'Guarda municipal', AG_POLICIA: 'Policial'} %}<li class="res"><span class="res__icon res__icon--agent">{{ ui.icon('i-' ~ code) }}</span><span><span class="res__title">{{ label }}</span><span class="res__sub">Agente fictício (não é conta de acesso)</span></span><span></span></li>{% endfor %}
+      <section class="panel">
+        <h2>Tipos de recurso e ilustrações</h2>
+        <p class="hint">Ilustrações próprias por categoria. Elas não reproduzem fabricante nem modelo: marca e modelo cadastrados também são fictícios.</p>
+        <ul class="rows">
+          {% for t in types %}<li class="row"><span class="row__thumb">{{ ui.icon('i-' ~ t.code) }}</span><span class="row__main"><span class="row__title">{{ t.label }}</span><span class="row__sub">{{ t.description }}</span></span></li>{% endfor %}
+          {% for code, label in {AG_TRANSITO: 'Agente de trânsito', AG_GUARDA: 'Guarda municipal', AG_POLICIA: 'Policial'} %}<li class="row"><span class="row__thumb row__thumb--agent">{{ ui.icon('i-' ~ code) }}</span><span class="row__main"><span class="row__title">{{ label }}</span><span class="row__sub">Agente fictício (não é conta de acesso)</span></span></li>{% endfor %}
         </ul>
       </section>
-      <section class="card">
+      <section class="panel">
         <h2>Tecnologia e autoria</h2>
         <ul class="factor-list">
-          <li>PHP 8.5 (Slim 4, Twig 3), Firebird 5 via PDO_FIREBIRD, Leaflet 1.9.4, JavaScript sem framework.</li>
-          <li>Leitura pública; escrita só com conta criada na instalação (operador/administrador), CSRF e autorização no servidor.</li>
-          <li>Ferramentas de IA usadas no desenvolvimento: planejamento com Codex (OpenAI) e implementação com Claude (Anthropic) no Claude Code, revisados pelo autor. Detalhes no README do repositório.</li>
-          <li>Mapa: © colaboradores do OpenStreetMap. Fonte Space Grotesk (SIL OFL 1.1).</li>
+          <li>PHP 8.5 (Slim 4, Twig 3), Firebird 5 via PDO_FIREBIRD, Leaflet 1.9.4 e JavaScript sem framework.</li>
+          <li>Consulta aberta; escrita só com conta (operador ou administrador), proteção CSRF e autorização no servidor.</li>
+          <li>Ferramentas de IA usadas no desenvolvimento: planejamento e auditoria com Codex (OpenAI); implementação com Claude (Anthropic) no Claude Code; revisão pelo autor. Detalhes no README.</li>
+          <li>Mapa: © colaboradores do OpenStreetMap. Fonte dos títulos: Space Grotesk (SIL OFL 1.1).</li>
         </ul>
       </section>
+      <details class="method" id="administracao">
+        <summary>Para quem administra a instalação</summary>
+        <div>
+          <p>Contas são criadas na própria instalação, não há cadastro público. No terminal do servidor:</p>
+          <p><code>php bin/fiscaliza user:create nome.usuario --role=OPERADOR --name="Nome de exibição"</code></p>
+          <p class="hint">A senha é gerada e mostrada uma única vez. Administradores também criam e desativam contas em "Contas". Procedimentos de migração, carga da demonstração, simulador, backup e publicação estão em docs/operacao.md.</p>
+        </div>
+      </details>
     </div>
   </div>
 </div>

@@ -24,11 +24,14 @@ services:
       timeout: 5s
       retries: 20
 
+  # app e simulator não recebem o .env como variáveis de ambiente: a configuração é lida do arquivo montado e
+  # a web/o simulador descartam as credenciais de dono e SYSDBA (Config::PRIVILEGED). O arquivo continua legível
+  # dentro do contêiner local; em publicação, use no servidor web um .env só com as credenciais da aplicação
+  # (docs/operacao.md, "Credenciais por processo").
   app:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    env_file: .env
     volumes:
       - .:/app
     ports:
@@ -42,7 +45,6 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    env_file: .env
     volumes:
       - .:/app
     command: ["php", "bin/fiscaliza", "sim:run"]

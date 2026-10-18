@@ -2,53 +2,65 @@
 {% import '_ui.twig' as ui %}
 {% block title %}Equipamentos{% endblock %}
 {% block content %}
+{% set moreActive = (filters.regions|length > 0 ? 1 : 0) + (filters.agencies|length > 0 ? 1 : 0) + (archived ? 1 : 0) + (sort != 'codigo' ? 1 : 0) %}
 <div class="page">
   <div class="page-head">
     <div>
-      <p class="eyebrow">Inventário</p>
       <h1>Equipamentos</h1>
-      <p>{{ total }} {{ archived ? 'arquivado(s)' : 'em operação ou cadastrados' }}{{ filters.isEmpty and q == '' ? '' : ' no filtro atual' }}. Radares, câmeras, balanças, cancelas, totens, veículos e patinetes, com características próprias por tipo.</p>
+      <p class="lead">Radares, câmeras, balanças, cancelas, totens, veículos e patinetes cadastrados na demonstração, cada um com as características do seu tipo.</p>
     </div>
-    {% if app.user %}<a class="btn btn--primary" href="{{ url('/equipamentos/novo') }}">{{ ui.icon('i-plus') }}Novo equipamento</a>{% endif %}
+    {% if app.user %}<a class="btn btn--primary" href="{{ url('/equipamentos/novo') }}">{{ ui.icon('i-plus') }}Cadastrar equipamento</a>{% endif %}
   </div>
 
-  <form class="toolbar card card--tight" method="get" action="{{ url('/equipamentos') }}">
-    <div class="field"><label for="q">Buscar</label><input id="q" type="search" name="q" value="{{ q }}" placeholder="Código, série, marca, rua…" maxlength="60"></div>
-    <div class="field"><label for="tipo">Tipo</label>
-      <select id="tipo" name="categoria[]"><option value="">Todos</option>{% for t in types %}<option value="{{ t.code }}" {{ t.code in filters.categories ? 'selected' }}>{{ t.label }}</option>{% endfor %}</select></div>
-    <div class="field"><label for="sit">Situação</label>
-      <select id="sit" name="situacao[]"><option value="">Todas</option>{% for s in options.statuses|filter(s => s.group == 'Equipamentos') %}<option value="{{ s.value }}" {{ s.value in filters.statuses ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select></div>
-    <div class="field"><label for="bai">Bairro</label>
-      <select id="bai" name="bairro[]"><option value="">Todos</option>{% for r in options.regions %}<option value="{{ r.id }}" {{ r.id in filters.regions ? 'selected' }}>{{ r.name }}</option>{% endfor %}</select></div>
-    <div class="field"><label for="org">Órgão</label>
-      <select id="org" name="orgao[]"><option value="">Todos</option>{% for a in options.agencies %}<option value="{{ a.id }}" {{ a.id in filters.agencies ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select></div>
-    <div class="field"><label for="ord">Ordenar</label>
-      <select id="ord" name="ordem">{% for k, l in {codigo: 'Código', tipo: 'Tipo', situacao: 'Situação', bairro: 'Bairro', atualizado: 'Atualização recente'} %}<option value="{{ k }}" {{ sort == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
-    <label class="checks"><span><input type="checkbox" name="arquivados" value="1" {{ archived ? 'checked' }}> Arquivados</span></label>
-    <button class="btn" type="submit">Filtrar</button>
+  <form class="stack" method="get" action="{{ url('/equipamentos') }}" role="search" aria-label="Filtrar equipamentos">
+    <div class="filters">
+      <div class="field field--search"><label for="q">Buscar</label><input id="q" type="search" name="q" value="{{ q }}" placeholder="Rua, código, série, marca ou patrimônio" maxlength="60"></div>
+      <div class="field"><label for="tipo">Tipo</label>
+        <select id="tipo" name="categoria[]"><option value="">Todos os tipos</option>{% for t in types %}<option value="{{ t.code }}" {{ t.code in filters.categories ? 'selected' }}>{{ t.label }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="sit">Situação</label>
+        <select id="sit" name="situacao[]"><option value="">Todas as situações</option>{% for s in options.statuses|filter(s => s.group == 'Equipamentos') %}<option value="{{ s.value }}" {{ s.value in filters.statuses ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select></div>
+    </div>
+    <div class="toolbar__end">
+      <button class="btn btn--primary" type="submit">Filtrar</button>
+      <details class="more-filters more-filters--inline" {{ moreActive > 0 ? 'open' }}>
+        <summary class="btn">{{ ui.icon('i-filter') }}<span>Mais filtros</span> {% if moreActive %}<span class="count-pill">{{ moreActive }}</span>{% endif %}</summary>
+        <div class="more-filters__body">
+          <div class="field"><label for="bai">Bairro</label>
+            <select id="bai" name="bairro[]"><option value="">Todos os bairros</option>{% for r in options.regions %}<option value="{{ r.id }}" {{ r.id in filters.regions ? 'selected' }}>{{ r.name }}</option>{% endfor %}</select></div>
+          <div class="field"><label for="org">Órgão responsável</label>
+            <select id="org" name="orgao[]"><option value="">Todos os órgãos</option>{% for a in options.agencies %}<option value="{{ a.id }}" {{ a.id in filters.agencies ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select></div>
+          <div class="field"><label for="ord">Ordenar por</label>
+            <select id="ord" name="ordem">{% for k, l in {codigo: 'Código', tipo: 'Tipo', situacao: 'Situação', bairro: 'Bairro', atualizado: 'Alterados recentemente'} %}<option value="{{ k }}" {{ sort == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
+          <div class="checks"><label><input type="checkbox" name="arquivados" value="1" {{ archived ? 'checked' }}> Mostrar só arquivados (fora da operação)</label></div>
+        </div>
+      </details>
+      <p class="result-count"><strong>{{ total }}</strong> {{ archived ? (total == 1 ? 'arquivado' : 'arquivados') : (total == 1 ? 'equipamento' : 'equipamentos') }}{{ filters.isEmpty and q == '' ? '' : ' no filtro' }}
+        {% if not (filters.isEmpty and q == '' and not archived and sort == 'codigo') %}<a class="btn btn--quiet btn--small" href="{{ url('/equipamentos') }}">Limpar filtros</a>{% endif %}</p>
+    </div>
   </form>
 
+  <div class="section">
   {% if rows is empty %}
-    <div class="empty">Nenhum equipamento encontrado. <a href="{{ url('/equipamentos') }}">Limpar filtros</a></div>
+    <div class="empty">Nenhum equipamento encontrado com estes filtros. <a href="{{ url('/equipamentos') }}">Limpar filtros</a>{% if app.user %} ou <a href="{{ url('/equipamentos/novo') }}">cadastrar um equipamento</a>{% endif %}.</div>
   {% else %}
-  <div class="table-wrap">
-    <table class="data">
-      <caption>Equipamentos — página {{ page }} de {{ pages }}</caption>
-      <thead><tr><th scope="col">Equipamento</th><th scope="col">Marca / modelo</th><th scope="col">Situação</th><th scope="col">Local</th><th scope="col">Órgão</th></tr></thead>
-      <tbody>
+    <ul class="rows" aria-label="Equipamentos, página {{ page }} de {{ pages }}">
       {% for e in rows %}
-        <tr>
-          <td><div class="type-cell"><span class="res__icon">{{ ui.icon('i-' ~ e.type_code) }}</span><span><a href="{{ url('/equipamentos/' ~ e.id) }}"><strong>{{ e.code }}</strong></a><br><span class="small muted">{{ types[e.type_code].label ?? e.type_code }}</span></span></div></td>
-          <td>{{ e.manufacturer }}<br><span class="small muted">{{ e.model }}{{ e.serial_number ? ' · série ' ~ e.serial_number : ' · série desconhecida' }}</span></td>
-          <td>{{ ui.equipment_status(e.status) }}</td>
-          <td>{{ e.street ?? '—' }}<br><span class="small muted">{{ e.region_name ?? 'sem bairro' }}{{ e.lat is null ? ' · sem localização' : '' }}</span></td>
-          <td class="small">{{ e.agency_name }}</td>
-        </tr>
+        {% set type = types[e.type_code] ?? null %}
+        {% set place = [e.street, e.address_ref]|filter(v => v)|join(', ') %}
+        <li><a class="row" href="{{ url('/equipamentos/' ~ e.id) }}">
+          <span class="row__thumb">{{ ui.icon('i-' ~ e.type_code) }}</span>
+          <span class="row__main">
+            <span class="row__title">{{ type ? type.shortLabel : e.type_code }} · {{ place ?: (e.region_name ?? 'sem endereço cadastrado') }}</span>
+            <span class="row__sub"><span class="code-tag">{{ e.code }}</span> {{ e.region_name ?? 'sem bairro' }} · {{ e.manufacturer }} {{ e.model }}</span>
+          </span>
+          <span class="row__meta">{{ ui.equipment_status(e.status) }}
+            {% if e.lat is null %}<span class="fresh">Sem localização cadastrada</span>{% elseif e.freshness.value == 'ATRASADA' %}<span class="fresh fresh--ATRASADA">Sinal atrasado</span>{% elseif e.freshness.value == 'SEM_INFORMACAO' %}<span class="fresh">Sem sinal recente (não indica falha)</span>{% endif %}
+            {% if e.archived_at %}<span class="tag tag--warn">Arquivado em {{ e.archived_at|local_dt('d/m/Y') }}</span>{% endif %}</span>
+        </a></li>
       {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {{ ui.pagination(page, pages, filters.toArray|merge({q: q, ordem: sort, arquivados: archived ? '1' : null}), '/equipamentos') }}
+    </ul>
+    {{ ui.pagination(page, pages, filters.toArray|merge({q: q, ordem: sort, arquivados: archived ? '1' : null}), '/equipamentos') }}
   {% endif %}
+  </div>
 </div>
 {% endblock %}

@@ -59,18 +59,23 @@ final class CentralQuery
             foreach ($orders as $o) {
                 $ordersByEquipment[(int) $o['equipment_id']][] = $o;
             }
-            $alertCount = [];
+            $alertReasons = [];
             foreach ($alerts as $a) {
-                $alertCount[$a['resource_kind'] . ':' . $a['resource_id']] = ($alertCount[$a['resource_kind'] . ':' . $a['resource_id']] ?? 0) + 1;
+                $alertReasons[$a['resource_kind'] . ':' . $a['resource_id']][] = (string) $a['reason'];
             }
 
             $resources = [];
             foreach ($equipmentRows as $e) {
-                $resources[] = $this->equipmentResource($e, $ordersByEquipment[(int) $e['id']] ?? [], $alertCount['EQUIPAMENTO:' . $e['id']] ?? 0, $now);
+                $resources[] = $this->equipmentResource($e, $ordersByEquipment[(int) $e['id']] ?? [], $alertReasons['EQUIPAMENTO:' . $e['id']] ?? [], $now);
             }
             foreach ($agentRows as $g) {
-                $resources[] = $this->agentResource($g, $alertCount['AGENTE:' . $g['id']] ?? 0, $now);
+                $resources[] = $this->agentResource($g, $alertReasons['AGENTE:' . $g['id']] ?? [], $now);
             }
+            // Busca e "precisa de atenção" valem para tudo o que segue (mapa, lista, indicadores, alertas, bairros).
+            $resources = array_values(array_filter($resources, static fn(array $r): bool => ($filters->text === '' || self::matches($r, $filters->text))
+                && (!$filters->attention || $r['attention'] !== [])));
+            $visibleEquipment = array_flip(array_map(static fn($r) => $r['id'], array_filter($resources, static fn($r) => $r['kind'] === 'EQUIPAMENTO')));
+            $orders = array_values(array_filter($orders, static fn($o) => isset($visibleEquipment[(int) $o['equipment_id']])));
 
             $inSet = array_flip(array_map(static fn($r) => $r['kind'] . ':' . $r['id'], $resources));
             $visibleAlerts = array_values(array_filter($alerts, static fn($a) => isset($inSet[$a['resource_kind'] . ':' . $a['resource_id']])));
@@ -84,6 +89,8 @@ final class CentralQuery
                 'filters' => $filters->toArray(),
                 'scope' => ['equipment' => $filters->includesEquipment(), 'agents' => $filters->includesAgents()],
                 'kpis' => Indicators::compute(array_values($equipmentForKpi), array_values($agentsForKpi)),
+                'needs_attention' => count(array_filter($resources, static fn($r) => $r['attention'] !== [])),
+                'without_location' => count(array_filter($resources, static fn($r) => $r['position']['lat'] === null)),
                 'resources' => $resources,
                 'regions' => $this->regionSummary($resources, $visibleAlerts),
                 'maintenance' => $this->maintenanceLists($orders),
@@ -107,15 +114,24 @@ final class CentralQuery
     /**
      * @param array<string, mixed> $e
      * @param list<array<string, mixed>> $orders
+     * @param list<string> $alertReasons motivos dos alertas abertos do recurso
      * @return array<string, mixed>
      */
-    private function equipmentResource(array $e, array $orders, int $alerts, \DateTimeImmutable $now): array
+    private function equipmentResource(array $e, array $orders, array $alertReasons, \DateTimeImmutable $now): array
     {
         $type = EquipmentCatalog::get($e['type_code']);
         $status = EquipmentStatus::from($e['status']);
         $signal = Freshness::of(Time::fromDb($e['last_seen_at']), $now, $status->expectsSignal());
         usort($orders, static fn($a, $b) => $a['urgency']->rank() <=> $b['urgency']->rank());
         $top = $orders[0] ?? null;
+
+        $place = self::place($e['street'], $e['address_ref']);
+        $short = $type?->shortLabel() ?? $e['type_code'];
+        $attention = $status->isUnavailable() ? [$status->label()] : [];
+        if ($top !== null && $top['urgency']->isUrgent()) {
+            $attention[] = $top['urgency'] === MaintenanceUrgency::Vencida ? 'Manutenção vencida' : 'Manutenção imediata';
+        }
+        $attention = self::withAlertReasons($attention, $alertReasons);
 
         // Recurso móvel: última posição observada, se houver; senão a base. Fixo: instalação ou planejado.
         $usePosition = ($type->mobile ?? false) && $e['pos_lat'] !== null;
@@ -131,6 +147,9 @@ final class CentralQuery
             'category' => $e['type_code'],
             'category_label' => $type->label ?? $e['type_code'],
             'title' => $e['code'],
+            'type_short' => $short,
+            'headline' => $short . ' · ' . ($place ?? $e['region_name'] ?? 'sem endereço cadastrado'),
+            'place' => $place,
             'subtitle' => trim($e['manufacturer'] . ' ' . $e['model']),
             'status' => $status->value,
             'status_label' => $status->label(),
@@ -150,20 +169,23 @@ final class CentralQuery
                 'urgency' => $top['urgency']->value, 'label' => $top['urgency']->label(), 'due_date' => $top['due_date'],
                 'reason' => $top['reason'], 'order_id' => (int) $top['id'], 'state' => $top['state'], 'open_orders' => count($orders),
             ],
-            'alerts' => $alerts,
+            'alerts' => count($alertReasons),
+            'attention' => $attention,
         ];
     }
 
     /**
      * @param array<string, mixed> $g
+     * @param list<string> $alertReasons
      * @return array<string, mixed>
      */
-    private function agentResource(array $g, int $alerts, \DateTimeImmutable $now): array
+    private function agentResource(array $g, array $alertReasons, \DateTimeImmutable $now): array
     {
         $status = AgentStatus::from($g['status']);
         $role = AgentRole::from($g['role']);
         $freshness = Freshness::of(Time::fromDb($g['pos_observed_at']), $now, $status->isOnShift(), Freshness::POSITION_CURRENT, Freshness::POSITION_STALE);
         $hasPosition = $g['pos_lat'] !== null && $status->isOnShift();
+        $attention = self::withAlertReasons($status === AgentStatus::Indisponivel ? [$status->label()] : [], $alertReasons);
 
         return [
             'kind' => 'AGENTE',
@@ -172,6 +194,9 @@ final class CentralQuery
             'category' => $role->category(),
             'category_label' => $role->label(),
             'title' => $g['call_sign'],
+            'type_short' => $role->label(),
+            'headline' => $role->label() . ' · ' . $g['call_sign'],
+            'place' => $g['base_name'],
             'subtitle' => $role->label() . ' · ' . $g['code'],
             'status' => $status->value,
             'status_label' => $status->label(),
@@ -190,8 +215,54 @@ final class CentralQuery
             'address' => implode(' · ', array_filter([$g['base_name'], $g['base_street']])),
             'highlights' => [],
             'maintenance' => null,
-            'alerts' => $alerts,
+            'alerts' => count($alertReasons),
+            'attention' => $attention,
         ];
+    }
+
+    /**
+     * Motivos de "precisa de atenção" em linguagem comum. Sem sinal ou sem posição recente aparece como tal:
+     * é informação ausente, não falha confirmada.
+     *
+     * @param list<string> $attention
+     * @param list<string> $alertReasons
+     * @return list<string>
+     */
+    private static function withAlertReasons(array $attention, array $alertReasons): array
+    {
+        $texts = ['FALHA' => EquipmentStatus::Falha->label(), 'FURTO' => EquipmentStatus::Furtado->label(), 'MANUTENCAO_IMEDIATA' => 'Manutenção imediata',
+            'MANUTENCAO_VENCIDA' => 'Manutenção vencida', 'SEM_COMUNICACAO' => 'Sem sinal recente (não confirma falha)', 'SEM_POSICAO' => 'Em atividade sem posição recente'];
+        foreach ($alertReasons as $reason) {
+            $attention[] = $texts[$reason] ?? 'Alerta aberto';
+        }
+
+        return array_values(array_unique($attention));
+    }
+
+    /** "Avenida Sampaio Vidal, em frente à praça" — ou null quando não há endereço cadastrado (nunca inventado). */
+    private static function place(?string $street, ?string $ref): ?string
+    {
+        $parts = array_values(array_filter([$street, $ref], static fn($p) => $p !== null && $p !== ''));
+
+        return $parts === [] ? null : implode(', ', $parts);
+    }
+
+    /**
+     * Busca sem diferenciar maiúsculas nem acentos em código, título, tipo, endereço, bairro, órgão e marca/modelo.
+     *
+     * @param array<string, mixed> $r
+     */
+    private static function matches(array $r, string $text): bool
+    {
+        $haystack = implode(' ', array_map(static fn($v) => (string) $v, [$r['code'], $r['title'], $r['category_label'], $r['place'], $r['address'], $r['region'], $r['agency'], $r['subtitle']]));
+
+        return str_contains(self::fold($haystack), self::fold($text));
+    }
+
+    private static function fold(string $text): string
+    {
+        return strtr(mb_strtolower($text), ['á' => 'a', 'à' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'é' => 'e', 'ê' => 'e', 'è' => 'e', 'í' => 'i', 'ì' => 'i', 'î' => 'i',
+            'ó' => 'o', 'ô' => 'o', 'õ' => 'o', 'ò' => 'o', 'ö' => 'o', 'ú' => 'u', 'ù' => 'u', 'û' => 'u', 'ü' => 'u', 'ç' => 'c']);
     }
 
     /**

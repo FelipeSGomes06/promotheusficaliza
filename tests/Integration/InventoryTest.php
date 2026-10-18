@@ -74,6 +74,54 @@ final class InventoryTest extends FirebirdTestCase
         self::assertCount(1, $changes);
     }
 
+    /** OP-03: posição e telemetria não são edição de cadastro e não invalidam um formulário aberto. */
+    public function testPositionAndTelemetryDoNotInvalidateAnOpenRegistrationForm(): void
+    {
+        $data = $this->equipmentData(['type_code' => 'VEICULO', 'location_kind' => 'BASE', 'specs' => ['vehicle_role' => 'EQUIPE', 'call_sign' => 'AUD-01']]);
+        $id = $this->services->equipment()->create($data, null);
+        $version = (string) $this->services->equipmentRepository()->find($id)['version_no'];
+
+        $this->services->ingestor()->position('pos-1', 'EQUIPAMENTO', $id, '-22.211300', '-49.951600', $this->clock->now()->modify('+1 second'), false);
+        $this->services->ingestor()->equipmentStatus('tel-1', $id, \Fiscaliza\Domain\EquipmentStatus::Falha, $this->clock->now()->modify('+2 seconds'), 'telemetria');
+        $this->services->agents()->changeStatus($this->createAgent(), 'EM_PAUSA', null, 'SIMULADOR');
+
+        $this->services->equipment()->update($id, ['model' => 'Modelo corrigido', 'version' => $version] + $data, $this->userId());
+        $row = $this->services->equipmentRepository()->find($id);
+        self::assertSame('Modelo corrigido', $row['model']);
+        self::assertSame(-22.2113, $row['pos_lat'], 'a posição recebida durante a edição é preservada');
+        self::assertSame('FALHA', $row['status']);
+    }
+
+    public function testAgentStatusChangeDoesNotInvalidateAnOpenAgentForm(): void
+    {
+        $id = $this->createAgent();
+        $version = (string) $this->services->agentRepository()->find($id)['version_no'];
+        $this->services->agents()->changeStatus($id, 'EM_PAUSA', null, 'SIMULADOR', 'pausa simulada');
+
+        $this->services->agents()->update($id, ['call_sign' => 'Hermes 98', 'role' => 'TRANSITO', 'agency_id' => (string) $this->agencyId, 'base_name' => 'Base de teste',
+            'base_lat' => '-22.2165', 'base_lng' => '-49.9490', 'version' => $version], $this->userId());
+        self::assertSame('Hermes 98', $this->services->agentRepository()->find($id)['call_sign']);
+    }
+
+    public function testInstallationChangesTheRegistrationAndInvalidatesAnOlderForm(): void
+    {
+        $id = $this->createEquipment(['status' => 'NAO_INSTALADO', 'location_kind' => 'PLANEJADO']);
+        $version = (string) $this->services->equipmentRepository()->find($id)['version_no'];
+        $this->services->equipment()->changeStatus($id, 'OPERACIONAL', 'instalado', $this->userId());
+
+        $this->expectException(ConcurrencyConflict::class);
+        $this->services->equipment()->update($id, $this->equipmentData(['location_kind' => 'PLANEJADO', 'version' => $version]), $this->userId());
+    }
+
+    public function testPendingChangesCompareTheTypedVersionWithTheSavedOne(): void
+    {
+        $id = $this->createEquipment();
+        $changes = $this->services->equipment()->pendingChanges($id, $this->equipmentData(['model' => 'OT-2', 'lat' => '-22.211200']));
+
+        self::assertSame(['model'], array_keys($changes), 'mesma coordenada escrita de outra forma não é diferença');
+        self::assertSame(['antes' => 'OT-1', 'depois' => 'OT-2'], $changes['model']);
+    }
+
     public function testStatusTransitionsAreEnforcedAndRecorded(): void
     {
         $id = $this->createEquipment(['status' => 'NAO_INSTALADO', 'location_kind' => 'PLANEJADO']);

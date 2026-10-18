@@ -1,6 +1,6 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
-{% block title %}Central operacional{% endblock %}
+{% block title %}Visão geral de Marília{% endblock %}
 {% block head %}<link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}">{% endblock %}
 {% block scripts %}
   <script src="{{ asset('vendor/leaflet/leaflet.js') }}" defer></script>
@@ -10,194 +10,171 @@
 {% block content %}
 {% set k = snapshot.kpis.equipment %}
 {% set ag = snapshot.kpis.agents %}
+{% set moreActive = (filters.regions|length > 0 ? 1 : 0) + (filters.agencies|length > 0 ? 1 : 0) + (filters.attention ? 1 : 0) %}
 <div class="central" id="central"
      data-api="{{ url('/api/central') }}" data-base="{{ app.base }}" data-mini="{{ app.base }}/assets/img/miniaturas/"
      data-tiles="{{ app.map.tiles }}" data-attribution="{{ app.map.attribution }}" data-poll="{{ app.poll_seconds }}"
      data-csrf="{{ app.csrf }}" data-can-edit="{{ app.user ? '1' : '0' }}">
 
-  <h1 class="visually-hidden">Central operacional de Marília</h1>
-
-  <section class="kpis" aria-label="Indicadores do filtro atual" aria-live="off">
-    <article class="kpi kpi--ember">
-      <div class="kpi__label">Equipamentos</div>
-      <div class="kpi__value" data-kpi="equipment.total">{{ k.total }}</div>
-      <div class="kpi__hint"><span data-kpi="equipment.not_installed">{{ k.not_installed }}</span> não instalados · <span data-kpi="equipment.deactivated">{{ k.deactivated }}</span> desativados</div>
-      <details class="formula"><summary>Como é contado</summary><p>Equipamentos não arquivados que atendem aos filtros. Não instalados e desativados aparecem aqui, mas ficam fora do denominador da disponibilidade.</p></details>
-    </article>
-    <article class="kpi kpi--ok">
-      <div class="kpi__label">Operacionais</div>
-      <div class="kpi__value" data-kpi="equipment.operational">{{ k.operational }}</div>
-      <div class="kpi__hint"><span data-kpi="equipment.operational_unconfirmed">{{ k.operational_unconfirmed }}</span> sem sinal recente</div>
-      <details class="formula"><summary>Como é contado</summary><p>Situação "operacional". Sem sinal há mais de 10 min, o equipamento continua contado aqui, mas não entra na disponibilidade confirmada.</p></details>
-    </article>
-    <article class="kpi kpi--fail">
-      <div class="kpi__label">Indisponíveis</div>
-      <div class="kpi__value" data-kpi="equipment.unavailable">{{ k.unavailable }}</div>
-      <div class="kpi__hint">falha <span data-kpi="equipment.failure">{{ k.failure }}</span> · manut. <span data-kpi="equipment.maintenance">{{ k.maintenance }}</span> · furto <span data-kpi="equipment.stolen">{{ k.stolen }}</span></div>
-      <details class="formula"><summary>Como é contado</summary><p>Deveriam estar em serviço, mas estão em mau funcionamento, em manutenção ou furtados.</p></details>
-    </article>
-    <article class="kpi kpi--ok">
-      <div class="kpi__label">Disponibilidade</div>
-      <div class="kpi__value" data-kpi="equipment.availability" data-format="pct">{{ k.availability|pct }}</div>
-      <div class="kpi__hint">confirmada por sinal: <span data-kpi="equipment.availability_confirmed" data-format="pct">{{ k.availability_confirmed|pct }}</span></div>
-      <details class="formula"><summary>Fórmula</summary><p>Operacionais ÷ em serviço (<span data-kpi="equipment.operational">{{ k.operational }}</span> ÷ <span data-kpi="equipment.in_service">{{ k.in_service }}</span>). Em serviço = operacionais + falha + manutenção + furto. Confirmada usa só operacionais com sinal atual. Sem equipamentos em serviço: "não se aplica".</p></details>
-    </article>
-    <article class="kpi kpi--agents">
-      <div class="kpi__label">Agentes ativos</div>
-      <div class="kpi__value" data-kpi="agents.active">{{ ag.active }}</div>
-      <div class="kpi__hint">de <span data-kpi="agents.total">{{ ag.total }}</span> no filtro · <span data-kpi="agents.position_not_current">{{ ag.position_not_current }}</span> sem posição recente</div>
-      <details class="formula"><summary>Como é contado</summary><p>Agentes não arquivados "em atividade" no filtro. Unidade diferente: nunca é somado aos equipamentos.</p></details>
-    </article>
-    <article class="kpi kpi--maint">
-      <div class="kpi__label">Manutenção urgente</div>
-      <div class="kpi__value" data-kpi="maintenance.urgent">{{ snapshot.maintenance.urgent|length }}</div>
-      <div class="kpi__hint"><span data-kpi="maintenance.upcoming">{{ snapshot.maintenance.upcoming|length }}</span> próximas em 7 dias</div>
-      <details class="formula"><summary>Como é contado</summary><p>Ordens abertas imediatas ou com data vencida (data local de Marília). Próximas: programadas para hoje até 7 dias.</p></details>
-    </article>
-  </section>
-
-  <aside class="filters card card--tight" aria-labelledby="filtros-titulo">
-    <details open data-filters-details>
-    <summary><h2 id="filtros-titulo" class="small">{{ ui.icon('i-filter') }} Filtros</h2></summary>
-    <form method="get" action="{{ url('/') }}" data-filters>
-      <fieldset>
-        <legend>Tipo</legend>
-        <div class="chips">
-          {% set group = '' %}
-          {% for c in options.categories %}
-            {% if c.group != group %}{% set group = c.group %}<p class="chip-group-label">{{ group }}</p>{% endif %}
-            <label class="chip"><input type="checkbox" name="categoria[]" value="{{ c.value }}" {{ c.value in filters.categories ? 'checked' }}><span>{{ ui.icon('i-' ~ c.value) }}{{ c.label }}</span></label>
-          {% endfor %}
-        </div>
-      </fieldset>
-      <fieldset>
-        <legend>Situação</legend>
-        <div class="chips">
-          {% set group = '' %}
-          {% for s in options.statuses %}
-            {% if s.group != group %}{% set group = s.group %}<p class="chip-group-label">{{ group }}</p>{% endif %}
-            <label class="chip"><input type="checkbox" name="situacao[]" value="{{ s.value }}" {{ s.value in filters.statuses ? 'checked' }}><span>{{ s.label }}</span></label>
-          {% endfor %}
-        </div>
-      </fieldset>
-      <div class="field">
-        <label for="f-bairro">Bairro</label>
-        <select id="f-bairro" name="bairro[]">
-          <option value="">Todos os bairros</option>
-          {% for r in options.regions %}<option value="{{ r.id }}" {{ r.id in filters.regions ? 'selected' }}>{{ r.name }} ({{ r.zone|lower }})</option>{% endfor %}
-        </select>
+  <section class="overview" aria-labelledby="titulo">
+    <div class="overview__head">
+      <div>
+        <h1 id="titulo">Visão geral de Marília</h1>
+        <p class="lead">Radares, câmeras, veículos e equipes da demonstração no mapa da cidade.<span class="lead__more"> Escolha um ponto ou um item da lista para ver o que é, onde está e como está.</span></p>
       </div>
-      <div class="field">
-        <label for="f-orgao">Órgão</label>
-        <select id="f-orgao" name="orgao[]">
-          <option value="">Todos os órgãos</option>
-          {% for a in options.agencies %}<option value="{{ a.id }}" {{ a.id in filters.agencies ? 'selected' }}>{{ a.name }}</option>{% endfor %}
-        </select>
+      <a class="btn btn--primary overview__cta" href="{{ url('/', {atencao: '1'}) }}" data-attention-link>Ver o que precisa de atenção</a>
+    </div>
+    <ul class="summary" aria-label="Resumo dos resultados filtrados">
+      <li><span class="summary__n"><span data-n="operational">{{ k.operational }}</span> de <span data-n="in_service">{{ k.in_service }}</span></span><span class="summary__label">equipamentos em serviço funcionando</span></li>
+      <li><a class="summary__link" href="{{ url('/', {atencao: '1'}) }}" data-attention-link><span class="summary__n summary__n--fail" data-n="needs_attention">{{ snapshot.needs_attention }}</span> <span class="summary__label">precisam de atenção</span></a></li>
+      <li><a class="summary__link" href="{{ url('/manutencao') }}#urgentes"><span class="summary__n" data-n="urgent">{{ snapshot.maintenance.urgent|length }}</span> <span class="summary__label">manutenções urgentes</span></a></li>
+    </ul>
+    <details class="indicators">
+      <summary>Mais indicadores e como são calculados</summary>
+      <dl class="indicators__body">
+        <div><dt>Disponibilidade registrada: <span class="n" data-n="availability" data-format="pct">{{ k.availability|pct }}</span></dt>
+          <dd>Equipamentos funcionando ÷ em serviço (<span data-n="operational">{{ k.operational }}</span> ÷ <span data-n="in_service">{{ k.in_service }}</span>). "Em serviço" = funcionando + mau funcionamento + em manutenção + furtados. Sem nenhum em serviço: "não se aplica".</dd></div>
+        <div><dt>Confirmada por sinal recente: <span class="n" data-n="availability_confirmed" data-format="pct">{{ k.availability_confirmed|pct }}</span></dt>
+          <dd>Conta só quem funciona e mandou sinal nos últimos 10 minutos. <span data-n="operational_unconfirmed">{{ k.operational_unconfirmed }}</span> funcionando estão sem sinal recente — isso não significa falha.</dd></div>
+        <div><dt>Equipamentos no filtro: <span class="n" data-n="total">{{ k.total }}</span></dt>
+          <dd><span data-n="not_installed">{{ k.not_installed }}</span> não instalados e <span data-n="deactivated">{{ k.deactivated }}</span> desativados ficam fora da disponibilidade.</dd></div>
+        <div><dt>Indisponíveis: <span class="n" data-n="unavailable">{{ k.unavailable }}</span></dt>
+          <dd>Mau funcionamento <span data-n="failure">{{ k.failure }}</span> · em manutenção <span data-n="maintenance">{{ k.maintenance }}</span> · furtados <span data-n="stolen">{{ k.stolen }}</span>.</dd></div>
+        <div><dt>Agentes em atividade: <span class="n" data-n="agents_active">{{ ag.active }}</span></dt>
+          <dd>De <span data-n="agents_total">{{ ag.total }}</span> agentes no filtro; <span data-n="agents_stale">{{ ag.position_not_current }}</span> em turno sem posição recente. Agentes nunca são somados a equipamentos.</dd></div>
+        <div><dt>Manutenções nos próximos 7 dias: <span class="n" data-n="upcoming">{{ snapshot.maintenance.upcoming|length }}</span></dt>
+          <dd>Urgentes = imediatas ou com data vencida (data local de Marília). <a href="{{ url('/manutencao') }}">Ver manutenção</a>.</dd></div>
+      </dl>
+      <div class="table-wrap">
+        <table class="data">
+          <caption>Por bairro, com mais problemas primeiro. Zonas são um agrupamento da demonstração, não divisão oficial.</caption>
+          <thead><tr><th scope="col">Bairro</th><th scope="col">Equipamentos</th><th scope="col">Indisponíveis</th><th scope="col">Disponibilidade</th><th scope="col">Agentes em atividade</th><th scope="col">Alertas</th></tr></thead>
+          <tbody data-regions>
+            {% for r in snapshot.regions %}<tr><th scope="row">{{ r.name }}</th><td>{{ r.equipment }}</td><td>{{ r.unavailable }}</td><td>{{ r.availability|pct }}</td><td>{{ r.agents_active }}</td><td>{{ r.alerts }}</td></tr>{% endfor %}
+          </tbody>
+        </table>
       </div>
-      <div class="filters__foot">
-        <a class="btn btn--ghost btn--sm" href="{{ url('/') }}" data-clear-filters>Limpar</a>
-        <button class="btn btn--sm" type="submit" data-filters-submit>Aplicar</button>
-      </div>
-      <p class="small faint" data-scope-note>{% if not snapshot.scope.agents %}Agentes fora do filtro atual.{% elseif not snapshot.scope.equipment %}Equipamentos fora do filtro atual.{% endif %}</p>
-    </form>
     </details>
-  </aside>
-
-  <section class="map-wrap" aria-label="Mapa de Marília com equipamentos e agentes">
-    <div id="map" role="region" aria-label="Mapa interativo (alternativa acessível: aba Lista)"></div>
-    <noscript><div class="map-banner is-visible">O mapa precisa de JavaScript. A lista, os indicadores e os alertas ao lado continuam completos.</div></noscript>
-    <div class="map-banner" data-tiles-banner role="status">O mapa base não carregou (provedor de tiles indisponível). Marcadores, lista e indicadores seguem atualizados.</div>
-    <div class="map-legend">
-      <details>
-        <summary>Legenda</summary>
-        <ul>
-          <li><span class="mk mk--OPERACIONAL" aria-hidden="true">{{ ui.icon('i-RADAR') }}</span> Equipamento (quadrado)</li>
-          <li><span class="mk mk--AGENTE mk--EM_ATIVIDADE" aria-hidden="true">{{ ui.icon('i-AG_GUARDA') }}</span> Agente (círculo)</li>
-          <li>{{ ui.equipment_status('OPERACIONAL') }}</li>
-          <li>{{ ui.equipment_status('FALHA') }}</li>
-          <li>{{ ui.equipment_status('MANUTENCAO') }}</li>
-          <li>{{ ui.equipment_status('FURTADO') }}</li>
-          <li>{{ ui.equipment_status('NAO_INSTALADO') }} contorno tracejado</li>
-          <li><span aria-hidden="true">⌛</span> observação antiga (tracejado)</li>
-        </ul>
-      </details>
-    </div>
-    <div class="syncbar" data-sync data-state="live" role="status" aria-live="polite">
-      <span class="syncbar__dot" aria-hidden="true"></span>
-      <span data-sync-text>Dados de {{ snapshot.generated_at|local_dt('H:i:s') }} · último evento {{ snapshot.sync.last_event_received_at|local_dt('H:i:s') }}</span>
-      <span data-sim-text class="faint">{{ snapshot.sync.simulator_running ? 'Simulador ativo' : 'Simulador parado: dados sem mudanças automáticas' }}</span>
-      <button class="btn btn--sm" type="button" data-pause aria-pressed="false" hidden>{{ ui.icon('i-pause') }}<span>Pausar atualização</span></button>
-      <button class="btn btn--sm btn--ghost" type="button" data-refresh hidden>{{ ui.icon('i-refresh') }}<span class="visually-hidden">Atualizar agora</span></button>
-    </div>
   </section>
 
-  <section class="panel" aria-label="Painel operacional">
-    <div class="tabs" role="tablist" aria-label="Visões do painel">
-      <button role="tab" id="tab-lista" aria-controls="tp-lista" aria-selected="true">{{ ui.icon('i-list') }}Lista <span class="count" data-count="resources">{{ snapshot.resources|length }}</span></button>
-      <button role="tab" id="tab-alertas" aria-controls="tp-alertas" aria-selected="false" tabindex="-1">{{ ui.icon('i-alert') }}Alertas <span class="count {{ snapshot.alerts ? 'count--hot' }}" data-count="alerts">{{ snapshot.alerts|length }}</span></button>
-      <button role="tab" id="tab-manut" aria-controls="tp-manut" aria-selected="false" tabindex="-1">{{ ui.icon('i-wrench') }}Manut.</button>
-      <button role="tab" id="tab-bairros" aria-controls="tp-bairros" aria-selected="false" tabindex="-1">{{ ui.icon('i-pin') }}Bairros</button>
-    </div>
-
-    <div class="tabpanel" id="tp-lista" role="tabpanel" aria-labelledby="tab-lista" data-list>
-      {% if snapshot.resources is empty %}
-        <div class="empty">Nenhum recurso atende a estes filtros. <a href="{{ url('/') }}">Limpar filtros</a></div>
-      {% else %}
-        <ul class="res-list">
-          {% for r in snapshot.resources %}
-            <li><a class="res" href="{{ url(r.kind == 'EQUIPAMENTO' ? '/equipamentos/' ~ r.id : '/agentes/' ~ r.id) }}" data-key="{{ r.kind }}:{{ r.id }}">
-              <span class="res__icon {{ r.kind == 'AGENTE' ? 'res__icon--agent' }}">{{ ui.icon('i-' ~ r.category) }}</span>
-              <span><span class="res__title">{{ r.title }}</span><span class="res__sub">{{ r.category_label }} · {{ r.region ?? 'sem bairro' }}</span></span>
-              <span class="res__meta">{{ ui.status(r.status, r.status_label, r.glyph) }}</span>
-            </a></li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    </div>
-
-    <div class="tabpanel" id="tp-alertas" role="tabpanel" aria-labelledby="tab-alertas" hidden data-alerts>
-      {% for a in snapshot.alerts %}
-        <article class="alert-item alert-item--{{ a.severity }}">
-          <div class="alert-item__top">{{ ui.status(a.severity, a.severity|capitalize) }}<span class="small faint">{{ a.opened_at|local_dt }}</span></div>
-          <p>{{ a.message }}</p>
-          <span class="small muted">{{ a.state == 'RECONHECIDO' ? 'Reconhecido por ' ~ a.ack_by : 'Aguardando reconhecimento' }}</span>
-        </article>
-      {% else %}
-        <div class="empty">Nenhum alerta aberto neste filtro.</div>
-      {% endfor %}
-    </div>
-
-    <div class="tabpanel" id="tp-manut" role="tabpanel" aria-labelledby="tab-manut" hidden data-maintenance>
-      <p class="res-group">Urgentes</p>
-      {% for o in snapshot.maintenance.urgent %}
-        <div class="order"><div class="order__head"><a href="{{ url('/equipamentos/' ~ o.equipment_id) }}"><strong>{{ o.equipment_code }}</strong></a>{{ ui.status(o.urgency, o.urgency_label) }}</div><p class="small muted">{{ o.reason }}</p></div>
-      {% else %}<div class="empty">Nenhuma manutenção urgente.</div>{% endfor %}
-      <p class="res-group">Próximos 7 dias</p>
-      {% for o in snapshot.maintenance.upcoming %}
-        <div class="order"><div class="order__head"><a href="{{ url('/equipamentos/' ~ o.equipment_id) }}"><strong>{{ o.equipment_code }}</strong></a><span class="small">{{ o.due_date|br_date }}</span></div><p class="small muted">{{ o.reason }}</p></div>
-      {% else %}<div class="empty">Nada programado para os próximos 7 dias.</div>{% endfor %}
-    </div>
-
-    <div class="tabpanel" id="tp-bairros" role="tabpanel" aria-labelledby="tab-bairros" hidden data-regions>
-      <table class="region-table">
-        <caption class="small faint">Bairros com mais problemas primeiro. Zonas são agrupamento da demonstração, não divisão oficial.</caption>
-        <thead><tr><th scope="col">Bairro</th><th scope="col">Equip.</th><th scope="col">Indisp.</th><th scope="col">Disp.</th><th scope="col">Agentes</th><th scope="col">Alertas</th></tr></thead>
-        <tbody>
-          {% for r in snapshot.regions %}
-            <tr><th scope="row">{{ r.name }}</th><td>{{ r.equipment }}</td><td>{{ r.unavailable }}</td><td>{{ r.availability|pct }}</td><td>{{ r.agents_active }}</td><td>{{ r.alerts }}</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-
-    <div class="drawer" data-drawer role="dialog" aria-modal="false" aria-labelledby="drawer-title" tabindex="-1">
-      <div class="drawer__head">
-        <h2 id="drawer-title" data-drawer-title>Detalhes</h2>
-        <button class="btn btn--ghost btn--sm" type="button" data-drawer-close>{{ ui.icon('i-close') }}<span class="visually-hidden">Fechar detalhes</span></button>
+  <form class="toolbar" method="get" action="{{ url('/') }}" role="search" aria-label="Filtrar recursos" data-filters>
+    <div class="filters">
+      <div class="field field--search">
+        <label for="f-q">Buscar</label>
+        <input id="f-q" type="search" name="q" value="{{ filters.text }}" placeholder="Endereço, tipo, código ou nome" maxlength="60" autocomplete="off">
       </div>
-      <div class="drawer__body" data-drawer-body></div>
+      <div class="field">
+        <label for="f-tipo">Tipo</label>
+        <select id="f-tipo" name="categoria[]">
+          <option value="">Todos os tipos</option>
+          {% if filters.categories|length > 1 %}<option value="" selected disabled>Vários tipos ({{ filters.categories|length }})</option>{% endif %}
+          {% for group in ['Equipamentos', 'Agentes'] %}
+            <optgroup label="{{ group }}">{% for c in options.categories|filter(c => c.group == group) %}<option value="{{ c.value }}" {{ filters.categories|length == 1 and c.value in filters.categories ? 'selected' }}>{{ c.label }}</option>{% endfor %}</optgroup>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-situacao">Situação</label>
+        <select id="f-situacao" name="situacao[]">
+          <option value="">Todas as situações</option>
+          {% if filters.statuses|length > 1 %}<option value="" selected disabled>Várias situações ({{ filters.statuses|length }})</option>{% endif %}
+          {% for group in ['Equipamentos', 'Agentes'] %}
+            <optgroup label="{{ group }}">{% for s in options.statuses|filter(s => s.group == group) %}<option value="{{ s.value }}" {{ filters.statuses|length == 1 and s.value in filters.statuses ? 'selected' }}>{{ s.label }}</option>{% endfor %}</optgroup>
+          {% endfor %}
+        </select>
+      </div>
     </div>
-  </section>
+    <div class="toolbar__end">
+      <div class="seg" role="group" aria-label="Como ver os resultados">
+        <button type="button" data-view-btn="mapa" aria-pressed="{{ view == 'mapa' ? 'true' : 'false' }}">{{ ui.icon('i-map') }}Mapa</button>
+        <button type="button" data-view-btn="lista" aria-pressed="{{ view == 'lista' ? 'true' : 'false' }}">{{ ui.icon('i-list') }}Lista</button>
+      </div>
+      <details class="more-filters" data-more-filters>
+        <summary class="btn">{{ ui.icon('i-filter') }}<span>Mais filtros</span> <span class="count-pill" data-more-count {{ moreActive == 0 ? 'hidden' }}>{{ moreActive }}</span></summary>
+        <div class="more-filters__body">
+          <div class="field">
+            <label for="f-bairro">Bairro</label>
+            <select id="f-bairro" name="bairro[]">
+              <option value="">Todos os bairros</option>
+              {% for r in options.regions %}<option value="{{ r.id }}" {{ r.id in filters.regions ? 'selected' }}>{{ r.name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-orgao">Órgão responsável</label>
+            <select id="f-orgao" name="orgao[]">
+              <option value="">Todos os órgãos</option>
+              {% for a in options.agencies %}<option value="{{ a.id }}" {{ a.id in filters.agencies ? 'selected' }}>{{ a.name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="checks">
+            <label><input type="checkbox" name="atencao" value="1" {{ filters.attention ? 'checked' }}> Só o que precisa de atenção</label>
+          </div>
+        </div>
+      </details>
+      <p class="result-count" role="status"><strong data-n="resources">{{ snapshot.resources|length }}</strong> <span data-n-label="resources">{{ snapshot.resources|length == 1 ? 'recurso' : 'recursos' }}</span><span data-filter-note>{{ filters.isEmpty ? '' : ' no filtro' }}</span>
+        <a class="btn btn--quiet btn--small" href="{{ url('/') }}" data-clear-filters {{ filters.isEmpty ? 'hidden' }}>Limpar filtros</a></p>
+      <noscript><button class="btn btn--small" type="submit">Aplicar filtros</button></noscript>
+    </div>
+  </form>
+
+  <div class="workspace" data-view="{{ view }}" data-workspace>
+    <section class="mapbox" aria-label="Mapa de Marília">
+      <div id="map" role="region" aria-label="Mapa interativo. A lista traz a mesma informação em texto."></div>
+      <noscript><div class="map-banner is-visible">O mapa precisa de JavaScript. Use a lista: ela traz os mesmos recursos.</div></noscript>
+      <div class="map-banner" data-tiles-banner role="status">O mapa de fundo não carregou. Os pontos, a lista e os resumos continuam atualizados.</div>
+      <details class="legend">
+        <summary>Legenda</summary>
+        <div class="legend__body">
+          <ul>
+            <li><span class="pin pin--OPERACIONAL" aria-hidden="true">{{ ui.icon('i-RADAR') }}</span><span>Equipamento no local de instalação. A borda mostra a situação; a ficha diz em texto.</span></li>
+            <li><span class="pin pin--NAO_INSTALADO pin--planned" aria-hidden="true">{{ ui.icon('i-CAMERA') }}</span><span>Local planejado: ainda não instalado.</span></li>
+            <li><span class="pin pin--agent pin--EM_ATIVIDADE" aria-hidden="true">{{ ui.icon('i-AG_TRANSITO') }}</span><span>Agente, veículo ou patinete na última posição recebida.</span></li>
+            <li><span class="pin pin--agent pin--EM_ATIVIDADE pin--stale" aria-hidden="true">{{ ui.icon('i-VEICULO') }}<span class="pin__kind">⌛</span></span><span>Posição antiga (borda pontilhada): pode ter mudado.</span></li>
+            <li><span class="pin pin--agent pin--FORA_DE_SERVICO pin--base" aria-hidden="true">{{ ui.icon('i-AG_GUARDA') }}<span class="pin__kind">B</span></span><span>Base de trabalho: não é posição recente.</span></li>
+            <li><span class="cluster" aria-hidden="true">5</span><span>Vários recursos próximos: ative para aproximar ou escolher um.</span></li>
+          </ul>
+          <p class="small muted">Cores: verde funcionando · vermelho mau funcionamento · amarelo manutenção · roxo furtado · cinza fora de serviço. O sinal "!" indica algo que precisa de atenção.</p>
+        </div>
+      </details>
+      <p class="map-note" data-no-location {{ snapshot.without_location == 0 ? 'hidden' }}><span data-n="without_location">{{ snapshot.without_location }}</span> sem localização aparecem só na <button type="button" data-view-btn="lista">lista</button>.</p>
+    </section>
+
+    <section class="listbox" aria-labelledby="lista-titulo" data-listbox>
+      <div class="aside__head"><h2 id="lista-titulo">Resultados</h2></div>
+      {% set attention = snapshot.resources|filter(r => r.attention is not empty) %}
+      {% set others = snapshot.resources|filter(r => r.attention is empty) %}
+      <ul class="rows" data-list>
+        {% if snapshot.resources is empty %}
+          <li class="empty">Nenhum recurso atende a estes filtros. <a href="{{ url('/') }}" data-clear-filters>Limpar filtros</a></li>
+        {% endif %}
+        {% for group, items in {'Precisam de atenção': attention, 'Demais recursos': others} %}
+          {% if items is not empty %}
+            <li class="group-label">{{ group }} ({{ items|length }})</li>
+            {% for r in items %}
+              <li><a class="row" href="{{ url(r.kind == 'EQUIPAMENTO' ? '/equipamentos/' ~ r.id : '/agentes/' ~ r.id) }}" data-key="{{ r.kind }}:{{ r.id }}">
+                <span class="row__thumb {{ r.kind == 'AGENTE' ? 'row__thumb--agent' }}">{{ ui.icon('i-' ~ r.category) }}</span>
+                <span class="row__main"><span class="row__title">{{ r.headline }}</span><span class="row__sub">{% if r.kind == 'EQUIPAMENTO' %}<span class="code-tag">{{ r.code }}</span> {% endif %}{{ r.region ?? 'sem bairro' }}</span></span>
+                <span class="row__meta">{{ ui.status(r.status, r.status_label, r.glyph) }}{% if r.position.lat is null %}<span class="fresh">Sem localização cadastrada</span>{% endif %}</span>
+                {% set reasons = r.attention|filter(why => why != r.status_label) %}
+                {% if reasons is not empty %}<span class="row__reasons">{% for why in reasons %}<span>{{ why }}</span>{% endfor %}</span>{% endif %}
+              </a></li>
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </section>
+
+    <aside class="briefbox" aria-label="Ficha resumida" data-briefbox>
+      <div class="aside__hint" data-brief-hint>Escolha um recurso no mapa ou na lista para ver a ficha resumida aqui.</div>
+      <div class="brief" data-brief hidden tabindex="-1"></div>
+    </aside>
+  </div>
+  <div class="syncline syncline--page" data-sync data-state="live">
+    <span class="syncline__dot" aria-hidden="true"></span>
+    <span data-sync-text>Atualizado às {{ snapshot.generated_at|local_dt('H:i:s') }}</span>
+    <span data-sim-text>{{ snapshot.sync.simulator_running ? '· simulador ativo' : '· simulador parado (sem mudanças automáticas)' }}</span>
+    <button class="btn btn--quiet btn--small" type="button" data-pause aria-pressed="false" hidden>Pausar atualização</button>
+  </div>
   <div class="visually-hidden" aria-live="polite" data-announcer></div>
 </div>
 <script type="application/json" id="snapshot-data">{{ snapshot|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_APOS') b-or constant('JSON_HEX_QUOT') b-or constant('JSON_UNESCAPED_UNICODE'))|raw }}</script>
