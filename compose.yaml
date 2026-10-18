@@ -1,0 +1,61 @@
+# Ambiente local reproduzível: Firebird 5 em rede interna + PHP 8.5/Apache servindo /promotheusfiscaliza.
+name: promotheus-fiscaliza
+
+services:
+  firebird:
+    image: firebirdsql/firebird:5.0.4-trixie
+    environment:
+      FIREBIRD_ROOT_PASSWORD: ${FIREBIRD_ROOT_PASSWORD:?defina no .env}
+      FIREBIRD_USER: ${DB_MIGRATION_USER:?defina no .env}
+      FIREBIRD_PASSWORD: ${DB_MIGRATION_PASSWORD:?defina no .env}
+      FIREBIRD_DATABASE: fiscaliza.fdb
+      FIREBIRD_DATABASE_DEFAULT_CHARSET: UTF8
+      FISCALIZA_APP_DB_USER: ${DB_USER:?defina no .env}
+      FISCALIZA_APP_DB_PASSWORD: ${DB_PASSWORD:?defina no .env}
+      FISCALIZA_TEST_DATABASE: fiscaliza_test.fdb
+    volumes:
+      - fbdata:/var/lib/firebird/data
+      - ./docker/firebird/10-fiscaliza-init.sh:/docker-entrypoint-initdb.d/10-fiscaliza-init.sh:ro
+    networks: [backend]
+    # Sem "ports": a porta 3050 não é publicada fora da rede interna do Compose.
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'select 1 from rdb$$database;' | isql -b -q -user SYSDBA -password \"$$FIREBIRD_ROOT_PASSWORD\" localhost:/var/lib/firebird/data/fiscaliza.fdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    env_file: .env
+    volumes:
+      - .:/app
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:80"
+    depends_on:
+      firebird:
+        condition: service_healthy
+    networks: [backend]
+
+  simulator:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    env_file: .env
+    volumes:
+      - .:/app
+    command: ["php", "bin/fiscaliza", "sim:run"]
+    user: www-data
+    depends_on:
+      firebird:
+        condition: service_healthy
+    networks: [backend]
+    profiles: [simulador]
+    restart: unless-stopped
+
+networks:
+  backend: {}
+
+volumes:
+  fbdata: {}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Guarda municipal">
+<title>Guarda municipal — ilustração da categoria (não representa um modelo comercial)</title>
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2433"/><stop offset="1" stop-color="#2b3548"/></linearGradient>
+<radialGradient id="glow" cx=".8" cy=".15" r=".6"><stop offset="0" stop-color="#ff8a2b" stop-opacity=".35"/><stop offset="1" stop-color="#ff8a2b" stop-opacity="0"/></radialGradient></defs>
+<rect width="160" height="120" rx="14" fill="url(#sky)"/><rect width="160" height="120" rx="14" fill="url(#glow)"/>
+<path d="M0 96h160v10a14 14 0 0 1-14 14H14A14 14 0 0 1 0 106z" fill="#222b3b"/>
+<circle cx="80" cy="36" r="14" fill="#d9a882"/><path d="M64 32c0-12 32-12 32 0z" fill="#1f5fae"/><rect x="62" y="29" width="36" height="5" rx="2.5" fill="#173f74"/>
+<path d="M50 96v-18a30 30 0 0 1 60 0v18z" fill="#2d6cc0"/><path d="M80 60l12 5v9c0 7-5 12-12 15-7-3-12-8-12-15v-9z" fill="#ffc24b"/><circle cx="80" cy="73" r="3.5" fill="#1d2433"/>
+</svg>

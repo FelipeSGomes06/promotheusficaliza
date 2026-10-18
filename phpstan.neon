@@ -1,0 +1,7 @@
+parameters:
+    level: 6
+    paths:
+        - src
+        - bin/fiscaliza
+        - public/index.php
+    tmpDir: var/cache/phpstan

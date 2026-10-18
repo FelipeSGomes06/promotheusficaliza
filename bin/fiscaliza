@@ -1,0 +1,16 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+// Ponto de entrada da linha de comando (migrações, carga de demonstração, contas, simulador e análise).
+// Nada daqui é acessível por HTTP.
+
+if (PHP_SAPI !== 'cli') {
+    exit(1);
+}
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+
+$services = new Fiscaliza\Services(Fiscaliza\Config::load(dirname(__DIR__)), dirname(__DIR__));
+exit((new Fiscaliza\Cli\Console($services))->run(array_slice($_SERVER['argv'] ?? [], 1)));

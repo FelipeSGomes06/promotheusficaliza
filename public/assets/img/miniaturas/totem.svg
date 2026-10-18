@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Totem de atendimento">
+<title>Totem de atendimento — ilustração da categoria (não representa um modelo comercial)</title>
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2433"/><stop offset="1" stop-color="#2b3548"/></linearGradient>
+<radialGradient id="glow" cx=".8" cy=".15" r=".6"><stop offset="0" stop-color="#ff8a2b" stop-opacity=".35"/><stop offset="1" stop-color="#ff8a2b" stop-opacity="0"/></radialGradient></defs>
+<rect width="160" height="120" rx="14" fill="url(#sky)"/><rect width="160" height="120" rx="14" fill="url(#glow)"/>
+<path d="M0 96h160v10a14 14 0 0 1-14 14H14A14 14 0 0 1 0 106z" fill="#222b3b"/>
+<rect x="56" y="14" width="48" height="82" rx="10" fill="#e8edf5"/><rect x="62" y="22" width="36" height="32" rx="5" fill="#2e384b"/>
+<path d="M68 32h24M68 39h18M68 46h21" stroke="#7fd3ff" stroke-width="3" stroke-linecap="round"/>
+<circle cx="80" cy="70" r="9" fill="#ff5a4e"/><circle cx="80" cy="70" r="4" fill="#ffd2cc"/><rect x="66" y="84" width="28" height="4" rx="2" fill="#8a96ab"/>
+<path d="M112 26a10 10 0 0 1 0 14M118 21a17 17 0 0 1 0 24" fill="none" stroke="#ffc24b" stroke-width="3" stroke-linecap="round"/>
+<rect x="60" y="94" width="40" height="6" rx="3" fill="#6d788c"/>
+</svg>

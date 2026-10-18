@@ -1,0 +1,53 @@
+{% extends 'layout.twig' %}
+{% import '_ui.twig' as ui %}
+{% block title %}{{ existing ? 'Editar ' ~ existing.call_sign : 'Novo agente' }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}">{% endblock %}
+{% block scripts %}<script src="{{ asset('vendor/leaflet/leaflet.js') }}" defer></script>{% endblock %}
+{% block content %}
+{% set v = values %}
+<div class="page">
+  <div class="page-head"><div>
+    <p class="eyebrow"><a href="{{ url('/agentes') }}">Agentes</a></p>
+    <h1>{{ existing ? 'Editar ' ~ existing.call_sign : 'Novo agente' }}</h1>
+    <p>Use apenas dados fictícios: nada de nomes, matrículas, CPF ou contatos reais.</p>
+  </div></div>
+  {% if errors._form is defined %}<div class="flash flash--error" role="alert">{{ errors._form }}</div>{% elseif errors %}<div class="flash flash--error" role="alert">Revise os campos destacados.</div>{% endif %}
+  <form method="post" action="{{ existing ? url('/agentes/' ~ existing.id) : url('/agentes') }}" class="stack" novalidate>
+    {{ ui.csrf(app.csrf) }}
+    {% if existing %}<input type="hidden" name="version" value="{{ v.version ?? existing.version_no }}">{% endif %}
+    <fieldset class="group"><legend>Identificação</legend>
+      <div class="form-grid">
+        {{ ui.input('call_sign', 'Indicativo / nome de exibição (fictício)', v, errors, {required: true, max: 40, placeholder: 'Ex.: Hermes 09'}) }}
+        {% set roleOptions = {TRANSITO: 'Agente de trânsito', GUARDA: 'Guarda municipal', POLICIA: 'Policial'} %}
+        {{ ui.select('role', 'Função', roleOptions, v.role ?? 'TRANSITO', errors, {required: true}) }}
+        <div class="field {{ errors.agency_id is defined ? 'has-error' }}">
+          <label for="f-agency_id">Órgão <span class="req">*</span></label>
+          <select id="f-agency_id" name="agency_id" required><option value="">Escolha…</option>{% for a in agencies %}<option value="{{ a.id }}" {{ ((v.agency_id ?? '') ~ '') == (a.id ~ '') ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select>
+          {{ ui.field_error(errors, 'agency_id') }}
+        </div>
+        {% if not existing %}
+          {{ ui.select('status', 'Situação inicial', {EM_ATIVIDADE: 'Em atividade', EM_PAUSA: 'Em pausa', INDISPONIVEL: 'Indisponível', FORA_DE_SERVICO: 'Fora de serviço'}, v.status ?? 'FORA_DE_SERVICO', errors, {required: true}) }}
+        {% endif %}
+      </div>
+    </fieldset>
+    <fieldset class="group"><legend>Base de trabalho</legend>
+      <div class="form-grid">
+        {{ ui.input('base_name', 'Nome da base', v, errors, {required: true, max: 80}) }}
+        {{ ui.input('base_street', 'Logradouro', v, errors, {max: 120}) }}
+        {{ ui.input('base_ref', 'Número ou referência', v, errors, {max: 160}) }}
+        {{ ui.input('base_cep', 'CEP', v, errors, {max: 9, inputmode: 'numeric', placeholder: '17500-000'}) }}
+        <div class="field"><label for="f-region_id">Bairro</label>
+          <select id="f-region_id" name="region_id"><option value="">Sem bairro</option>{% for r in regions %}<option value="{{ r.id }}" {{ ((v.region_id ?? '') ~ '') == (r.id ~ '') ? 'selected' }}>{{ r.name }}</option>{% endfor %}</select>{{ ui.field_error(errors, 'region_id') }}</div>
+        <div class="field"><span class="label">Cidade / UF</span><span>Marília / SP</span></div>
+        {{ ui.input('base_lat', 'Latitude da base', v, errors, {required: true, max: 20, inputmode: 'decimal'}) }}
+        {{ ui.input('base_lng', 'Longitude da base', v, errors, {required: true, max: 20, inputmode: 'decimal'}) }}
+        <div class="span-2"><div class="picker" data-picker data-lat="f-base_lat" data-lng="f-base_lng" data-tiles="{{ app.map.tiles }}" data-attribution="{{ app.map.attribution }}" role="application" aria-label="Clique no mapa para preencher a base"></div></div>
+      </div>
+    </fieldset>
+    <div class="form-actions">
+      <a class="btn btn--ghost" href="{{ existing ? url('/agentes/' ~ existing.id) : url('/agentes') }}">Cancelar</a>
+      <button class="btn btn--primary" type="submit">{{ existing ? 'Salvar alterações' : 'Cadastrar agente' }}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

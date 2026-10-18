@@ -1,0 +1,113 @@
+{% extends 'layout.twig' %}
+{% import '_ui.twig' as ui %}
+{% block title %}{{ existing ? 'Editar ' ~ existing.code : 'Novo equipamento' }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}">{% endblock %}
+{% block scripts %}<script src="{{ asset('vendor/leaflet/leaflet.js') }}" defer></script>{% endblock %}
+{% block content %}
+{% set v = values %}
+<div class="page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow"><a href="{{ url('/equipamentos') }}">Equipamentos</a></p>
+      <h1>{{ existing ? 'Editar ' ~ existing.code : 'Novo equipamento' }}</h1>
+      <p>Campos com <span class="req">*</span> são obrigatórios. A cidade é fixa: Marília/SP.</p>
+    </div>
+  </div>
+  {% if errors._form is defined %}<div class="flash flash--error" role="alert">{{ errors._form }}</div>{% elseif errors %}<div class="flash flash--error" role="alert">Revise os campos destacados.</div>{% endif %}
+
+  <form method="post" action="{{ existing ? url('/equipamentos/' ~ existing.id) : url('/equipamentos') }}" class="stack" novalidate>
+    {{ ui.csrf(app.csrf) }}
+    {% if existing %}<input type="hidden" name="version" value="{{ v.version ?? existing.version_no }}">{% endif %}
+
+    <fieldset class="group">
+      <legend>Identificação</legend>
+      <div class="form-grid">
+        <div class="field {{ errors.type_code is defined ? 'has-error' }}">
+          <label for="f-type_code">Tipo <span class="req">*</span></label>
+          <select id="f-type_code" name="type_code" data-type-select required>
+            {% for t in types %}<option value="{{ t.code }}" data-mobile="{{ t.mobile ? '1' : '0' }}" {{ (v.type_code ?? '') == t.code ? 'selected' }}>{{ t.label }}</option>{% endfor %}
+          </select>
+          {{ ui.field_error(errors, 'type_code') }}
+        </div>
+        {% if not existing %}
+          {{ ui.select('status', 'Situação inicial', {NAO_INSTALADO: 'Não instalado', OPERACIONAL: 'Operacional', FALHA: 'Mau funcionamento', MANUTENCAO: 'Em manutenção', DESATIVADO: 'Desativado', FURTADO: 'Furtado'}, v.status ?? 'NAO_INSTALADO', errors, {required: true}) }}
+        {% else %}
+          <div class="field"><span class="label">Situação</span>{{ ui.equipment_status(existing.status) }}<span class="help">Mude a situação pela ficha (gera histórico com motivo).</span></div>
+        {% endif %}
+        {{ ui.input('manufacturer', 'Marca / fabricante', v, errors, {required: true, max: 80}) }}
+        {{ ui.input('model', 'Modelo', v, errors, {required: true, max: 80}) }}
+        {{ ui.input('serial_number', 'Série do fabricante', v, errors, {max: 60, help: 'Única por fabricante. Deixe em branco se desconhecida.'}) }}
+        {{ ui.input('asset_tag', 'Patrimônio', v, errors, {max: 30, help: 'Opcional e único.'}) }}
+        <div class="field {{ errors.agency_id is defined ? 'has-error' }}">
+          <label for="f-agency_id">Órgão responsável <span class="req">*</span></label>
+          <select id="f-agency_id" name="agency_id" required><option value="">Escolha…</option>{% for a in agencies %}<option value="{{ a.id }}" {{ ((v.agency_id ?? '') ~ '') == (a.id ~ '') ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select>
+          {{ ui.field_error(errors, 'agency_id') }}
+        </div>
+        {{ ui.input('maint_interval_days', 'Preventiva a cada (dias)', v, errors, {type: 'number', help: 'Opcional, 7 a 730. Ao concluir uma preventiva, a próxima é agendada.'}) }}
+      </div>
+    </fieldset>
+
+    <fieldset class="group">
+      <legend>Características do tipo</legend>
+      {% for t in types %}
+        <fieldset class="spec-fieldset" data-spec-type="{{ t.code }}" {{ (v.type_code ?? '') != t.code ? 'hidden disabled' }}>
+          <legend class="visually-hidden">{{ t.label }}</legend>
+          <p class="small muted">{{ t.description }}</p>
+          <div class="form-grid">
+          {% for f in t.fields %}
+            {% set key = 'specs.' ~ f.name %}
+            {% set current = v.specs[f.name] ?? null %}
+            <div class="field {{ errors[key] is defined ? 'has-error' }}">
+              {% if f.kind == 'bool' %}
+                <span class="label">{{ f.label }}</span>
+                <label class="checks"><span><input type="checkbox" name="specs[{{ f.name }}]" value="1" {{ current ? 'checked' }}> Sim</span></label>
+              {% elseif f.kind == 'multi' %}
+                <span class="label">{{ f.label }}{% if f.required ?? false %} <span class="req">*</span>{% endif %}</span>
+                <div class="checks">{% for ov, ol in f.options %}<label><input type="checkbox" name="specs[{{ f.name }}][]" value="{{ ov }}" {{ ov in (current ?? []) ? 'checked' }}> {{ ol }}</label>{% endfor %}</div>
+              {% elseif f.kind == 'enum' %}
+                <label for="s-{{ t.code }}-{{ f.name }}">{{ f.label }}{% if f.required ?? false %} <span class="req">*</span>{% endif %}</label>
+                <select id="s-{{ t.code }}-{{ f.name }}" name="specs[{{ f.name }}]"><option value="">—</option>{% for ov, ol in f.options %}<option value="{{ ov }}" {{ current == ov ? 'selected' }}>{{ ol }}</option>{% endfor %}</select>
+              {% else %}
+                <label for="s-{{ t.code }}-{{ f.name }}">{{ f.label }}{% if f.unit is defined %} ({{ f.unit }}){% endif %}{% if f.required ?? false %} <span class="req">*</span>{% endif %}</label>
+                <input id="s-{{ t.code }}-{{ f.name }}" name="specs[{{ f.name }}]" type="{{ f.kind == 'int' ? 'number' : 'text' }}" value="{{ current }}" {% if f.kind == 'int' %}min="{{ f.min }}" max="{{ f.max }}"{% else %}maxlength="{{ f.max ?? 120 }}"{% endif %}>
+              {% endif %}
+              {% if f.help is defined %}<span class="help">{{ f.help }}</span>{% endif %}
+              {{ ui.field_error(errors, key) }}
+            </div>
+          {% endfor %}
+          </div>
+        </fieldset>
+      {% endfor %}
+    </fieldset>
+
+    <fieldset class="group">
+      <legend>Endereço e localização</legend>
+      <div class="form-grid">
+        {{ ui.input('street', 'Logradouro', v, errors, {max: 120, placeholder: 'Ex.: Avenida Sampaio Vidal'}) }}
+        {{ ui.input('address_ref', 'Número, km ou referência', v, errors, {max: 160, help: 'Aceita número, quilômetro ou descrição ("em frente à praça").'}) }}
+        {{ ui.input('cep', 'CEP', v, errors, {max: 9, inputmode: 'numeric', placeholder: '17500-000'}) }}
+        <div class="field {{ errors.region_id is defined ? 'has-error' }}">
+          <label for="f-region_id">Bairro</label>
+          <select id="f-region_id" name="region_id"><option value="">Sem bairro</option>{% for r in regions %}<option value="{{ r.id }}" {{ ((v.region_id ?? '') ~ '') == (r.id ~ '') ? 'selected' }}>{{ r.name }}</option>{% endfor %}</select>
+          {{ ui.field_error(errors, 'region_id') }}
+        </div>
+        <div class="field"><span class="label">Cidade / UF</span><span>Marília / SP</span></div>
+        {{ ui.select('location_kind', 'As coordenadas são', {INSTALADO: 'Local de instalação', PLANEJADO: 'Local planejado (ainda não instalado)', BASE: 'Base de recurso móvel'}, v.location_kind ?? 'PLANEJADO', errors, {required: true}) }}
+        {{ ui.input('lat', 'Latitude (WGS84)', v, errors, {max: 20, inputmode: 'decimal', placeholder: '-22.213900'}) }}
+        {{ ui.input('lng', 'Longitude (WGS84)', v, errors, {max: 20, inputmode: 'decimal', placeholder: '-49.945800'}) }}
+        <div class="span-2">
+          <div class="picker" data-picker data-lat="f-lat" data-lng="f-lng" data-tiles="{{ app.map.tiles }}" data-attribution="{{ app.map.attribution }}" role="application" aria-label="Clique no mapa para preencher latitude e longitude"></div>
+          <p class="small faint">Clique no mapa para preencher as coordenadas, ou digite-as. Sem coordenadas, o equipamento aparece na lista como "sem localização".</p>
+        </div>
+        {{ ui.input('installed_on', 'Data de instalação', v, errors, {type: 'date'}) }}
+        {{ ui.input('notes', 'Observações', v, errors, {type: 'textarea', max: 500, class: 'span-2'}) }}
+      </div>
+    </fieldset>
+
+    <div class="form-actions">
+      <a class="btn btn--ghost" href="{{ existing ? url('/equipamentos/' ~ existing.id) : url('/equipamentos') }}">Cancelar</a>
+      <button class="btn btn--primary" type="submit">{{ existing ? 'Salvar alterações' : 'Cadastrar equipamento' }}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

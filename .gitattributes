@@ -1,0 +1,4 @@
+# Finais de linha LF em todo o repositório (scripts bash e PHP rodam em contêineres Linux).
+* text=auto eol=lf
+*.png binary
+*.woff2 binary

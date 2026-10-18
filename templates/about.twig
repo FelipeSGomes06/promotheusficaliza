@@ -1,0 +1,56 @@
+{% extends 'layout.twig' %}
+{% import '_ui.twig' as ui %}
+{% block title %}Sobre a demonstração{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="page-head"><div>
+    <p class="eyebrow">Transparência</p>
+    <h1>O que é real, simulado e implementado</h1>
+    <p>Promotheus Fiscaliza é a proposta para a etapa bônus F.O.G.O. do DSIN Coder Challenge 2026: inventário, central operacional e antecipação de problemas para a mobilidade e a segurança de Marília/SP.</p>
+  </div></div>
+  <div class="grid-2">
+    <div class="stack">
+      <section class="card">
+        <h2>Dados</h2>
+        <ul class="factor-list">
+          <li><strong>Fictícios:</strong> órgãos, marcas, modelos, séries, patrimônios, agentes (indicativos inspirados no mito de Prometeu), histórico, falhas e posições.</li>
+          <li><strong>Referências geográficas públicas:</strong> nomes de bairros, avenidas e CEPs de logradouro de Marília. Coordenadas obtidas numa consulta pontual ao Nominatim (© colaboradores do OpenStreetMap, ODbL) e usadas como ilustração.</li>
+          <li><strong>Nenhum</strong> ponto representa radar, câmera, base ou pessoa real, e não há integração com prefeitura, polícia ou equipamentos.</li>
+          <li>Zonas (centro, norte, sul, leste, oeste) são um agrupamento da demonstração, não uma divisão oficial.</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h2>Atualização em tempo quase real</h2>
+        <p>O simulador grava eventos fictícios no banco (Firebird) a cada {{ app.poll_seconds }} s pelos mesmos casos de uso da aplicação; a central consulta o servidor a cada {{ app.poll_seconds }} s. Atraso esperado: até um intervalo de consulta mais o tempo de rede. Duplicatas são descartadas pelo identificador do evento; eventos atrasados entram só no histórico e não regridem o estado atual.</p>
+      </section>
+      <section class="card">
+        <h2>Indicadores</h2>
+        <ul class="factor-list">
+          <li><strong>Disponibilidade</strong> = operacionais ÷ em serviço (operacionais + mau funcionamento + manutenção + furto). Não instalados e desativados ficam fora do denominador.</li>
+          <li><strong>Confirmada</strong> usa só operacionais com sinal nos últimos 10 min. Sem denominador: “não se aplica”.</li>
+          <li><strong>Agentes ativos</strong> = agentes em atividade no filtro; nunca somados a equipamentos.</li>
+        </ul>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="card">
+        <h2>Categorias e ilustrações</h2>
+        <p class="small muted">Ícones e miniaturas próprios. A ilustração representa a categoria, não o modelo comercial cadastrado.</p>
+        <ul class="res-list">
+          {% for t in types %}<li class="res"><span class="res__icon">{{ ui.icon('i-' ~ t.code) }}</span><span><span class="res__title">{{ t.label }}</span><span class="res__sub">{{ t.description }}</span></span><span></span></li>{% endfor %}
+          {% for code, label in {AG_TRANSITO: 'Agente de trânsito', AG_GUARDA: 'Guarda municipal', AG_POLICIA: 'Policial'} %}<li class="res"><span class="res__icon res__icon--agent">{{ ui.icon('i-' ~ code) }}</span><span><span class="res__title">{{ label }}</span><span class="res__sub">Agente fictício (não é conta de acesso)</span></span><span></span></li>{% endfor %}
+        </ul>
+      </section>
+      <section class="card">
+        <h2>Tecnologia e autoria</h2>
+        <ul class="factor-list">
+          <li>PHP 8.5 (Slim 4, Twig 3), Firebird 5 via PDO_FIREBIRD, Leaflet 1.9.4, JavaScript sem framework.</li>
+          <li>Leitura pública; escrita só com conta criada na instalação (operador/administrador), CSRF e autorização no servidor.</li>
+          <li>Ferramentas de IA usadas no desenvolvimento: planejamento com Codex (OpenAI) e implementação com Claude (Anthropic) no Claude Code, revisados pelo autor. Detalhes no README do repositório.</li>
+          <li>Mapa: © colaboradores do OpenStreetMap. Fonte Space Grotesk (SIL OFL 1.1).</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}

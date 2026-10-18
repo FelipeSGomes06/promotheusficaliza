@@ -1,0 +1,16 @@
+{% extends 'layout.twig' %}
+{% block title %}Erro {{ status }}{% endblock %}
+{% block content %}
+<div class="page">
+  <section class="card login-card" aria-labelledby="erro-titulo">
+    <p class="eyebrow">Erro {{ status }}</p>
+    <h1 id="erro-titulo">{{ status == 404 ? 'Página não encontrada' : (status == 401 ? 'É preciso entrar' : (status == 403 ? 'Acesso não permitido' : (status == 409 ? 'Não foi possível concluir' : 'Algo deu errado'))) }}</h1>
+    <p>{{ message }}</p>
+    <p class="small faint">Código de referência: <span class="mono">{{ reference }}</span></p>
+    <div class="btn-row">
+      <a class="btn btn--primary" href="{{ url('/') }}">Ir para a central</a>
+      {% if status == 401 %}<a class="btn" href="{{ url('/entrar') }}">Entrar</a>{% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

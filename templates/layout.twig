@@ -1,0 +1,60 @@
+{% import '_ui.twig' as ui %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Central{% endblock %} · Promotheus Fiscaliza</title>
+  <meta name="description" content="Central de fiscalização urbana de Marília/SP — demonstração com dados fictícios (DSIN Coder Challenge 2026, etapa F.O.G.O.).">
+  <meta name="theme-color" content="#0d1117">
+  <link rel="icon" href="{{ asset('img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+  {% block head %}{% endblock %}
+  <script src="{{ asset('js/app.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+</head>
+<body data-icons="{{ asset('img/icons.svg') }}">
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  <header class="topbar">
+    <a class="brand" href="{{ url('/') }}">
+      <span class="brand__mark">{{ ui.icon('i-flame') }}</span>
+      <span class="brand__name">Promotheus Fiscaliza<small>Marília · SP</small></span>
+    </a>
+    <nav class="nav" aria-label="Principal">
+      {% set links = [['/', 'Central'], ['/equipamentos', 'Equipamentos'], ['/agentes', 'Agentes'], ['/manutencao', 'Manutenção'], ['/antecipacao', 'Antecipação'], ['/sobre', 'Sobre a demo']] %}
+      {% if app.user and app.user.role == 'ADMIN' %}{% set links = links|merge([['/contas', 'Contas']]) %}{% endif %}
+      {% for link in links %}
+        {% set active = link[0] == '/' ? app.path == '/' : app.path starts with link[0] %}
+        <a href="{{ url(link[0]) }}" {% if active %}aria-current="page"{% endif %}>{{ link[1] }}</a>
+      {% endfor %}
+    </nav>
+    <div class="topbar__end">
+      <button type="button" class="btn btn--ghost btn--sm" data-motion-toggle aria-pressed="false" title="Reduzir animações">{{ ui.icon('i-motion') }}<span>Movimento</span></button>
+      {% if app.user %}
+        <span class="user-chip">{{ ui.icon('i-user') }}<strong>{{ app.user.display_name }}</strong><span class="faint">({{ app.user.role|lower }})</span></span>
+        <form class="inline-form" method="post" action="{{ url('/sair') }}">{{ ui.csrf(app.csrf) }}<button class="btn btn--sm" type="submit">Sair</button></form>
+      {% else %}
+        <a class="btn btn--sm" href="{{ url('/entrar', {voltar: app.base ~ app.path}) }}">Entrar para editar</a>
+      {% endif %}
+    </div>
+  </header>
+  <div class="ribbon" role="note">
+    <strong>Demonstração</strong> Dados, órgãos, marcas e agentes fictícios. Pontos ilustrativos em Marília/SP, sem integração com prefeitura, polícia ou equipamentos reais.
+  </div>
+  <main id="conteudo" tabindex="-1">
+    {% block flash %}
+      {% if app.flash %}
+        <div class="page page--flash"><div class="flash-stack" role="status">
+          {% for f in app.flash %}<div class="flash flash--{{ f.type }}">{{ f.message }}</div>{% endfor %}
+        </div></div>
+      {% endif %}
+    {% endblock %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer">
+    Promotheus Fiscaliza — projeto aberto para o DSIN Coder Challenge 2026 (etapa F.O.G.O.).
+    Mapa: <a href="https://www.openstreetmap.org/copyright" rel="noopener">© colaboradores do OpenStreetMap</a>.
+    <a href="{{ url('/sobre') }}">O que é real, simulado e implementado</a>.
+  </footer>
+</body>
+</html>

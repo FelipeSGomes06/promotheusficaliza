@@ -1,0 +1,66 @@
+{# Macros de interface. Todo valor é escapado pelo Twig; nenhum macro usa |raw com dado externo. #}
+
+{% macro icon(id, label = null) %}
+<svg class="icon" {% if label %}role="img" aria-label="{{ label }}"{% else %}aria-hidden="true"{% endif %} focusable="false"><use href="{{ asset('img/icons.svg') }}#{{ id }}"></use></svg>
+{%- endmacro %}
+
+{% macro status(code, label, glyph = null) %}
+<span class="st st--{{ code }}"><span class="st__g" aria-hidden="true">{{ glyph ?: '•' }}</span>{{ label }}</span>
+{%- endmacro %}
+
+{% macro equipment_status(code) %}
+{% set labels = {NAO_INSTALADO: ['Não instalado', '◌'], OPERACIONAL: ['Operacional', '✓'], FALHA: ['Mau funcionamento', '!'], MANUTENCAO: ['Em manutenção', '⚙'], DESATIVADO: ['Desativado', '–'], FURTADO: ['Furtado', '✕']} %}
+{{ _self.status(code, labels[code][0] ?? code, labels[code][1] ?? '•') }}
+{%- endmacro %}
+
+{% macro agent_status(code) %}
+{% set labels = {EM_ATIVIDADE: ['Em atividade', '●'], EM_PAUSA: ['Em pausa', '❚❚'], INDISPONIVEL: ['Indisponível', '!'], FORA_DE_SERVICO: ['Fora de serviço', '–']} %}
+{{ _self.status(code, labels[code][0] ?? code, labels[code][1] ?? '•') }}
+{%- endmacro %}
+
+{% macro field_error(errors, name) %}
+{% if errors[name] is defined %}<span class="error" id="err-{{ name|replace({'.': '-'}) }}">{{ errors[name] }}</span>{% endif %}
+{%- endmacro %}
+
+{% macro input(name, label, values, errors, opts = {}) %}
+{% set id = 'f-' ~ name|replace({'.': '-', '[': '-', ']': ''}) %}
+<div class="field {{ opts.class ?? '' }} {{ errors[name] is defined ? 'has-error' }}">
+  <label for="{{ id }}">{{ label }}{% if opts.required ?? false %} <span class="req" aria-hidden="true">*</span>{% endif %}</label>
+  {% if opts.type ?? 'text' == 'textarea' %}
+    <textarea id="{{ id }}" name="{{ opts.fieldName ?? name }}" maxlength="{{ opts.max ?? 500 }}" {% if opts.required ?? false %}required{% endif %} {% if errors[name] is defined %}aria-invalid="true" aria-describedby="err-{{ name|replace({'.': '-'}) }}"{% endif %}>{{ values[name] ?? '' }}</textarea>
+  {% else %}
+    <input id="{{ id }}" name="{{ opts.fieldName ?? name }}" type="{{ opts.type ?? 'text' }}" value="{{ values[name] ?? '' }}"
+      {% if opts.max is defined %}maxlength="{{ opts.max }}"{% endif %} {% if opts.inputmode is defined %}inputmode="{{ opts.inputmode }}"{% endif %}
+      {% if opts.placeholder is defined %}placeholder="{{ opts.placeholder }}"{% endif %} {% if opts.required ?? false %}required{% endif %}
+      {% if opts.autocomplete is defined %}autocomplete="{{ opts.autocomplete }}"{% endif %}
+      {% if errors[name] is defined %}aria-invalid="true" aria-describedby="err-{{ name|replace({'.': '-'}) }}"{% elseif opts.help is defined %}aria-describedby="{{ id }}-help"{% endif %}>
+  {% endif %}
+  {% if opts.help is defined %}<span class="help" id="{{ id }}-help">{{ opts.help }}</span>{% endif %}
+  {{ _self.field_error(errors, name) }}
+</div>
+{%- endmacro %}
+
+{% macro select(name, label, options, selected, errors, opts = {}) %}
+{% set id = 'f-' ~ name|replace({'.': '-'}) %}
+<div class="field {{ opts.class ?? '' }} {{ errors[name] is defined ? 'has-error' }}">
+  <label for="{{ id }}">{{ label }}{% if opts.required ?? false %} <span class="req" aria-hidden="true">*</span>{% endif %}</label>
+  <select id="{{ id }}" name="{{ opts.fieldName ?? name }}" {% if opts.required ?? false %}required{% endif %} {% if opts.dataAttr is defined %}data-{{ opts.dataAttr }}{% endif %} {% if errors[name] is defined %}aria-invalid="true" aria-describedby="err-{{ name|replace({'.': '-'}) }}"{% endif %}>
+    {% if opts.empty is defined %}<option value="">{{ opts.empty }}</option>{% endif %}
+    {% for value, text in options %}<option value="{{ value }}" {{ (selected ~ '') == (value ~ '') ? 'selected' }}>{{ text }}</option>{% endfor %}
+  </select>
+  {% if opts.help is defined %}<span class="help">{{ opts.help }}</span>{% endif %}
+  {{ _self.field_error(errors, name) }}
+</div>
+{%- endmacro %}
+
+{% macro pagination(page, pages, base_query, path) %}
+{% if pages > 1 %}
+<nav class="pagination" aria-label="Paginação">
+  {% if page > 1 %}<a class="btn btn--sm" href="{{ url(path, base_query|merge({pagina: page - 1})) }}" rel="prev">← Anterior</a>{% endif %}
+  <span class="muted small">Página {{ page }} de {{ pages }}</span>
+  {% if page < pages %}<a class="btn btn--sm" href="{{ url(path, base_query|merge({pagina: page + 1})) }}" rel="next">Próxima →</a>{% endif %}
+</nav>
+{% endif %}
+{%- endmacro %}
+
+{% macro csrf(token) %}<input type="hidden" name="_csrf" value="{{ token }}">{% endmacro %}

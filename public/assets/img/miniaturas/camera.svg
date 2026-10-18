@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Câmera de monitoramento">
+<title>Câmera de monitoramento — ilustração da categoria (não representa um modelo comercial)</title>
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2433"/><stop offset="1" stop-color="#2b3548"/></linearGradient>
+<radialGradient id="glow" cx=".8" cy=".15" r=".6"><stop offset="0" stop-color="#ff8a2b" stop-opacity=".35"/><stop offset="1" stop-color="#ff8a2b" stop-opacity="0"/></radialGradient></defs>
+<rect width="160" height="120" rx="14" fill="url(#sky)"/><rect width="160" height="120" rx="14" fill="url(#glow)"/>
+<path d="M0 96h160v10a14 14 0 0 1-14 14H14A14 14 0 0 1 0 106z" fill="#222b3b"/>
+<rect x="18" y="20" width="8" height="78" rx="3" fill="#8a96ab"/><path d="M26 34h22" stroke="#8a96ab" stroke-width="6" stroke-linecap="round"/>
+<g transform="rotate(14 90 44)"><rect x="46" y="30" width="72" height="30" rx="9" fill="#e8edf5"/><rect x="40" y="26" width="84" height="10" rx="5" fill="#cfd6e2"/>
+<rect x="112" y="33" width="14" height="24" rx="6" fill="#2e384b"/><circle cx="119" cy="45" r="7.5" fill="#11161f" stroke="#7fd3ff" stroke-width="2.5"/><circle cx="119" cy="45" r="2.6" fill="#7fd3ff"/>
+<circle cx="58" cy="46" r="2.4" fill="#ff5a4e"/></g>
+<path d="M126 70l26 18M126 70l22 30M126 70l14 34" stroke="#7fd3ff" stroke-width="2" stroke-dasharray="3 4" opacity=".55"/>
+<circle cx="140" cy="20" r="6" fill="#ffc24b" opacity=".85"/>
+</svg>

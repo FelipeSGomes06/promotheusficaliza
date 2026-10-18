@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Agente de trânsito">
+<title>Agente de trânsito — ilustração da categoria (não representa um modelo comercial)</title>
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2433"/><stop offset="1" stop-color="#2b3548"/></linearGradient>
+<radialGradient id="glow" cx=".8" cy=".15" r=".6"><stop offset="0" stop-color="#ff8a2b" stop-opacity=".35"/><stop offset="1" stop-color="#ff8a2b" stop-opacity="0"/></radialGradient></defs>
+<rect width="160" height="120" rx="14" fill="url(#sky)"/><rect width="160" height="120" rx="14" fill="url(#glow)"/>
+<path d="M0 96h160v10a14 14 0 0 1-14 14H14A14 14 0 0 1 0 106z" fill="#222b3b"/>
+<circle cx="80" cy="36" r="14" fill="#f2c9a5"/><path d="M62 30h36l-4-10H66z" fill="#2e384b"/><rect x="60" y="28" width="40" height="5" rx="2.5" fill="#1d2433"/>
+<path d="M50 96v-18a30 30 0 0 1 60 0v18z" fill="#ff7a1a"/><path d="M60 58l40 38M100 58l-8 8" stroke="#e8edf5" stroke-width="6" stroke-linecap="round"/>
+<path d="M118 70l14-6v16z" fill="#ffc24b"/><circle cx="116" cy="72" r="4" fill="#e8edf5"/>
+</svg>

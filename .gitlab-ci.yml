@@ -1,0 +1,39 @@
+# CI do Promotheus Fiscaliza (GitLab). Só credenciais descartáveis de teste; nenhum segredo de deploy aqui.
+stages: [test]
+
+include:
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+
+variables:
+  FIREBIRD_ROOT_PASSWORD: ci-sysdba-descartavel
+  DB_MIGRATION_USER: FISCALIZA_OWNER
+  DB_MIGRATION_PASSWORD: ci-dono-descartavel
+  DB_USER: FISCALIZA_APP
+  DB_PASSWORD: ci-app-descartavel
+  DB_DSN: "firebird:dbname=firebird/3050:/var/lib/firebird/data/fiscaliza_test.fdb;charset=UTF8;dialect=3"
+  DB_TEST_DSN: "firebird:dbname=firebird/3050:/var/lib/firebird/data/fiscaliza_test.fdb;charset=UTF8;dialect=3"
+  APP_ENV: test
+
+qualidade-e-testes:
+  stage: test
+  image: php:8.5.11-cli-trixie
+  services:
+    - name: firebirdsql/firebird:5.0.4-trixie
+      alias: firebird
+      variables:
+        FIREBIRD_USER: FISCALIZA_OWNER
+        FIREBIRD_PASSWORD: ci-dono-descartavel
+        FIREBIRD_DATABASE: fiscaliza_test.fdb
+        FIREBIRD_DATABASE_DEFAULT_CHARSET: UTF8
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends firebird-dev libfbclient2 unzip git
+    - docker-php-ext-install -j"$(nproc)" pdo_firebird
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    - composer install --no-interaction --no-progress
+  script:
+    - composer validate --strict
+    - composer audit
+    - vendor/bin/php-cs-fixer fix --dry-run --diff
+    - vendor/bin/phpstan analyse --no-progress --memory-limit=512M
+    - php scripts/ci-preparar-banco.php
+    - vendor/bin/phpunit

@@ -1,0 +1,43 @@
+{% extends 'layout.twig' %}
+{% import '_ui.twig' as ui %}
+{% block title %}Manutenção{% endblock %}
+{% block content %}
+<div class="page page--wide">
+  <div class="page-head"><div>
+    <p class="eyebrow">Operação</p>
+    <h1>Manutenção</h1>
+    <p>Ordens em aberto por urgência (data local de Marília: {{ today|br_date }}). Agendar não tira o equipamento de operação; iniciar a intervenção sim; concluir exige informar a situação real após o serviço.</p>
+  </div></div>
+  {% set titles = {IMEDIATA: 'Imediatas', VENCIDA: 'Vencidas', PROXIMA: 'Próximos 7 dias', FUTURA: 'Programadas'} %}
+  <div class="kanban">
+    {% for key, list in groups %}
+      <section class="kanban__col" aria-labelledby="col-{{ key }}">
+        <h2 id="col-{{ key }}">{{ titles[key] }} <span class="tag">{{ list|length }}</span></h2>
+        {% for o in list %}
+          <article class="order">
+            <div class="order__head"><a href="{{ url('/equipamentos/' ~ o.equipment_id) }}"><strong>{{ o.equipment_code }}</strong></a>{{ ui.status(o.urgency.value, o.due_date ? o.due_date|br_date : o.urgency.label) }}</div>
+            <p class="small">{{ o.kind|capitalize }} · {{ o.reason }}</p>
+            <p class="small faint">{{ o.region_name ?? 'sem bairro' }} · {{ o.state == 'EM_EXECUCAO' ? 'em execução desde ' ~ o.started_at|local_dt : 'aberta ' ~ o.opened_at|local_dt }}</p>
+            {% if app.user and o.state == 'ABERTA' %}
+              <form method="post" action="{{ url('/manutencoes/' ~ o.id ~ '/iniciar') }}">{{ ui.csrf(app.csrf) }}<input type="hidden" name="voltar" value="/manutencao"><button class="btn btn--sm" type="submit">Iniciar intervenção</button></form>
+            {% elseif app.user %}
+              <a class="btn btn--sm" href="{{ url('/equipamentos/' ~ o.equipment_id) }}#manutencao">Concluir na ficha</a>
+            {% endif %}
+          </article>
+        {% else %}
+          <p class="muted small">Nada aqui.</p>
+        {% endfor %}
+      </section>
+    {% endfor %}
+  </div>
+
+  <section class="card section-gap" aria-labelledby="encerradas">
+    <h2 id="encerradas">Encerradas recentemente</h2>
+    {% if closed is empty %}<p class="muted">Nenhuma ordem encerrada.</p>{% else %}
+    <div class="table-wrap"><table class="data">
+      <thead><tr><th scope="col">Ordem</th><th scope="col">Equipamento</th><th scope="col">Resultado</th><th scope="col">Encerrada</th></tr></thead>
+      <tbody>{% for o in closed %}<tr><td>#{{ o.id }} {{ o.kind|lower }}</td><td><a href="{{ url('/equipamentos/' ~ o.equipment_id) }}">{{ o.equipment_code }}</a></td><td>{{ o.state == 'CANCELADA' ? 'Cancelada' : (o.result_status|lower|replace({'_': ' '})) }}<br><span class="small muted">{{ o.resolution }}</span></td><td>{{ o.closed_at|local_dt }}</td></tr>{% endfor %}</tbody>
+    </table></div>{% endif %}
+  </section>
+</div>
+{% endblock %}

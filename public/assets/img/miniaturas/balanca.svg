@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Balança de pesagem">
+<title>Balança de pesagem — ilustração da categoria (não representa um modelo comercial)</title>
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2433"/><stop offset="1" stop-color="#2b3548"/></linearGradient>
+<radialGradient id="glow" cx=".8" cy=".15" r=".6"><stop offset="0" stop-color="#ff8a2b" stop-opacity=".35"/><stop offset="1" stop-color="#ff8a2b" stop-opacity="0"/></radialGradient></defs>
+<rect width="160" height="120" rx="14" fill="url(#sky)"/><rect width="160" height="120" rx="14" fill="url(#glow)"/>
+<path d="M0 96h160v10a14 14 0 0 1-14 14H14A14 14 0 0 1 0 106z" fill="#222b3b"/>
+<rect x="10" y="88" width="140" height="10" rx="3" fill="#ffc24b"/><path d="M22 98v6M80 98v6M138 98v6" stroke="#8a96ab" stroke-width="4" stroke-linecap="round"/>
+<rect x="18" y="42" width="78" height="38" rx="5" fill="#e8edf5"/><path d="M96 54h24l14 14v12H96z" fill="#ff7a1a"/><path d="M104 58h13l9 9h-22z" fill="#7fd3ff"/>
+<circle cx="38" cy="84" r="9" fill="#11161f" stroke="#8a96ab" stroke-width="3"/><circle cx="70" cy="84" r="9" fill="#11161f" stroke="#8a96ab" stroke-width="3"/><circle cx="118" cy="84" r="9" fill="#11161f" stroke="#8a96ab" stroke-width="3"/>
+<rect x="110" y="14" width="40" height="22" rx="5" fill="#2e384b" stroke="#7fd3ff" stroke-width="2"/><text x="130" y="30" font-family="Arial,sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="#7fd3ff">74 t</text>
+</svg>

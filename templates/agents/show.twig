@@ -1,0 +1,70 @@
+{% extends 'layout.twig' %}
+{% import '_ui.twig' as ui %}
+{% block title %}{{ a.call_sign }}{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow"><a href="{{ url('/agentes') }}">Agentes</a> · {{ role.label }}</p>
+      <h1>{{ a.call_sign }} {{ ui.agent_status(a.status) }}</h1>
+      <p><span class="mono">{{ a.code }}</span> · {{ a.agency_name }} · agente fictício{% if a.archived_at %} · <span class="tag tag--warn">Arquivado em {{ a.archived_at|local_dt }}</span>{% endif %}</p>
+    </div>
+    {% if app.user and not a.archived_at %}<a class="btn" href="{{ url('/agentes/' ~ a.id ~ '/editar') }}">{{ ui.icon('i-edit') }}Editar cadastro</a>{% endif %}
+  </div>
+  <div class="grid-2">
+    <div class="stack">
+      <section class="card hero-card">
+        <figure>
+          <img src="{{ app.base }}/assets/img/miniaturas/ag_{{ a.role|lower }}.svg" alt="Ilustração: {{ role.label }}" width="200" height="150">
+          <figcaption>Ilustração da função; pessoa fictícia.</figcaption>
+        </figure>
+        <div>
+          <h2>Ficha</h2>
+          <dl class="facts">
+            <dt>Função</dt><dd>{{ role.label }}</dd>
+            <dt>Órgão</dt><dd>{{ a.agency_name }}</dd>
+            <dt>Base</dt><dd>{{ a.base_name }}<br><span class="small muted">{{ a.base_street ?? '' }}{{ a.base_ref ? ' · ' ~ a.base_ref }} · {{ a.region_name ?? 'sem bairro' }}{{ a.base_cep ? ' · CEP ' ~ a.base_cep }}</span></dd>
+            <dt>Coordenadas da base</dt><dd>{{ a.base_lat|number_format(6, ',', '') }}, {{ a.base_lng|number_format(6, ',', '') }}</dd>
+            <dt>Última posição</dt><dd>{% if a.pos_lat is null %}sem observação{% else %}{{ a.pos_lat|number_format(6, ',', '') }}, {{ a.pos_lng|number_format(6, ',', '') }}<br><span class="small muted">observada {{ a.pos_observed_at|local_dt('d/m/Y H:i:s') }} · recebida {{ a.pos_received_at|local_dt('H:i:s') }}</span>{% endif %}</dd>
+            <dt>Atualidade</dt><dd>{{ ui.status(freshness.value, freshness.label) }}</dd>
+            <dt>Situação desde</dt><dd>{{ a.status_changed_at|local_dt }}</dd>
+          </dl>
+        </div>
+      </section>
+      {% if app.user and not a.archived_at %}
+      <section class="card">
+        <h2>Mudar situação</h2>
+        <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/situacao') }}" class="btn-row">{{ ui.csrf(app.csrf) }}
+          <label class="visually-hidden" for="ns">Nova situação</label>
+          <select id="ns" name="status">{% for s in statuses %}<option value="{{ s.value }}" {{ s == status ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select>
+          <button class="btn btn--sm" type="submit">Registrar</button>
+        </form>
+      </section>
+      <section class="card">
+        <h2>Arquivar</h2>
+        <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/arquivar') }}" data-confirm="Arquivar {{ a.call_sign }}? O histórico é preservado.">{{ ui.csrf(app.csrf) }}
+          <div class="field"><label for="ar">Motivo</label><input id="ar" name="reason" required maxlength="300"></div>
+          <button class="btn btn--danger btn--sm" type="submit">Arquivar agente</button>
+        </form>
+      </section>
+      {% endif %}
+    </div>
+    <div class="stack">
+      <section class="card">
+        <h2>{{ ui.icon('i-alert') }} Alertas</h2>
+        {% for al in alerts %}
+          <div class="alert-item alert-item--{{ al.severity }}"><div class="alert-item__top">{{ ui.status(al.state == 'RESOLVIDO' ? 'BAIXA' : al.severity, al.state|capitalize) }}<span class="small faint">{{ al.opened_at|local_dt }}</span></div><p>{{ al.message }}</p></div>
+        {% else %}<p class="muted">Nenhum alerta registrado.</p>{% endfor %}
+      </section>
+      <section class="card">
+        <h2>{{ ui.icon('i-clock') }} Histórico</h2>
+        <ol class="timeline">
+          {% for ev in events %}
+            <li class="{{ ev.outcome == 'APLICADO' ? 'is-applied' : 'is-historical' }}"><time datetime="{{ ev.occurred_at }}">{{ ev.occurred_at|local_dt('d/m/Y H:i') }}</time> <span class="tag">{{ ev.event_type|lower }}</span> <span class="tag">{{ ev.source|lower }}{{ ev.actor_name ? ' · ' ~ ev.actor_name }}</span><p>{{ ev.summary }}</p></li>
+          {% else %}<li>Sem eventos.</li>{% endfor %}
+        </ol>
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}
