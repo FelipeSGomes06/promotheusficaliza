@@ -2,11 +2,17 @@
 
 | Item | Origem | Licença / termos | Uso |
 |---|---|---|---|
-| Código do projeto | Este repositório | MIT ([LICENSE](../LICENSE)) | Todo `src/`, `templates/`, `public/assets/js`, `public/assets/css`, testes e scripts. |
-| Ícones, miniaturas e favicon | Criados para o projeto | MIT | `public/assets/img/`. Ilustram a categoria; não representam modelos comerciais. |
+| Código do projeto | Este repositório | MIT ([LICENSE](../LICENSE)) | Todo `src/`, `templates/`, `resources/` (CSS e JS de origem), testes e scripts. |
+| Marca, ícones, miniaturas e favicon | Criados para o projeto | MIT | `public/assets/img/`. A marca (F em forma de vias + radar) é própria; as miniaturas ilustram a categoria e não representam modelos comerciais. |
+| Tailwind CSS 4.3.3 e `@tailwindcss/vite` 4.3.3 | npm (dev; `package-lock.json`) | MIT | Gera o CSS em `public/assets/build/` (reset, tokens e utilitários). |
+| Alpine.js — `@alpinejs/csp` 3.17.4 | npm | MIT | Estado reativo dos componentes, no build compatível com CSP (sem `eval`). Empacotado em `public/assets/build/`. |
+| GSAP 3.15.0 (com o plugin Flip, incluído no pacote) | npm `gsap@3.15.0` | **"Standard 'no charge' license"** da GreenSock (campo `license` do pacote; termos em <https://gsap.com/standard-license>) — não é MIT. O aviso "@license … Subject to the terms at https://gsap.com/standard-license" é preservado no arquivo gerado. **Pendência:** a página dos termos não pôde ser lida deste ambiente (rede bloqueada); conferir os termos antes de publicar | Movimento coordenado da interface. |
+| Vite 8.3.2 | npm (dev) | MIT | Ferramenta de build; não vai para produção. As licenças das bibliotecas empacotadas são listadas em `public/assets/build/licencas-de-terceiros.md` (gerado pelo Vite). |
+| Overpass (fonte variável) | npm `@fontsource-variable/overpass@5.3.0` (projeto Overpass, Red Hat) | SIL OFL 1.1 ([cópia](../public/assets/fonts/OFL-overpass.txt)) | Toda a interface (latin e latin-ext), servida localmente pelo build. |
+| Skills consultadas no desenvolvimento | `emilkowalski/skills` (emil-design-eng, review-animations), `LottieFiles/motion-design-skill`, `anthropics/skills` (frontend-design), `greensock/gsap-skills` (MIT) | Licenças dos respectivos repositórios | Orientação de projeto; nenhum arquivo delas é distribuído. A licença das skills do GSAP não substitui a licença da biblioteca GSAP (linha acima). |
 | Leaflet 1.9.4 | npm `leaflet@1.9.4` | BSD-2-Clause ([cópia](../public/assets/vendor/leaflet/LICENSE)) | Mapa, servido localmente. |
-| Space Grotesk | npm `@fontsource-variable/space-grotesk@5.2.10` | SIL OFL 1.1 ([cópia](../public/assets/fonts/OFL-space-grotesk.txt)) | Títulos e números. O texto usa a fonte do sistema do visitante. |
 | Capturas de tela em `docs/evidencias/capturas-2026-10-18/` | Geradas localmente com dados fictícios | MIT (as telas); o mapa de fundo nelas é © colaboradores do OpenStreetMap, com a atribuição visível | Evidência antes/depois do redesenho. |
+| Capturas e vídeos em `docs/evidencias/2026-10-18-identidade-e-motion/` | Gerados no ambiente isolado com dados fictícios | MIT | Sem mapa de fundo: os servidores de tiles estavam bloqueados pela rede desse ambiente (a atribuição continua no canto do mapa). |
 | Tiles do mapa | `tile.openstreetmap.org` (configurável) | [Política de tiles da OSMF](https://operations.osmfoundation.org/policies/tiles/); dados © colaboradores do OpenStreetMap (ODbL) | Imagens carregadas pelo navegador do visitante, com atribuição visível. Sem download em massa, sem cache próprio. Para tráfego relevante, trocar de provedor via `MAP_TILE_URL`. |
 | Coordenadas de bairros e avenidas | Consulta pontual ao Nominatim em 18/10/2026 (≈40 requisições, 1/s, com identificação) | © colaboradores do OpenStreetMap, ODbL | Pontos ilustrativos do cenário. Nominatim não é usado em tempo de execução nem como autocompletar. |
 | Slim, slim/psr7, Twig e dependências | Packagist (via `composer.lock`) | MIT / BSD-3-Clause | Execução. |

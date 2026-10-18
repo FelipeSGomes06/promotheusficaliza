@@ -190,4 +190,36 @@ final class WebSecurityTest extends FirebirdTestCase
         self::assertSame(200, $response->getStatusCode());
         self::assertSame('RECONHECIDO', $this->services->alertRepository()->find((int) $alert['id'])['state']);
     }
+
+    public function testPagesUseOnlyLocalBuiltAssetsWithoutInlineCode(): void
+    {
+        $this->createEquipment();
+        $html = (string) $this->request('GET', '/')->getBody();
+
+        self::assertMatchesRegularExpression('#<link rel="stylesheet" href="/promotheusfiscaliza/assets/build/styles-[A-Za-z0-9_-]+\.css">#', $html);
+        self::assertMatchesRegularExpression('#<script type="module" src="/promotheusfiscaliza/assets/build/app-[A-Za-z0-9_-]+\.js"></script>#', $html);
+        // A CSP não tem unsafe-inline: nenhum script inline executável e nenhum atributo style no HTML.
+        preg_match_all('#<script\b(?![^>]*\bsrc=)([^>]*)>#', $html, $inline);
+        self::assertSame([' type="application/json" id="snapshot-data"'], $inline[1], 'só o instantâneo JSON (não executável) fica inline');
+        self::assertDoesNotMatchRegularExpression('#\sstyle="#', $html);
+        self::assertDoesNotMatchRegularExpression('#\son[a-z]+="#', $html, 'sem manipuladores de evento inline');
+        self::assertStringNotContainsString('unsafe-eval', $this->request('GET', '/')->getHeaderLine('Content-Security-Policy'));
+    }
+
+    public function testSimulateFailureViaJsonReportsTheServerOutcome(): void
+    {
+        $id = $this->createEquipment();
+        $this->loginAs('OPERADOR');
+        $headers = ['X-CSRF-Token' => $this->session->csrfToken(), 'Accept' => 'application/json'];
+
+        $first = $this->request('POST', "/equipamentos/{$id}/simular-falha", [], $headers);
+        self::assertSame(200, $first->getStatusCode());
+        self::assertTrue(json_decode((string) $first->getBody(), true)['ok']);
+        self::assertSame('FALHA', $this->services->equipmentRepository()->find($id)['status']);
+
+        // Já em falha: o evento vai só para o histórico e a resposta diz que nada mudou (sem "sucesso" falso).
+        $second = $this->request('POST', "/equipamentos/{$id}/simular-falha", [], $headers);
+        self::assertSame(409, $second->getStatusCode());
+        self::assertFalse(json_decode((string) $second->getBody(), true)['ok']);
+    }
 }

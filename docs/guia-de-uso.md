@@ -21,28 +21,44 @@ Situações usadas em todas as telas, sempre com texto e símbolo além da cor:
 
 **Objetivo.** Ver no mapa de Marília os recursos da demonstração e descobrir o que precisa de atenção.
 
-- **Resumos:** quantos equipamentos em serviço estão funcionando, quantos recursos precisam de atenção e quantas
-  manutenções são urgentes. "Mais indicadores e como são calculados" abre as fórmulas e a tabela por bairro.
-- **Ver o que precisa de atenção:** filtra mapa, lista e números para os recursos com problema, manutenção urgente ou
-  alerta aberto. Cada um mostra o motivo em texto.
-- **Filtros:** buscar (endereço, tipo, código ou nome, sem precisar de acentos), tipo, situação; em **Mais filtros**,
-  bairro, órgão e "só o que precisa de atenção". O número de filtros extras aparece no botão; **Limpar filtros**
-  volta tudo.
+- **Menu (trilho grafite à esquerda; no celular, botão ☰):** telas, conta e o botão **Animações**, que mostra se as
+  animações estão ativas ou reduzidas e **por quê** ("por sua escolha neste navegador" ou "pela preferência do
+  sistema"). Tocar alterna e a escolha fica salva neste navegador.
+- **Barra superior:** título, "Atualizado às…" (ponto verde; âmbar quando atrasado ou sem conexão), **Atualizar agora**
+  (mostra um indicador enquanto busca) e **Pausar/Retomar** a atualização automática; aviso **Demonstração**.
+- **Resumos** (acima da lista; no celular, abaixo do título): equipamentos em serviço funcionando, recursos que precisam
+  de atenção (toque para filtrar) e manutenções urgentes (leva à Manutenção). O botão ⓘ abre as fórmulas e a tabela
+  por bairro.
+- **Filtros (chips):** busca (endereço, tipo, código ou nome, sem precisar de acentos), **Tipo** e **Situação** (marque
+  um ou vários), **Precisa de atenção** e **Mais filtros** (bairro e órgão). Cada filtro ativo vira um chip com ×
+  logo abaixo; **Limpar tudo** volta ao início. Mapa, lista e números mudam juntos, e a lista se reorganiza com uma
+  animação curta. No celular, os chips rolam de lado.
+- **Lista:** primeiro o que precisa de atenção (com o motivo em vermelho), depois os demais, radares primeiro. A lista
+  começa curta; **Ver os outros N recursos** mostra o conjunto inteiro. O título é "tipo · endereço"; código, série e
+  coordenadas ficam na ficha.
 - **Mapa ou Lista:** mostram exatamente os mesmos resultados. A escolha fica no endereço da página (`?visao=lista`).
-- **Escolher um recurso** (toque no ponto ou na linha): abre a ficha resumida — o que é, onde está, situação,
-  atualidade, motivos de atenção, alertas e manutenção — com **Ver ficha completa**. A seleção continua ao trocar entre
-  mapa e lista e ao atualizar. `Esc` ou **Fechar** fecha e devolve o foco a quem abriu.
+- **Escolher um recurso** (toque no ponto ou na linha): o ponto ganha destaque, o mapa centraliza e a **ficha** abre ao
+  lado (no celular, sobe de baixo): o que é, situação, atualidade, onde está (ponto ilustrativo), motivos de atenção,
+  alertas, manutenção, código e características, com **Ver ficha completa**. Trocar de recurso com a ficha aberta só
+  troca o conteúdo. `Esc` ou × fecha e devolve o foco a quem abriu.
+- **Com conta:** na ficha, **Registrar ciência** de um alerta e **Simular falha** (recurso da demonstração). O botão
+  mostra "Registrando…"/"Simulando…" e só depois da resposta do servidor aparece o aviso verde; se não der certo, o
+  aviso fica em vermelho até você fechar.
 - **Números redondos no mapa** juntam recursos próximos: toque para aproximar; se estiverem no mesmo ponto, aparece
   uma lista para escolher. O "!" indica que algum deles precisa de atenção.
 - **Formas no mapa** (ver **Legenda**): quadrado = equipamento no local de instalação; borda tracejada = local
   planejado (não instalado); círculo = agente ou veículo na última posição recebida; borda pontilhada com ⌛ = posição
   antiga; "B" = base de trabalho, quando não há posição recente.
-- Recursos sem coordenadas aparecem só na lista (o mapa avisa quantos são).
-- **Atualização:** a cada poucos segundos, sem mexer no mapa nem no que você está fazendo. "Pausar atualização" fica
-  abaixo do mapa; sem conexão, a tela avisa e tenta de novo sozinha.
+- Recursos sem coordenadas aparecem só na lista (o mapa avisa quantos são). Se o mapa de fundo não carregar, os pontos,
+  a lista e os resumos continuam atualizados (aviso no próprio mapa).
+- **Atualização:** a cada poucos segundos, sem mexer no mapa, no filtro, na escolha nem no foco. Só o que mudou pisca
+  (a linha fica turquesa por um instante e o número do resumo troca). Alertas novos viram **um** aviso por vez.
+  Sem conexão, um aviso vermelho diz quais dados estão na tela e oferece **Tentar agora**; quando volta, aparece
+  "Conexão restabelecida".
 
-**Exemplo.** Para achar um radar: Tipo → "Radar de fiscalização" (ou busque "radar"), toque num ponto e leia
-"Radar · Avenida…", a situação ("Operacional") e "Sinal atual · há 2 min".
+**Exemplo.** Para achar um radar: os radares estão no topo de "Demais recursos" (ou Tipo → "Radar de fiscalização").
+Toque em "Radar · Avenida Sampaio Vidal…": o ponto se destaca e a ficha mostra a situação ("Operacional") e
+"Sinal atual · há 2 min".
 
 ## Equipamentos (`/equipamentos`)
 
@@ -77,6 +93,11 @@ observações. Ao trocar o tipo, só aparecem as características dele. Cidade �
 
 Com erro, a página volta com **tudo o que você digitou**, um resumo no topo (cada item leva ao campo) e a mensagem ao
 lado do campo.
+
+**Envio de formulários (todas as telas).** Ao enviar, o botão troca o rótulo por "Salvando…", "Iniciando…",
+"Concluindo…" etc. e ignora cliques repetidos. O resultado aparece depois que o servidor responde, como aviso no canto
+da tela (verde some sozinho; vermelho fica até você fechar). Sem JavaScript, a mesma mensagem aparece no topo da
+página.
 
 **Conflito de edição.** Se alguém (ou você, em outra aba) salvou o cadastro depois que você abriu o formulário,
 aparece "O cadastro mudou enquanto você editava", com uma tabela **Salvo agora × Sua versão** e a última mudança

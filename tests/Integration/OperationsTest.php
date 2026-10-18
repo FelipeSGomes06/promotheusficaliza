@@ -150,6 +150,10 @@ final class OperationsTest extends FirebirdTestCase
     public function testSimulatorTickIsSkippedWhileAnotherTickHoldsTheLock(): void
     {
         $console = new \Fiscaliza\Cli\Console($this->services);
+        // Clone novo não tem var/ (ignorado pelo Git); o Console o cria, o teste também precisa criar.
+        if (!is_dir(self::ROOT . '/var')) {
+            mkdir(self::ROOT . '/var', 0775, true);
+        }
         $lock = fopen(self::ROOT . '/var/simulador.lock', 'c');
         self::assertNotFalse($lock);
         self::assertTrue(flock($lock, LOCK_EX | LOCK_NB));

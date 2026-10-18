@@ -1,0 +1,239 @@
+{
+  "A_csp_console": {
+    "pages": 34,
+    "problems": []
+  },
+  "B_polling": {
+    "before": {
+      "panel": {
+        "visibility": "visible",
+        "opacity": 1,
+        "inert": false,
+        "title": "Radar · Avenida Sampaio Vidal, Cruzamento semaforizado",
+        "url": "?categoria%5B%5D=RADAR&categoria%5B%5D=VEICULO&selecionar=EQUIPAMENTO%3A385"
+      },
+      "chips": [
+        "Radar de fiscalização",
+        "Veículo"
+      ],
+      "focus": "panel-title",
+      "pane": "translate3d(0px, 0px, 0px)",
+      "d": {
+        "polls": 0,
+        "applied": 0,
+        "aborted": 0,
+        "tweens": 1,
+        "layers": 6
+      },
+      "count": "7"
+    },
+    "after": {
+      "panel": {
+        "visibility": "visible",
+        "opacity": 1,
+        "inert": false,
+        "title": "Radar · Avenida Sampaio Vidal, Cruzamento semaforizado",
+        "url": "?categoria%5B%5D=RADAR&categoria%5B%5D=VEICULO&selecionar=EQUIPAMENTO%3A385"
+      },
+      "chips": [
+        "Radar de fiscalização",
+        "Veículo"
+      ],
+      "focus": "panel-title",
+      "pane": "translate3d(0px, 0px, 0px)",
+      "d": {
+        "polls": 3,
+        "applied": 3,
+        "aborted": 0,
+        "tweens": 0,
+        "layers": 7
+      },
+      "count": "7"
+    },
+    "ok": true,
+    "logs": []
+  },
+  "C_filter_race": {
+    "titles": [
+      "Câmera · Avenida Carlos Gomes, Trecho residencial",
+      "Câmera · Avenida Castro Alves, Terminal",
+      "Câmera · Avenida Nelson Spielmann, Praça",
+      "Câmera · Avenida República, Saída norte"
+    ],
+    "ok": true,
+    "d": {
+      "polls": 3,
+      "applied": 1,
+      "aborted": 2,
+      "tweens": 0,
+      "layers": 4
+    },
+    "chips": [
+      "Câmera de monitoramento"
+    ],
+    "logs": []
+  },
+  "D_rapid_toggle": {
+    "midOpen": {
+      "visibility": "visible",
+      "opacity": 0.8025,
+      "inert": false,
+      "title": "Radar · Avenida Sampaio Vidal, Cruzamento semaforizado",
+      "url": "?selecionar=EQUIPAMENTO%3A385"
+    },
+    "endOpen": {
+      "visibility": "visible",
+      "opacity": 1,
+      "inert": false,
+      "title": "Radar · Avenida Sampaio Vidal, Cruzamento semaforizado",
+      "url": "?selecionar=EQUIPAMENTO%3A385"
+    },
+    "endClosed": {
+      "visibility": "hidden",
+      "opacity": 0,
+      "inert": true,
+      "title": "Radar · Avenida Sampaio Vidal, Cruzamento semaforizado",
+      "url": ""
+    },
+    "d": {
+      "polls": 0,
+      "applied": 0,
+      "aborted": 0,
+      "tweens": 0,
+      "layers": 21
+    },
+    "clickThrough": "mapa",
+    "ok": true,
+    "logs": []
+  },
+  "E_offline": {
+    "offline": {
+      "sync": "offline",
+      "toast": "Sem conexão com o servidor\n\nMostrando os dados das 20:38:23. Nova tentativa automática em 10 s; os filtros e a escolha continuam.\n\nTentar agora"
+    },
+    "errorToastAfter12s": 1,
+    "recovered": "Conexão restabelecida\n\nDados atualizados às 20:38:41.",
+    "errorToastAfterRecovery": 0,
+    "sync": "live",
+    "selectionKept": true,
+    "chips": [
+      "Só o que precisa de atenção"
+    ],
+    "logs": []
+  },
+  "F_submit": {
+    "during": {
+      "busy": "true",
+      "label": "Simulando…",
+      "toastsBefore": 0
+    },
+    "posts": 1,
+    "toast": "Falha simulada registrada\n\nFalha simulada registrada: o equipamento passou para \"Mau funcionamento\" e um alerta foi aberto.",
+    "ok": true,
+    "logs": []
+  },
+  "G_flash": {
+    "toast": "Feito\n\nAlerta reconhecido. Ele será resolvido automaticamente quando a causa deixar de existir.",
+    "stackRemoved": true,
+    "logs": []
+  },
+  "H_reduced": {
+    "sistema": {
+      "panelAt30ms": {
+        "visibility": "visible",
+        "opacity": 1
+      },
+      "label": "Animações reduzidas\nPela preferência do sistema. Toque para ativar aqui.",
+      "html": "(sem atributo)",
+      "stored": null
+    },
+    "salvo": {
+      "panelAt30ms": {
+        "visibility": "visible",
+        "opacity": 1
+      },
+      "label": "Animações reduzidas\nPor sua escolha neste navegador. Toque para ativar.",
+      "html": "reduced",
+      "stored": "reduced"
+    },
+    "completo_sobre_sistema": {
+      "panelAt30ms": {
+        "visibility": "visible",
+        "opacity": 0.7263
+      },
+      "label": "Animações ativas\nAtivadas por sua escolha (o sistema pede menos movimento). Toque para reduzir.",
+      "html": "full",
+      "stored": "full"
+    }
+  },
+  "I_back": {
+    "pollsIn11s": 2,
+    "ok": true,
+    "logs": []
+  },
+  "J_mobile": {
+    "open": {
+      "visibility": "visible",
+      "opacity": 1,
+      "inert": false,
+      "title": "Radar · Avenida Sampaio Vidal, Cruzamento semaforizado",
+      "url": "?visao=lista&selecionar=EQUIPAMENTO%3A385"
+    },
+    "closed": {
+      "visibility": "hidden",
+      "opacity": 0,
+      "inert": true,
+      "title": "Radar · Avenida Sampaio Vidal, Cruzamento semaforizado",
+      "url": "?visao=lista"
+    },
+    "nav": {
+      "expanded": "true",
+      "left": 0,
+      "focus": "Visão geral"
+    },
+    "ok": true,
+    "logs": []
+  },
+  "K_keyboard": {
+    "label": "Balança · Avenida das Esmeraldas, Acesso de carga leste. Operacional. No local de instalação",
+    "focusAfterEnter": "panel-title",
+    "focusBackOnMarker": true,
+    "logs": []
+  },
+  "L_tiles": {
+    "tiles": [
+      [
+        256,
+        256,
+        "none"
+      ],
+      [
+        256,
+        256,
+        "none"
+      ],
+      [
+        256,
+        256,
+        "none"
+      ],
+      [
+        256,
+        256,
+        "none"
+      ],
+      [
+        256,
+        256,
+        "none"
+      ],
+      [
+        256,
+        256,
+        "none"
+      ]
+    ],
+    "ok": true,
+    "banner": false
+  }
+}

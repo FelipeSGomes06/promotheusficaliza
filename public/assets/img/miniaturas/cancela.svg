@@ -1,8 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Cancela automática">
-<title>Cancela automática — ilustração da categoria (não representa um modelo comercial)</title>
-<rect width="160" height="120" rx="12" fill="#e6eef7"/><circle cx="138" cy="20" r="9" fill="#fbe7a6"/><path d="M0 94h160v14a12 12 0 0 1-12 12H12A12 12 0 0 1 0 108z" fill="#5c6774"/><path d="M0 94h160" stroke="#b8c1cc" stroke-width="2"/><path d="M12 107h16M44 107h16M76 107h16M108 107h16M140 107h12" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-<rect x="16" y="46" width="32" height="48" rx="4" fill="#fff" stroke="#18212c" stroke-width="2.5" stroke-linejoin="round"/><rect x="22" y="54" width="20" height="13" rx="2" fill="#e6eef7" stroke="#18212c" stroke-width="1.5"/>
-<rect x="55" y="56" width="13" height="38" rx="3" fill="#6b7480" stroke="#18212c" stroke-width="2.5" stroke-linejoin="round"/><circle cx="61.5" cy="50" r="4.5" fill="#c42b2b" stroke="#18212c" stroke-width="2"/>
-<rect x="64" y="58" width="86" height="10" rx="5" fill="#fff" stroke="#18212c" stroke-width="2.5" stroke-linejoin="round"/><path d="M78 58v10M90 58v10M102 58v10M114 58v10M126 58v10M138 58v10" stroke="#c42b2b" stroke-width="6"/>
-<rect x="64" y="58" width="86" height="10" rx="5" fill="none" stroke="#18212c" stroke-width="2.5" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Cancela de controle de acesso">
+<title>Cancela de controle de acesso — ilustração da categoria (não representa um modelo comercial nem um local real)</title>
+<defs><clipPath id="c"><rect width="160" height="120" rx="14"/></clipPath></defs>
+<g clip-path="url(#c)">
+<rect width="160" height="120" fill="#EAF0F9"/>
+<path d="M0 32h160M0 66h160M46 0v94M118 0v94" stroke="#fff" stroke-width="7" opacity=".75"/>
+<rect y="94" width="160" height="26" fill="#17263B"/>
+<path d="M0 94h160" stroke="#2B3D57" stroke-width="2"/>
+<path d="M8 108h16M36 108h16M64 108h16M92 108h16M120 108h16M148 108h12" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".85"/>
+
+<rect x="18" y="42" width="24" height="52" rx="5" fill="#fff" stroke="#0F1A2B" stroke-width="2.5" stroke-linejoin="round"/>
+<rect x="23" y="49" width="14" height="10" rx="2" fill="#0F1A2B"/><circle cx="30" cy="54" r="2.4" fill="#2DD4BF"/>
+<circle cx="30" cy="70" r="4" fill="#FFB21A" stroke="#0F1A2B" stroke-width="2"/>
+<rect x="40" y="50" width="108" height="10" rx="5" fill="#fff" stroke="#0F1A2B" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M58 50l-6 10M78 50l-6 10M98 50l-6 10M118 50l-6 10M138 50l-6 10" stroke="#D92D20" stroke-width="5"/>
+<rect x="40" y="50" width="108" height="10" rx="5" fill="none" stroke="#0F1A2B" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="45" cy="55" r="7" fill="#9BAEC8" stroke="#0F1A2B" stroke-width="2.5" stroke-linejoin="round"/>
+<rect x="138" y="60" width="5" height="34" fill="#9BAEC8" stroke="#0F1A2B" stroke-width="2"/>
+</g>
 </svg>

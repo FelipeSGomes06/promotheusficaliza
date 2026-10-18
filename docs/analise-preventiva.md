@@ -90,7 +90,11 @@ sementes foram reavaliadas em 18/10/2026 ([evidência](evidencias/2026-10-18-ava
 | Referência "falhou nos últimos 30 dias" | 6,8% (14/206) | 21,2% (14/66) |
 | Prevalência (acaso) | 3,9% (66/1.696 pares) | — |
 
-Antes da correção: 8,2% e 15,2% para o índice, 6,3% e 19,7% para a referência (1.681 pares). A mudança vem da
+Antes da correção: 8,2% e 15,2% para o índice, 6,3% e 19,7% para a referência (1.681 pares). Com o perfil compacto
+([ADR-0013](adr/0013-perfil-compacto-de-demonstracao.md)) as sementes foram medidas de novo nos dois perfis: completo
+8,5% de precisão e 16,4% de revocação (referência 7,3% e 22,4%; 1.697 pares); compacto 6,9% e 13,3% (referência 7,8% e
+26,7%; 526 pares, 30 falhas) — no compacto o índice não supera a referência, e a amostra é pequena demais para avaliar o
+método ([detalhes](evidencias/2026-10-18-avaliacao-sementes.md#perfis-compacto-e-completo-18102026)). A mudança vem da
 reconstrução temporal (menos informação "do futuro" em cada corte), não de ajuste do método. Leitura: o índice
 concentra falhas cerca de 2× acima do acaso com menos alertas que a referência, mas perde a maioria das falhas e o
 limiar escolhido varia entre cenários (25 a 55) — amostras pequenas (~13 falhas por janela). Serve para **priorizar

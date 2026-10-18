@@ -54,7 +54,7 @@ medidas, console), **M** = conferência manual por comando. "Implementado" não 
 | USR-04 Preservar site principal | Nada do portal no projeto | M | Conferir cookies/CSP do portal antes de publicar |
 | USR-05 Caminho `/promotheusfiscaliza` | Compose padrão; origem dedicada com redirecionamento | N/M local (prefixo e origem dedicada) | Publicação real |
 | USR-06 Mapa de Marília | Visão geral | N | — |
-| USR-07 Divertido e animado | Ilustrações, marcadores, movimento curto e desligável | N movimento reduzido | Opinião de pessoas usuárias não coletada |
+| USR-07 Divertido e animado | Marca de trânsito, ilustrações, marcadores; movimento coordenado com GSAP (ficha, avisos, filtro com Flip, destaque finito do ponto, realce do dado recebido) e desligável ([ADR-0012](adr/0012-identidade-motion-e-build-de-assets.md)) | N navegador: 11 cenários de comportamento + vídeos ([evidência](evidencias/2026-10-18-identidade-e-motion.md)); movimento reduzido pelo sistema e por escolha | Opinião de pessoas usuárias não coletada |
 | USR-08 Modelos dos pontos | Ícones e miniaturas próprias por categoria | N `depois/05`, `10` | 3D não feito (opcional) |
 | USR-09 Documentação | README, guia, ADRs, contratos, evidências | M | — |
 

@@ -1,8 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Veículo">
-<title>Veículo — ilustração da categoria (não representa um modelo comercial)</title>
-<rect width="160" height="120" rx="12" fill="#e6eef7"/><circle cx="138" cy="20" r="9" fill="#fbe7a6"/><path d="M0 94h160v14a12 12 0 0 1-12 12H12A12 12 0 0 1 0 108z" fill="#5c6774"/><path d="M0 94h160" stroke="#b8c1cc" stroke-width="2"/><path d="M12 107h16M44 107h16M76 107h16M108 107h16M140 107h12" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-<rect x="70" y="35" width="22" height="7" rx="2" fill="#c42b2b" stroke="#18212c" stroke-width="1.5"/><rect x="81" y="35" width="11" height="7" rx="2" fill="#1b5eab"/>
-<path d="M44 62 L57 42 h48 l14 20 Z" fill="#fff" stroke="#18212c" stroke-width="2.5" stroke-linejoin="round"/><path d="M61 46h17v14H52z" fill="#e6eef7" stroke="#18212c" stroke-width="1.5"/><path d="M84 46h18l10 14H84z" fill="#e6eef7" stroke="#18212c" stroke-width="1.5"/>
-<rect x="18" y="60" width="126" height="26" rx="9" fill="#fff" stroke="#18212c" stroke-width="2.5" stroke-linejoin="round"/><rect x="19" y="70" width="124" height="6" fill="#1b5eab"/>
-<circle cx="138" cy="66" r="2.5" fill="#f2b705"/><circle cx="48" cy="88" r="10" fill="#18212c"/><circle cx="48" cy="88" r="3.5" fill="#9aa5b1"/><circle cx="114" cy="88" r="10" fill="#18212c"/><circle cx="114" cy="88" r="3.5" fill="#9aa5b1"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Veículo de fiscalização">
+<title>Veículo de fiscalização — ilustração da categoria (não representa um modelo comercial nem um local real)</title>
+<defs><clipPath id="c"><rect width="160" height="120" rx="14"/></clipPath></defs>
+<g clip-path="url(#c)">
+<rect width="160" height="120" fill="#EAF0F9"/>
+<path d="M0 32h160M0 66h160M46 0v94M118 0v94" stroke="#fff" stroke-width="7" opacity=".75"/>
+<rect y="94" width="160" height="26" fill="#17263B"/>
+<path d="M0 94h160" stroke="#2B3D57" stroke-width="2"/>
+<path d="M8 108h16M36 108h16M64 108h16M92 108h16M120 108h16M148 108h12" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".85"/>
+
+<path d="M14 82v-16l10-4 14-18h50l20 18h22c8 0 12 4 12 10v10z" fill="#fff" stroke="#0F1A2B" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M44 48h20v14H32zM70 48h14l14 14H70z" fill="#D3DCE8" stroke="#0F1A2B" stroke-width="2"/>
+<path d="M16 72h126" stroke="#2152E8" stroke-width="6"/>
+<rect x="56" y="36" width="24" height="7" rx="2.5" fill="#FFB21A" stroke="#0F1A2B" stroke-width="2"/><rect x="68" y="36" width="12" height="7" rx="2" fill="#2152E8"/>
+<circle cx="44" cy="84" r="10" fill="#0F1A2B"/><circle cx="44" cy="84" r="4" fill="#9BAEC8"/>
+<circle cx="114" cy="84" r="10" fill="#0F1A2B"/><circle cx="114" cy="84" r="4" fill="#9BAEC8"/>
+<circle cx="141" cy="68" r="2.6" fill="#FFB21A"/>
+</g>
 </svg>

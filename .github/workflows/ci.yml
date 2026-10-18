@@ -45,3 +45,16 @@ jobs:
       - run: vendor/bin/phpstan analyse --no-progress --memory-limit=512M
       - run: php scripts/ci-preparar-banco.php
       - run: vendor/bin/phpunit
+
+  # Os arquivos da interface (public/assets/build) são versionados para a produção não precisar de Node.
+  # Este job confere que eles correspondem ao código-fonte em resources/ com as versões travadas.
+  assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+      - run: npm run build
+      - run: test -z "$(git status --porcelain -- public/assets/build)" || (git status --porcelain -- public/assets/build; exit 1)

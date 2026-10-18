@@ -20,6 +20,7 @@ Valores reais ficam só no ambiente; o repositório traz [`.env.example`](../.en
 | `FIREBIRD_ROOT_PASSWORD` | SYSDBA do contêiner Firebird, usado pela imagem na criação do banco. Nenhum processo da aplicação o usa. |
 | `MAP_TILE_URL`, `MAP_TILE_ATTRIBUTION` | Provedor de tiles e atribuição obrigatória; a origem entra na CSP `img-src`. |
 | `DEMO_ALLOW_RESET` | `true` só em ambientes de demonstração descartáveis. |
+| `DEMO_PROFILE` | `compacto` (padrão: 16 equipamentos e 7 agentes) ou `completo` (48 e 21). Vale para `demo:seed` e `scripts/avaliar-sementes.php` ([ADR-0013](adr/0013-perfil-compacto-de-demonstracao.md)). |
 | `SIM_SEED`, `SIM_INTERVAL_SECONDS`, `POLL_INTERVAL_SECONDS` | Semente do cenário, intervalo do simulador e intervalo de consulta da visão geral (independentes). |
 
 ### Credenciais por processo
@@ -43,7 +44,7 @@ numa sessão de terminal, sem gravá-las no servidor).
 | Comando | O que faz |
 |---|---|
 | `migrate` | Aplica migrações pendentes (identidade de migração) e sincroniza GRANTs mínimos do usuário da aplicação. Nunca roda por HTTP. |
-| `demo:seed` | Carrega o cenário sintético e 240 dias de histórico; recusa se já houver dados. `--reset` apaga dados de domínio (preserva contas) apenas com `DEMO_ALLOW_RESET=true` e o marcador do conjunto sintético. |
+| `demo:seed [--perfil=compacto\|completo]` | Carrega o cenário sintético e 240 dias de histórico; recusa se já houver dados. `--reset` apaga dados de domínio (preserva contas) apenas com `DEMO_ALLOW_RESET=true` e o marcador do conjunto sintético. `--perfil` sobrepõe `DEMO_PROFILE`. Para levar uma demonstração existente de 69 para 23 recursos: `demo:seed --reset` (mesmas proteções; banco sem o marcador sintético é recusado). |
 | `user:create <usuário> --role=ADMIN\|OPERADOR --name="…"` | Cria conta com senha aleatória exibida uma vez. |
 | `sim:tick` | Um ciclo do simulador. Se outro ciclo do mesmo diretório ainda estiver rodando, este é **ignorado** (trava em `var/simulador.lock`). |
 | `sim:run [--interval=5] [--duration=0]` | Simulador contínuo (serviço `simulator` do Compose), com a mesma trava a cada ciclo. Falha de banco: registra e tenta no próximo ciclo. |
@@ -73,11 +74,28 @@ Um ciclo por minuto. Sobreposição: se um ciclo demorar mais que o intervalo, o
 
 ### Avaliação do método em várias sementes
 
-`php scripts/avaliar-sementes.php 2027 2028 …` **substitui** os dados de domínio do banco `DB_DSN` (equipamentos,
+`php scripts/avaliar-sementes.php [--perfil=compacto|completo] 2027 2028 …` **substitui** os dados de domínio do banco `DB_DSN` (equipamentos,
 agentes, ordens, eventos, alertas, análises; contas são preservadas) pelo cenário de cada semente, em sequência, e
 imprime as métricas. Exige `DEMO_ALLOW_RESET=true` e, se houver dados, o marcador do conjunto sintético (as mesmas
 proteções de `demo:seed --reset`). Ao terminar, fica carregado o cenário da **última** semente; para voltar ao padrão,
-`php bin/fiscaliza demo:seed --reset` (usa `SIM_SEED`).
+`php bin/fiscaliza demo:seed --reset` (usa `SIM_SEED` e `DEMO_PROFILE`).
+
+## Interface: build de assets
+
+Os arquivos que o navegador recebe ficam em `public/assets/build/` e **são versionados**: instalar, testar e publicar
+não exigem Node. Só para mudar o visual ou os scripts ([`resources/`](../resources/)):
+
+```bash
+npm ci            # versões travadas em package-lock.json (Node 20.19+)
+npm run build     # Vite: CSS (Tailwind), módulo ES (Alpine CSP + GSAP), fontes, manifest.json e licencas-de-terceiros.md
+# sem Node instalado:
+docker run --rm -v "$PWD":/app -w /app node:22-bookworm sh -c "npm ci && npm run build"
+```
+
+O PHP lê `public/assets/build/manifest.json` ([`ViteAssets`](../src/Http/ViteAssets.php)); nomes com hash dispensam
+limpar cache. O mesmo build serve sob `/promotheusfiscaliza` e na origem dedicada (referências relativas). O CI confere
+que o build versionado corresponde ao código-fonte (`git diff --exit-code public/assets/build` depois de
+`npm ci && npm run build`).
 
 ## Backup e restauração
 
@@ -138,7 +156,8 @@ Nunca copie o `.fdb` com o servidor em uso. Guarde backups fora de diretórios s
    https://devfelipegomes.com.br/promotheusfiscaliza/equipamentos` (302 para a nova origem), assets em `/assets/…`.
 
 Verificado localmente em 18/10/2026 (porta 8091): raiz, `/api/central`, `/assets/css/app.css` e `/equipamentos`
-respondem 200; `/promotheusfiscaliza/equipamentos?q=radar` responde 301 para `/equipamentos?q=radar`; cookie de sessão
+respondem 200 (repetido depois do novo build, porta 8092: CSS e módulo em `/assets/build/…`, fonte carregada, módulo
+da central carregado sob demanda, ficha abrindo, sem erros 4xx/5xx); `/promotheusfiscaliza/equipamentos?q=radar` responde 301 para `/equipamentos?q=radar`; cookie de sessão
 com `path=/`. O DNS, o TLS e o redirecionamento no portal não foram executados.
 
 ### Opção B — proxy reverso com prefixo

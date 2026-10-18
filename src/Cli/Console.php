@@ -33,7 +33,7 @@ final class Console
             fwrite(STDERR, $e->getMessage() . PHP_EOL . implode(PHP_EOL, array_map(static fn($k, $v) => " - {$k}: {$v}", array_keys($e->errors), $e->errors)) . PHP_EOL);
 
             return 1;
-        } catch (\RuntimeException $e) {
+        } catch (\RuntimeException|\InvalidArgumentException $e) {
             fwrite(STDERR, 'Erro: ' . $e->getMessage() . PHP_EOL);
             // Fora de produção, a causa do driver ajuda o operador local (nunca vai para respostas HTTP).
             if (!$this->services->config->isProduction() && $e->getPrevious() !== null) {
@@ -58,7 +58,12 @@ final class Console
     /** @param array<string, string|bool> $options */
     private function seed(array $options): int
     {
-        $owner = $this->services->asMigrationIdentity();
+        $services = $this->services;
+        if (is_string($options['perfil'] ?? null)) {
+            $profile = \Fiscaliza\Demo\DemoScenario::profile($options['perfil']);
+            $services = new Services($services->config->with(['DEMO_PROFILE' => $profile]), $services->root);
+        }
+        $owner = $services->asMigrationIdentity();
         $meta = $owner->metaRepository();
         $hasData = (int) $owner->database()->value('SELECT COUNT(*) FROM EQUIPMENT') > 0;
         if ($hasData) {
@@ -74,7 +79,7 @@ final class Console
                 return 1;
             }
         }
-        $summary = $owner->seeder()->run($hasData);
+        $summary = ['perfil' => $owner->config->get('DEMO_PROFILE', 'compacto')] + $owner->seeder()->run($hasData);
         foreach ($summary as $label => $count) {
             echo str_pad($label, 34) . $count . PHP_EOL;
         }
@@ -164,7 +169,9 @@ final class Console
             Uso: php bin/fiscaliza <comando>
 
               migrate                         aplica migrações pendentes e concede DML ao usuário da aplicação
-              demo:seed [--reset]             carrega o cenário sintético de Marília (--reset apaga e recarrega)
+              demo:seed [--reset] [--perfil=compacto|completo]
+                                              carrega o cenário sintético de Marília (--reset apaga e recarrega;
+                                              compacto = 16 equipamentos e 7 agentes, o padrão; completo = 48 e 21)
               user:create <usuario> [--role=ADMIN|OPERADOR] [--name="Nome"]
                                               cria conta com senha gerada (exibida uma vez)
               sim:tick                        executa um ciclo do simulador (para cron); ignora o ciclo se

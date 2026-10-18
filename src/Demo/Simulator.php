@@ -61,10 +61,13 @@ final class Simulator
         };
 
         $equipment = $this->services->equipmentRepository()->allActive();
-        $this->services->database()->transaction(function () use ($equipment, $nowDb, &$stats): void {
+        $laggedDb = Time::toDb($now->modify('-' . DemoSeeder::LAG_MINUTES . ' minutes'));
+        $this->services->database()->transaction(function () use ($equipment, $nowDb, $laggedDb, &$stats): void {
             foreach ($equipment as $e) {
                 if (EquipmentStatus::from($e['status'])->expectsSignal() && !in_array($e['serial_number'], DemoSeeder::SILENT_SERIALS, true)) {
-                    $this->services->equipmentRepository()->touchSignal((int) $e['id'], $nowDb);
+                    // Concentrador com atraso fixo: o sinal chega, mas sempre com a mesma defasagem ("sinal atrasado").
+                    $lagging = in_array($e['serial_number'], DemoSeeder::LAGGING_SERIALS, true);
+                    $this->services->equipmentRepository()->touchSignal((int) $e['id'], $lagging ? $laggedDb : $nowDb);
                     $stats['sinais']++;
                 }
             }

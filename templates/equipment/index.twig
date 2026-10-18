@@ -7,9 +7,9 @@
   <div class="page-head">
     <div>
       <h1>Equipamentos</h1>
-      <p class="lead">Radares, câmeras, balanças, cancelas, totens, veículos e patinetes cadastrados na demonstração, cada um com as características do seu tipo.</p>
+      <p class="lead">Inventário de radares, câmeras, balanças, cancelas, totens, veículos e patinetes, cada um com as características do seu tipo.</p>
     </div>
-    {% if app.user %}<a class="btn btn--primary" href="{{ url('/equipamentos/novo') }}">{{ ui.icon('i-plus') }}Cadastrar equipamento</a>{% endif %}
+    {% if app.user %}<a class="btn btn--primary" href="{{ url('/equipamentos/novo') }}">{{ ui.icon('i-plus', null, 'icon icon--pop') }}<span>Cadastrar equipamento</span></a>{% endif %}
   </div>
 
   <form class="stack" method="get" action="{{ url('/equipamentos') }}" role="search" aria-label="Filtrar equipamentos">
@@ -20,10 +20,10 @@
       <div class="field"><label for="sit">Situação</label>
         <select id="sit" name="situacao[]"><option value="">Todas as situações</option>{% for s in options.statuses|filter(s => s.group == 'Equipamentos') %}<option value="{{ s.value }}" {{ s.value in filters.statuses ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select></div>
     </div>
-    <div class="toolbar__end">
-      <button class="btn btn--primary" type="submit">Filtrar</button>
+    <div class="filter-bar">
+      <button class="btn btn--primary" type="submit">{{ ui.icon('i-filter') }}<span>Filtrar</span></button>
       <details class="more-filters more-filters--inline" {{ moreActive > 0 ? 'open' }}>
-        <summary class="btn">{{ ui.icon('i-filter') }}<span>Mais filtros</span> {% if moreActive %}<span class="count-pill">{{ moreActive }}</span>{% endif %}</summary>
+        <summary class="chip">{{ ui.icon('i-layers') }}<span>Mais filtros</span> {% if moreActive %}<span class="count-pill">{{ moreActive }}</span>{% endif %}</summary>
         <div class="more-filters__body">
           <div class="field"><label for="bai">Bairro</label>
             <select id="bai" name="bairro[]"><option value="">Todos os bairros</option>{% for r in options.regions %}<option value="{{ r.id }}" {{ r.id in filters.regions ? 'selected' }}>{{ r.name }}</option>{% endfor %}</select></div>
@@ -35,7 +35,7 @@
         </div>
       </details>
       <p class="result-count"><strong>{{ total }}</strong> {{ archived ? (total == 1 ? 'arquivado' : 'arquivados') : (total == 1 ? 'equipamento' : 'equipamentos') }}{{ filters.isEmpty and q == '' ? '' : ' no filtro' }}
-        {% if not (filters.isEmpty and q == '' and not archived and sort == 'codigo') %}<a class="btn btn--quiet btn--small" href="{{ url('/equipamentos') }}">Limpar filtros</a>{% endif %}</p>
+        {% if not (filters.isEmpty and q == '' and not archived and sort == 'codigo') %}<a class="btn btn--quiet btn--small" href="{{ url('/equipamentos') }}"><span>Limpar filtros</span></a>{% endif %}</p>
     </div>
   </form>
 
