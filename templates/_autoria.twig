@@ -1,0 +1,40 @@
+{# Personagens 3D do cartão de autoria (página Sobre), em CSS 3D: o mascote do Claude Code em blocos e o símbolo do
+   Codex em camadas. Decorativos (aria-hidden); a pose de repouso vem do CSS e o GSAP só gira e anima por cima. #}
+
+{# Caixa 3D: seis faces posicionadas pelo CSS (.vx) a partir das medidas da classe da peça. #}
+{% macro caixa(cls, olhos = false) %}
+<span class="vx {{ cls }}"><span class="vx__f vx__f--frente">{% if olhos %}<span class="clawd__eye clawd__eye--l" data-mascot-eye></span><span class="clawd__eye clawd__eye--r" data-mascot-eye></span>{% endif %}</span><span class="vx__f vx__f--tras"></span><span class="vx__f vx__f--dir"></span><span class="vx__f vx__f--esq"></span><span class="vx__f vx__f--topo"></span><span class="vx__f vx__f--base"></span></span>
+{%- endmacro %}
+
+{% macro mascote() %}
+<span class="clawd" aria-hidden="true" data-author-mascot>
+  <span class="clawd__shadow" data-mascot-shadow></span>
+  <span class="clawd__pose"><span class="clawd__rig" data-mascot-rig><span class="clawd__hop" data-mascot-hop>
+    {{ _self.caixa('clawd__body', true) }}
+    {{ _self.caixa('clawd__arm clawd__arm--l') }}{{ _self.caixa('clawd__arm clawd__arm--r') }}
+    {{ _self.caixa('clawd__leg clawd__leg--1') }}{{ _self.caixa('clawd__leg clawd__leg--2') }}{{ _self.caixa('clawd__leg clawd__leg--3') }}{{ _self.caixa('clawd__leg clawd__leg--4') }}
+  </span></span></span>
+</span>
+{%- endmacro %}
+
+{# Nuvem extrudada: sete camadas escuras atrás, a face em degradê e o ">_" na frente. #}
+{% macro codex() %}
+<span class="cx" aria-hidden="true" data-author-codex>
+  <span class="cx__shadow"></span>
+  <span class="cx__pose"><span class="cx__rig" data-codex-rig><span class="cx__spin" data-codex-spin>
+    {% for i in 1..7 %}<svg class="cx__layer" viewBox="0 0 100 90" focusable="false"><use href="#pf-nuvem"></use></svg>{% endfor %}
+    <svg class="cx__layer cx__layer--face" viewBox="0 0 100 90" focusable="false"><use href="#pf-nuvem" fill="url(#pf-nuvem-degrade)"></use></svg>
+    <svg class="cx__layer cx__layer--glyph" viewBox="0 0 100 90" focusable="false" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M31 34 L43 46 L31 58"></path><path class="cx__cursor" d="M51 59 H67"></path></svg>
+  </span></span></span>
+</span>
+{%- endmacro %}
+
+{# Desenhos compartilhados pelas camadas (fora do cartão, para não duplicar ids quando ele é copiado). #}
+{% macro defs() %}
+<svg class="pf-defs" aria-hidden="true" focusable="false" width="0" height="0">
+  <defs>
+    <g id="pf-nuvem"><circle cx="50" cy="46" r="27"></circle><circle cx="31" cy="31" r="18"></circle><circle cx="54" cy="22" r="19"></circle><circle cx="74" cy="36" r="18"></circle><circle cx="76" cy="60" r="17"></circle><circle cx="52" cy="70" r="18"></circle><circle cx="27" cy="58" r="18"></circle></g>
+    <linearGradient id="pf-nuvem-degrade" x1="10" y1="4" x2="92" y2="88" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#b9c8ff"></stop><stop offset="0.5" stop-color="#6f84ff"></stop><stop offset="1" stop-color="#7a58ee"></stop></linearGradient>
+  </defs>
+</svg>
+{%- endmacro %}
