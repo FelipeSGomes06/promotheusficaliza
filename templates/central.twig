@@ -7,7 +7,7 @@
 {% block head %}<link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}">{% endblock %}
 {% block scripts %}<script src="{{ asset('vendor/leaflet/leaflet.js') }}" defer></script>{% endblock %}
 {% block main_attrs %}id="central" x-data="central"
-     data-api="{{ url('/api/central') }}" data-base="{{ app.base }}" data-mini="{{ app.base }}/assets/img/miniaturas/"
+     data-api="{{ url('/api/central') }}" data-base="{{ app.base }}" data-mini="{{ app.base }}/assets/img/miniaturas/" data-mini-v="{{ asset_dir_version('img/miniaturas') }}"
      data-tiles="{{ app.map.tiles }}" data-attribution="{{ app.map.attribution }}" data-poll="{{ app.poll_seconds }}"
      data-csrf="{{ app.csrf }}" data-can-edit="{{ app.user ? '1' : '0' }}"{% endblock %}
 

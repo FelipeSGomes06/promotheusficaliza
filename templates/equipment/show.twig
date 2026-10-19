@@ -16,7 +16,7 @@
 <div class="page">
   <div class="detail-head">
     <figure>
-      <img src="{{ app.base }}/assets/img/miniaturas/{{ e.type_code|lower }}.svg" alt="" width="168" height="126">
+      <img src="{{ asset('img/miniaturas/' ~ e.type_code|lower ~ '.svg') }}" alt="" width="168" height="126">
       <figcaption>Ilustração da categoria — não representa o modelo {{ e.model }}.</figcaption>
     </figure>
     <div>
