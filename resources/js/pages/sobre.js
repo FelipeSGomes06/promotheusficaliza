@@ -8,9 +8,9 @@
  *   olhos, a nuvem gira na direção do cursor (quickTo: uma tween reaproveitada por propriedade). Com o mouse sobre o
  *   cartão, o CSS faz o mascote sorrir ("> <") e acenar e o cursor do ">_" andar;
  * - clique: a foto treme (CustomWiggle), o mascote pula, a nuvem dá uma volta e o cartão se expande até cobrir a tela
- *   (clip-path), com o palco inteiro e o nome voando para o centro (Flip) e faixas de cinema; a navegação começa junto
- *   com a barra de progresso. Clicar na tela pula a espera; Esc cancela e devolve o cartão. Ctrl/Cmd/Shift + clique
- *   só faz a reação (o navegador abre a nova aba).
+ *   (clip-path), com o palco inteiro e o nome voando para o centro (Flip) e faixas de cinema; a navegação começa
+ *   quando a barra de progresso termina (~3 s depois do clique). Clicar na tela pula a espera; Esc cancela e devolve o
+ *   cartão. Ctrl/Cmd/Shift + clique só faz a reação (o navegador abre a nova aba).
  * Voltar pelo histórico (página restaurada do bfcache) devolve a página sem a tela sobreposta.
  */
 import { gsap } from 'gsap';
@@ -199,12 +199,13 @@ async function expand(parts) {
     .add(Flip.from(state, { targets: [p.stage, p.name], scale: true, duration: 1, ease: 'expo.inOut' }), 0)
     .fromTo(p.bands, { scaleY: 0 }, { scaleY: 1, duration: 0.9 }, 0.1)
     .fromTo(p.go, { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 0.75)
-    .addLabel('navegar', 0.9)
-    .call(go, null, 'navegar')
-    .fromTo(p.progress, { scaleX: 0 }, { scaleX: 1, duration: 1.1, ease: 'power2.inOut' }, 'navegar')
+    .addLabel('chegada', 0.9)
+    .fromTo(p.progress, { scaleX: 0 }, { scaleX: 1, duration: 1.4, ease: 'power2.inOut' }, 'chegada')
     // Chegando ao centro, os dois personagens comemoram: o mascote pula e a nuvem gira de novo.
-    .to(p.hop, { yPercent: -24, duration: 0.18, ease: 'power2.out', yoyo: true, repeat: 3 }, 'navegar')
-    .to(p.spin, { rotationY: '+=360', duration: 0.9, ease: 'power3.inOut' }, 'navegar');
+    .to(p.hop, { yPercent: -24, duration: 0.18, ease: 'power2.out', yoyo: true, repeat: 3 }, 'chegada')
+    .to(p.spin, { rotationY: '+=360', duration: 0.9, ease: 'power3.inOut' }, 'chegada')
+    // Navega só com a barra cheia (e uma pausa curta): a animação inteira aparece mesmo em conexão rápida.
+    .call(go, null, 'chegada+=1.6');
   Object.assign(run, { expand: tl, portal: p.root });
 }
 
