@@ -57,6 +57,7 @@ medidas, console), **M** = conferência manual por comando. "Implementado" não 
 | USR-07 Divertido e animado | Ilustrações, marcadores, movimento curto e desligável | N movimento reduzido | Opinião de pessoas usuárias não coletada |
 | USR-08 Modelos dos pontos | Ícones e miniaturas próprias por categoria | N `depois/05`, `10` | 3D não feito (opcional) |
 | USR-09 Documentação | README, guia, ADRs, contratos, evidências | M | — |
+| USR-10 Acesso só com cadastro feito pelo administrador (19/10/2026) | Telas, mapa e API exigem conta; contas só em "Contas" ou `user:create` ([ADR-0012](adr/0012-acesso-somente-com-conta-cadastrada.md)) | T `WebSecurityTest`; N/M (verificacao.md, 19/10/2026) | — |
 
 ## Auditoria de 18/10/2026
 

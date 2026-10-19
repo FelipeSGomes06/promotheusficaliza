@@ -1,7 +1,8 @@
 # Guia de uso
 
 Para quem vai usar a demonstração pela primeira vez. Tudo é fictício (ver "Demonstração" no topo de qualquer tela).
-Consultar é aberto a todos; cadastrar, editar, registrar manutenção e alertas pede uma conta (**Entrar para editar**).
+**Só entra quem tem conta cadastrada pelo administrador**: sem conta, qualquer endereço leva à tela de login e não
+há cadastro aberto. Peça sua conta a quem administra o sistema.
 
 Situações usadas em todas as telas, sempre com texto e símbolo além da cor:
 
@@ -149,11 +150,12 @@ sintético e o retrospecto, no fim da página, mostra que o método acerta pouco
 
 ## Entrar e contas
 
-- **Entrar para editar:** use a conta fornecida pelo responsável pela demonstração. Mensagem única para usuário ou
+- **Entrar:** use a conta cadastrada pelo administrador. Depois do login você volta para a página que tinha pedido;
+  **Sair** leva de volta ao login. Mensagem única para usuário ou
   senha errados. Depois de 5 tentativas erradas em 15 minutos, o acesso daquela conta fica bloqueado por esse tempo
   (também se as tentativas forem simultâneas). Sessão expira após 30 min sem uso ou 8 h.
-- **Contas** (só administrador): criar conta (usuário, nome, papel) — a senha é gerada e mostrada **uma única vez**;
-  desativar/reativar. Não é possível desativar a própria conta nem o último administrador ativo.
+- **Contas** (só administrador): é aqui que se dá acesso ao sistema. Criar conta (usuário, nome, papel) — a senha é
+  gerada e mostrada **uma única vez**; desativar/reativar (a conta desativada perde o acesso na hora). Não é possível desativar a própria conta nem o último administrador ativo.
 - **Operador** cadastra, edita, registra manutenção e alertas. **Administrador** faz isso e gerencia contas.
 - Primeira conta (no servidor): `php bin/fiscaliza user:create nome --role=ADMIN --name="Nome"` (ver [operação](operacao.md)).
 

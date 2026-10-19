@@ -48,10 +48,11 @@ docker compose --profile simulador up -d simulator
 ```
 
 O comando `user:create` mostra **uma única vez** a senha gerada. Abra
-<http://localhost:8080/promotheusfiscaliza/>. A leitura é pública; para cadastrar, editar, abrir ordens e registrar
-ciência de alertas, clique em **Entrar para editar**. A raiz <http://localhost:8080/> é uma página que simula o
-portal, para mostrar que a aplicação fica restrita ao prefixo. Banco já existente de uma versão anterior: rode
-`migrate` de novo (aplica a migração 0002; ver [operação](docs/operacao.md#atualizar-um-banco-existente-para-a-migração-0002)).
+<http://localhost:8080/promotheusfiscaliza/> e entre com essa conta. **Não há acesso sem conta**: nenhuma tela, mapa
+ou API responde a visitantes, e não existe cadastro aberto — o administrador cadastra cada pessoa em **Contas** (ou
+pelo `user:create` no servidor) e entrega a senha gerada ([ADR-0012](docs/adr/0012-acesso-somente-com-conta-cadastrada.md)).
+A raiz <http://localhost:8080/> é uma página que simula o portal, para mostrar que a aplicação fica restrita ao
+prefixo. Banco já existente de uma versão anterior: rode `migrate` de novo (aplica a migração 0002; ver [operação](docs/operacao.md#atualizar-um-banco-existente-para-a-migração-0002)).
 
 Testes, análise estática e estilo (usam o banco de testes `fiscaliza_test.fdb`, recriado a cada execução; os testes
 recusam rodar se o banco de testes for o mesmo do `DB_DSN`):
@@ -67,13 +68,15 @@ depois, recrie com `docker compose down -v` (apaga o banco local). Porta 8080 oc
 
 ## Roteiro rápido de avaliação
 
-1. Visão geral: leia os três resumos, abra "Mais indicadores", toque em **Ver o que precisa de atenção**, escolha um
-   ponto (ou um grupo, que aproxima) e alterne entre Mapa e Lista com a mesma seleção; no celular, use o Menu.
+1. Entre com a conta criada pelo `user:create` (sem conta, qualquer endereço leva ao login). Visão geral: leia os
+   três resumos, abra "Mais indicadores", toque em **Ver o que precisa de atenção**, escolha um ponto (ou um grupo,
+   que aproxima) e alterne entre Mapa e Lista com a mesma seleção; no celular, use o Menu.
 2. Ficha de um equipamento: próxima ação, onde está, cadastro, manutenção e histórico (tracejado = registro que não
    alterou a situação, com o motivo).
-3. Entre com a conta criada: cadastre um radar (deixe "Velocidade" sem limite para ver o resumo de erros com a
-   digitação mantida), instale-o (Não instalado → Operacional), inicie e conclua uma ordem (tente iniciar outra do
-   mesmo equipamento), use **Simular falha** e registre ciência do alerta — ele só resolve quando a causa some.
+3. Em **Contas**, cadastre uma pessoa e confira, numa janela anônima, que ela só entra depois desse cadastro. Depois
+   cadastre um radar (deixe "Velocidade" sem limite para ver o resumo de erros com a digitação mantida), instale-o
+   (Não instalado → Operacional), inicie e conclua uma ordem (tente iniciar outra do mesmo equipamento), use
+   **Simular falha** e registre ciência do alerta — ele só resolve quando a causa some.
 4. Revisões recomendadas: o que revisar e por quê; abra o método e o retrospecto com a referência.
 
 Passo a passo de cada tela, mensagens e erros: [guia de uso](docs/guia-de-uso.md).
@@ -84,7 +87,7 @@ Comandos úteis: `php bin/fiscaliza` lista os comandos (`sim:tick` para cron, `a
 
 | Situação | Itens |
 |---|---|
-| **Implementado e verificado** | Partes 1, 2 e 3 descritas acima; prova PHP/Firebird ([evidência](docs/evidencias/2026-10-18-prova-firebird.md)); **89 testes automatizados, 314 asserções** (unidade, integração no Firebird real, HTTP, concorrência com processos separados) ([verificação](docs/verificacao.md)); correções dos achados da auditoria de 18/10/2026 e redesenho com capturas antes/depois ([evidência](docs/evidencias/2026-10-18-correcoes-da-auditoria.md)); backup e restauração com gbak ([evidência](docs/evidencias/2026-10-18-backup-restauracao.md)); origem dedicada testada localmente. Rastreabilidade: [matriz de requisitos](docs/matriz-requisitos.md). |
+| **Implementado e verificado** | Partes 1, 2 e 3 descritas acima; prova PHP/Firebird ([evidência](docs/evidencias/2026-10-18-prova-firebird.md)); **93 testes automatizados, 372 asserções** (unidade, integração no Firebird real, HTTP, concorrência com processos separados) ([verificação](docs/verificacao.md)); correções dos achados da auditoria de 18/10/2026 e redesenho com capturas antes/depois ([evidência](docs/evidencias/2026-10-18-correcoes-da-auditoria.md)); backup e restauração com gbak ([evidência](docs/evidencias/2026-10-18-backup-restauracao.md)); origem dedicada testada localmente. Rastreabilidade: [matriz de requisitos](docs/matriz-requisitos.md). |
 | **Pendente (depende do proprietário/infra)** | Publicação no endereço pretendido (DNS, TLS, redirecionamento no portal); repositório público (GitLab/GitHub) e varredura de segredos no histórico antes do primeiro push; ZIP de entrega gerado a partir do commit final; vídeo; conferência das condições finais da DSIN; teste com leitor de tela e com pessoa iniciante. |
 | **Fora do escopo** | Integração real com IoT/órgãos, multas, reconhecimento de placas/faces, geolocalização de pessoas reais, app nativo, mensageria, alta disponibilidade, modelos 3D, heatmap e exportações. |
 

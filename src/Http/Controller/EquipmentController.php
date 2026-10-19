@@ -17,7 +17,7 @@ use Fiscaliza\Infrastructure\Repository\EquipmentRepository;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-/** Inventário de equipamentos: consulta pública; cadastro, edição, situação e arquivamento para operadores. */
+/** Inventário de equipamentos: consulta, cadastro, edição, situação e arquivamento para contas autenticadas. */
 final class EquipmentController extends Controller
 {
     private const PER_PAGE = 20;

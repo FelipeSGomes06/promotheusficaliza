@@ -1,15 +1,17 @@
 # Rotas HTTP, permissões e contratos
 
 Todas as rotas ficam sob `APP_BASE_PATH` (padrão `/promotheusfiscaliza`). Redirecionamentos, formulários, `fetch`,
-assets e cookie de sessão usam o prefixo. Escrita = `POST` com token CSRF (`_csrf` no corpo ou `X-CSRF-Token`) e,
+assets e cookie de sessão usam o prefixo. **Não há leitura pública** ([ADR-0012](adr/0012-acesso-somente-com-conta-cadastrada.md)):
+"conta" = qualquer conta ativa (operador ou administrador), cadastrada pelo administrador; sem ela, GET de página →
+`302 /entrar?voltar=…` e as demais requisições (inclusive a API) → 401. Só `/entrar`, `POST /sair` e `/saude` são abertas. Escrita = `POST` com token CSRF (`_csrf` no corpo ou `X-CSRF-Token`) e,
 se presente, `Origin` igual a `APP_ORIGIN` (ou à origem da requisição).
 
 | Método | Caminho | Acesso | Resposta |
 |---|---|---|---|
-| GET | `/` | público | Visão geral (HTML renderizado no servidor + JSON inicial embutido). Query: os mesmos filtros da API, mais `visao=lista` e `selecionar=EQUIPAMENTO:<id>` ou `AGENTE:<id>` (abre a ficha resumida). |
-| GET | `/api/central` | público | Instantâneo JSON (ver abaixo). `Cache-Control: no-store`. |
-| GET | `/equipamentos` | público | Lista paginada (20). Query: `q`, `categoria[]`, `situacao[]`, `bairro[]`, `orgao[]`, `ordem` ∈ {codigo, tipo, situacao, bairro, atualizado}, `arquivados=1`, `pagina`. |
-| GET | `/equipamentos/{id}` | público | Ficha: o que é, onde está, situação e atualidade, próxima ação, manutenção, alertas, revisão recomendada, histórico. |
+| GET | `/` | conta | Visão geral (HTML renderizado no servidor + JSON inicial embutido). Query: os mesmos filtros da API, mais `visao=lista` e `selecionar=EQUIPAMENTO:<id>` ou `AGENTE:<id>` (abre a ficha resumida). |
+| GET | `/api/central` | conta | Instantâneo JSON (ver abaixo). `Cache-Control: no-store`. Sem conta: 401 `{"error", "reference"}`, sem dados. |
+| GET | `/equipamentos` | conta | Lista paginada (20). Query: `q`, `categoria[]`, `situacao[]`, `bairro[]`, `orgao[]`, `ordem` ∈ {codigo, tipo, situacao, bairro, atualizado}, `arquivados=1`, `pagina`. |
+| GET | `/equipamentos/{id}` | conta | Ficha: o que é, onde está, situação e atualidade, próxima ação, manutenção, alertas, revisão recomendada, histórico. |
 | GET | `/equipamentos/novo` · `/equipamentos/{id}/editar` | operador | Formulários. Visitante → `302 /entrar?voltar=…`. Arquivado → 409. |
 | POST | `/equipamentos` · `/equipamentos/{id}` | operador | Cria / altera. Ver [Escrita](#escrita). |
 | POST | `/equipamentos/{id}/situacao` | operador | Mudança manual de situação. |
@@ -18,14 +20,14 @@ se presente, `Origin` igual a `APP_ORIGIN` (ou à origem da requisição).
 | POST | `/equipamentos/{id}/manutencoes` | operador | Abre ordem. |
 | POST | `/manutencoes/{id}/iniciar` · `/concluir` · `/cancelar` | operador | Ciclo da ordem. |
 | POST | `/alertas/{id}/reconhecer` | operador | Registra ciência. Com `Accept: application/json` responde JSON. |
-| GET | `/agentes`, `/agentes/{id}` | público | Lista e ficha. Query da lista: `q`, `categoria[]` (`AG_TRANSITO`…), `situacao[]`, `orgao[]`, `ordem` ∈ {codigo, nome, funcao, situacao, bairro}, `arquivados=1`, `pagina`. |
+| GET | `/agentes`, `/agentes/{id}` | conta | Lista e ficha. Query da lista: `q`, `categoria[]` (`AG_TRANSITO`…), `situacao[]`, `orgao[]`, `ordem` ∈ {codigo, nome, funcao, situacao, bairro}, `arquivados=1`, `pagina`. |
 | GET/POST | `/agentes/novo`, `/agentes`, `/agentes/{id}/editar`, `/agentes/{id}`, `/agentes/{id}/situacao`, `/agentes/{id}/arquivar` | operador | Como nos equipamentos. |
-| GET | `/manutencao` | público | Lista por andamento e urgência e encerradas recentes. |
-| GET | `/antecipacao` | público | "Revisões recomendadas": última análise e retrospecto. `POST /antecipacao/recalcular`: operador. |
-| GET | `/sobre` | público | O que é real, simulado e implementado; ajuda administrativa. |
-| GET/POST | `/entrar` · POST `/sair` | público | Login (sessão regenerada) e logout (sessão destruída). |
+| GET | `/manutencao` | conta | Lista por andamento e urgência e encerradas recentes. |
+| GET | `/antecipacao` | conta | "Revisões recomendadas": última análise e retrospecto. `POST /antecipacao/recalcular`: operador. |
+| GET | `/sobre` | conta | O que é real, simulado e implementado; ajuda administrativa. |
+| GET/POST | `/entrar` · POST `/sair` | aberto | Login (sessão regenerada; volta ao `voltar` interno) e logout (sessão destruída; leva ao login). |
 | GET/POST | `/contas`, POST `/contas/{id}/situacao` | administrador | Lista, cria (senha exibida uma vez), ativa/desativa. |
-| GET | `/saude` | público | `{"status":"ok"}` ou 503 — sem versões, caminhos ou dados. |
+| GET | `/saude` | aberto | `{"status":"ok"}` ou 503 — sem versões, caminhos ou dados. |
 
 Códigos: 401 (precisa entrar), 403 (papel insuficiente, CSRF inválido ou `Origin` estranho), 404, 405, 409 (regra ou
 conflito), 422 (validação), 503 (banco indisponível), 500 (inesperado). Páginas de erro trazem só mensagem segura e
