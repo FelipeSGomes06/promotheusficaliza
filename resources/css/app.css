@@ -375,7 +375,10 @@
   .form-grid .span-2 { grid-column: 1 / -1; }
   @media (max-width: 680px) { .form-grid { grid-template-columns: 1fr; } }
   .form-step { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-lg); padding: 22px; margin: 0; min-width: 0; }
-  .form-step > legend { display: flex; align-items: center; gap: 10px; font-weight: 750; font-size: 1.1rem; padding: 0 6px; margin-left: -6px; }
+  /* float tira a legenda da borda do fieldset (onde o navegador a desenha) e a põe dentro do cartão. */
+  .form-step > legend { float: left; width: 100%; display: flex; align-items: center; gap: 10px; font-weight: 750; font-size: 1.1rem; padding: 0; margin: 0 0 16px; }
+  .form-step > legend + * { clear: both; }
+  .form-step + .form-step { margin-top: 16px; }
   .form-step__n { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: var(--color-graphite-900); color: var(--color-teal-300); font-size: 0.85rem; font-weight: 800; }
   .form-step > .hint:first-of-type { margin-top: -2px; margin-bottom: 14px; }
   .form-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; align-items: center; position: sticky; bottom: 0; padding: 12px 0; background: linear-gradient(to top, var(--color-paper) 70%, transparent); }
