@@ -3,6 +3,14 @@
 Ambiente: Windows 11 + Docker Desktop 29.7.2; contêineres `php:8.5.11-apache-trixie` (PDO_FIREBIRD, fbclient 4.0.5)
 e `firebirdsql/firebird:5.0.4-trixie`. Data: 18/10/2026. Só está listado aqui o que de fato rodou.
 
+## Cartão de autoria na página Sobre (19/10/2026)
+
+Verificado só no navegador (Chromium headless 141 via Playwright, cabeçalhos reais de `SecurityHeaders`, destino
+simulado): entrada, tremor, expansão, Esc, voltar pelo histórico, movimento reduzido e celular, com **0 violações de
+CSP e 0 erros de console**; build reproduzível. PHPUnit, PHPStan e PHP-CS-Fixer **não** rodaram nesse ambiente (sem
+Firebird nem PHP 8.4+); a asserção nova do `WebSecurityTest` foi conferida contra o HTML renderizado.
+[Evidência](evidencias/2026-10-19-cartao-de-autoria.md).
+
 ## Identidade nova com acesso somente por conta (19/10/2026)
 
 Junção da identidade de trânsito com o acesso somente por conta ([ADR-0014](adr/0014-acesso-somente-com-conta-cadastrada.md)),

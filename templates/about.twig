@@ -1,6 +1,7 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
 {% block title %}Sobre a demonstração{% endblock %}
+{% block page %}sobre{% endblock %}
 {% block content %}
 <div class="page">
   <div class="page-head"><div>
@@ -8,7 +9,7 @@
     <p class="lead">Promotheus Fiscaliza é a proposta para a etapa bônus F.O.G.O. do DSIN Coder Challenge 2026: inventário, central de recursos e antecipação de problemas para a fiscalização de trânsito de Marília/SP.</p>
   </div></div>
   <div class="split">
-    <div class="stack">
+    <div class="stack stack--fill">
       <section class="panel">
         <h2>{{ ui.icon('i-info') }} Dados</h2>
         <ul class="factor-list">
@@ -41,6 +42,23 @@
           <li><strong>Agentes em atividade</strong> nunca são somados a equipamentos.</li>
         </ul>
       </section>
+      {# Autoria: link comum (funciona sem JavaScript e com movimento reduzido); o movimento fica em pages/sobre.js. #}
+      <a class="author-card" href="https://devfelipegomes.com.br/" rel="author" data-author-card>
+        <span class="author-card__stage">
+          <span class="author-card__halo" aria-hidden="true" data-author-halo></span>
+          <span class="author-card__ring" aria-hidden="true" data-author-ring></span>
+          <span class="author-card__ring" aria-hidden="true" data-author-ring></span>
+          <span class="author-card__photo" data-author-photo data-flip-id="autor-foto">
+            <img src="{{ asset('img/autor/felipe-gomes.webp') }}" alt="" width="440" height="550" decoding="async" data-author-img>
+            <span class="author-card__glare" aria-hidden="true"></span>
+          </span>
+        </span>
+        <span class="author-card__caption">
+          <span class="author-card__kicker" data-author-kicker>Desenvolvido por</span>
+          <span class="author-card__name"><span class="visually-hidden">Felipe Gomes</span><span aria-hidden="true" data-author-name data-flip-id="autor-nome">Felipe Gomes</span></span>
+          <span class="author-card__url" data-author-url>devfelipegomes.com.br{{ ui.icon('i-arrow-right') }}</span>
+        </span>
+      </a>
     </div>
     <div class="stack">
       <section class="panel">
@@ -60,7 +78,7 @@
         <h2>{{ ui.icon('i-layers') }} Tecnologia e autoria</h2>
         <ul class="factor-list">
           <li>PHP 8.5 (Slim 4, Twig 3) e Firebird 5 via PDO_FIREBIRD; mapa com Leaflet 1.9.4.</li>
-          <li>Interface: Tailwind CSS 4 (estilos e tokens), Alpine.js no build CSP (estado), GSAP 3 com Flip (movimento) e Vite (gera arquivos estáticos; a produção não precisa de Node). Fonte Overpass (SIL OFL 1.1).</li>
+          <li>Interface: Tailwind CSS 4 (estilos e tokens), Alpine.js no build CSP (estado), GSAP 3 com Flip (movimento; no cartão de autoria, também SplitText e CustomWiggle) e Vite (gera arquivos estáticos; a produção não precisa de Node). Fonte Overpass (SIL OFL 1.1).</li>
           <li>Acesso só com conta cadastrada pelo administrador (operador ou administrador), inclusive para consultar; proteção CSRF, autorização no servidor e CSP sem <code>unsafe-inline</code> nem <code>unsafe-eval</code>.</li>
           <li>IA no desenvolvimento: planejamento e auditoria com Codex (OpenAI); implementação com Claude (Anthropic) no Claude Code; revisão pelo autor.</li>
           <li>Movimento: o botão "Animações" no menu reduz tudo e mostra se a escolha veio de você ou do sistema.</li>

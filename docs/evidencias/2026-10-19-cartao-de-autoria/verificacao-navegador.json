@@ -1,0 +1,40 @@
+{
+  "data": "2026-10-19",
+  "navegador": "Chromium headless 141.0.7390.37 via Playwright 1.56.1",
+  "servidor": "PHP embutido renderizando templates/about.twig com View, ViteAssets e SecurityHeaders reais (sem banco: a página Sobre não consulta dados)",
+  "destino": "https://devfelipegomes.com.br/ respondido por uma página simulada (o domínio é bloqueado pela rede do ambiente)",
+  "cenarios": {
+    "desktop_1440x900": {
+      "entrada": "clip-path inicial da foto fora da tela: inset(50% 0%); abre ao aparecer",
+      "clique_ate_chegar_ao_destino_ms": 1590,
+      "url_final": "https://devfelipegomes.com.br/",
+      "erros_ou_avisos_de_console": []
+    },
+    "esc_durante_a_expansao": {
+      "url_final": "http://127.0.0.1:8099/sobre",
+      "telas_sobrepostas_restantes": 0,
+      "regiao_viva": "Abertura do site cancelada.",
+      "violacoes_de_csp": [],
+      "erros_ou_avisos_de_console": []
+    },
+    "voltar_pelo_historico": {
+      "url_final": "http://127.0.0.1:8099/sobre",
+      "telas_sobrepostas_restantes": 0
+    },
+    "movimento_reduzido": {
+      "clique_ate_chegar_ao_destino_ms": 78,
+      "comportamento": "link comum, sem tremor nem expansão",
+      "erros_ou_avisos_de_console": []
+    },
+    "celular_390x844_toque": {
+      "url_final": "https://devfelipegomes.com.br/",
+      "erros_ou_avisos_de_console": []
+    },
+    "flip_do_nome": {
+      "caixa_no_cartao": [493, 613, 225, 48],
+      "caixa_inicial_no_portal": [493, 613, 225, 48],
+      "observacao": "o nome no cartão é inline-block: com inline o Flip media largura 'auto' e começava em escala 0"
+    }
+  },
+  "build": "npm run build duas vezes: saída idêntica (md5 de todos os arquivos)"
+}

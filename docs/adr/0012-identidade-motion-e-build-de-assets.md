@@ -102,6 +102,32 @@ continuam sem Node; Node só é necessário para mudar o frontend (`npm ci && np
 - GSAP usa a licença "Standard 'no charge'" da GreenSock (não é MIT), registrada em [licenças](../licencas-e-fontes.md);
   os termos precisam ser conferidos antes da publicação (a página não pôde ser lida do ambiente de desenvolvimento).
 
+## Adendo (19/10/2026) — cartão de autoria na página Sobre
+
+Pedido do autor: a foto dele no espaço vazio da coluna da esquerda, com "Desenvolvido por Felipe Gomes", tremendo ao
+clique e levando a <https://devfelipegomes.com.br/> com uma transição "cinematográfica" que expande o cartão. Feito
+só com o que o projeto já usa (Twig, CSS em `app.css`, GSAP do pacote `gsap@3.15.0`), seguindo as skills oficiais
+`greensock/gsap-skills` (MIT). Nenhuma biblioteca nova.
+
+- **Sem JavaScript ou com movimento reduzido** é um link comum (`<a rel="author">`); o nome tem cópia em texto
+  oculto e o trecho animado é `aria-hidden`. Ctrl/Cmd/Shift + clique abrem a nova aba normalmente (só a foto treme).
+- **Movimento** ([`pages/sobre.js`](../../resources/js/pages/sobre.js), carregado só nessa página):
+
+| Momento | Implementação |
+|---|---|
+| Entrada | uma vez, quando o cartão aparece (IntersectionObserver, não ScrollTrigger): foto abre do centro como tela de cinema (clip-path, 1,1 s, `expo.inOut`) e o nome sobe letra a letra (SplitText com máscara, 35 ms). Se o cartão já está visível ao carregar, nada é escondido |
+| Mouse | inclinação 3D da foto (até 8°/6°) e brilho que segue o cursor, com `quickTo`; só com ponteiro fino |
+| Clique | tremor de 0,6 s que perde força (CustomWiggle, deslocamento e giro em ritmos diferentes), o cartão afunda 2,5% e dois anéis de radar se abrem; "Desenvolvido por" e o link esmaecem |
+| Expansão | aos 0,55 s, uma tela sobreposta cresce a partir do retângulo do cartão (clip-path, 0,9 s) e foto e nome voam até o centro com Flip (1 s, `scale: true`); faixas de cinema entram; a navegação começa aos 0,9 s junto com a barra de progresso, e a tela fica até o navegador trocar de página |
+| Saídas | clique na tela pula a espera; Esc interrompe a navegação (`window.stop()`), desfaz a expansão a 2,2× e devolve o cartão; voltar pelo histórico (bfcache) remove a tela sobreposta |
+
+- **Leitores de tela:** "Abrindo o site de Felipe Gomes…" (e "Abertura do site cancelada.") pela região viva.
+- **CSP:** SplitText, CustomEase e CustomWiggle escrevem estilos só pelo CSSOM; o Flip continua sem `nested`.
+  Verificado no Chromium com os cabeçalhos reais: 0 violações e 0 erros de console (desktop, celular, Esc, voltar,
+  movimento reduzido) — [evidência](../evidencias/2026-10-19-cartao-de-autoria.md).
+- **Peso:** o módulo da página Sobre tem 21 KB (9,4 KB gzip) e só é baixado nela; a foto, 22 KB (WebP 440×550).
+- **Sticky:** em telas a partir de 961×760 px o cartão acompanha a rolagem no espaço livre da coluna.
+
 ## Alternativas
 React/Vue (reescreveria telas que já funcionam só para animar), htmx (duplicaria o polling), ScrollTrigger (rolagem
 cinematográfica não serve a uma central operacional), animações só em CSS (sem interrupção nem sequência controlada).
