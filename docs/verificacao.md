@@ -15,6 +15,7 @@ no projeto Compose isolado `fiscaliza-claude` (PHP 8.5.11, Firebird 5.0.4). Deta
 | `phpstan analyse` (nível 6) · `php-cs-fixer fix --dry-run` | 0 erros · 0 de 88 arquivos a corrigir |
 | `npm run build` | idêntico em duas execuções; é o versionado |
 | Navegador: 54 carregamentos sem e com conta + 12 cenários (B–M) | 0 violações de CSP, 0 erros de console; sem conta tudo leva ao login sem menu; sessão encerrada com a central aberta → login |
+| Depois, no VPS: tela de login antiga e sem estilo após o `git pull` (templates compilados da versão anterior em `var/cache/twig`) | corrigido com `auto_reload` no Twig; `ViewCacheTest` reproduz (falha sem a correção) e passa com ela: **101 testes, 454 asserções** |
 
 ## Acesso somente com conta cadastrada (19/10/2026)
 

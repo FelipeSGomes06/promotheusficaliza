@@ -27,6 +27,9 @@ final class View
             'autoescape' => 'html',
             'strict_variables' => !$config->isProduction(),
             'cache' => $cache ?? false,
+            // Com cache (produção), recompila o template cujo arquivo mudou: uma atualização por "git pull" não pode
+            // continuar servindo os templates compilados da versão anterior.
+            'auto_reload' => true,
         ]);
         $base = $config->basePath();
         $this->twig->addFunction(new TwigFunction('url', static function (string $path = '/', array $query = []) use ($base): string {

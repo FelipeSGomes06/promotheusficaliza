@@ -193,8 +193,12 @@ Node não é necessário: o build da interface já vem versionado em `public/ass
    docker compose exec app composer install --no-dev --optimize-autoloader
    docker compose exec app php bin/fiscaliza migrate
    docker compose --profile simulador up -d --force-recreate simulator
+   docker compose exec app rm -rf var/cache/twig
    ```
-   O simulador é um processo contínuo: sem o `--force-recreate` ele continuaria com o código antigo.
+   O simulador é um processo contínuo: sem o `--force-recreate` ele continuaria com o código antigo. A última linha
+   apaga os templates compilados em produção: versões anteriores a 19/10/2026 não recompilavam um template alterado
+   e continuavam mostrando a tela antiga (página sem estilo, com "Entrar para editar"); a partir desta versão o
+   Twig recompila sozinho o que mudou, e apagar o cache continua inofensivo.
 4. **Acesso só com conta** ([ADR-0014](adr/0014-acesso-somente-com-conta-cadastrada.md)): a partir desta versão nada
    abre sem login. As contas existentes continuam valendo. Se ainda não houver administrador, crie um (a senha aparece
    uma única vez): `docker compose exec app php bin/fiscaliza user:create nome --role=ADMIN --name="Nome"`. As demais
@@ -204,7 +208,9 @@ Node não é necessário: o build da interface já vem versionado em `public/ass
    acesso são preservadas) e só é aceito no conjunto sintético: com `DEMO_ALLOW_RESET=true` no `.env`, rode
    `docker compose exec app php bin/fiscaliza demo:seed --reset --perfil=compacto` e volte `DEMO_ALLOW_RESET=false`.
 6. Conferir: sem conta, `curl -sI https://…/promotheusfiscaliza/` responde 302 para `/entrar` e `/api/central`
-   responde 401; `/saude` responde 200; depois do login, a visão geral abre com a marca nova. Os assets têm o hash no
+   responde 401; `/saude` responde 200; a tela de login diz "Acesso restrito", com o visual novo (se aparecer sem
+   estilo e com "Entrar para editar", o cache de templates do passo 3 não foi apagado); depois do login, a visão
+   geral abre com a marca nova. Os assets têm o hash no
    nome e as miniaturas levam versão, então ninguém precisa limpar o cache do navegador.
 
 Para voltar atrás: `git checkout` da versão anterior, os mesmos comandos do passo 3 e, se necessário, a restauração
