@@ -52,8 +52,8 @@
         <h2>{{ ui.icon('i-equipment') }} Tipos de recurso</h2>
         <p class="hint">Ilustrações próprias por categoria: não reproduzem fabricante nem modelo (marca e modelo cadastrados também são fictícios).</p>
         <div class="type-grid">
-          {% for t in types %}<figure class="type-card"><img src="{{ app.base }}/assets/img/miniaturas/{{ t.code|lower }}.svg" alt="" width="160" height="120"><figcaption>{{ t.label }}</figcaption></figure>{% endfor %}
-          {% for code, label in {AG_TRANSITO: 'Agente de trânsito', AG_GUARDA: 'Guarda municipal', AG_POLICIA: 'Policial'} %}<figure class="type-card"><img src="{{ app.base }}/assets/img/miniaturas/{{ code|lower }}.svg" alt="" width="160" height="120"><figcaption>{{ label }}</figcaption></figure>{% endfor %}
+          {% for t in types %}<figure class="type-card"><img src="{{ asset('img/miniaturas/' ~ t.code|lower ~ '.svg') }}" alt="" width="160" height="120"><figcaption>{{ t.label }}</figcaption></figure>{% endfor %}
+          {% for code, label in {AG_TRANSITO: 'Agente de trânsito', AG_GUARDA: 'Guarda municipal', AG_POLICIA: 'Policial'} %}<figure class="type-card"><img src="{{ asset('img/miniaturas/' ~ code|lower ~ '.svg') }}" alt="" width="160" height="120"><figcaption>{{ label }}</figcaption></figure>{% endfor %}
         </div>
       </section>
       <section class="panel">
@@ -69,9 +69,8 @@
       <details class="method" id="administracao">
         <summary>{{ ui.icon('i-users') }} Para quem administra a instalação</summary>
         <div>
-          <p>Contas são criadas na própria instalação, não há cadastro público. No terminal do servidor:</p>
-          <p><code>php bin/fiscaliza user:create nome.usuario --role=OPERADOR --name="Nome de exibição"</code></p>
-          <p class="hint">A senha é gerada e mostrada uma única vez. Administradores também criam e desativam contas em "Contas". Migração, carga da demonstração (perfil compacto ou completo), simulador, backup e publicação estão em docs/operacao.md.</p>
+          <p>Não há cadastro público: a primeira conta é criada na instalação e as demais por um administrador, na tela "Contas", que também permite desativá-las. A senha de cada conta nova é gerada pelo sistema e mostrada uma única vez.</p>
+          <p class="hint">Instalação, dados de demonstração, simulador e cópias de segurança estão descritos na documentação de operação do projeto.</p>
         </div>
       </details>
     </div>

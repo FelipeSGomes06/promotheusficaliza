@@ -40,6 +40,12 @@ final class View
 
             return "{$base}/assets/{$path}?v={$version}";
         }));
+        // Versão de uma pasta (pelo arquivo mais recente), para URLs que o navegador monta, como as miniaturas da central.
+        $this->twig->addFunction(new TwigFunction('asset_dir_version', function (string $dir): string {
+            $mtimes = array_map(filemtime(...), glob($this->publicDir . '/assets/' . trim($dir, '/') . '/*') ?: []);
+
+            return $mtimes === [] ? '0' : substr(md5((string) max($mtimes)), 0, 8);
+        }));
         $vite = new ViteAssets($this->publicDir . '/assets/build', $base . '/assets/build');
         $this->twig->addFunction(new TwigFunction('vite_styles', $vite->styles(...), ['is_safe' => ['html']]));
         $this->twig->addFunction(new TwigFunction('vite_script', $vite->script(...), ['is_safe' => ['html']]));
