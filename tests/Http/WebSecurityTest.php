@@ -290,6 +290,12 @@ final class WebSecurityTest extends FirebirdTestCase
         self::assertDoesNotMatchRegularExpression('#\sstyle="#', $html);
         self::assertDoesNotMatchRegularExpression('#\son[a-z]+="#', $html, 'sem manipuladores de evento inline');
         self::assertStringNotContainsString('unsafe-eval', $this->request('GET', '/')->getHeaderLine('Content-Security-Policy'));
+
+        // O cartão de autoria da página Sobre é um link comum (funciona sem JavaScript); o movimento fica no módulo.
+        $about = (string) $this->request('GET', '/sobre')->getBody();
+        self::assertStringContainsString('<a class="author-card" href="https://devfelipegomes.com.br/" rel="author"', $about);
+        self::assertDoesNotMatchRegularExpression('#\sstyle="#', $about);
+        self::assertDoesNotMatchRegularExpression('#\son[a-z]+="#', $about);
     }
 
     public function testSimulateFailureViaJsonReportsTheServerOutcome(): void

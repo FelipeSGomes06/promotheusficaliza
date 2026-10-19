@@ -752,6 +752,80 @@
   .type-card { margin: 0; padding: 10px; border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: var(--color-surface); }
   .type-card img { display: block; width: 100%; height: auto; border-radius: 10px; }
   .type-card figcaption { font-weight: 650; font-size: 0.9rem; margin-top: 6px; }
+
+  /* Autoria na página "Sobre": cartão escuro com a foto, link para o portal do autor. Entrada, inclinação, tremor e a
+     expansão até a tela inteira (.author-portal) são do GSAP em pages/sobre.js; aqui só layout, cores e hover. */
+  .stack--fill { align-self: stretch; }
+  .author-card {
+    position: relative; isolation: isolate; overflow: hidden; display: grid; justify-items: center; gap: 20px;
+    padding: 30px 24px 26px; border: 1px solid var(--color-graphite-950); border-radius: var(--radius-xl);
+    background: radial-gradient(130% 90% at 50% 0%, var(--color-graphite-800), var(--color-graphite-950) 72%);
+    color: #fff; text-decoration: none; box-shadow: var(--shadow-raise); transition: box-shadow var(--t-hover) ease;
+  }
+  .author-card:hover { color: #fff; }
+  /* Malha de ruas ao fundo, como nas miniaturas, sumindo nas bordas. */
+  .author-card::before, .author-portal::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      repeating-linear-gradient(0deg, rgb(155 174 200 / 0.09) 0 1px, transparent 1px 44px),
+      repeating-linear-gradient(90deg, rgb(155 174 200 / 0.09) 0 1px, transparent 1px 44px);
+    mask-image: radial-gradient(75% 65% at 50% 40%, #000, transparent);
+  }
+  .author-card__stage { position: relative; display: block; width: min(300px, 74%); aspect-ratio: 4 / 5; }
+  .author-card__halo {
+    position: absolute; inset: -16% -24%; z-index: -1; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(closest-side, rgb(45 212 191 / 0.3), rgb(52 104 245 / 0.14) 55%, transparent);
+  }
+  .author-card__ring { position: absolute; inset: -5%; border: 2px solid var(--color-teal-300); border-radius: 26px; opacity: 0; pointer-events: none; }
+  .author-card__photo {
+    --gx: 50; --gy: 0;
+    position: relative; display: block; height: 100%; overflow: hidden; border-radius: 16px; background: var(--color-graphite-800);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.1), 0 28px 50px -18px rgb(0 0 0 / 0.75); will-change: transform;
+  }
+  .author-card__photo img, .author-portal__photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .author-card__photo::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, transparent 58%, rgb(10 19 34 / 0.45)); }
+  /* Brilho que segue o mouse (--gx/--gy em %, escritos pelo GSAP). */
+  .author-card__glare {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 240ms ease;
+    background: radial-gradient(circle at calc(var(--gx) * 1%) calc(var(--gy) * 1%), rgb(255 255 255 / 0.24), transparent 58%);
+  }
+  .author-card__caption { display: grid; justify-items: center; gap: 2px; text-align: center; }
+  .author-card__kicker { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-teal-300); }
+  .author-card__name { font-size: clamp(1.75rem, 1.1rem + 1.6vw, 2.3rem); font-weight: 800; line-height: 1.3; letter-spacing: -0.01em; color: #fff; }
+  .author-card__name [data-author-name] { display: inline-block; } /* o Flip mede a caixa; inline não tem largura própria */
+  .author-card__url {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 12px 6px 14px; border: 1px solid var(--color-graphite-700);
+    border-radius: 999px; font-size: 0.875rem; font-weight: 650; color: var(--color-graphite-100);
+    transition: border-color var(--t-hover) ease, background-color var(--t-hover) ease;
+  }
+  .author-card__url .icon { width: 16px; height: 16px; color: var(--color-teal-300); transition: transform var(--t-hover) ease; }
+  @media (hover: hover) {
+    .author-card:hover { box-shadow: var(--shadow-float); }
+    .author-card:hover .author-card__glare { opacity: 1; }
+    .author-card:hover .author-card__url { border-color: var(--color-teal-400); background: rgb(45 212 191 / 0.1); }
+    .author-card:hover .author-card__url .icon { transform: translateX(3px); }
+  }
+  /* No espaço livre da coluna: acompanha a rolagem enquanto a outra coluna continua (só se couber na altura). */
+  @media (min-width: 961px) and (min-height: 760px) {
+    .author-card { position: sticky; top: calc(var(--topbar-h) + 16px); }
+  }
+
+  .author-portal {
+    position: fixed; inset: 0; z-index: 5000; isolation: isolate; overflow: hidden; display: grid; place-items: center; padding: 24px;
+    background: radial-gradient(70% 60% at 50% 42%, var(--color-graphite-800), var(--color-graphite-950) 75%); color: #fff; cursor: pointer;
+  }
+  .author-portal__band { position: absolute; left: 0; right: 0; z-index: 1; height: 9dvh; background: #05090f; transform: scaleY(0); }
+  .author-portal__band--top { top: 0; transform-origin: 50% 0; }
+  .author-portal__band--bottom { bottom: 0; transform-origin: 50% 100%; }
+  .author-portal__content { display: grid; justify-items: center; gap: 18px; text-align: center; }
+  .author-portal__photo {
+    display: block; width: min(340px, 64vw, 46dvh); aspect-ratio: 4 / 5; overflow: hidden; border-radius: 22px; background: var(--color-graphite-800);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.1), 0 40px 80px -24px rgb(0 0 0 / 0.85);
+  }
+  .author-portal__name { margin: 0; font-size: clamp(2.2rem, 1.2rem + 4vw, 4.4rem); font-weight: 800; line-height: 1.25; letter-spacing: -0.02em; }
+  .author-portal__go { display: grid; justify-items: center; gap: 12px; margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--color-graphite-300); }
+  .author-portal__bar { display: block; width: min(280px, 60vw); height: 3px; overflow: hidden; border-radius: 3px; background: var(--color-graphite-700); }
+  .author-portal__bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--color-teal-400), var(--color-brand-400)); transform: scaleX(0); transform-origin: 0 50%; }
 }
 
 /* ---------- Leaflet: ajustes fora de camada (o CSS do Leaflet não tem camada; aqui vence por especificidade) ---------- */
