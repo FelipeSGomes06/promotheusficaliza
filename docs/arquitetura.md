@@ -91,7 +91,7 @@ estavam arquivados; ajusta o limiar numa janela, avalia em outra e grava a execu
 | `Middleware/SecurityHeaders.php` | CSP sem `unsafe-inline`, nosniff, bloqueio de enquadramento, referência, permissões, COOP/CORP, `no-store`. |
 | `Middleware/SessionContext.php` | Retoma sessão só se há cookie, expira por inatividade (30 min) e tempo absoluto (8 h), carrega conta ativa. |
 | `Middleware/CsrfGuard.php` | Token de sincronização em toda escrita + verificação de `Origin`. |
-| `Middleware/RequireRole.php` | OPERADOR/ADMIN no servidor; visitante vai ao login (GET) ou recebe 401. |
+| `Middleware/RequireRole.php` | Conta obrigatória em todas as rotas exceto login/logout/saúde ([ADR-0014](adr/0014-acesso-somente-com-conta-cadastrada.md)); OPERADOR/ADMIN no servidor; visitante vai ao login (GET) ou recebe 401; sessão com banco fora → 503. |
 | `Session.php`, `View.php`, `HttpError.php` | Sessão própria com Path restrito; Twig com escape automático e filtros de data/porcentagem. |
 | `Controller/*.php` | Central, equipamentos, agentes, operações (manutenção, alertas, análise), autenticação/contas, páginas. |
 

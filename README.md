@@ -7,8 +7,7 @@ mapa e uma análise preventiva explicável. Proposta para a etapa bônus **F.O.G
 > Bairros, avenidas e CEPs de logradouro são referências geográficas públicas; os pontos são ilustrativos e não
 > representam equipamentos, bases ou pessoas reais. Não há integração com prefeitura, polícia ou equipamentos.
 
-Endereço público pretendido: `https://devfelipegomes.com.br/promotheusfiscaliza` (**ainda não publicado** — ver
-[Publicação](#publicação)).
+Endereço público pretendido: `https://devfelipegomes.com.br/promotheusfiscaliza` (ver [Publicação](#publicação)).
 
 ## O que o sistema faz
 
@@ -52,10 +51,11 @@ docker compose --profile simulador up -d simulator
 `demo:seed` carrega o perfil **compacto** (16 equipamentos e 7 agentes que cobrem todas as categorias e situações);
 `demo:seed --perfil=completo` carrega os 48 e 21 usados na metodologia ([ADR-0013](docs/adr/0013-perfil-compacto-de-demonstracao.md)).
 O comando `user:create` mostra **uma única vez** a senha gerada. Abra
-<http://localhost:8080/promotheusfiscaliza/>. A leitura é pública; para cadastrar, editar, abrir ordens e registrar
-ciência de alertas, clique em **Entrar para editar**. A raiz <http://localhost:8080/> é uma página que simula o
-portal, para mostrar que a aplicação fica restrita ao prefixo. Banco já existente de uma versão anterior: rode
-`migrate` de novo (aplica a migração 0002; ver [operação](docs/operacao.md#atualizar-um-banco-existente-para-a-migração-0002)).
+<http://localhost:8080/promotheusfiscaliza/> e entre com essa conta. **Não há acesso sem conta**: nenhuma tela, mapa
+ou API responde a visitantes, e não existe cadastro aberto — o administrador cadastra cada pessoa em **Contas** (ou
+pelo `user:create` no servidor) e entrega a senha gerada ([ADR-0014](docs/adr/0014-acesso-somente-com-conta-cadastrada.md)).
+A raiz <http://localhost:8080/> é uma página que simula o portal, para mostrar que a aplicação fica restrita ao
+prefixo. Banco já existente de uma versão anterior: rode `migrate` de novo (aplica a migração 0002; ver [operação](docs/operacao.md#atualizar-um-banco-existente-para-a-migração-0002)).
 
 Testes, análise estática e estilo (usam o banco de testes `fiscaliza_test.fdb`, recriado a cada execução; os testes
 recusam rodar se o banco de testes for o mesmo do `DB_DSN`):
@@ -74,15 +74,16 @@ depois, recrie com `docker compose down -v` (apaga o banco local). Porta 8080 oc
 
 ## Roteiro rápido de avaliação
 
-1. Visão geral: leia os três resumos (ⓘ abre as fórmulas), use os chips **Tipo**, **Situação** e **Precisa de
-   atenção**, escolha o radar da Av. Sampaio Vidal na lista ou no mapa (a ficha abre ao lado) e alterne entre Mapa e
+1. Entre com a conta criada pelo `user:create` (sem conta, qualquer endereço leva ao login). Visão geral: leia os
+   três resumos (ⓘ abre as fórmulas), use os chips **Tipo**, **Situação** e **Precisa de atenção**, escolha o radar da Av. Sampaio Vidal na lista ou no mapa (a ficha abre ao lado) e alterne entre Mapa e
    Lista com a mesma seleção; no celular, use o botão de menu. O botão **Animações** no menu mostra se o movimento
    está reduzido e por quê.
 2. Ficha de um equipamento: próxima ação, onde está, cadastro, manutenção e histórico (tracejado = registro que não
    alterou a situação, com o motivo).
-3. Entre com a conta criada: cadastre um radar (deixe "Velocidade" sem limite para ver o resumo de erros com a
-   digitação mantida), instale-o (Não instalado → Operacional), inicie e conclua uma ordem (tente iniciar outra do
-   mesmo equipamento), use **Simular falha** e registre ciência do alerta — ele só resolve quando a causa some.
+3. Em **Contas**, cadastre uma pessoa e confira, numa janela anônima, que ela só entra depois desse cadastro. Depois
+   cadastre um radar (deixe "Velocidade" sem limite para ver o resumo de erros com a digitação mantida), instale-o
+   (Não instalado → Operacional), inicie e conclua uma ordem (tente iniciar outra do mesmo equipamento), use
+   **Simular falha** e registre ciência do alerta — ele só resolve quando a causa some.
 4. Revisões recomendadas: o que revisar e por quê; abra o método e o retrospecto com a referência.
 
 Passo a passo de cada tela, mensagens e erros: [guia de uso](docs/guia-de-uso.md).
@@ -93,7 +94,7 @@ Comandos úteis: `php bin/fiscaliza` lista os comandos (`sim:tick` para cron, `a
 
 | Situação | Itens |
 |---|---|
-| **Implementado e verificado** | Partes 1, 2 e 3 descritas acima; identidade de trânsito, movimento e perfil compacto com capturas, vídeos e verificação no navegador ([evidência](docs/evidencias/2026-10-18-identidade-e-motion.md)); prova PHP/Firebird ([evidência](docs/evidencias/2026-10-18-prova-firebird.md)); **96 testes automatizados, 385 asserções** (unidade, integração no Firebird real, HTTP, concorrência com processos separados) ([verificação](docs/verificacao.md)); correções dos achados da auditoria de 18/10/2026 e redesenho com capturas antes/depois ([evidência](docs/evidencias/2026-10-18-correcoes-da-auditoria.md)); backup e restauração com gbak ([evidência](docs/evidencias/2026-10-18-backup-restauracao.md)); origem dedicada testada localmente. Rastreabilidade: [matriz de requisitos](docs/matriz-requisitos.md). |
+| **Implementado e verificado** | Partes 1, 2 e 3 descritas acima; identidade de trânsito, movimento e perfil compacto com capturas, vídeos e verificação no navegador ([evidência](docs/evidencias/2026-10-18-identidade-e-motion.md)); acesso somente com conta cadastrada pelo administrador ([ADR-0014](docs/adr/0014-acesso-somente-com-conta-cadastrada.md), [evidência](docs/evidencias/2026-10-19-identidade-com-acesso-por-conta.md)); prova PHP/Firebird ([evidência](docs/evidencias/2026-10-18-prova-firebird.md)); **100 testes automatizados, 447 asserções** (unidade, integração no Firebird real, HTTP, concorrência com processos separados) ([verificação](docs/verificacao.md)); correções dos achados da auditoria de 18/10/2026 e redesenho com capturas antes/depois ([evidência](docs/evidencias/2026-10-18-correcoes-da-auditoria.md)); backup e restauração com gbak ([evidência](docs/evidencias/2026-10-18-backup-restauracao.md)); origem dedicada testada localmente. Rastreabilidade: [matriz de requisitos](docs/matriz-requisitos.md). |
 | **Pendente (depende do proprietário/infra)** | Publicação no endereço pretendido (DNS, TLS, redirecionamento no portal); repositório público (GitLab/GitHub) e varredura de segredos no histórico antes do primeiro push; ZIP de entrega gerado a partir do commit final; vídeo; conferência das condições finais da DSIN; teste com leitor de tela e com pessoa iniciante; conferir os termos da licença do GSAP; revisar as telas com o mapa de fundo real (as evidências desta rodada foram gravadas sem tiles). |
 | **Fora do escopo** | Integração real com IoT/órgãos, multas, reconhecimento de placas/faces, geolocalização de pessoas reais, app nativo, mensageria, alta disponibilidade, modelos 3D, heatmap e exportações. |
 
@@ -103,7 +104,9 @@ A hospedagem compartilhada do portal não oferece servidor Firebird nem `pdo_fir
 compartilha a **mesma origem** do portal. A proposta concreta (VPS/contêiner em origem dedicada com
 `compose.origem-dedicada.yaml`, e o caminho do portal redirecionando para ela) e a alternativa com proxy e prefixo
 estão em [docs/operacao.md](docs/operacao.md#publicação) e [docs/seguranca.md](docs/seguranca.md#publicação-e-limite-de-mesma-origem).
-Esvaziar `APP_BASE_PATH` sozinho não basta: o Apache padrão serve a aplicação só sob o prefixo. Nada foi publicado.
+Esvaziar `APP_BASE_PATH` sozinho não basta: o Apache padrão serve a aplicação só sob o prefixo. Para levar uma
+instalação que já está no ar para esta versão (backup, `git pull`, contêineres, conta de administrador), siga
+[Atualizar uma instalação publicada](docs/operacao.md#atualizar-uma-instalação-publicada).
 
 ## Documentação
 

@@ -16,8 +16,7 @@
         <p>{{ message }}</p>
         <p class="hint">Código de referência (para quem administra): <span class="code-tag">{{ reference }}</span></p>
         <div class="btn-row">
-          <a class="btn btn--primary" href="{{ url('/') }}">{{ ui.icon('i-overview') }}<span>Ir para a visão geral</span></a>
-          {% if status == 401 %}<a class="btn" href="{{ url('/entrar') }}"><span>Entrar</span></a>{% endif %}
+          {% if app.user %}<a class="btn btn--primary" href="{{ url('/') }}">{{ ui.icon('i-overview') }}<span>Ir para a visão geral</span></a>{% else %}<a class="btn btn--primary" href="{{ url('/entrar') }}">{{ ui.icon('i-user') }}<span>Entrar</span></a>{% endif %}
         </div>
       </div>
     </div>

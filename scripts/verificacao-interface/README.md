@@ -3,11 +3,13 @@
 Scripts usados para a [evidência de identidade e movimento](../../docs/evidencias/2026-10-18-identidade-e-motion.md).
 Rodam contra uma instalação local com o cenário de demonstração e uma conta de teste descartável; os servidores de
 tiles são bloqueados pelos próprios scripts (o `L_tiles` usa tiles sintéticos só para medir o layout).
+Como nada abre sem conta ([ADR-0014](../../docs/adr/0014-acesso-somente-com-conta-cadastrada.md)), todos entram com
+`PF_USUARIO`/`PF_SENHA` por [`comum.cjs`](comum.cjs); o `verify.cjs` também confere que, sem conta, tudo leva ao login.
 
 ```bash
 npm install --no-save playwright@1.56.1   # ou PLAYWRIGHT_MODULE=/caminho/para/playwright
 export PF_BASE=http://127.0.0.1:8091/promotheusfiscaliza PF_USUARIO=avaliador PF_SENHA='…'
-node scripts/verificacao-interface/verify.cjs   /tmp/saida   # relatório JSON (CSP, polling, corrida de filtro, ficha, rede, envio, movimento, teclado, celular, tiles)
+node scripts/verificacao-interface/verify.cjs   /tmp/saida   # relatório JSON (CSP com e sem conta, polling, filtro, ficha, rede, envio, movimento, teclado, celular, tiles, sessão encerrada)
 node scripts/verificacao-interface/record.cjs   /tmp/videos  # vídeos WebM das interações
 node scripts/verificacao-interface/captures.cjs /tmp/fotos   # capturas JPEG 1440×900 e 390×844
 node scripts/verificacao-interface/fps.cjs                   # intervalos entre quadros durante as animações

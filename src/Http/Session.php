@@ -6,9 +6,9 @@ namespace Fiscaliza\Http;
 
 /**
  * Sessão no servidor com nome próprio, cookie HttpOnly/SameSite=Lax, Secure em HTTPS e Path restrito ao prefixo
- * da aplicação (sem Domain). Visitantes de leitura não recebem cookie: a sessão só começa no login ou quando um
- * formulário precisa de token CSRF. O Path restrito reduz envio acidental, mas não é fronteira de segurança
- * entre aplicações da mesma origem (ver docs/seguranca.md).
+ * da aplicação (sem Domain). Visitante sem conta é levado ao login sem receber cookie: a sessão só começa quando
+ * um formulário (o de login, inclusive) precisa de token CSRF. O Path restrito reduz envio acidental, mas não é
+ * fronteira de segurança entre aplicações da mesma origem (ver docs/seguranca.md).
  */
 class Session
 {

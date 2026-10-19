@@ -702,6 +702,8 @@ function central() {
       if (window.__pfCentral) window.__pfCentral.polls += 1;
       try {
         const res = await fetch(`${cfg.api}${this.queryString().toString() ? `?${this.queryString()}` : ''}`, { headers: { Accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store', signal: controller.signal });
+        // Sessão expirada ou conta desativada: recarrega para o servidor levar ao login (o sistema não tem leitura pública).
+        if (res.status === 401) { window.location.reload(); return; }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const snap = await res.json();
         if (seq !== reqSeq) return;

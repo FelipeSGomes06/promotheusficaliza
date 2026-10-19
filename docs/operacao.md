@@ -128,7 +128,7 @@ Nunca copie o `.fdb` com o servidor em uso. Guarde backups fora de diretórios s
 
 ## Publicação
 
-**Não realizada.** Endereço pretendido: `https://devfelipegomes.com.br/promotheusfiscaliza`. Um subdiretório, sozinho,
+Feita pelo proprietário, fora deste repositório (nenhum dado da hospedagem fica aqui). Endereço pretendido: `https://devfelipegomes.com.br/promotheusfiscaliza`. Um subdiretório, sozinho,
 **não** isola a aplicação do portal: os dois ficam na mesma origem ([docs/seguranca.md](seguranca.md#publicação-e-limite-de-mesma-origem)).
 
 | Opção | Firebird | Isolamento de origem | Configuração |
@@ -173,6 +173,42 @@ ProxyPassReverse /promotheusfiscaliza http://127.0.0.1:8080/promotheusfiscaliza
 `APP_ORIGIN=https://devfelipegomes.com.br`, `APP_SECURE_COOKIES=true`. Assets, formulários, `fetch` e redirecionamentos
 já usam o prefixo. Para o limite por IP funcionar, habilite `mod_remoteip` no contêiner confiando só no proxy.
 **Limite:** mesma origem do portal — aceitar e registrar, ou preferir a opção A.
+
+### Atualizar uma instalação publicada
+
+Para levar uma instalação que já está no ar (por exemplo, a versão anterior à identidade nova e ao acesso só com
+conta) para a versão atual. Rode na pasta do projeto no servidor, com os mesmos `-f`/`-p` usados na instalação (na
+opção A, `-f compose.yaml -f compose.origem-dedicada.yaml` em todos os comandos, ou `COMPOSE_FILE` no ambiente).
+Node não é necessário: o build da interface já vem versionado em `public/assets/build/`.
+
+1. **Backup antes de tudo** (fica no volume do Firebird, fora do alcance HTTP):
+   ```bash
+   docker compose exec -T firebird sh -c 'gbak -b -g -user SYSDBA -password "$FIREBIRD_ROOT_PASSWORD" localhost:/var/lib/firebird/data/fiscaliza.fdb /var/lib/firebird/data/antes-da-atualizacao.fbk'
+   ```
+2. Código novo: `git status` precisa estar limpo (o `.env` e `vendor/` não entram no Git); depois `git pull` na
+   branch publicada.
+3. Contêineres, dependências e esquema:
+   ```bash
+   docker compose up -d --build
+   docker compose exec app composer install --no-dev --optimize-autoloader
+   docker compose exec app php bin/fiscaliza migrate
+   docker compose --profile simulador up -d --force-recreate simulator
+   ```
+   O simulador é um processo contínuo: sem o `--force-recreate` ele continuaria com o código antigo.
+4. **Acesso só com conta** ([ADR-0014](adr/0014-acesso-somente-com-conta-cadastrada.md)): a partir desta versão nada
+   abre sem login. As contas existentes continuam valendo. Se ainda não houver administrador, crie um (a senha aparece
+   uma única vez): `docker compose exec app php bin/fiscaliza user:create nome --role=ADMIN --name="Nome"`. As demais
+   pessoas são cadastradas por ele em **Contas**.
+5. Opcional — **cenário compacto** (16 equipamentos e 7 agentes, [ADR-0013](adr/0013-perfil-compacto-de-demonstracao.md)):
+   um banco já carregado mantém o cenário que tem. Trocar **apaga e recarrega os dados de demonstração** (as contas de
+   acesso são preservadas) e só é aceito no conjunto sintético: com `DEMO_ALLOW_RESET=true` no `.env`, rode
+   `docker compose exec app php bin/fiscaliza demo:seed --reset --perfil=compacto` e volte `DEMO_ALLOW_RESET=false`.
+6. Conferir: sem conta, `curl -sI https://…/promotheusfiscaliza/` responde 302 para `/entrar` e `/api/central`
+   responde 401; `/saude` responde 200; depois do login, a visão geral abre com a marca nova. Os assets têm o hash no
+   nome e as miniaturas levam versão, então ninguém precisa limpar o cache do navegador.
+
+Para voltar atrás: `git checkout` da versão anterior, os mesmos comandos do passo 3 e, se necessário, a restauração
+do backup do passo 1 ([Backup e restauração](#backup-e-restauração)).
 
 ### Checklist de produção (qualquer opção)
 

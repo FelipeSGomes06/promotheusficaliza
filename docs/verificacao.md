@@ -3,6 +3,35 @@
 Ambiente: Windows 11 + Docker Desktop 29.7.2; contêineres `php:8.5.11-apache-trixie` (PDO_FIREBIRD, fbclient 4.0.5)
 e `firebirdsql/firebird:5.0.4-trixie`. Data: 18/10/2026. Só está listado aqui o que de fato rodou.
 
+## Identidade nova com acesso somente por conta (19/10/2026)
+
+Junção da identidade de trânsito com o acesso somente por conta ([ADR-0014](adr/0014-acesso-somente-com-conta-cadastrada.md)),
+no projeto Compose isolado `fiscaliza-claude` (PHP 8.5.11, Firebird 5.0.4). Detalhes, ajustes da junção e capturas:
+[evidência](evidencias/2026-10-19-identidade-com-acesso-por-conta.md).
+
+| Verificação | Resultado |
+|---|---|
+| `vendor/bin/phpunit` | **100 testes, 447 asserções, OK** |
+| `phpstan analyse` (nível 6) · `php-cs-fixer fix --dry-run` | 0 erros · 0 de 88 arquivos a corrigir |
+| `npm run build` | idêntico em duas execuções; é o versionado |
+| Navegador: 54 carregamentos sem e com conta + 12 cenários (B–M) | 0 violações de CSP, 0 erros de console; sem conta tudo leva ao login sem menu; sessão encerrada com a central aberta → login |
+
+## Acesso somente com conta cadastrada (19/10/2026)
+
+Mudança do [ADR-0014](adr/0014-acesso-somente-com-conta-cadastrada.md). Ambiente diferente do oficial: Linux,
+Firebird 5.0.4 no contêiner oficial e PHP **8.5.4** (Ubuntu, PDO_FIREBIRD) em vez da imagem `php:8.5.11` — o
+espelho do Debian não estava acessível. Servidor embutido do PHP no lugar do Apache para a conferência no navegador.
+
+| Verificação | Resultado |
+|---|---|
+| `vendor/bin/phpunit` | **93 testes, 372 asserções, OK** (antes da mudança, no mesmo ambiente: 89/314, OK) |
+| `phpstan analyse` (nível 6) · `php-cs-fixer fix --dry-run` | 0 erros · 0 de 85 arquivos a corrigir |
+| Visitante (`curl`): `/`, `/equipamentos`, `/sobre`, `/contas` → 302 para o login; `/api/central` → 401 sem dados; `/saude` 200; `/entrar` 200 | OK |
+| Navegador (1366×860 e 390×844): visitante levado ao login sem menu; login volta à página pedida; menu no celular; sair → login; console sem erros (exceto tiles do mapa, bloqueados pela rede do ambiente) | OK |
+
+Novas coberturas HTTP: todas as telas e a API sem conta, cadastro pelo administrador → login → acesso, desativação
+com efeito imediato (inclusive na API da visão geral), logout para o login, banco fora com sessão aberta → 503.
+
 ## Identidade, motion e perfil compacto (18/10/2026, ~23:50 UTC)
 
 Contêiner de nuvem do Claude Code, projeto Compose isolado `fiscaliza-claude` (porta 8091), PHP 8.5.11, Firebird
@@ -60,7 +89,7 @@ As seções abaixo registram a verificação anterior (62 testes), mantida como 
   ainda em falha, preventiva periódica agendada com data local.
 - **Central e análise:** mapa/lista/indicadores do mesmo conjunto filtrado, denominador zero, recurso sem
   coordenadas, análise reproduzível, ajuste antes da avaliação, classes insuficiente/corretiva, recusa de reset.
-- **HTTP:** cabeçalhos e CSP, visitante sem cookie, CSRF ausente/errado, `Origin` estranho, 401/403 por papel,
+- **HTTP:** cabeçalhos e CSP, visitante sem cookie (desde o ADR-0014, levado ao login), CSRF ausente/errado, `Origin` estranho, 401/403 por papel,
   escape de HTML/JSON com texto malicioso, mensagens de login iguais, limite de tentativas, redirecionamento externo
   descartado, parâmetros malformados, 404 sem SQL, reconhecimento de alerta via JSON com token no cabeçalho.
 

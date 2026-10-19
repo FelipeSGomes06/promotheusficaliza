@@ -40,19 +40,19 @@
         <section class="next-action" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
           <p class="next-action__what">Concluir a intervenção da ordem #{{ running.id }}</p>
           <p class="muted">Em execução desde {{ running.started_at|local_dt }}. Ao concluir, a situação que você informar passa a valer para o equipamento — concluir não prova que ele voltou a funcionar.</p>
-          {% if editable %}<a class="btn btn--primary" href="#ordem-{{ running.id }}">Ir para a conclusão</a>{% else %}<a class="btn" href="{{ url('/entrar', {voltar: app.base ~ app.path}) }}">Entrar para registrar</a>{% endif %}
+          {% if editable %}<a class="btn btn--primary" href="#ordem-{{ running.id }}">Ir para a conclusão</a>{% endif %}
         </section>
       {% elseif urgent %}
         <section class="next-action next-action--urgent" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
           <p class="next-action__what">Iniciar a ordem #{{ urgent.id }}: {{ urgent.kind == 'PREVENTIVA' ? 'preventiva' : 'corretiva' }} {{ urgent.priority == 'IMEDIATA' ? 'imediata' : 'vencida em ' ~ urgent.due_date|br_date }}</p>
           <p class="muted">Motivo: {{ urgent.reason }}</p>
-          {% if editable %}<a class="btn btn--primary" href="#ordem-{{ urgent.id }}">Ver a ordem</a>{% else %}<a class="btn" href="{{ url('/entrar', {voltar: app.base ~ app.path}) }}">Entrar para registrar</a>{% endif %}
+          {% if editable %}<a class="btn btn--primary" href="#ordem-{{ urgent.id }}">Ver a ordem</a>{% endif %}
         </section>
       {% elseif e.status == 'FALHA' %}
         <section class="next-action next-action--urgent" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
           <p class="next-action__what">Abrir uma ordem corretiva</p>
           <p class="muted">Está em mau funcionamento e não há ordem aberta.</p>
-          {% if editable %}<a class="btn btn--primary" href="#nova-ordem">Abrir ordem</a>{% else %}<a class="btn" href="{{ url('/entrar', {voltar: app.base ~ app.path}) }}">Entrar para registrar</a>{% endif %}
+          {% if editable %}<a class="btn btn--primary" href="#nova-ordem">Abrir ordem</a>{% endif %}
         </section>
       {% elseif e.status == 'NAO_INSTALADO' %}
         <section class="next-action" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>

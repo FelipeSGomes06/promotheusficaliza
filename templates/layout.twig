@@ -1,5 +1,5 @@
 {% import '_ui.twig' as ui %}
-{% set links = [['/', 'Visão geral', 'i-overview'], ['/equipamentos', 'Equipamentos', 'i-equipment'], ['/agentes', 'Agentes', 'i-agents'], ['/manutencao', 'Manutenção', 'i-wrench'], ['/antecipacao', 'Revisões recomendadas', 'i-chart'], ['/sobre', 'Sobre', 'i-info']] %}
+{% set links = not app.user ? [] : [['/', 'Visão geral', 'i-overview'], ['/equipamentos', 'Equipamentos', 'i-equipment'], ['/agentes', 'Agentes', 'i-agents'], ['/manutencao', 'Manutenção', 'i-wrench'], ['/antecipacao', 'Revisões recomendadas', 'i-chart'], ['/sobre', 'Sobre', 'i-info']] %}
 {% if app.user and app.user.role == 'ADMIN' %}{% set links = links|merge([['/contas', 'Contas', 'i-users']]) %}{% endif %}
 <!doctype html>
 <html lang="pt-BR">
@@ -23,6 +23,7 @@
         <svg class="brand-mark" aria-hidden="true" focusable="false"><use href="{{ asset('img/icons.svg') }}#i-brand"></use></svg>
         <span class="brand-word"><span class="brand-word__a">Promotheus</span><span class="brand-word__b">Fiscaliza</span><span class="brand-word__city">Marília · SP</span></span>
       </a>
+      {% if app.user %}
       <nav aria-label="Principal">
         <ul class="rail__nav">
           {% for link in links %}
@@ -31,18 +32,20 @@
           {% endfor %}
         </ul>
       </nav>
+      {% endif %}
       <div class="rail__foot">
         {% if app.user %}
           <div class="rail__account"><span class="avatar">{{ ui.icon('i-user') }}</span><span><strong>{{ app.user.display_name }}</strong><span>{{ app.user.role == 'ADMIN' ? 'Administrador' : 'Operador' }}</span></span></div>
           <form class="inline-form" method="post" action="{{ url('/sair') }}">{{ ui.csrf(app.csrf) }}<button class="btn btn--small btn--dark" type="submit">{{ ui.icon('i-logout') }}<span>Sair</span></button></form>
-        {% else %}
-          <a class="btn btn--small btn--primary" href="{{ url('/entrar', {voltar: app.base ~ app.path}) }}">{{ ui.icon('i-user') }}<span>Entrar para editar</span></a>
+        {% elseif app.path != '/entrar' %}
+          {# Sem conta não há menu: todo o sistema exige login com conta cadastrada pelo administrador. #}
+          <a class="btn btn--small btn--primary" href="{{ url('/entrar') }}">{{ ui.icon('i-user') }}<span>Entrar</span></a>
         {% endif %}
         <button type="button" class="motion-pref" x-data="motionPref" @click="toggle" :aria-pressed="pressed" aria-describedby="motion-why">
           {{ ui.icon('i-motion') }}
           <span><span class="motion-pref__state" x-text="stateLabel">Animações</span><span class="motion-pref__why" id="motion-why" x-text="whyLabel">Segue a preferência do sistema</span></span>
         </button>
-        <p class="m-0">Dados fictícios · mapa <a href="https://www.openstreetmap.org/copyright" rel="noopener">© OpenStreetMap</a> · <a href="{{ url('/sobre') }}">o que é real</a></p>
+        <p class="m-0">Dados fictícios · mapa <a href="https://www.openstreetmap.org/copyright" rel="noopener">© OpenStreetMap</a>{% if app.user %} · <a href="{{ url('/sobre') }}">o que é real</a>{% endif %}</p>
       </div>
     </aside>
     <div class="rail-scrim" data-rail-scrim hidden></div>
@@ -64,7 +67,7 @@
             <summary>Demonstração</summary>
             <div class="popover" role="note">
               <p><strong>Tudo aqui é fictício.</strong> Dados, órgãos, marcas, modelos e agentes são inventados; os pontos em Marília/SP são ilustrativos.</p>
-              <p>Não há integração com prefeitura, polícia ou equipamentos reais. <a href="{{ url('/sobre') }}">O que é real, simulado e implementado</a></p>
+              <p>Não há integração com prefeitura, polícia ou equipamentos reais.{% if app.user %} <a href="{{ url('/sobre') }}">O que é real, simulado e implementado</a>{% endif %}</p>
             </div>
           </details>
         </div>

@@ -31,13 +31,13 @@ final class SessionContext implements MiddlewareInterface
             try {
                 $user = ($idle || $tooOld) ? null : $this->auth->activeUser($userId);
             } catch (\Fiscaliza\Infrastructure\DatabaseUnavailable) {
-                // Banco fora: segue como visitante; a rota exibirá a página de indisponibilidade.
-                return $handler->handle($request->withAttribute('session', $this->session)->withAttribute('user', null));
+                // Banco fora: a conta não pôde ser conferida; RequireRole exibirá a página de indisponibilidade.
+                return $handler->handle($request->withAttribute('session', $this->session)->withAttribute('user', null)->withAttribute('database_unavailable', true));
             }
             if ($user === null) {
                 $this->session->remove('user_id');
                 $this->session->regenerate();
-                $this->session->flash('warning', 'Sua sessão expirou. Entre novamente para continuar editando.');
+                $this->session->flash('warning', 'Sua sessão expirou. Entre novamente para continuar.');
             } else {
                 $this->session->set('last_activity', $now);
             }

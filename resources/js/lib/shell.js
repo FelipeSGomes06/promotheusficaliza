@@ -22,11 +22,14 @@ export function nav() {
       btn?.addEventListener('click', () => this.toggle());
       scrim?.addEventListener('click', () => this.close(true));
       mm = gsap.matchMedia();
+      // Sem conta não há links (ADR-0014): a cascata e o foco passam para o rodapé da gaveta.
+      const links = rail.querySelectorAll('.rail__link');
+      const items = links.length ? links : rail.querySelectorAll('.rail__foot > *');
       mm.add(DRAWER, () => {
         tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } })
           .fromTo(scrim, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.22 }, 0)
           .fromTo(rail, { xPercent: -104, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 0.32, ease: 'expo.out' }, 0)
-          .fromTo(rail.querySelectorAll('.rail__link'), { x: -14, opacity: 0 }, { x: 0, opacity: 1, duration: 0.24, stagger: 0.03 }, 0.08);
+          .fromTo(items, { x: -14, opacity: 0 }, { x: 0, opacity: 1, duration: 0.24, stagger: 0.03 }, 0.08);
         tl.eventCallback('onReverseComplete', () => { scrim.hidden = true; rail.classList.remove('is-open'); });
         return () => { this.setOpen(false, false, true); tl = null; };
       });
@@ -56,7 +59,7 @@ export function nav() {
         if (motion.reduced()) tl.progress(1).pause();
         else tl.timeScale(1).play();
         // Foco depois do primeiro quadro: antes disso a gaveta ainda está invisível e não aceita foco.
-        gsap.delayedCall(motion.reduced() ? 0 : 0.05, () => { if (this.open) rail.querySelector('.rail__link')?.focus({ preventScroll: true }); });
+        gsap.delayedCall(motion.reduced() ? 0 : 0.05, () => { if (this.open) rail.querySelector('.rail__link, .rail__foot a, .rail__foot button')?.focus({ preventScroll: true }); });
       } else {
         if (motion.reduced() || silent) { tl.progress(0).pause(); scrim.hidden = true; rail.classList.remove('is-open'); }
         else tl.timeScale(1.6).reverse();

@@ -2,8 +2,7 @@
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs = require('fs');
 const path = require('path');
-const BASE = process.env.PF_BASE || 'http://127.0.0.1:8091/promotheusfiscaliza';
-const PASS = (process.env.PF_SENHA || '');
+const { BASE, entrar, sessao, instantaneo } = require('./comum.cjs');
 const OUT = process.argv[2];
 const only = process.argv[3] || '';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -12,7 +11,8 @@ fs.mkdirSync(OUT, { recursive: true });
 async function clip(browser, name, size, fn) {
   if (only && !name.startsWith(only)) return;
   const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'rec-'));
-  const ctx = await browser.newContext({ viewport: size, recordVideo: { dir, size }, hasTouch: size.width < 500, isMobile: size.width < 500 });
+  // A sessão é aberta fora da gravação: o vídeo começa já na tela pedida, sem o login.
+  const ctx = await browser.newContext({ viewport: size, recordVideo: { dir, size }, hasTouch: size.width < 500, isMobile: size.width < 500, storageState: await sessao(browser) });
   const page = await ctx.newPage();
   await page.route(/tile\.openstreetmap\.org/, (r) => r.abort());
   const logs = [];
@@ -24,28 +24,24 @@ async function clip(browser, name, size, fn) {
   fs.renameSync(await video.path(), path.join(OUT, `${name}.webm`));
   console.log(name, logs.length ? logs : 'ok');
 }
-async function login(page) {
-  await page.goto(`${BASE}/entrar`);
-  await page.fill('#u', (process.env.PF_USUARIO || 'avaliador'));
-  await page.fill('#p', PASS);
-  await Promise.all([page.waitForNavigation(), page.click('form[action$="/entrar"] button[type=submit]')]);
-}
 const hover = async (page, sel, ms = 500) => { const b = await page.locator(sel).first().boundingBox(); if (b) { await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 12 }); await sleep(ms); } };
 
 (async () => {
   const browser = await chromium.launch();
   const desk = { width: 1440, height: 900 };
-  const data = await (await fetch(`${BASE}/api/central`)).json();
-  const radar = data.resources.find((r) => r.code === 'RAD-0001');
+  const leitura = await browser.newContext({ storageState: await sessao(browser) });
+  const lp = await leitura.newPage();
+  await lp.goto(`${BASE}/`);
+  const radar = (await instantaneo(lp)).resources.find((r) => r.code === 'RAD-0001');
+  await leitura.close();
 
   await clip(browser, '01-hover-e-pressao', desk, async (page) => {
     await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
     await sleep(500);
-    for (const sel of ['.rail__link:has-text("Equipamentos")', '.rail__link:has-text("Manutenção")', 'summary.chip:has-text("Tipo")', 'label.chip--attention', 'button[aria-label="Atualizar agora"]', '.rail .btn--primary', '.listpanel a.row >> nth=2']) await hover(page, sel, 650);
-    const b = await page.locator('.rail .btn--primary').boundingBox();
+    for (const sel of ['.rail__link:has-text("Equipamentos")', '.rail__link:has-text("Manutenção")', 'summary.chip:has-text("Tipo")', 'label.chip--attention', 'button[aria-label="Atualizar agora"]', '.rail .btn--dark', '.listpanel a.row >> nth=2']) await hover(page, sel, 650);
+    const b = await page.locator('button[aria-label="Atualizar agora"]').boundingBox();
     await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
     await page.mouse.down(); await sleep(450); await page.mouse.up(); await sleep(150);
-    await page.goBack().catch(() => {});
     await sleep(600);
   });
 
@@ -76,10 +72,9 @@ const hover = async (page, sel, ms = 500) => { const b = await page.locator(sel)
   });
 
   await clip(browser, '04-envio-carregando-e-sucesso', desk, async (page) => {
-    await login(page);
     await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
     await page.route(/simular-falha/, async (r) => { await sleep(1200); r.continue(); });
-    const fresh = await (await fetch(`${BASE}/api/central`)).json();
+    const fresh = await instantaneo(page);
     const target = fresh.resources.find((r) => r.kind === 'EQUIPAMENTO' && r.status === 'OPERACIONAL' && r.category === 'BALANCA') || fresh.resources.find((r) => r.kind === 'EQUIPAMENTO' && r.status === 'OPERACIONAL');
     await sleep(500);
     const row = page.locator(`.listpanel a.row[data-key="EQUIPAMENTO:${target.id}"]`);
@@ -108,8 +103,8 @@ const hover = async (page, sel, ms = 500) => { const b = await page.locator(sel)
     // Outra sessão (operador) registra uma falha simulada; esta tela só observa a próxima consulta periódica.
     const other = await browser.newContext();
     const op = await other.newPage();
-    await login(op);
-    const fresh = await (await fetch(`${BASE}/api/central`)).json();
+    await entrar(op);
+    const fresh = await instantaneo(op);
     const target = fresh.resources.find((r) => r.kind === 'EQUIPAMENTO' && r.status === 'OPERACIONAL' && r.category === 'CANCELA') || fresh.resources.find((r) => r.kind === 'EQUIPAMENTO' && r.status === 'OPERACIONAL');
     const csrf = await op.evaluate(() => document.querySelector('input[name="_csrf"]').value);
     await op.evaluate(async ({ url, csrf }) => fetch(url, { method: 'POST', headers: { 'X-CSRF-Token': csrf, Accept: 'application/json' } }), { url: `${BASE}/equipamentos/${target.id}/simular-falha`, csrf });

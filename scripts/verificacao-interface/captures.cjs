@@ -1,32 +1,30 @@
 // Capturas finais (JPEG) para docs/evidencias/2026-10-18-identidade-e-motion/capturas.
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs = require('fs');
-const BASE = process.env.PF_BASE || 'http://127.0.0.1:8091/promotheusfiscaliza';
-const PASS = (process.env.PF_SENHA || '');
+const { BASE, entrar, instantaneo } = require('./comum.cjs');
 const OUT = process.argv[2];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 (async () => {
   const browser = await chromium.launch();
-  const data = await (await fetch(`${BASE}/api/central`)).json();
-  const radar = data.resources.find((r) => r.code === 'RAD-0001');
-  const agent = data.resources.find((r) => r.kind === 'AGENTE' && r.title === 'Hermes 01');
   const shots = [];
-  async function page(size, { auth = false, touch = false } = {}) {
-    const ctx = await browser.newContext({ viewport: size, deviceScaleFactor: 1, hasTouch: touch, isMobile: touch });
+  // Sem conta só existe a tela de login (ADR-0014); as demais capturas entram com a conta de teste.
+  async function page(size, { auth = true, touch = false, reduced = false } = {}) {
+    const ctx = await browser.newContext({ viewport: size, deviceScaleFactor: 1, hasTouch: touch, isMobile: touch, reducedMotion: reduced ? 'reduce' : 'no-preference' });
     const p = await ctx.newPage();
     await p.route(/tile\.openstreetmap\.org/, (r) => r.abort());
-    if (auth) {
-      await p.goto(`${BASE}/entrar`);
-      await p.fill('#u', (process.env.PF_USUARIO || 'avaliador'));
-      await p.fill('#p', PASS);
-      await Promise.all([p.waitForNavigation(), p.click('form[action$="/entrar"] button[type=submit]')]);
-    }
+    if (auth) await entrar(p);
     return { ctx, p };
   }
   const shot = async (p, name, full = false) => { await sleep(500); await p.screenshot({ path: `${OUT}/${name}.jpg`, type: 'jpeg', quality: 82, fullPage: full }); shots.push(name); };
   const D = { width: 1440, height: 900 };
   const M = { width: 390, height: 844 };
+  let radar; let agent;
+  { const { ctx, p } = await page(D);
+    const data = await instantaneo(p);
+    radar = data.resources.find((r) => r.code === 'RAD-0001');
+    agent = data.resources.find((r) => r.kind === 'AGENTE' && r.title === 'Hermes 01');
+    await ctx.close(); }
 
   { const { ctx, p } = await page(D);
     await p.goto(`${BASE}/`, { waitUntil: 'networkidle' }); await shot(p, '01-central-desktop');
@@ -38,9 +36,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await p.click('.listpanel__kpis summary'); await sleep(500); await shot(p, '06-central-indicadores');
     await ctx.close(); }
 
-  { const { ctx, p } = await page(D, { auth: true });
+  { const { ctx, p } = await page(D);
     await p.goto(`${BASE}/`, { waitUntil: 'networkidle' });
-    const fresh = await (await fetch(`${BASE}/api/central`)).json();
+    const fresh = await instantaneo(p);
     const t = fresh.resources.find((r) => r.kind === 'EQUIPAMENTO' && r.status === 'OPERACIONAL' && r.category === 'BALANCA') || fresh.resources.find((r) => r.kind === 'EQUIPAMENTO' && r.status === 'OPERACIONAL');
     if (!(await p.locator(`.listpanel a.row[data-key="EQUIPAMENTO:${t.id}"]`).count())) await p.click('.listpanel__more button');
     await p.click(`.listpanel a.row[data-key="EQUIPAMENTO:${t.id}"]`); await sleep(900);
@@ -63,7 +61,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   { const { ctx, p } = await page(D);
     await p.goto(`${BASE}/equipamentos`, { waitUntil: 'networkidle' }); await shot(p, '15-equipamentos');
     await p.goto(`${BASE}/sobre`, { waitUntil: 'networkidle' }); await shot(p, '16-sobre');
-    await p.goto(`${BASE}/entrar`, { waitUntil: 'networkidle' }); await shot(p, '17-entrar');
+    await ctx.close(); }
+
+  { const { ctx, p } = await page(D, { auth: false });
+    await p.goto(`${BASE}/`, { waitUntil: 'networkidle' }); await shot(p, '17-entrar');
     await ctx.close(); }
 
   { const { ctx, p } = await page(M, { touch: true });
@@ -74,11 +75,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await p.tap(`.listpanel a.row[data-key="EQUIPAMENTO:${radar.id}"]`); await sleep(1000); await shot(p, '23-celular-ficha');
     await p.goto(`${BASE}/equipamentos/${radar.id}`, { waitUntil: 'networkidle' }); await shot(p, '24-celular-ficha-completa');
     await p.goto(`${BASE}/manutencao`, { waitUntil: 'networkidle' }); await shot(p, '25-celular-manutencao');
-    await p.goto(`${BASE}/entrar`, { waitUntil: 'networkidle' }); await shot(p, '26-celular-entrar');
     await ctx.close(); }
 
-  { const ctx = await browser.newContext({ viewport: D, reducedMotion: 'reduce' });
-    const p = await ctx.newPage(); await p.route(/tile\.openstreetmap\.org/, (r) => r.abort());
+  { const { ctx, p } = await page(M, { auth: false, touch: true });
+    await p.goto(`${BASE}/`, { waitUntil: 'networkidle' }); await shot(p, '26-celular-entrar');
+    await ctx.close(); }
+
+  { const { ctx, p } = await page(D, { reduced: true });
     await p.goto(`${BASE}/`, { waitUntil: 'networkidle' });
     await p.click(`.listpanel a.row[data-key="EQUIPAMENTO:${radar.id}"]`); await sleep(100); await shot(p, '27-movimento-reduzido-sistema');
     await ctx.close(); }

@@ -1,8 +1,7 @@
 // Verificação de comportamento da central e das telas (Chromium + cabeçalhos reais do servidor).
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs = require('fs');
-const BASE = process.env.PF_BASE || 'http://127.0.0.1:8091/promotheusfiscaliza';
-const PASS = (process.env.PF_SENHA || '');
+const { BASE, entrar, instantaneo } = require('./comum.cjs');
 const OUT = process.argv[2] || __dirname + '/shots';
 const report = {};
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -23,13 +22,8 @@ async function ctx(browser, opts = {}) {
   page.on('pageerror', (e) => page.logs.push(`pageerror: ${e.message}`));
   if (opts.tiles) await page.route(/tile\.openstreetmap\.org/, (r) => r.fulfill({ status: 200, contentType: 'image/svg+xml', body: tileSvg(r.request().url()) }));
   else await page.route(/tile\.openstreetmap\.org/, (r) => r.abort());
+  if (!opts.anon) await entrar(page);
   return { c, page };
-}
-async function login(page) {
-  await page.goto(`${BASE}/entrar`);
-  await page.fill('#u', (process.env.PF_USUARIO || 'avaliador'));
-  await page.fill('#p', PASS);
-  await Promise.all([page.waitForNavigation(), page.click('form[action$="/entrar"] button[type=submit]')]);
 }
 const central = async (page, q = '') => { await page.goto(`${BASE}/${q}`, { waitUntil: 'networkidle' }); await page.waitForFunction(() => window.__pfCentral); };
 const diag = (page) => page.evaluate(() => ({ polls: window.__pfCentral.polls, applied: window.__pfCentral.applied, aborted: window.__pfCentral.aborted, tweens: window.__pfCentral.tweens(), layers: window.__pfCentral.layers() }));
@@ -37,25 +31,29 @@ const panelState = (page) => page.evaluate(() => { const p = document.querySelec
 
 (async () => {
   const browser = await chromium.launch();
-  const ids = await (await fetch(`${BASE}/api/central`)).json();
+  const first = await ctx(browser);
+  const ids = await instantaneo(first.page);
+  await first.c.close();
   const eq = ids.resources.find((r) => r.code === 'RAD-0001');
   const ag = ids.resources.find((r) => r.kind === 'AGENTE');
 
-  // A. CSP e console em todas as rotas, desktop e celular, com e sem conta.
+  // A. CSP e console em todas as rotas, desktop e celular. Sem conta, tudo leva ao login (sem menu); com conta, abre.
   try {
     const routes = ['/', '/equipamentos', `/equipamentos/${eq.id}`, '/agentes', `/agentes/${ag.id}`, '/manutencao', '/antecipacao', '/sobre', '/entrar', '/nao-existe', '/?visao=lista&selecionar=EQUIPAMENTO:' + eq.id];
     const authRoutes = ['/', '/equipamentos/novo', `/equipamentos/${eq.id}/editar`, `/agentes/novo`, '/contas', '/manutencao'];
     const res = [];
     for (const [w, h] of [[1440, 900], [390, 844]]) {
-      const { c, page } = await ctx(browser, { w, h });
+      const { c, page } = await ctx(browser, { w, h, anon: true });
       for (const r of routes) {
         await page.goto(BASE + r, { waitUntil: 'networkidle' });
         await sleep(250);
-        const m = await page.evaluate(() => ({ csp: window.__csp, hscroll: document.documentElement.scrollWidth > window.innerWidth }));
-        res.push({ w, r, csp: m.csp, hscroll: m.hscroll, logs: page.logs.splice(0) });
+        const m = await page.evaluate(() => ({ csp: window.__csp, hscroll: document.documentElement.scrollWidth > window.innerWidth, navLinks: document.querySelectorAll('.rail__link').length }));
+        const path = new URL(page.url()).pathname;
+        const login = path.endsWith('/entrar') && m.navLinks === 0;
+        res.push({ w, r: r + ' (sem conta)', path, csp: m.csp, hscroll: m.hscroll, logs: page.logs.splice(0), wrong: r === '/nao-existe' ? m.navLinks !== 0 : !login });
       }
-      await login(page);
-      for (const r of authRoutes) {
+      await entrar(page);
+      for (const r of [...routes.filter((x) => x !== '/entrar'), ...authRoutes]) {
         await page.goto(BASE + r, { waitUntil: 'networkidle' });
         await sleep(250);
         const m = await page.evaluate(() => ({ csp: window.__csp, hscroll: document.documentElement.scrollWidth > window.innerWidth }));
@@ -63,7 +61,7 @@ const panelState = (page) => page.evaluate(() => { const p = document.querySelec
       }
       await c.close();
     }
-    report.A_csp_console = { pages: res.length, problems: res.filter((x) => x.csp.length || x.hscroll || x.logs.filter((l) => !/404 \(Not Found\)/.test(l)).length) };
+    report.A_csp_console = { pages: res.length, problems: res.filter((x) => x.wrong || x.csp.length || x.hscroll || x.logs.filter((l) => !/404 \(Not Found\)/.test(l)).length) };
   } catch (e) { report['A_erro'] = String(e).slice(0, 400); }
 
   // B. Filtro, seleção, foco e mapa sobrevivem a vários ciclos de atualização (simulador ligado).
@@ -143,9 +141,9 @@ const panelState = (page) => page.evaluate(() => { const p = document.querySelec
   // F. Envio: rótulo de carregamento, sem envio duplicado, sucesso só após a resposta do servidor.
   try {
     const { c, page } = await ctx(browser);
-    await login(page);
     await central(page);
-    const target = ids.resources.find((r) => r.kind === 'EQUIPAMENTO' && r.status === 'OPERACIONAL' && r.category === 'CAMERA');
+    const fresh = await instantaneo(page);
+    const target = fresh.resources.find((r) => r.kind === 'EQUIPAMENTO' && r.status === 'OPERACIONAL' && r.category === 'CAMERA') || fresh.resources.find((r) => r.kind === 'EQUIPAMENTO' && r.status === 'OPERACIONAL');
     let posts = 0;
     await page.route(/simular-falha/, async (r) => { posts += 1; await sleep(1500); r.continue(); });
     await page.click(`.listpanel a.row[data-key="EQUIPAMENTO:${target.id}"]`).catch(async () => { await page.click('.listpanel__more button'); await page.click(`.listpanel a.row[data-key="EQUIPAMENTO:${target.id}"]`); });
@@ -164,8 +162,7 @@ const panelState = (page) => page.evaluate(() => { const p = document.querySelec
   // G. Formulário clássico (POST + redirecionamento): mensagem do servidor vira aviso animado.
   try {
     const { c, page } = await ctx(browser);
-    await login(page);
-    const snap = await (await fetch(`${BASE}/api/central`)).json();
+    const snap = await instantaneo(page);
     const al = snap.alerts.find((a) => a.kind === 'EQUIPAMENTO' && a.state === 'ABERTO');
     await page.goto(`${BASE}/equipamentos/${al ? al.resource_id : eq.id}`, { waitUntil: 'networkidle' });
     const ack = page.locator('form[action*="/reconhecer"] button');
@@ -253,6 +250,16 @@ const panelState = (page) => page.evaluate(() => { const p = document.querySelec
     report.L_tiles = { tiles, ok: tiles.length > 0 && tiles.every((t) => t[0] === 256 && t[1] === 256), banner: await page.locator('[data-tiles-banner]').isVisible() };
     await c.close();
   } catch (e) { report['L_erro'] = String(e).slice(0, 400); }
+
+  // M. Sessão encerrada no servidor (expirou ou a conta foi desativada): a próxima consulta recebe 401 e a tela volta ao login.
+  try {
+    const { c, page } = await ctx(browser);
+    await central(page);
+    await c.clearCookies();
+    await page.waitForURL(/\/entrar/, { timeout: 15000 });
+    report.M_session = { url: new URL(page.url()).pathname + new URL(page.url()).search, ok: new URL(page.url()).pathname.endsWith('/entrar'), logs: page.logs.filter((l) => !/401/.test(l)) };
+    await c.close();
+  } catch (e) { report['M_erro'] = String(e).slice(0, 400); }
 
   await browser.close();
   fs.writeFileSync(`${OUT}/verify-report.json`, JSON.stringify(report, null, 2));
