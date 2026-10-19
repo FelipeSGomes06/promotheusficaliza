@@ -107,25 +107,33 @@ continuam sem Node; Node só é necessário para mudar o frontend (`npm ci && np
 Pedido do autor: a foto dele no espaço vazio da coluna da esquerda, com "Desenvolvido por Felipe Gomes", tremendo ao
 clique e levando a <https://devfelipegomes.com.br/> com uma transição "cinematográfica" que expande o cartão. Feito
 só com o que o projeto já usa (Twig, CSS em `app.css`, GSAP do pacote `gsap@3.15.0`), seguindo as skills oficiais
-`greensock/gsap-skills` (MIT). Nenhuma biblioteca nova.
+`greensock/gsap-skills` (MIT). Nenhuma biblioteca nova. Na segunda rodada do mesmo dia: foto em círculo e, no
+palco, o mascote do Claude Code e o símbolo do Codex em 3D, todos reagindo ao mouse.
+
+- **Personagens 3D** ([`_autoria.twig`](../../templates/_autoria.twig)): sem WebGL nem biblioteca 3D. O mascote é feito
+  de caixas CSS 3D (`preserve-3d`, seis faces por peça: corpo, dois braços, quatro pernas, olhos na face da frente); a
+  nuvem do Codex é extrudada em sete camadas SVG cada vez mais escuras, com a face em degradê e o ">_" na frente. A
+  pose de repouso vem do CSS (aparece sem JavaScript e com movimento reduzido); o GSAP gira só os invólucros de
+  dentro. O palco é medido em `em`: a tela cheia só aumenta a fonte do palco.
 
 - **Sem JavaScript ou com movimento reduzido** é um link comum (`<a rel="author">`); o nome tem cópia em texto
-  oculto e o trecho animado é `aria-hidden`. Ctrl/Cmd/Shift + clique abrem a nova aba normalmente (só a foto treme).
+  oculto e o trecho animado é `aria-hidden`. Ctrl/Cmd/Shift + clique abrem a nova aba normalmente (só a reação ao clique acontece).
 - **Movimento** ([`pages/sobre.js`](../../resources/js/pages/sobre.js), carregado só nessa página):
 
 | Momento | Implementação |
 |---|---|
-| Entrada | uma vez, quando o cartão aparece (IntersectionObserver, não ScrollTrigger): foto abre do centro como tela de cinema (clip-path, 1,1 s, `expo.inOut`) e o nome sobe letra a letra (SplitText com máscara, 35 ms). Se o cartão já está visível ao carregar, nada é escondido |
-| Mouse | inclinação 3D da foto (até 8°/6°) e brilho que segue o cursor, com `quickTo`; só com ponteiro fino |
-| Clique | tremor de 0,6 s que perde força (CustomWiggle, deslocamento e giro em ritmos diferentes), o cartão afunda 2,5% e dois anéis de radar se abrem; "Desenvolvido por" e o link esmaecem |
-| Expansão | aos 0,55 s, uma tela sobreposta cresce a partir do retângulo do cartão (clip-path, 0,9 s) e foto e nome voam até o centro com Flip (1 s, `scale: true`); faixas de cinema entram; a navegação começa aos 0,9 s junto com a barra de progresso, e a tela fica até o navegador trocar de página |
+| Entrada | uma vez, quando o cartão aparece (IntersectionObserver, não ScrollTrigger): a foto abre em íris (clip-path `circle()`, 1,1 s, `expo.inOut`), a nuvem gira até a pose (`back.out`), o mascote cai quicando (`bounce.out`) e o nome sobe letra a letra (SplitText com máscara, 35 ms). Se o cartão já está visível ao carregar, nada é escondido; a opacidade fica só nas raízes dos personagens, porque dentro do 3D ela achataria as faces |
+| Mouse | em qualquer ponto da página, enquanto o cartão está na tela: a foto inclina (até 8°/6°) e o brilho segue o cursor; o mascote vira o corpo (até 34°/16°) e os olhos; a nuvem gira (até 30°/22°) — tudo com `quickTo`, só com ponteiro fino. Com o mouse sobre o cartão, o CSS troca os olhos por "> <" (clip-path com os mesmos pontos), o mascote acena uma vez e o cursor do ">_" anda |
+| Clique | tremor de 0,6 s que perde força (CustomWiggle, deslocamento e giro em ritmos diferentes), o cartão afunda 2,5%, dois anéis de radar se abrem, o mascote pula e amassa ao cair e a nuvem dá uma volta; "Desenvolvido por" e o link esmaecem |
+| Expansão | aos 0,55 s, uma tela sobreposta cresce a partir do retângulo do cartão (clip-path, 0,9 s); uma cópia do palco (na pose do momento) e o nome voam até o centro com Flip (1 s, `scale: true`); faixas de cinema entram; a navegação começa aos 0,9 s junto com a barra de progresso, quando o mascote pula de novo e a nuvem gira; a tela fica até o navegador trocar de página. A cópia é montada nó a nó, com os estilos inline copiados pelo CSSOM (um `cloneNode` copiaria o atributo `style`, o que a CSP pode barrar fora do Chromium) |
 | Saídas | clique na tela pula a espera; Esc interrompe a navegação (`window.stop()`), desfaz a expansão a 2,2× e devolve o cartão; voltar pelo histórico (bfcache) remove a tela sobreposta |
 
 - **Leitores de tela:** "Abrindo o site de Felipe Gomes…" (e "Abertura do site cancelada.") pela região viva.
 - **CSP:** SplitText, CustomEase e CustomWiggle escrevem estilos só pelo CSSOM; o Flip continua sem `nested`.
   Verificado no Chromium com os cabeçalhos reais: 0 violações e 0 erros de console (desktop, celular, Esc, voltar,
   movimento reduzido) — [evidência](../evidencias/2026-10-19-cartao-de-autoria.md).
-- **Peso:** o módulo da página Sobre tem 21 KB (9,4 KB gzip) e só é baixado nela; a foto, 22 KB (WebP 440×550).
+- **Peso:** o módulo da página Sobre tem 24 KB (10,1 KB gzip) e só é baixado nela; a foto, 16 KB (WebP 320×320,
+  recortada no rosto); os personagens são ~60 elementos de HTML/SVG e ~4 KB de CSS.
 - **Sticky:** em telas a partir de 961×760 px o cartão acompanha a rolagem no espaço livre da coluna.
 
 ## Alternativas

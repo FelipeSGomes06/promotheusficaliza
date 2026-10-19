@@ -42,3 +42,28 @@ Capturas ([pasta](2026-10-19-cartao-de-autoria/capturas)): 01 cartão no desktop
 centro) · 03 clique: tremor e anéis · 04 expansão com foto e nome em Flip · 05 tela cheia "Abrindo
 devfelipegomes.com.br" · 06 celular · 07 celular: tremor, expansão e tela cheia · 08 depois do Esc · 09 movimento
 reduzido. Vídeos ([pasta](2026-10-19-cartao-de-autoria/videos)): sequência completa no desktop e no celular.
+
+## Segunda rodada: foto em círculo e personagens 3D
+
+Pedido: foto em círculo e, junto dela, o mascote do Claude Code e o símbolo do Codex (OpenAI) em 3D, todos
+interagindo com o mouse. Feito em CSS 3D + SVG ([`templates/_autoria.twig`](../../templates/_autoria.twig)) e GSAP,
+sem WebGL nem biblioteca nova; valores no [adendo da ADR-0012](../adr/0012-identidade-motion-e-build-de-assets.md#adendo-19102026--cartão-de-autoria-na-página-sobre).
+
+| Onde | Mudança |
+|---|---|
+| `templates/_autoria.twig` (novo) | macros do mascote (caixas 3D com seis faces: corpo, braços, pernas, olhos) e da nuvem extrudada em camadas, e os desenhos compartilhados (`<defs>`) |
+| `templates/about.twig` | palco com a foto em círculo, a nuvem (no alto, à esquerda) e o mascote (embaixo, à direita) |
+| `resources/css/app.css` | palco medido em `em`; caixa 3D genérica (`.vx`); poses de repouso; olhos "> <", aceno e cursor do ">_" no hover |
+| `resources/js/pages/sobre.js` | entrada (íris, giro, queda), olhar para o mouse na página inteira, pulo e giro no clique, cópia do palco para a tela cheia |
+| `public/assets/img/autor/felipe-gomes.webp` | recorte quadrado no rosto (320×320, 16 KB) |
+
+| Verificação (Chromium 141, mesmos cabeçalhos) | Resultado |
+|---|---|
+| Desktop: mouse à esquerda/acima, à direita/abaixo e sobre o cartão | mascote vira o corpo e os olhos, nuvem gira para o cursor; no cartão, "> <" e aceno; **0 violações de CSP, 0 erros de console** |
+| Clique até o destino | pulo + volta da nuvem, palco inteiro e nome voam para a tela cheia; chega em ~1,6 s |
+| Esc, voltar pelo histórico, movimento reduzido, celular | iguais à primeira rodada; com movimento reduzido os personagens aparecem parados na pose |
+| Tela cheia em 1366×700 e 390×844 | palco, nome e barra cabem entre as faixas |
+
+Capturas novas: 10 círculo e personagens · 11 mouse à esquerda · 12 mouse à direita · 13 mouse no cartão ("> <") ·
+14 tela cheia com os personagens · 15 celular. Vídeos novos: 03 (desktop) e 04 (celular). As capturas 01–09 e os
+vídeos 01–02 mostram a primeira versão (foto retangular).

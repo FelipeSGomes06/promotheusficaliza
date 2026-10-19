@@ -771,19 +771,74 @@
       repeating-linear-gradient(90deg, rgb(155 174 200 / 0.09) 0 1px, transparent 1px 44px);
     mask-image: radial-gradient(75% 65% at 50% 40%, #000, transparent);
   }
-  .author-card__stage { position: relative; display: block; width: min(300px, 74%); aspect-ratio: 4 / 5; }
+  /* Palco: foto em círculo e os dois personagens 3D, tudo medido em em — o portal só aumenta a fonte do palco. */
+  .author-card__stage { position: relative; display: block; width: 34em; height: 30em; font-size: min(11.5px, calc((100vw - 90px) / 34)); }
   .author-card__halo {
-    position: absolute; inset: -16% -24%; z-index: -1; border-radius: 50%; pointer-events: none;
+    position: absolute; left: 0.5em; top: -3.8em; width: 33em; height: 33em; z-index: -1; border-radius: 50%; pointer-events: none;
     background: radial-gradient(closest-side, rgb(45 212 191 / 0.3), rgb(52 104 245 / 0.14) 55%, transparent);
   }
-  .author-card__ring { position: absolute; inset: -5%; border: 2px solid var(--color-teal-300); border-radius: 26px; opacity: 0; pointer-events: none; }
+  .author-card__ring { position: absolute; left: 4.5em; top: 0.2em; width: 25em; height: 25em; border: 2px solid var(--color-teal-300); border-radius: 50%; opacity: 0; pointer-events: none; }
   .author-card__photo {
     --gx: 50; --gy: 0;
-    position: relative; display: block; height: 100%; overflow: hidden; border-radius: 16px; background: var(--color-graphite-800);
-    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.1), 0 28px 50px -18px rgb(0 0 0 / 0.75); will-change: transform;
+    position: absolute; left: 5.5em; top: 1.2em; display: block; width: 23em; height: 23em; overflow: hidden; border-radius: 50%; background: var(--color-graphite-800);
+    box-shadow: 0 0 0 0.35em rgb(255 255 255 / 0.07), 0 0 0 1px rgb(255 255 255 / 0.16), 0 2.8em 5em -1.8em rgb(0 0 0 / 0.75); will-change: transform;
   }
-  .author-card__photo img, .author-portal__photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
-  .author-card__photo::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, transparent 58%, rgb(10 19 34 / 0.45)); }
+  .author-card__photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .author-card__photo::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, transparent 62%, rgb(10 19 34 / 0.4)); }
+
+  /* Caixa 3D genérica: seis faces a partir de --w, --h, --d (posição --x/--y); cores por personagem. */
+  .vx { position: absolute; left: var(--x); top: var(--y); width: var(--w); height: var(--h); transform-style: preserve-3d; }
+  .vx__f { position: absolute; display: block; backface-visibility: hidden; box-shadow: inset 0 0 0 0.06em rgb(0 0 0 / 0.1); }
+  .vx__f--frente { inset: 0; background: var(--c-frente); transform: translateZ(calc(var(--d) / 2)); }
+  .vx__f--tras { inset: 0; background: var(--c-tras); transform: rotateY(180deg) translateZ(calc(var(--d) / 2)); }
+  .vx__f--dir, .vx__f--esq { top: 0; left: calc(50% - var(--d) / 2); width: var(--d); height: 100%; }
+  .vx__f--dir { background: var(--c-dir); transform: rotateY(90deg) translateZ(calc(var(--w) / 2)); }
+  .vx__f--esq { background: var(--c-esq); transform: rotateY(-90deg) translateZ(calc(var(--w) / 2)); }
+  .vx__f--topo, .vx__f--base { left: 0; top: calc(50% - var(--d) / 2); width: 100%; height: var(--d); }
+  .vx__f--topo { background: var(--c-topo); transform: rotateX(90deg) translateZ(calc(var(--h) / 2)); }
+  .vx__f--base { background: var(--c-base); transform: rotateX(-90deg) translateZ(calc(var(--h) / 2)); }
+
+  /* Mascote do Claude Code: corpo, bracinhos e quatro pernas em blocos; pose virada para a foto. */
+  .clawd { position: absolute; left: 21.6em; top: 19.4em; z-index: 3; width: 12em; height: 9em; perspective: 40em; }
+  .clawd__pose, .clawd__rig, .clawd__hop { position: absolute; inset: 0; transform-style: preserve-3d; }
+  .clawd__pose { transform: rotateX(-14deg) rotateY(-28deg); }
+  .clawd__hop { transform-origin: 50% 92%; }
+  .clawd__shadow { position: absolute; left: 0.6em; right: 0.6em; top: 7.4em; height: 2em; border-radius: 50%; background: radial-gradient(closest-side, rgb(0 0 0 / 0.55), transparent); }
+  .clawd .vx { --c-frente: #d9774a; --c-tras: #a8522c; --c-dir: #b65d2f; --c-esq: #c86b3b; --c-topo: #ee9666; --c-base: #873f1f; }
+  .clawd__body { --x: 1em; --y: 0.6em; --w: 10em; --h: 6em; --d: 5em; }
+  .clawd__arm { --y: 2.8em; --w: 1.3em; --h: 1.5em; --d: 2em; }
+  .clawd__arm--l { --x: -0.3em; transform-origin: 100% 50%; }
+  .clawd__arm--r { --x: 11em; transform-origin: 0 50%; }
+  .clawd__leg { --y: 6.6em; --w: 1.2em; --h: 1.6em; --d: 1.6em; }
+  .clawd__leg--1 { --x: 1.7em; }
+  .clawd__leg--2 { --x: 3.5em; }
+  .clawd__leg--3 { --x: 7.3em; }
+  .clawd__leg--4 { --x: 9.1em; }
+  /* Olhos: traços verticais que viram "> <" com o mouse sobre o cartão (mesma quantidade de pontos: transição suave). */
+  .clawd__eye { position: absolute; top: 1.7em; width: 1.4em; height: 1.9em; background: #1d1410; transition: clip-path 200ms var(--ease-out-strong); }
+  .clawd__eye--l { left: 2.6em; clip-path: polygon(30% 0, 70% 0, 70% 50%, 70% 100%, 30% 100%, 30% 50%); }
+  .clawd__eye--r { left: 6em; clip-path: polygon(70% 0, 30% 0, 30% 50%, 30% 100%, 70% 100%, 70% 50%); }
+  .author-portal .clawd__eye--l { clip-path: polygon(0 0, 35% 0, 100% 50%, 35% 100%, 0 100%, 65% 50%); }
+  .author-portal .clawd__eye--r { clip-path: polygon(100% 0, 65% 0, 0 50%, 65% 100%, 100% 100%, 35% 50%); }
+  @keyframes pf-aceno { 0%, 100% { transform: rotate(0deg); } 25%, 75% { transform: rotate(-40deg); } 50% { transform: rotate(-14deg); } }
+
+  /* Símbolo do Codex: nuvem extrudada em camadas (a de trás mais escura), face em degradê e ">_" na frente. */
+  .pf-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+  .cx { position: absolute; left: 0.2em; top: 0.6em; z-index: 2; width: 9em; height: 8.1em; perspective: 40em; }
+  .cx__pose, .cx__rig, .cx__spin { position: absolute; inset: 0; transform-style: preserve-3d; }
+  .cx__pose { transform: rotateX(8deg) rotateY(24deg) rotateZ(-8deg); }
+  .cx__shadow { position: absolute; left: 1.6em; right: 1.6em; top: 9.4em; height: 1.4em; border-radius: 50%; background: radial-gradient(closest-side, rgb(0 0 0 / 0.42), transparent); }
+  .cx__layer { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: currentColor; }
+  .cx__layer:nth-child(1) { color: #20297e; transform: translateZ(-1.2em); }
+  .cx__layer:nth-child(2) { color: #252f92; transform: translateZ(-1em); }
+  .cx__layer:nth-child(3) { color: #2a35a2; transform: translateZ(-0.8em); }
+  .cx__layer:nth-child(4) { color: #303cb2; transform: translateZ(-0.6em); }
+  .cx__layer:nth-child(5) { color: #3644c0; transform: translateZ(-0.4em); }
+  .cx__layer:nth-child(6) { color: #3d4ccc; transform: translateZ(-0.2em); }
+  .cx__layer:nth-child(7) { color: #4554d6; transform: translateZ(0); }
+  .cx__layer--face { transform: translateZ(0.06em); }
+  .cx__layer--glyph { transform: translateZ(0.16em); }
+  .cx__cursor { transition: transform 240ms var(--ease-out-strong); }
   /* Brilho que segue o mouse (--gx/--gy em %, escritos pelo GSAP). */
   .author-card__glare {
     position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 240ms ease;
@@ -804,6 +859,10 @@
     .author-card:hover .author-card__glare { opacity: 1; }
     .author-card:hover .author-card__url { border-color: var(--color-teal-400); background: rgb(45 212 191 / 0.1); }
     .author-card:hover .author-card__url .icon { transform: translateX(3px); }
+    .author-card:hover .clawd__eye--l { clip-path: polygon(0 0, 35% 0, 100% 50%, 35% 100%, 0 100%, 65% 50%); }
+    .author-card:hover .clawd__eye--r { clip-path: polygon(100% 0, 65% 0, 0 50%, 65% 100%, 100% 100%, 35% 50%); }
+    .author-card:hover .clawd__arm--r { animation: pf-aceno 900ms var(--ease-out-strong); }
+    .author-card:hover .cx__cursor { transform: translateX(6px); }
   }
   /* No espaço livre da coluna: acompanha a rolagem enquanto a outra coluna continua (só se couber na altura). */
   @media (min-width: 961px) and (min-height: 760px) {
@@ -818,10 +877,8 @@
   .author-portal__band--top { top: 0; transform-origin: 50% 0; }
   .author-portal__band--bottom { bottom: 0; transform-origin: 50% 100%; }
   .author-portal__content { display: grid; justify-items: center; gap: 18px; text-align: center; }
-  .author-portal__photo {
-    display: block; width: min(340px, 64vw, 46dvh); aspect-ratio: 4 / 5; overflow: hidden; border-radius: 22px; background: var(--color-graphite-800);
-    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.1), 0 40px 80px -24px rgb(0 0 0 / 0.85);
-  }
+  .author-portal .author-card__stage { font-size: min(17px, 1.8vh, calc((100vw - 48px) / 34)); }
+  .author-portal .author-card__ring, .author-portal .author-card__glare { display: none; }
   .author-portal__name { margin: 0; font-size: clamp(2.2rem, 1.2rem + 4vw, 4.4rem); font-weight: 800; line-height: 1.25; letter-spacing: -0.02em; }
   .author-portal__go { display: grid; justify-items: center; gap: 12px; margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--color-graphite-300); }
   .author-portal__bar { display: block; width: min(280px, 60vw); height: 3px; overflow: hidden; border-radius: 3px; background: var(--color-graphite-700); }
