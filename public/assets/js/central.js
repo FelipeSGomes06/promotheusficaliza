@@ -489,6 +489,8 @@
       q.delete('visao');
       q.delete('selecionar');
       const res = await fetch(`${cfg.api}${q.toString() ? `?${q}` : ''}`, { headers: { Accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store', signal: controller.signal });
+      // Sessão expirada ou conta desativada: recarrega para o servidor levar ao login (o sistema não tem leitura pública).
+      if (res.status === 401) { window.location.reload(); return; }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const snap = await res.json();
       state.failures = 0;

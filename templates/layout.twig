@@ -21,8 +21,9 @@
         <img class="brand__mark" src="{{ asset('img/favicon.svg') }}" alt="" width="30" height="30">
         <span class="brand__name">Promotheus <span class="brand__product">Fiscaliza</span><span class="brand__city">Marília · SP</span></span>
       </a>
+      {% if app.user %}
       {% set links = [['/', 'Visão geral'], ['/equipamentos', 'Equipamentos'], ['/agentes', 'Agentes'], ['/manutencao', 'Manutenção'], ['/antecipacao', 'Revisões recomendadas'], ['/sobre', 'Sobre']] %}
-      {% if app.user and app.user.role == 'ADMIN' %}{% set links = links|merge([['/contas', 'Contas']]) %}{% endif %}
+      {% if app.user.role == 'ADMIN' %}{% set links = links|merge([['/contas', 'Contas']]) %}{% endif %}
       <nav class="site-nav" id="menu-principal" aria-label="Principal" data-nav>
         <ul>
           {% for link in links %}
@@ -30,30 +31,28 @@
             <li><a href="{{ url(link[0]) }}" {% if active %}aria-current="page"{% endif %}>{{ link[1] }}</a></li>
           {% endfor %}
           <li class="nav-account">
-            {% if app.user %}
-              <span>{{ ui.icon('i-user') }} {{ app.user.display_name }}</span>
-              <form class="inline-form" method="post" action="{{ url('/sair') }}">{{ ui.csrf(app.csrf) }}<button class="btn btn--small" type="submit">Sair</button></form>
-            {% else %}
-              <a href="{{ url('/entrar', {voltar: app.base ~ app.path}) }}">Entrar para editar</a>
-            {% endif %}
+            <span>{{ ui.icon('i-user') }} {{ app.user.display_name }}</span>
+            <form class="inline-form" method="post" action="{{ url('/sair') }}">{{ ui.csrf(app.csrf) }}<button class="btn btn--small" type="submit">Sair</button></form>
           </li>
         </ul>
       </nav>
+      {% endif %}
       <div class="site-header__end">
         <details class="demo-badge">
           <summary>Demonstração</summary>
           <div class="demo-badge__text" role="note">
             <p><strong>Tudo aqui é fictício.</strong> Dados, órgãos, marcas, modelos e agentes são inventados; os pontos em Marília/SP são ilustrativos.</p>
-            <p>Não há integração com prefeitura, polícia ou equipamentos reais. <a href="{{ url('/sobre') }}">O que é real, simulado e implementado</a></p>
+            <p>Não há integração com prefeitura, polícia ou equipamentos reais.{% if app.user %} <a href="{{ url('/sobre') }}">O que é real, simulado e implementado</a>{% endif %}</p>
           </div>
         </details>
         {% if app.user %}
           <span class="account header-only">{{ ui.icon('i-user') }}<span class="account__name"><strong>{{ app.user.display_name }}</strong></span></span>
           <form class="inline-form header-only" method="post" action="{{ url('/sair') }}">{{ ui.csrf(app.csrf) }}<button class="btn btn--small" type="submit">Sair</button></form>
-        {% else %}
-          <a class="btn btn--small header-only" href="{{ url('/entrar', {voltar: app.base ~ app.path}) }}">Entrar para editar</a>
+          <button class="btn btn--small menu-toggle" type="button" aria-expanded="false" aria-controls="menu-principal" data-menu-toggle>{{ ui.icon('i-list') }}<span>Menu</span></button>
+        {% elseif app.path != '/entrar' %}
+          {# Sem conta não há menu: todo o sistema exige login com conta cadastrada pelo administrador. #}
+          <a class="btn btn--small" href="{{ url('/entrar') }}">Entrar</a>
         {% endif %}
-        <button class="btn btn--small menu-toggle" type="button" aria-expanded="false" aria-controls="menu-principal" data-menu-toggle>{{ ui.icon('i-list') }}<span>Menu</span></button>
       </div>
     </div>
   </header>
@@ -69,7 +68,7 @@
   </main>
   <footer class="site-footer">
     <div class="site-footer__inner">
-      <p>Promotheus Fiscaliza — demonstração com dados fictícios para o DSIN Coder Challenge 2026 (etapa F.O.G.O.). <a href="{{ url('/sobre') }}">O que é real, simulado e implementado</a>.</p>
+      <p>Promotheus Fiscaliza — demonstração com dados fictícios para o DSIN Coder Challenge 2026 (etapa F.O.G.O.).{% if app.user %} <a href="{{ url('/sobre') }}">O que é real, simulado e implementado</a>.{% endif %}</p>
       <p>Mapa: <a href="https://www.openstreetmap.org/copyright" rel="noopener">© colaboradores do OpenStreetMap</a> · <button type="button" class="motion-toggle" data-motion-toggle aria-pressed="false"><span>Reduzir animações</span></button></p>
     </div>
   </footer>

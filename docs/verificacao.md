@@ -3,6 +3,22 @@
 Ambiente: Windows 11 + Docker Desktop 29.7.2; contêineres `php:8.5.11-apache-trixie` (PDO_FIREBIRD, fbclient 4.0.5)
 e `firebirdsql/firebird:5.0.4-trixie`. Data: 18/10/2026. Só está listado aqui o que de fato rodou.
 
+## Acesso somente com conta cadastrada (19/10/2026)
+
+Mudança do [ADR-0012](adr/0012-acesso-somente-com-conta-cadastrada.md). Ambiente diferente do oficial: Linux,
+Firebird 5.0.4 no contêiner oficial e PHP **8.5.4** (Ubuntu, PDO_FIREBIRD) em vez da imagem `php:8.5.11` — o
+espelho do Debian não estava acessível. Servidor embutido do PHP no lugar do Apache para a conferência no navegador.
+
+| Verificação | Resultado |
+|---|---|
+| `vendor/bin/phpunit` | **93 testes, 372 asserções, OK** (antes da mudança, no mesmo ambiente: 89/314, OK) |
+| `phpstan analyse` (nível 6) · `php-cs-fixer fix --dry-run` | 0 erros · 0 de 85 arquivos a corrigir |
+| Visitante (`curl`): `/`, `/equipamentos`, `/sobre`, `/contas` → 302 para o login; `/api/central` → 401 sem dados; `/saude` 200; `/entrar` 200 | OK |
+| Navegador (1366×860 e 390×844): visitante levado ao login sem menu; login volta à página pedida; menu no celular; sair → login; console sem erros (exceto tiles do mapa, bloqueados pela rede do ambiente) | OK |
+
+Novas coberturas HTTP: todas as telas e a API sem conta, cadastro pelo administrador → login → acesso, desativação
+com efeito imediato (inclusive na API da visão geral), logout para o login, banco fora com sessão aberta → 503.
+
 ## Depois das correções da auditoria e do redesenho (18/10/2026, 21:20 UTC)
 
 Projeto Compose isolado (`-p fiscaliza-claude`, porta 8091, volume próprio), PHP 8.5.11, Firebird 5.0.4. Detalhes,
@@ -46,7 +62,7 @@ As seções abaixo registram a verificação anterior (62 testes), mantida como 
   ainda em falha, preventiva periódica agendada com data local.
 - **Central e análise:** mapa/lista/indicadores do mesmo conjunto filtrado, denominador zero, recurso sem
   coordenadas, análise reproduzível, ajuste antes da avaliação, classes insuficiente/corretiva, recusa de reset.
-- **HTTP:** cabeçalhos e CSP, visitante sem cookie, CSRF ausente/errado, `Origin` estranho, 401/403 por papel,
+- **HTTP:** cabeçalhos e CSP, visitante sem cookie (desde o ADR-0012, levado ao login), CSRF ausente/errado, `Origin` estranho, 401/403 por papel,
   escape de HTML/JSON com texto malicioso, mensagens de login iguais, limite de tentativas, redirecionamento externo
   descartado, parâmetros malformados, 404 sem SQL, reconhecimento de alerta via JSON com token no cabeçalho.
 

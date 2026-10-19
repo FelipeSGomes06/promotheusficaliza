@@ -54,7 +54,7 @@
         <h2>Tecnologia e autoria</h2>
         <ul class="factor-list">
           <li>PHP 8.5 (Slim 4, Twig 3), Firebird 5 via PDO_FIREBIRD, Leaflet 1.9.4 e JavaScript sem framework.</li>
-          <li>Consulta aberta; escrita só com conta (operador ou administrador), proteção CSRF e autorização no servidor.</li>
+          <li>Acesso só com conta cadastrada pelo administrador (operador ou administrador), inclusive para consultar; proteção CSRF e autorização no servidor.</li>
           <li>Ferramentas de IA usadas no desenvolvimento: planejamento e auditoria com Codex (OpenAI); implementação com Claude (Anthropic) no Claude Code; revisão pelo autor. Detalhes no README.</li>
           <li>Mapa: © colaboradores do OpenStreetMap. Fonte dos títulos: Space Grotesk (SIL OFL 1.1).</li>
         </ul>
@@ -62,9 +62,9 @@
       <details class="method" id="administracao">
         <summary>Para quem administra a instalação</summary>
         <div>
-          <p>Contas são criadas na própria instalação, não há cadastro público. No terminal do servidor:</p>
-          <p><code>php bin/fiscaliza user:create nome.usuario --role=OPERADOR --name="Nome de exibição"</code></p>
-          <p class="hint">A senha é gerada e mostrada uma única vez. Administradores também criam e desativam contas em "Contas". Procedimentos de migração, carga da demonstração, simulador, backup e publicação estão em docs/operacao.md.</p>
+          <p>Ninguém acessa o sistema sem conta, e não há cadastro público. A primeira conta de administrador é criada no terminal do servidor:</p>
+          <p><code>php bin/fiscaliza user:create nome.usuario --role=ADMIN --name="Nome de exibição"</code></p>
+          <p class="hint">A senha é gerada e mostrada uma única vez. Depois, o administrador cadastra e desativa as demais contas em "Contas". Procedimentos de migração, carga da demonstração, simulador, backup e publicação estão em docs/operacao.md.</p>
         </div>
       </details>
     </div>

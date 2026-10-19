@@ -6,8 +6,8 @@
   <section class="auth" aria-labelledby="login-titulo">
     <div class="panel stack">
       <div>
-        <h1 id="login-titulo">Entrar para editar</h1>
-        <p class="muted">Use a conta fornecida pelo responsável pela demonstração. Qualquer pessoa pode consultar o mapa e as fichas; cadastrar, editar e registrar manutenção pede uma conta.</p>
+        <h1 id="login-titulo">Acesso restrito</h1>
+        <p class="muted">Só entra quem foi cadastrado pelo administrador do sistema. Use o usuário e a senha que você recebeu: o mapa, as fichas, a manutenção e as revisões ficam disponíveis depois do login.</p>
       </div>
       {% if error is defined %}<div class="flash flash--error" role="alert">{{ error }}</div>{% endif %}
       <form method="post" action="{{ url('/entrar') }}" class="stack">
@@ -17,7 +17,7 @@
         <div class="field"><label for="p">Senha</label><input id="p" type="password" name="password" autocomplete="current-password" required maxlength="200"></div>
         <button class="btn btn--primary" type="submit">Entrar</button>
       </form>
-      <p class="hint">Não tem conta? Não há cadastro aberto: peça a quem administra a demonstração. Depois de 5 tentativas erradas em 15 minutos, o acesso fica bloqueado por esse tempo.</p>
+      <p class="hint">Não tem conta? Não há cadastro aberto: peça ao administrador do sistema que cadastre você. Depois de 5 tentativas erradas em 15 minutos, o acesso fica bloqueado por esse tempo.</p>
     </div>
   </section>
 </div>

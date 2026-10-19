@@ -10,7 +10,7 @@ use Fiscaliza\Domain\ValidationFailed;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-/** Login/logout e administração de contas (sem cadastro público). */
+/** Login/logout e administração de contas. Sem cadastro público: toda conta é criada pelo administrador (ou CLI). */
 final class AuthController extends Controller
 {
     public function loginForm(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -38,7 +38,7 @@ final class AuthController extends Controller
         $session->set('auth_at', time());
         $session->set('last_activity', time());
         $session->set('_csrf', bin2hex(random_bytes(32)));
-        $session->flash('success', "Olá, {$user['display_name']}. Alterações agora ficam registradas com sua autoria.");
+        $session->flash('success', "Olá, {$user['display_name']}. Suas alterações ficam registradas com sua autoria.");
 
         return $response->withStatus(303)->withHeader('Location', $this->services->config->basePath() . $back);
     }
@@ -47,7 +47,7 @@ final class AuthController extends Controller
     {
         $this->session($request)->destroy();
 
-        return $this->redirect($response, '/');
+        return $this->redirect($response, '/entrar');
     }
 
     public function accounts(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
