@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fiscaliza\Tests\Http;
 
 use Fiscaliza\Http\WebApp;
+use Fiscaliza\Services;
 use Fiscaliza\Tests\Support\ArraySession;
 use Fiscaliza\Tests\Support\FirebirdTestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -26,7 +27,7 @@ final class WebSecurityTest extends FirebirdTestCase
      * @param array<string, mixed> $body
      * @param array<string, string> $headers
      */
-    private function request(string $method, string $path, array $body = [], array $headers = [], bool $withCookie = true): ResponseInterface
+    private function request(string $method, string $path, array $body = [], array $headers = [], bool $withCookie = true, ?Services $services = null): ResponseInterface
     {
         $request = (new ServerRequestFactory())->createServerRequest($method, 'http://localhost' . self::BASE . $path, ['REMOTE_ADDR' => '203.0.113.7']);
         if ($body !== []) {
@@ -38,7 +39,7 @@ final class WebSecurityTest extends FirebirdTestCase
         if ($withCookie && $this->session->isStarted()) {
             $request = $request->withCookieParams(['PFSESSID' => 'teste']);
         }
-        $app = WebApp::create($this->services, $this->session);
+        $app = WebApp::create($services ?? $this->services, $this->session);
 
         return $app->handle($request);
     }
@@ -47,17 +48,23 @@ final class WebSecurityTest extends FirebirdTestCase
     {
         $password = 'senha-de-teste-bem-longa';
         $this->services->auth()->createUser(strtolower($role) . '1', 'Pessoa ' . $role, $role, $password);
-        $token = $this->session->csrfToken();
-        $response = $this->request('POST', '/entrar', ['_csrf' => $token, 'username' => strtolower($role) . '1', 'password' => $password]);
+        $this->login(strtolower($role) . '1', $password);
+    }
+
+    private function login(string $username, string $password): void
+    {
+        $response = $this->request('POST', '/entrar', ['_csrf' => $this->session->csrfToken(), 'username' => $username, 'password' => $password]);
         self::assertSame(303, $response->getStatusCode());
     }
 
-    public function testPublicReadHasSecurityHeadersAndNoCookie(): void
+    public function testVisitorIsSentToLoginWithoutCookieAndWithSecurityHeaders(): void
     {
         $this->createEquipment();
         $response = $this->request('GET', '/');
 
-        self::assertSame(200, $response->getStatusCode());
+        self::assertSame(302, $response->getStatusCode(), 'sem conta não há leitura pública');
+        self::assertSame(self::BASE . '/entrar?voltar=' . rawurlencode(self::BASE . '/'), $response->getHeaderLine('Location'));
+        self::assertSame('', (string) $response->getBody());
         $csp = $response->getHeaderLine('Content-Security-Policy');
         self::assertStringContainsString("script-src 'self'", $csp);
         self::assertStringContainsString("frame-ancestors 'none'", $csp);
@@ -66,7 +73,77 @@ final class WebSecurityTest extends FirebirdTestCase
         self::assertSame('nosniff', $response->getHeaderLine('X-Content-Type-Options'));
         self::assertSame('DENY', $response->getHeaderLine('X-Frame-Options'));
         self::assertSame('', $response->getHeaderLine('Strict-Transport-Security'), 'HSTS é do domínio, não desta subpasta');
-        self::assertFalse($this->session->isStarted(), 'visitante de leitura não recebe sessão');
+        self::assertFalse($this->session->isStarted(), 'visitante levado ao login não recebe sessão');
+    }
+
+    /** Nenhuma tela nem dado sem conta: só login, logout e a verificação de saúde (sem dados) ficam abertos. */
+    public function testEveryScreenAndTheApiRequireAnAccount(): void
+    {
+        $equipment = $this->createEquipment();
+        $agent = $this->createAgent();
+        foreach (['/', '/?visao=lista', '/equipamentos', "/equipamentos/{$equipment}", '/agentes', "/agentes/{$agent}", '/manutencao', '/antecipacao', '/sobre', '/contas'] as $path) {
+            $response = $this->request('GET', $path);
+            self::assertSame(302, $response->getStatusCode(), $path);
+            self::assertStringStartsWith(self::BASE . '/entrar?voltar=', $response->getHeaderLine('Location'), $path);
+            self::assertSame('', (string) $response->getBody(), $path);
+        }
+        $api = $this->request('GET', '/api/central');
+        self::assertSame(401, $api->getStatusCode());
+        self::assertSame(['error', 'reference'], array_keys(json_decode((string) $api->getBody(), true)), 'a API não devolve dados a visitante');
+
+        self::assertSame(200, $this->request('GET', '/saude')->getStatusCode());
+        $login = $this->request('GET', '/entrar');
+        self::assertSame(200, $login->getStatusCode());
+        self::assertStringContainsString('cadastrado pelo administrador', (string) $login->getBody());
+        self::assertStringNotContainsString('href="' . self::BASE . '/equipamentos"', (string) $login->getBody(), 'visitante não vê o menu do sistema');
+    }
+
+    /** O administrador cadastra a pessoa; só então ela acessa; desativada pelo administrador, perde o acesso na hora. */
+    public function testOnlyAccountsRegisteredByTheAdminGetIn(): void
+    {
+        $this->createEquipment();
+        $this->loginAs('ADMIN');
+        $admin = $this->session;
+        $created = $this->request('POST', '/contas', ['_csrf' => $admin->csrfToken(), 'username' => 'carla', 'display_name' => 'Carla', 'role' => 'OPERADOR']);
+        self::assertSame(201, $created->getStatusCode());
+        self::assertSame(1, preg_match('#<code>([A-Za-z0-9_-]+)</code>#', (string) $created->getBody(), $m), 'senha gerada mostrada ao administrador');
+
+        $this->session = new ArraySession();
+        self::assertSame(302, $this->request('GET', '/')->getStatusCode(), 'antes do login, nada');
+        $this->login('carla', $m[1]);
+        $page = $this->request('GET', '/');
+        self::assertSame(200, $page->getStatusCode());
+        self::assertStringContainsString("script-src 'self'", $page->getHeaderLine('Content-Security-Policy'));
+        self::assertStringContainsString('href="' . self::BASE . '/equipamentos"', (string) $page->getBody(), 'com conta, o menu aparece');
+        self::assertSame(200, $this->request('GET', '/api/central')->getStatusCode());
+
+        $carla = $this->session;
+        $this->session = $admin;
+        $id = (int) $this->services->userRepository()->findByUsername('carla')['id'];
+        self::assertSame(303, $this->request('POST', "/contas/{$id}/situacao", ['_csrf' => $admin->csrfToken(), 'active' => '0'])->getStatusCode());
+
+        $this->session = $carla;
+        self::assertSame(401, $this->request('GET', '/api/central')->getStatusCode(), 'a atualização da visão geral para de receber dados');
+        self::assertSame(302, $this->request('GET', '/equipamentos')->getStatusCode());
+    }
+
+    public function testLogoutReturnsToTheLoginPage(): void
+    {
+        $this->loginAs('OPERADOR');
+        $response = $this->request('POST', '/sair', ['_csrf' => $this->session->csrfToken()]);
+
+        self::assertSame(self::BASE . '/entrar', $response->getHeaderLine('Location'));
+        self::assertSame(302, $this->request('GET', '/')->getStatusCode());
+    }
+
+    /** Banco fora com sessão aberta: mostra a indisponibilidade, em vez de mandar a pessoa ao login sem motivo. */
+    public function testSignedInUserSeesUnavailabilityWhenTheAccountCannotBeChecked(): void
+    {
+        $this->loginAs('OPERADOR');
+        $broken = new Services(self::config()->with(['DB_PASSWORD' => 'senha-errada-de-proposito']), self::ROOT, null, $this->clock);
+
+        self::assertSame(503, $this->request('GET', '/equipamentos', services: $broken)->getStatusCode());
+        self::assertSame(503, $this->request('GET', '/api/central', services: $broken)->getStatusCode());
     }
 
     public function testWritesRequireCsrfAndAuthentication(): void
@@ -108,6 +185,7 @@ final class WebSecurityTest extends FirebirdTestCase
     public function testUntrustedTextIsEscapedInHtmlAndJson(): void
     {
         $id = $this->createEquipment(['model' => '<img src=x onerror=alert(1)>', 'address_ref' => '"><script>alert(2)</script>']);
+        $this->loginAs('OPERADOR');
 
         $html = (string) $this->request('GET', "/equipamentos/{$id}")->getBody();
         self::assertStringNotContainsString('<img src=x', $html);
@@ -146,6 +224,7 @@ final class WebSecurityTest extends FirebirdTestCase
     public function testMalformedQueryParametersDegradeSafely(): void
     {
         $this->createEquipment();
+        $this->loginAs('OPERADOR');
         self::assertSame(200, $this->request('GET', '/equipamentos?ordem=CODE;DROP%20TABLE%20X&pagina=-5&categoria[]=%27OR%201=1')->getStatusCode());
         $api = $this->request('GET', '/api/central?bairro=abc&situacao[]=<x>');
         self::assertSame(200, $api->getStatusCode());
@@ -194,6 +273,13 @@ final class WebSecurityTest extends FirebirdTestCase
     public function testPagesUseOnlyLocalBuiltAssetsWithoutInlineCode(): void
     {
         $this->createEquipment();
+        // O login (única tela sem conta) também usa só o build local, sem código inline.
+        $login = (string) $this->request('GET', '/entrar')->getBody();
+        self::assertMatchesRegularExpression('#<script type="module" src="/promotheusfiscaliza/assets/build/app-[A-Za-z0-9_-]+\.js"></script>#', $login);
+        self::assertDoesNotMatchRegularExpression('#<script\b(?![^>]*\bsrc=)#', $login);
+        self::assertDoesNotMatchRegularExpression('#\sstyle="#', $login);
+
+        $this->loginAs('OPERADOR');
         $html = (string) $this->request('GET', '/')->getBody();
 
         self::assertMatchesRegularExpression('#<link rel="stylesheet" href="/promotheusfiscaliza/assets/build/styles-[A-Za-z0-9_-]+\.css">#', $html);

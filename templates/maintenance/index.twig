@@ -71,7 +71,6 @@
       {% endif %}
     </section>
   {% endfor %}
-  {% if not app.user %}<p class="callout section">Para iniciar ou concluir intervenções, <a href="{{ url('/entrar', {voltar: app.base ~ '/manutencao'}) }}">entre com a conta fornecida</a>.</p>{% endif %}
 
   <section class="section" id="encerradas" aria-labelledby="t-encerradas">
     <h2 id="t-encerradas">Encerradas recentemente</h2>

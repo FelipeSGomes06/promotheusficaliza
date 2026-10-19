@@ -1,5 +1,5 @@
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const BASE = process.env.PF_BASE || 'http://127.0.0.1:8091/promotheusfiscaliza';
+const { BASE, entrar } = require('./comum.cjs');
 const measure = (page, action) => page.evaluate(async (ms) => {
   const t = []; let run = true; const loop = (ts) => { t.push(ts); if (run) requestAnimationFrame(loop); }; requestAnimationFrame(loop);
   await new Promise((r) => setTimeout(r, 30)); window.__go?.(); await new Promise((r) => setTimeout(r, ms)); run = false;
@@ -17,6 +17,7 @@ const measure = (page, action) => page.evaluate(async (ms) => {
   ]) {
     const p = await b.newPage({ viewport: size });
     await p.route(/tile\.openstreetmap\.org/, (r) => r.abort());
+    await entrar(p);
     await p.goto(BASE + '/', { waitUntil: 'networkidle' });
     if (prep) { await p.click(prep); await p.waitForTimeout(500); }
     await p.evaluate((sel) => { window.__go = () => document.querySelector(sel.replace(/ >> nth=\d+/, '')) && (sel.includes('nth=2') ? document.querySelectorAll('.listpanel a.row')[2].click() : document.querySelector(sel).click()); }, action);

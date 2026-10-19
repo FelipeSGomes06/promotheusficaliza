@@ -56,20 +56,24 @@ final class WebApp
         $admin = new RequireRole('ADMIN', $base);
         $id = '{id:[0-9]+}';
 
-        // Leitura pública (dados sintéticos).
-        $app->get('/', [$central, 'page']);
-        $app->get('/api/central', [$central, 'snapshot']);
-        $app->get('/equipamentos', [$equipment, 'index']);
-        $app->get("/equipamentos/{$id}", [$equipment, 'show']);
-        $app->get('/agentes', [$agents, 'index']);
-        $app->get("/agentes/{$id}", [$agents, 'show']);
-        $app->get('/manutencao', [$ops, 'maintenance']);
-        $app->get('/antecipacao', [$ops, 'analysis']);
-        $app->get('/sobre', [$pages, 'about']);
-        $app->get('/saude', [$pages, 'health']);
+        // Únicas rotas sem conta: login/logout e verificação de saúde (sem dados).
         $app->get('/entrar', [$auth, 'loginForm']);
         $app->post('/entrar', [$auth, 'login']);
         $app->post('/sair', [$auth, 'logout']);
+        $app->get('/saude', [$pages, 'health']);
+
+        // Consulta: exige conta cadastrada pelo administrador (não há leitura pública nem cadastro aberto).
+        $app->group('', function (RouteCollectorProxy $g) use ($central, $equipment, $agents, $ops, $pages, $id): void {
+            $g->get('/', [$central, 'page']);
+            $g->get('/api/central', [$central, 'snapshot']);
+            $g->get('/equipamentos', [$equipment, 'index']);
+            $g->get("/equipamentos/{$id}", [$equipment, 'show']);
+            $g->get('/agentes', [$agents, 'index']);
+            $g->get("/agentes/{$id}", [$agents, 'show']);
+            $g->get('/manutencao', [$ops, 'maintenance']);
+            $g->get('/antecipacao', [$ops, 'analysis']);
+            $g->get('/sobre', [$pages, 'about']);
+        })->add($operator);
 
         // Escrita: operador autenticado.
         $app->group('', function (RouteCollectorProxy $g) use ($equipment, $agents, $ops, $id): void {

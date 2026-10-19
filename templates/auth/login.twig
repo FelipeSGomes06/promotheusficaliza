@@ -8,12 +8,12 @@
       <div class="auth__hero">
         <svg class="brand-mark" aria-hidden="true" focusable="false"><use href="{{ asset('img/icons.svg') }}#i-brand"></use></svg>
         <div>
-          <h1 id="login-titulo" class="m-0">Entrar para editar</h1>
+          <h1 id="login-titulo" class="m-0">Acesso restrito</h1>
           <p>Promotheus Fiscaliza · Marília/SP</p>
         </div>
       </div>
       <div class="auth__body stack">
-        <p class="muted">Consultar o mapa e as fichas não pede conta. Cadastrar, editar e registrar manutenção, sim: use a conta fornecida por quem administra a demonstração.</p>
+        <p class="muted">Só entra quem foi cadastrado pelo administrador do sistema. Use o usuário e a senha que você recebeu: o mapa, as fichas, a manutenção e as revisões ficam disponíveis depois do login.</p>
         {% if error is defined %}<div class="flash flash--error" role="alert">{{ error }}</div>{% endif %}
         <form method="post" action="{{ url('/entrar') }}" class="stack">
           {{ ui.csrf(app.csrf) }}
@@ -22,7 +22,7 @@
           <div class="field"><label for="p">Senha</label><input id="p" type="password" name="password" autocomplete="current-password" required maxlength="200"></div>
           <button class="btn btn--primary" type="submit"><span>Entrar</span>{{ ui.icon('i-arrow-right', null, 'icon icon--nudge') }}</button>
         </form>
-        <p class="hint">Sem cadastro aberto: contas são criadas na instalação. Depois de 5 tentativas erradas em 15 minutos, o acesso fica bloqueado por esse tempo.</p>
+        <p class="hint">Não tem conta? Não há cadastro aberto: peça ao administrador do sistema que cadastre você. Depois de 5 tentativas erradas em 15 minutos, o acesso fica bloqueado por esse tempo.</p>
       </div>
     </div>
   </section>
