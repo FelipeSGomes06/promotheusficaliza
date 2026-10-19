@@ -67,3 +67,10 @@ sem WebGL nem biblioteca nova; valores no [adendo da ADR-0012](../adr/0012-ident
 Capturas novas: 10 círculo e personagens · 11 mouse à esquerda · 12 mouse à direita · 13 mouse no cartão ("> <") ·
 14 tela cheia com os personagens · 15 celular. Vídeos novos: 03 (desktop) e 04 (celular). As capturas 01–09 e os
 vídeos 01–02 mostram a primeira versão (foto retangular).
+
+## Terceira rodada: laranja mais vivo e navegação depois da animação
+
+- Mascote no laranja do boneco de referência (frente `#f8600a`, medida na foto enviada), com topo mais claro e laterais
+  mais escuras para manter o volume.
+- A navegação começava junto com a barra de progresso (~1,5 s depois do clique) e, em conexão rápida, o site abria no
+  meio da animação. Agora começa com a barra cheia, ~3 s depois do clique; clicar na tela continua pulando a espera.

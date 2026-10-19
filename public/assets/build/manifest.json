@@ -12,7 +12,7 @@
     "src": "node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "styles-C5rqEBlO.css",
+    "file": "styles-DdXY91oY.css",
     "name": "styles",
     "names": [
       "styles.css"
@@ -25,7 +25,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "app-DtiG0S-C.js",
+    "file": "app-B1Q5cCxU.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -47,7 +47,7 @@
     ]
   },
   "resources/js/pages/sobre.js": {
-    "file": "sobre-D2IFER2i.js",
+    "file": "sobre-B-SCq7Fa.js",
     "name": "sobre",
     "src": "resources/js/pages/sobre.js",
     "isDynamicEntry": true,

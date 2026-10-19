@@ -804,7 +804,7 @@
   .clawd__pose { transform: rotateX(-14deg) rotateY(-28deg); }
   .clawd__hop { transform-origin: 50% 92%; }
   .clawd__shadow { position: absolute; left: 0.6em; right: 0.6em; top: 7.4em; height: 2em; border-radius: 50%; background: radial-gradient(closest-side, rgb(0 0 0 / 0.55), transparent); }
-  .clawd .vx { --c-frente: #d9774a; --c-tras: #a8522c; --c-dir: #b65d2f; --c-esq: #c86b3b; --c-topo: #ee9666; --c-base: #873f1f; }
+  .clawd .vx { --c-frente: #f8600a; --c-tras: #b43f04; --c-dir: #cc4a06; --c-esq: #e8550a; --c-topo: #ff8a3a; --c-base: #8f3203; }
   .clawd__body { --x: 1em; --y: 0.6em; --w: 10em; --h: 6em; --d: 5em; }
   .clawd__arm { --y: 2.8em; --w: 1.3em; --h: 1.5em; --d: 2em; }
   .clawd__arm--l { --x: -0.3em; transform-origin: 100% 50%; }
