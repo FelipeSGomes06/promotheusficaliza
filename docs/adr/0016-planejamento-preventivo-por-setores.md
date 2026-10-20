@@ -71,3 +71,10 @@ calculada em PHP e o Poisson pelo modelo congelado da referência (paridade conf
 Python fica só para treino e avaliação. Download por curl (o projeto mantém `allow_url_fopen` desligado), só https;
 a imagem PHP ganhou a extensão `zip`. O retrospecto da tela continua sendo o da execução importada do treino.
 **Consequência:** a previsão não vence mais sozinha; o método não muda sem novo treino e novo teste.
+
+## Adendo (20/10/2026) — tela só com a média simples
+
+A pedido do autor, a tela ficou só com os quadrados de 2 km e a média simples: saíram o mapa e a lista dos setores, o
+seletor de método e a comparação com o Poisson (também no retrospecto). Tocar num quadrado abre o setor dele, onde
+continuam a explicação, a sugestão de agente e a missão. O Poisson continua nos dados importados, no treino e nos
+testes de serviço, mas não aparece para quem planeja.

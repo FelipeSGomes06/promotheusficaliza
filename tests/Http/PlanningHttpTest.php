@@ -43,7 +43,8 @@ final class PlanningHttpTest extends FirebirdTestCase
 
         self::assertStringContainsString('20/10/2026 a 26/10/2026', $html);
         self::assertStringContainsString('31/07/2026', $html, 'data de referência dos dados');
-        self::assertStringContainsString('Referência histórica · escolhida no ajuste', $html);
+        self::assertStringContainsString('<strong>Média simples</strong> das últimas 52 semanas', $html);
+        self::assertStringNotContainsString('Poisson', $html, 'a tela mostra só a média simples');
         self::assertStringContainsString('Real agregado · Infosiga-SP', $html);
         self::assertStringContainsString('Fictício', $html);
         self::assertStringContainsString('não a chance de um acidente', $html);
@@ -63,15 +64,12 @@ final class PlanningHttpTest extends FirebirdTestCase
         );
         $four = (string) $this->request('GET', '/planejar')->getBody();
         $two = (string) $this->request('GET', '/planejar?quadrados=2')->getBody();
-        self::assertSame(4, substr_count($four, '<li class="sector-card cell-card">'), 'padrão: 4 quadrados');
-        self::assertSame(2, substr_count($two, '<li class="sector-card cell-card">'));
+        self::assertSame(4, substr_count($four, 'cell-card"'), 'padrão: 4 quadrados');
+        self::assertSame(2, substr_count($two, 'cell-card"'));
         self::assertStringContainsString('Setor sudoeste · 26% dos registros do último ano', $two, 'o 1º quadrado é o do centro, no setor sudoeste');
-        self::assertSame(4, substr_count((string) $this->request('GET', '/planejar?quadrados=9')->getBody(), '<li class="sector-card cell-card">'), 'fora de 1–4 volta ao padrão');
+        self::assertSame(4, substr_count((string) $this->request('GET', '/planejar?quadrados=9')->getBody(), 'cell-card"'), 'fora de 1–4 volta ao padrão');
 
-        $poisson = (string) $this->request('GET', '/planejar?metodo=poisson&setor=NE')->getBody();
-        self::assertStringContainsString('Só comparação: a execução importada mantém Referência histórica como padrão', $poisson);
-        self::assertStringContainsString('<strong class="num">5,8</strong>', $poisson, 'valores do Poisson para o setor sudoeste');
-        self::assertStringContainsString('id="setor-titulo">Setor nordeste', $poisson);
+        self::assertStringContainsString('id="setor-titulo">Setor nordeste', (string) $this->request('GET', '/planejar?setor=NE')->getBody(), 'o quadrado abre o setor dele');
     }
 
     public function testConfirmingAMissionNeedsCsrfAnAccountAndAnEligibleAgent(): void
@@ -118,7 +116,7 @@ final class PlanningHttpTest extends FirebirdTestCase
         self::assertSame(4, substr_count($hidden, '<span class="hint">oculto</span>'));
         self::assertStringContainsString('registros elegíveis</strong> na área de estudo', $revealed);
         self::assertStringNotContainsString('<span class="hint">oculto</span>', $revealed);
-        self::assertStringContainsString('246 de 626 · 39,3%', $revealed, 'resultado global do teste');
+        self::assertStringNotContainsString('Poisson', $revealed);
         self::assertStringContainsString('233 de 626 · 37,2%', $revealed);
         self::assertStringContainsString('<option value="2025-12-22"', $hidden, 'todas as semanas do teste navegáveis');
     }

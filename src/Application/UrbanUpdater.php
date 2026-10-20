@@ -262,7 +262,7 @@ final class UrbanUpdater
             'run' => ['protocol_version' => SectorForecast::PROTOCOL, 'as_of' => $asOf, 'until' => self::addDays($asOf, 7), 'data_reference_through' => $through,
                 'generated_at' => Time::toDb($this->clock->now()), 'source_snapshot_sha256' => $snapshot['sha256'], 'selected_method' => $method,
                 'candidate_method' => 'poisson', 'test_relative_gain' => $reference['test_relative_gain'], 'model_issued_at' => $reference['model_issued_at'],
-                'notice' => "Previsão automática semanal: média das 52 semanas recalculada com o Infosiga baixado em {$snapshotDate}; método, modelo do Poisson e avaliação da execução de referência #{$reference['id']}."],
+                'notice' => "Previsão automática semanal: média das 52 semanas recalculada com o Infosiga baixado em {$snapshotDate}; mesmo método da execução de referência #{$reference['id']}."],
             'evaluation_json' => json_encode($reference['evaluation'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
             'model_json' => json_encode($reference['model'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
             'provenance_json' => json_encode($provenance, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),

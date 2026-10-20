@@ -1,9 +1,7 @@
 /*
- * Planejar reforço: dois mapas a partir do JSON que o servidor deixa na página (#plan-data).
- * - #plan-map: os quatro setores e os agentes livres;
- * - #cell-map: a grade inteira de quadrados de 2 km (linhas finas) e só os prioritários, numerados.
- * Sem JavaScript, as listas ao lado oferecem a mesma informação. Formas e cores vêm de classes CSS (prioridade
- * relativa, nunca vermelho de alerta); texto do servidor entra por textContent, nunca por innerHTML.
+ * Planejar reforço: mapa da grade de quadrados de 2 km (linhas finas) com só os prioritários numerados, a partir do
+ * JSON que o servidor deixa na página (#plan-data). Sem JavaScript, a lista ao lado tem a mesma informação.
+ * Texto do servidor entra por textContent, nunca por innerHTML.
  */
 import { motion } from '../lib/motion.js';
 
@@ -21,27 +19,6 @@ function baseMap(box, data) {
   L.tileLayer(data.tiles, { maxZoom: 19, attribution: data.attribution }).addTo(map);
   map.attributionControl.setPrefix('<a href="https://leafletjs.com" rel="noopener">Leaflet</a>');
   return map;
-}
-
-function sectorsMap(box, data) {
-  const L = window.L;
-  const map = baseMap(box, data);
-  const corners = [];
-  data.sectors.forEach((s) => {
-    const bounds = [[s.south, s.west], [s.north, s.east]];
-    corners.push(...bounds);
-    const selected = s.id === data.selected;
-    const shape = L.rectangle(bounds, { className: `sector-shape sector-shape--${s.rank}${selected ? ' is-selected' : ''}` }).addTo(map);
-    // Rótulo curto (posição, código, estimativa) para não encavalar; o nome completo está na lista e no título.
-    shape.bindTooltip(text(`${s.rank}º · ${s.id} · ${s.value}`), { permanent: true, direction: 'center', className: `sector-label${selected ? ' is-selected' : ''}` });
-    shape.on('click', () => window.location.assign(s.href));
-  });
-  data.agents.forEach((a) => {
-    L.circleMarker([a.lat, a.lng], { radius: 8, className: `agent-dot agent-dot--${a.tier}` })
-      .bindTooltip(text(`${a.call_sign} (fictício) · ${a.point}`))
-      .addTo(map);
-  });
-  map.fitBounds(corners, { padding: [8, 8], animate: false });
 }
 
 function cellsMap(box, data) {
@@ -67,8 +44,6 @@ export function init() {
   const source = document.getElementById('plan-data');
   if (!source || !window.L) return;
   const data = JSON.parse(source.textContent);
-  const sectors = document.getElementById('plan-map');
   const cells = document.getElementById('cell-map');
-  if (sectors) sectorsMap(sectors, data);
   if (cells && data.grid && data.grid.cells.length) cellsMap(cells, data);
 }

@@ -23,7 +23,7 @@
     <p class="era__kicker">{{ ui.icon('i-clock') }} Histórico · teste de 2025 · não é a previsão atual</p>
     <dl class="era__facts">
       <div><dt>Semana</dt><dd><strong>{{ r.week|br_date }} a {{ r.week_last_day|br_date }}</strong> ({{ r.position }}ª de {{ r.weeks|length }})</dd></div>
-      <div><dt>Modelo congelado</dt><dd>Emitido em {{ r.run.model_issued_at|br_date }}, treinado com rótulos até {{ test.training_labels_until|br_date }} (fim exclusivo) — não é o modelo de 2026</dd></div>
+      <div><dt>Previsão congelada</dt><dd>Feita em {{ r.run.model_issued_at|br_date }}, só com o que se sabia até então</dd></div>
       <div><dt>Dados de entrada da semana</dt><dd>até {{ (r.sectors|first).history_through|br_date }} (mesmo atraso de publicação assumido)</dd></div>
       <div><dt>Origem</dt><dd>{{ ui.origin_real() }}</dd></div>
     </dl>
@@ -36,27 +36,20 @@
         {% for w in r.weeks %}<option value="{{ w }}" {{ w == r.week ? 'selected' }}>{{ loop.index }}ª · {{ w|br_date }}</option>{% endfor %}
       </select>
     </div>
-    <div class="field">
-      <label for="f-metodo">Método</label>
-      <select id="f-metodo" name="metodo">
-        {% for code, label in methods %}<option value="{{ code }}" {{ code == r.method ? 'selected' }}>{{ label }}{{ code == r.run.selected_method ? ' (escolhida no ajuste)' }}</option>{% endfor %}
-      </select>
-    </div>
     <button class="btn" type="submit">Ver semana</button>
     <span class="btn-row">
-      {% if r.previous %}<a class="btn btn--small" href="{{ url('/planejar/retrospecto', {semana: r.previous, metodo: r.method}) }}" rel="prev">← Semana anterior</a>{% endif %}
-      {% if r.next %}<a class="btn btn--small" href="{{ url('/planejar/retrospecto', {semana: r.next, metodo: r.method}) }}" rel="next">Próxima semana →</a>{% endif %}
+      {% if r.previous %}<a class="btn btn--small" href="{{ url('/planejar/retrospecto', {semana: r.previous}) }}" rel="prev">← Semana anterior</a>{% endif %}
+      {% if r.next %}<a class="btn btn--small" href="{{ url('/planejar/retrospecto', {semana: r.next}) }}" rel="next">Próxima semana →</a>{% endif %}
     </span>
   </form>
 
   <section class="section" aria-labelledby="semana-titulo">
-    <div class="list-head"><h2 id="semana-titulo">Previsão congelada · {{ methods[r.method] }}</h2><p class="hint">Orçamento: um setor priorizado por semana (o 1º).</p></div>
+    <div class="list-head"><h2 id="semana-titulo">Previsão congelada · média simples</h2><p class="hint">Orçamento: um setor priorizado por semana (o 1º).</p></div>
     <div class="table-wrap"><table class="data">
       <caption>Registros esperados de {{ r.week|br_date }} a {{ r.week_last_day|br_date }}{{ r.reveal ? ' e registros observados depois' : '' }}</caption>
       <thead><tr>
         <th scope="col">Setor</th>
-        <th scope="col">{{ methods[r.method] }}</th>
-        <th scope="col">{{ methods[r.other] }}</th>
+        <th scope="col">Esperados</th>
         <th scope="col" class="wide-only">Entrada: 13 / 52 semanas</th>
         <th scope="col">Registrado</th>
       </tr></thead>
@@ -65,7 +58,6 @@
           <tr {% if s.rank == 1 %}class="is-priority"{% endif %}>
             <th scope="row">{{ s.rank }}º · {{ s.name }}{% if s.rank == 1 %} <span class="tag">priorizado</span>{% endif %}</th>
             <td class="num">{{ s.value|number_format(1, ',', '.') }}</td>
-            <td class="num">{{ s.other_value|number_format(1, ',', '.') }} ({{ s.other_rank }}º)</td>
             <td class="num wide-only">{{ s.count_13w }} / {{ s.count_52w }}</td>
             <td class="num">{% if r.reveal %}<strong>{{ s.observed }}</strong>{% else %}<span class="hint">oculto</span>{% endif %}</td>
           </tr>
@@ -76,7 +68,6 @@
     {% if not r.reveal %}
       <form method="get" action="{{ url('/planejar/retrospecto') }}" class="section">
         <input type="hidden" name="semana" value="{{ r.week }}">
-        <input type="hidden" name="metodo" value="{{ r.method }}">
         <input type="hidden" name="revelar" value="1">
         <button class="btn btn--primary" type="submit">{{ ui.icon('i-check') }}Revelar o que foi registrado</button>
         <p class="hint">Os registros desta semana só são enviados ao navegador depois deste clique.</p>
@@ -85,28 +76,26 @@
       {% set w = r.week_result %}
       {% set names = {} %}{% for s in r.sectors %}{% set names = names|merge({(s.sector_id): s.name}) %}{% endfor %}
       <div class="callout section reveal" role="status">
-        <p><strong>{{ w.observed }} registros elegíveis</strong> na área de estudo nesta semana. Setor priorizado ({{ methods[r.method] }}): {{ names[r.first]|lower }}, com <strong>{{ w.captured }}</strong>{% if w.observed > 0 %} ({{ (w.captured / w.observed * 100)|number_format(0, ',', '.') }}%){% endif %}. Com {{ methods[r.other] }}, o priorizado seria o {{ names[r.first_other]|lower }}, com {{ w.captured_other }}.</p>
+        <p><strong>{{ w.observed }} registros elegíveis</strong> na área de estudo nesta semana. Setor priorizado: {{ names[r.first]|lower }}, com <strong>{{ w.captured }}</strong>{% if w.observed > 0 %} ({{ (w.captured / w.observed * 100)|number_format(0, ',', '.') }}%){% endif %}.</p>
         <p class="hint m-0">Uma semana isolada não prova nada: veja o resultado do teste inteiro abaixo e navegue pelas outras semanas.</p>
       </div>
-      <p><a class="btn btn--small" href="{{ url('/planejar/retrospecto', {semana: r.week, metodo: r.method}) }}">Esconder os registros</a></p>
+      <p><a class="btn btn--small" href="{{ url('/planejar/retrospecto', {semana: r.week}) }}">Esconder os registros</a></p>
     {% endif %}
   </section>
 
   <section class="section" aria-labelledby="global-titulo">
     <div class="list-head"><h2 id="global-titulo">Resultado no teste inteiro</h2><p class="hint">{{ ev.baseline.weeks }} semanas completas, {{ ev.baseline.from|br_date }} a {{ ev.baseline.until|br_date }} (fim exclusivo), {{ ev.baseline.rows }} linhas setor × semana.</p></div>
     <div class="table-wrap"><table class="data">
-      <thead><tr><th scope="col">Medida</th><th scope="col">{{ methods.poisson }}</th><th scope="col">{{ methods.baseline }}{% if r.run.selected_method == 'baseline' %} (escolhida no ajuste){% endif %}</th></tr></thead>
+      <thead><tr><th scope="col">Medida</th><th scope="col">Média simples</th></tr></thead>
       <tbody>
-        <tr><th scope="row">Erro absoluto médio por setor/semana</th><td class="num">{{ ev.poisson.mae|number_format(4, ',', '.') }}</td><td class="num">{{ ev.baseline.mae|number_format(4, ',', '.') }}</td></tr>
-        <tr><th scope="row">Desvio médio de Poisson (menor é melhor)</th><td class="num">{{ ev.poisson.mean_poisson_deviance|number_format(4, ',', '.') }}</td><td class="num">{{ ev.baseline.mean_poisson_deviance|number_format(4, ',', '.') }}</td></tr>
-        <tr><th scope="row">Registros no setor priorizado (1 por semana)</th><td class="num">{{ ev.poisson.top_budget_captured }} de {{ ev.poisson.observed_count }} · {{ (ev.poisson.top_budget_capture_fraction * 100)|number_format(1, ',', '.') }}%</td><td class="num">{{ ev.baseline.top_budget_captured }} de {{ ev.baseline.observed_count }} · {{ (ev.baseline.top_budget_capture_fraction * 100)|number_format(1, ',', '.') }}%</td></tr>
-        <tr><th scope="row">Soma prevista × observada</th><td class="num">{{ ev.poisson.predicted_count|number_format(0, ',', '.') }} × {{ ev.poisson.observed_count }}</td><td class="num">{{ ev.baseline.predicted_count|number_format(0, ',', '.') }} × {{ ev.baseline.observed_count }}</td></tr>
+        <tr><th scope="row">Registros no setor priorizado (1 por semana)</th><td class="num">{{ ev.baseline.top_budget_captured }} de {{ ev.baseline.observed_count }} · {{ (ev.baseline.top_budget_capture_fraction * 100)|number_format(1, ',', '.') }}%</td></tr>
+        <tr><th scope="row">Erro médio por setor e semana</th><td class="num">{{ ev.baseline.mae|number_format(1, ',', '.') }} registro</td></tr>
+        <tr><th scope="row">Total previsto × registrado</th><td class="num">{{ ev.baseline.predicted_count|number_format(0, ',', '.') }} × {{ ev.baseline.observed_count }}</td></tr>
       </tbody>
     </table></div>
     <ul class="factor-list section">
       <li>O denominador é o total de <strong>registros elegíveis na área de estudo</strong> no teste, não todos os acidentes do município; a fração não é taxa de acerto, probabilidade nem acidentes evitados.</li>
-      <li>O Poisson teve desvio {{ (ev.poisson_deviance_relative_gain * 100)|number_format(1, ',', '.') }}% menor: ganho modesto, retrospectivo, sem teste de significância nem confirmação prospectiva. Os dois métodos superestimaram o total (o snapshot de 2025 tem menos registros que os anos anteriores).</li>
-      <li>A referência foi escolhida no ajuste de 2024, antes do teste. Trocar o padrão agora, depois de ver 2025, anularia essa garantia; o teste de 2025 já é conhecido.</li>
+      <li>Com 4 setores, um ao acaso pegaria cerca de 25%. A previsão superestimou o total: o arquivo de 2025 tem menos registros que os anos anteriores.</li>
     </ul>
     <p class="hint section">Limitações registradas pelo treino (texto original do arquivo importado):</p>
     <ul class="factor-list">{% for l in ev.limitations %}<li>{{ l }}</li>{% endfor %}</ul>

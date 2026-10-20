@@ -23,14 +23,13 @@
   {% else %}
   {% set run = week.run %}
   {% set ev = run.evaluation %}
-  {% set other = week.method == 'baseline' ? 'poisson' : 'baseline' %}
 
   <section class="era era--forecast" aria-label="Previsão atual">
     <p class="era__kicker">{{ ui.icon('i-layers') }} Previsão atual · execução #{{ run.id }} · {{ run.files is empty ? 'atualização automática' : 'importada do treino' }}</p>
     <dl class="era__facts">
       <div><dt>Período previsto</dt><dd><strong>{{ run.as_of|br_date }} a {{ run.last_day|br_date }}</strong> (7 dias)</dd></div>
       <div><dt>Dados de entrada até</dt><dd><strong>{{ run.data_reference_through|br_date }}</strong> · atraso de publicação de dois meses assumido, não observado</dd></div>
-      <div><dt>Método escolhido no ajuste (2024)</dt><dd><strong>{{ methods[run.selected_method] }}</strong></dd></div>
+      <div><dt>Como é calculado</dt><dd><strong>Média simples</strong> das últimas 52 semanas</dd></div>
       <div><dt>Arquivo do Infosiga / cálculo</dt><dd>baixado em {{ run.provenance.source.snapshot_date|br_date }} · calculado em {{ run.imported_at|local_dt }}</dd></div>
     </dl>
   </section>
@@ -42,60 +41,25 @@
   {% endif %}
 
   <div class="callout section">
-    <p class="origin-line">{{ ui.origin_real() }} Contagens de sinistros registrados, agregadas por setor e semana — Fonte: <a href="{{ run.provenance.source.source_catalog }}" rel="noopener">Infosiga-SP / Detran-SP</a> ({{ run.provenance.source.license|replace({'-': ' '}) }}), snapshot de {{ run.provenance.source.snapshot_date|br_date }}; agregação e modelo pelo projeto Promotheus Fiscaliza.</p>
+    <p class="origin-line">{{ ui.origin_real() }} Contagens de sinistros registrados, agregadas por setor e semana — Fonte: <a href="{{ run.provenance.source.source_catalog }}" rel="noopener">Infosiga-SP / Detran-SP</a> ({{ run.provenance.source.license|replace({'-': ' '}) }}), snapshot de {{ run.provenance.source.snapshot_date|br_date }}; agregação pelo projeto Promotheus Fiscaliza.</p>
     <p class="origin-line">{{ ui.origin_demo() }} Agentes, posições, sugestões e missões são da demonstração. Nenhum agente real é acionado.</p>
-    <p><strong>Como ler:</strong> o número é a <strong>contagem esperada de registros em 7 dias</strong>, não a chance de um acidente. A posição (1º a 4º) é <strong>prioridade relativa de planejamento</strong>: o 1º não é emergência nem incidente em curso — falhas e alertas ficam na Visão geral. Priorizar um setor não comprova que deslocar agentes evita sinistros.</p>
-  </div>
-
-  <nav class="section method-switch" aria-label="Método da estimativa">
-    <span class="hint">Ordenar pela estimativa de:</span>
-    <span class="seg">
-      {% for code, label in methods %}
-        <a class="seg__link" href="{{ url('/planejar', {setor: selected.sector_id, metodo: code, quadrados: cell_count}) }}#setor" {% if code == week.method %}aria-current="true"{% endif %}>{{ label }}{% if code == run.selected_method %} · escolhida no ajuste{% endif %}</a>
-      {% endfor %}
-    </span>
-    {% if week.method != run.selected_method %}<span class="tag tag--warn">Só comparação: a execução importada mantém {{ methods[run.selected_method] }} como padrão</span>{% endif %}
-  </nav>
-
-  <div class="plan-grid section">
-    <div class="plan-map-wrap">
-      <div class="plan-map" id="plan-map" role="img" aria-label="Mapa dos quatro setores experimentais com a posição de cada um pelo método {{ methods[week.method] }}. A mesma informação está na lista ao lado."></div>
-      <p class="hint m-0">Quadrantes experimentais de um retângulo de estudo (lat. −22,28 a −22,14; long. −50,02 a −49,86): não são bairros nem o limite do município. O centro de cada setor é só referência visual. Pontos redondos = agentes de trânsito livres (fictícios); tracejado = sem posição recente, desenhado na base.</p>
-    </div>
-    <div>
-      <h2 class="panel-title">{{ ui.icon('i-list') }} Setores · {{ methods[week.method] }}</h2>
-      <ol class="sector-list">
-        {% for s in week.sectors %}
-          <li>
-            <a class="sector-card sector-card--{{ s.rank }}" href="{{ url('/planejar', {setor: s.sector_id, metodo: week.method, quadrados: cell_count}) }}#setor" {% if s.sector_id == selected.sector_id %}aria-current="true"{% endif %}>
-              <span class="sector-card__rank" aria-hidden="true">{{ s.rank }}º</span>
-              <span class="sector-card__main">
-                <span class="sector-card__title">{{ s.name }} <span class="code-tag">{{ s.sector_id }}</span></span>
-                <span class="sector-card__sub">{{ s.rank == 1 ? 'Planejar reforço primeiro' : 'Acompanhar' }} · {{ s.count_13w }} registros em 13 semanas</span>
-              </span>
-              <span class="sector-card__value"><strong class="num">{{ s.value|number_format(1, ',', '.') }}</strong><span class="hint">esperados em 7 dias</span></span>
-              <span class="visually-hidden">Posição {{ s.rank }} de 4.</span>
-            </a>
-          </li>
-        {% endfor %}
-      </ol>
-    </div>
+    <p><strong>Como ler:</strong> o número é a <strong>contagem esperada de registros em 7 dias</strong>, não a chance de um acidente. A ordem dos quadrados e setores é <strong>prioridade relativa de planejamento</strong>: o 1º não é emergência nem incidente em curso — falhas e alertas ficam na Visão geral. Priorizar um setor não comprova que deslocar agentes evita sinistros.</p>
   </div>
 
   {% if week.cells is not empty %}
   <section class="section panel" id="quadrados" aria-labelledby="quadrados-titulo">
     <p class="crumbs">{{ ui.origin_real() }} Quadrados de 2 × 2 km</p>
     <h2 id="quadrados-titulo">Onde concentrar o reforço</h2>
-    <p class="hint">A área foi dividida em quadrados iguais de 2 km. Estes são os que mais tiveram registros no último ano.</p>
+    <p class="hint">A área foi dividida em quadrados iguais de 2 km. Estes são os que mais tiveram registros no último ano. Toque num quadrado para ver o setor e sugerir um agente.</p>
     <nav class="method-switch" aria-label="Quantos quadrados mostrar">
       <span class="hint">Mostrar:</span>
-      <span class="seg">{% for n in 1..4 %}<a class="seg__link" href="{{ url('/planejar', {setor: selected.sector_id, metodo: week.method, quadrados: n}) }}#quadrados" {% if n == cell_count %}aria-current="true"{% endif %}>{{ n }}</a>{% endfor %}</span>
+      <span class="seg">{% for n in 1..4 %}<a class="seg__link" href="{{ url('/planejar', {setor: selected.sector_id, quadrados: n}) }}#quadrados" {% if n == cell_count %}aria-current="true"{% endif %}>{{ n }}</a>{% endfor %}</span>
     </nav>
     <div class="plan-grid section">
       <div class="plan-map plan-map--cells" id="cell-map" role="img" aria-label="Grade de quadrados de 2 km com os {{ week.cells|length }} prioritários numerados. A mesma informação está na lista."></div>
       <ol class="sector-list">
         {% for c in week.cells %}
-          <li class="sector-card cell-card">
+          <li><a class="sector-card cell-card" href="{{ url('/planejar', {setor: c.sector_id, quadrados: cell_count}) }}#setor">
             <span class="sector-card__rank cell-card__rank" aria-hidden="true">{{ c.rank_no }}</span>
             <span class="sector-card__main">
               <span class="sector-card__title">{{ c.places.inside is not empty ? c.places.inside|join(', ') : 'Perto de ' ~ (c.places.near ?? 'área sem bairro de referência') }}</span>
@@ -103,7 +67,7 @@
             </span>
             <span class="sector-card__value"><strong class="num">{{ c.expected|number_format(1, ',', '.') }}</strong><span class="hint">esperados em 7 dias</span></span>
             <span class="visually-hidden">Quadrado {{ c.rank_no }}.</span>
-          </li>
+          </a></li>
         {% endfor %}
       </ol>
     </div>
@@ -115,14 +79,12 @@
   <section class="section panel sector-detail" id="setor" aria-labelledby="setor-titulo">
     <div class="sector-detail__head">
       <div>
-        <p class="crumbs">{{ ui.origin_real() }} Posição {{ s.rank }} de 4 · {{ methods[week.method] }}</p>
+        <p class="crumbs">{{ ui.origin_real() }} Setor {{ s.rank }}º de 4 em registros esperados</p>
         <h2 id="setor-titulo">{{ s.name }} <span class="code-tag">{{ s.sector_id }}</span></h2>
       </div>
       <p class="sector-detail__value"><strong class="num">{{ s.value|number_format(1, ',', '.') }}</strong> registros esperados em 7 dias</p>
     </div>
     <dl class="facts">
-      <dt>{{ methods.baseline }}</dt><dd>{{ s.expected_baseline|number_format(1, ',', '.') }} ({{ week.method == 'baseline' ? s.rank : s.other_rank }}º)</dd>
-      <dt>{{ methods.poisson }}</dt><dd>{{ s.expected_ml|number_format(1, ',', '.') }} ({{ week.method == 'poisson' ? s.rank : s.other_rank }}º)</dd>
       <dt>Histórico usado</dt><dd>{{ s.history_start|br_date }} a {{ s.history_through|br_date }} · {{ s.count_13w }} registros em 13 semanas, {{ s.count_52w }} em 52</dd>
       <dt>Defasagem</dt><dd>{{ s.data_age_days }} dias entre o fim dos dados e a emissão</dd>
     </dl>
@@ -172,25 +134,6 @@
     {% endif %}
   </section>
 
-  <section class="section" aria-labelledby="comparacao">
-    <div class="list-head"><h2 id="comparacao">Comparação dos métodos nesta semana</h2><p class="hint">Mesmos setores, duas estimativas; a ordem muda conforme o método.</p></div>
-    <div class="table-wrap"><table class="data">
-      <caption>Registros esperados em 7 dias ({{ run.as_of|br_date }} a {{ run.last_day|br_date }}) e posição entre parênteses</caption>
-      <thead><tr><th scope="col">Setor</th><th scope="col">{{ methods.baseline }}{% if run.selected_method == 'baseline' %} (padrão){% endif %}</th><th scope="col">{{ methods.poisson }}{% if run.selected_method == 'poisson' %} (padrão){% endif %}</th><th scope="col">13 semanas</th><th scope="col">52 semanas</th></tr></thead>
-      <tbody>
-        {% for row in week.sectors %}
-          <tr>
-            <th scope="row">{{ row.name }}</th>
-            <td class="num">{{ row.expected_baseline|number_format(1, ',', '.') }} ({{ week.method == 'baseline' ? row.rank : row.other_rank }}º)</td>
-            <td class="num">{{ row.expected_ml|number_format(1, ',', '.') }} ({{ week.method == 'poisson' ? row.rank : row.other_rank }}º)</td>
-            <td class="num">{{ row.count_13w }}</td>
-            <td class="num">{{ row.count_52w }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table></div>
-    <p class="hint">No teste de 2025 (já avaliado), o Poisson teve desvio {{ (ev.poisson_deviance_relative_gain * 100)|number_format(1, ',', '.') }}% menor e o setor que ele priorizou concentrou {{ (ev.poisson.top_budget_capture_fraction * 100)|number_format(1, ',', '.') }}% dos registros elegíveis contra {{ (ev.baseline.top_budget_capture_fraction * 100)|number_format(1, ',', '.') }}% da referência. Ganho modesto, retrospectivo, sem confirmação prospectiva: por isso a referência, escolhida antes do teste, continua padrão. <a href="{{ url('/planejar/retrospecto') }}">Ver semana a semana</a>.</p>
-  </section>
   {% endif %}
 
   <section class="section" id="missoes" aria-labelledby="missoes-titulo">
@@ -205,7 +148,7 @@
             <span class="order__title">#{{ m.id }} · {{ m.agent_call_sign }} <span class="code-tag">{{ m.agent_code }}</span> no {{ m.sector_name|lower }}</span>
             {{ ui.status(m.state, states[m.state] ?? m.state, m.state == 'CONFIRMADA' ? '●' : (m.state == 'CONCLUIDA' ? '✓' : '–')) }}
           </div>
-          <p class="order__meta">{{ m.period_from|br_date }} a {{ m.period_until|date_modify('-1 day')|date('d/m/Y') }} ·{{ methods[m.method] ?? m.method }}: {{ m.expected_count|number_format(1, ',', '.') }} esperados, {{ m.rank_no }}º · {{ m.selection == 'MANUAL' ? 'escolha manual' : 'agente sugerido' }}</p>
+          <p class="order__meta">{{ m.period_from|br_date }} a {{ m.period_until|date_modify('-1 day')|date('d/m/Y') }} ·{{ m.expected_count|number_format(1, ',', '.') }} esperados, {{ m.rank_no }}º · {{ m.selection == 'MANUAL' ? 'escolha manual' : 'agente sugerido' }}</p>
           <p class="order__reason">{{ m.reason }}</p>
           {% if m.justification %}<p class="hint m-0">Justificativa: {{ m.justification }}</p>{% endif %}
           {% if m.support_point %}<p class="hint m-0">Ponto de apoio: {{ m.support_point }}</p>{% endif %}
@@ -241,8 +184,7 @@
       <div>
         <ul class="factor-list">
           <li>Uma linha é um setor numa segunda-feira; o alvo é a quantidade de registros elegíveis (sinistros fatais e não fatais em vias urbanas, com coordenada no retângulo de estudo) nos 7 dias seguintes, com zero quando não houve registro.</li>
-          <li><strong>{{ methods.baseline }}</strong>: (registros em 52 semanas + 1) ÷ 53. <strong>{{ methods.poisson }}</strong>: regressão de Poisson regularizada (alpha {{ ev.selected_alpha }}) com setor, ritmo de 13 e 52 semanas, época do ano e anos desde 2020.</li>
-          <li>Escolha feita só na janela de ajuste de 2024 (a referência venceu); o teste de 2025 foi medido depois e já é conhecido: novos ajustes não podem tratá-lo como teste intocado.</li>
+          <li><strong>Média simples:</strong> setor = (registros em 52 semanas + 1) ÷ 53; quadrado = (registros em 52 semanas + 0,1) ÷ 52,1. Um modelo estatístico mais complexo foi testado e não melhorou a escolha dos quadrados.</li>
           <li>Em cada corte, os dados terminam dois meses antes do mês da emissão: hipótese de atraso de publicação, porque a base não informa quando cada registro apareceu.</li>
         </ul>
         <p class="hint">Limitações registradas pelo treino e pelo manifesto (texto original dos arquivos importados):</p>
