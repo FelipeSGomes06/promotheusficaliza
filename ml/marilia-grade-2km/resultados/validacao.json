@@ -1,0 +1,257 @@
+{
+  "alpha_escolhido": 0.01,
+  "candidatos": [
+    {
+      "alpha": 0.01,
+      "desvio": 0.4191518537939648,
+      "summary": {
+        "weeks": 42,
+        "from": "2025-01-06",
+        "observed": 508,
+        "grade_referencia_1": {
+          "captured": 122,
+          "fraction": 0.24015748031496062
+        },
+        "grade_referencia_2": {
+          "captured": 180,
+          "fraction": 0.3543307086614173
+        },
+        "grade_referencia_4": {
+          "captured": 247,
+          "fraction": 0.4862204724409449
+        },
+        "grade_referencia_16": {
+          "captured": 470,
+          "fraction": 0.9251968503937008
+        },
+        "grade_historico_1": {
+          "captured": 122,
+          "fraction": 0.24015748031496062
+        },
+        "grade_historico_2": {
+          "captured": 180,
+          "fraction": 0.3543307086614173
+        },
+        "grade_historico_4": {
+          "captured": 245,
+          "fraction": 0.4822834645669291
+        },
+        "grade_historico_16": {
+          "captured": 468,
+          "fraction": 0.9212598425196851
+        },
+        "grade_poisson_1": {
+          "captured": 122,
+          "fraction": 0.24015748031496062
+        },
+        "grade_poisson_2": {
+          "captured": 181,
+          "fraction": 0.3562992125984252
+        },
+        "grade_poisson_4": {
+          "captured": 258,
+          "fraction": 0.5078740157480315
+        },
+        "grade_poisson_16": {
+          "captured": 463,
+          "fraction": 0.9114173228346457
+        },
+        "setores_16": {
+          "captured": 188,
+          "fraction": 0.3700787401574803
+        },
+        "desvio_grade_referencia": 0.33046735622421125,
+        "desvio_grade_poisson": 0.4191518537939648
+      }
+    },
+    {
+      "alpha": 0.1,
+      "desvio": 0.42595403583926433,
+      "summary": {
+        "weeks": 42,
+        "from": "2025-01-06",
+        "observed": 508,
+        "grade_referencia_1": {
+          "captured": 122,
+          "fraction": 0.24015748031496062
+        },
+        "grade_referencia_2": {
+          "captured": 180,
+          "fraction": 0.3543307086614173
+        },
+        "grade_referencia_4": {
+          "captured": 247,
+          "fraction": 0.4862204724409449
+        },
+        "grade_referencia_16": {
+          "captured": 470,
+          "fraction": 0.9251968503937008
+        },
+        "grade_historico_1": {
+          "captured": 122,
+          "fraction": 0.24015748031496062
+        },
+        "grade_historico_2": {
+          "captured": 180,
+          "fraction": 0.3543307086614173
+        },
+        "grade_historico_4": {
+          "captured": 245,
+          "fraction": 0.4822834645669291
+        },
+        "grade_historico_16": {
+          "captured": 468,
+          "fraction": 0.9212598425196851
+        },
+        "grade_poisson_1": {
+          "captured": 122,
+          "fraction": 0.24015748031496062
+        },
+        "grade_poisson_2": {
+          "captured": 180,
+          "fraction": 0.3543307086614173
+        },
+        "grade_poisson_4": {
+          "captured": 263,
+          "fraction": 0.5177165354330708
+        },
+        "grade_poisson_16": {
+          "captured": 470,
+          "fraction": 0.9251968503937008
+        },
+        "setores_16": {
+          "captured": 188,
+          "fraction": 0.3700787401574803
+        },
+        "desvio_grade_referencia": 0.33046735622421125,
+        "desvio_grade_poisson": 0.42595403583926433
+      }
+    },
+    {
+      "alpha": 1.0,
+      "desvio": 0.48582867234603794,
+      "summary": {
+        "weeks": 42,
+        "from": "2025-01-06",
+        "observed": 508,
+        "grade_referencia_1": {
+          "captured": 122,
+          "fraction": 0.24015748031496062
+        },
+        "grade_referencia_2": {
+          "captured": 180,
+          "fraction": 0.3543307086614173
+        },
+        "grade_referencia_4": {
+          "captured": 247,
+          "fraction": 0.4862204724409449
+        },
+        "grade_referencia_16": {
+          "captured": 470,
+          "fraction": 0.9251968503937008
+        },
+        "grade_historico_1": {
+          "captured": 122,
+          "fraction": 0.24015748031496062
+        },
+        "grade_historico_2": {
+          "captured": 180,
+          "fraction": 0.3543307086614173
+        },
+        "grade_historico_4": {
+          "captured": 245,
+          "fraction": 0.4822834645669291
+        },
+        "grade_historico_16": {
+          "captured": 468,
+          "fraction": 0.9212598425196851
+        },
+        "grade_poisson_1": {
+          "captured": 122,
+          "fraction": 0.24015748031496062
+        },
+        "grade_poisson_2": {
+          "captured": 180,
+          "fraction": 0.3543307086614173
+        },
+        "grade_poisson_4": {
+          "captured": 263,
+          "fraction": 0.5177165354330708
+        },
+        "grade_poisson_16": {
+          "captured": 472,
+          "fraction": 0.9291338582677166
+        },
+        "setores_16": {
+          "captured": 188,
+          "fraction": 0.3700787401574803
+        },
+        "desvio_grade_referencia": 0.33046735622421125,
+        "desvio_grade_poisson": 0.48582867234603794
+      }
+    },
+    {
+      "alpha": 10.0,
+      "desvio": 0.7747456012505577,
+      "summary": {
+        "weeks": 42,
+        "from": "2025-01-06",
+        "observed": 508,
+        "grade_referencia_1": {
+          "captured": 122,
+          "fraction": 0.24015748031496062
+        },
+        "grade_referencia_2": {
+          "captured": 180,
+          "fraction": 0.3543307086614173
+        },
+        "grade_referencia_4": {
+          "captured": 247,
+          "fraction": 0.4862204724409449
+        },
+        "grade_referencia_16": {
+          "captured": 470,
+          "fraction": 0.9251968503937008
+        },
+        "grade_historico_1": {
+          "captured": 122,
+          "fraction": 0.24015748031496062
+        },
+        "grade_historico_2": {
+          "captured": 180,
+          "fraction": 0.3543307086614173
+        },
+        "grade_historico_4": {
+          "captured": 245,
+          "fraction": 0.4822834645669291
+        },
+        "grade_historico_16": {
+          "captured": 468,
+          "fraction": 0.9212598425196851
+        },
+        "grade_poisson_1": {
+          "captured": 122,
+          "fraction": 0.24015748031496062
+        },
+        "grade_poisson_2": {
+          "captured": 180,
+          "fraction": 0.3543307086614173
+        },
+        "grade_poisson_4": {
+          "captured": 263,
+          "fraction": 0.5177165354330708
+        },
+        "grade_poisson_16": {
+          "captured": 471,
+          "fraction": 0.9271653543307087
+        },
+        "setores_16": {
+          "captured": 188,
+          "fraction": 0.3700787401574803
+        },
+        "desvio_grade_referencia": 0.33046735622421125,
+        "desvio_grade_poisson": 0.7747456012505577
+      }
+    }
+  ]
+}

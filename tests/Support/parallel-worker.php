@@ -36,6 +36,9 @@ $action = match ($case) {
     'start' => static fn() => $services->maintenance()->start((int) $args[0], (int) $args[1]),
     'archive' => static fn() => $services->equipment()->archive((int) $args[0], 'arquivamento concorrente de teste', (int) $args[1], ($args[2] ?? '0') === '1'),
     'login' => static fn() => $services->auth()->attempt($args[0], $args[1], $args[2]),
+    // Dois gestores confirmando o mesmo agente: args = execução, setor, agente, conta.
+    'mission' => static fn() => $services->planning()->confirm(['run_id' => $args[0], 'sector_id' => $args[1], 'method' => 'baseline', 'agent_id' => $args[2],
+        'confirm' => '1', 'justification' => 'teste concorrente', 'note' => "gestor {$n}"], (int) $args[3]),
     'http-login' => (static function () use ($http, $args) {
         // Sessão própria e token CSRF obtidos do formulário real, antes da largada.
         $form = (string) $http('GET', '/entrar', [], $args[2])->getBody();

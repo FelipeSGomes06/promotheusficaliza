@@ -1,0 +1,3476 @@
+{
+  "schema_version": 1,
+  "mode": "historical_replay",
+  "model_issued_at": "2025-01-01",
+  "selected_method": "baseline",
+  "rows": [
+    {
+      "from": "2025-01-06",
+      "until": "2025-01-13",
+      "sector_id": "NO",
+      "expected_count_ml": 6.30912136740537,
+      "expected_count_baseline": 6.981132075471698,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 89,
+        "count_52w": 369,
+        "baseline_expected_count": 6.981132075471698,
+        "data_age_days": 66,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-01-06",
+      "until": "2025-01-13",
+      "sector_id": "NE",
+      "expected_count_ml": 0.41242713459886515,
+      "expected_count_baseline": 0.32075471698113206,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 3,
+        "count_52w": 16,
+        "baseline_expected_count": 0.32075471698113206,
+        "data_age_days": 66,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-01-06",
+      "until": "2025-01-13",
+      "sector_id": "SO",
+      "expected_count_ml": 6.506188231144175,
+      "expected_count_baseline": 6.716981132075472,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 101,
+        "count_52w": 355,
+        "baseline_expected_count": 6.716981132075472,
+        "data_age_days": 66,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-01-06",
+      "until": "2025-01-13",
+      "sector_id": "SE",
+      "expected_count_ml": 3.9028152042071373,
+      "expected_count_baseline": 4.339622641509434,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 56,
+        "count_52w": 229,
+        "baseline_expected_count": 4.339622641509434,
+        "data_age_days": 66,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-01-13",
+      "until": "2025-01-20",
+      "sector_id": "NO",
+      "expected_count_ml": 6.290243230094825,
+      "expected_count_baseline": 6.981132075471698,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 89,
+        "count_52w": 369,
+        "baseline_expected_count": 6.981132075471698,
+        "data_age_days": 73,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-01-13",
+      "until": "2025-01-20",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4111930711494323,
+      "expected_count_baseline": 0.32075471698113206,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 3,
+        "count_52w": 16,
+        "baseline_expected_count": 0.32075471698113206,
+        "data_age_days": 73,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-01-13",
+      "until": "2025-01-20",
+      "sector_id": "SO",
+      "expected_count_ml": 6.486720430852627,
+      "expected_count_baseline": 6.716981132075472,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 101,
+        "count_52w": 355,
+        "baseline_expected_count": 6.716981132075472,
+        "data_age_days": 73,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-01-13",
+      "until": "2025-01-20",
+      "sector_id": "SE",
+      "expected_count_ml": 3.8911372102310917,
+      "expected_count_baseline": 4.339622641509434,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 56,
+        "count_52w": 229,
+        "baseline_expected_count": 4.339622641509434,
+        "data_age_days": 73,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-01-20",
+      "until": "2025-01-27",
+      "sector_id": "NO",
+      "expected_count_ml": 6.279345776978504,
+      "expected_count_baseline": 6.981132075471698,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 89,
+        "count_52w": 369,
+        "baseline_expected_count": 6.981132075471698,
+        "data_age_days": 80,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-01-20",
+      "until": "2025-01-27",
+      "sector_id": "NE",
+      "expected_count_ml": 0.41048070486235955,
+      "expected_count_baseline": 0.32075471698113206,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 3,
+        "count_52w": 16,
+        "baseline_expected_count": 0.32075471698113206,
+        "data_age_days": 80,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-01-20",
+      "until": "2025-01-27",
+      "sector_id": "SO",
+      "expected_count_ml": 6.475482593270178,
+      "expected_count_baseline": 6.716981132075472,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 101,
+        "count_52w": 355,
+        "baseline_expected_count": 6.716981132075472,
+        "data_age_days": 80,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-01-20",
+      "until": "2025-01-27",
+      "sector_id": "SE",
+      "expected_count_ml": 3.8843960582968076,
+      "expected_count_baseline": 4.339622641509434,
+      "observed_count": 6,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 56,
+        "count_52w": 229,
+        "baseline_expected_count": 4.339622641509434,
+        "data_age_days": 80,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-01-27",
+      "until": "2025-02-03",
+      "sector_id": "NO",
+      "expected_count_ml": 6.276511785451602,
+      "expected_count_baseline": 6.981132075471698,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 89,
+        "count_52w": 369,
+        "baseline_expected_count": 6.981132075471698,
+        "data_age_days": 87,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-01-27",
+      "until": "2025-02-03",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4102954468942761,
+      "expected_count_baseline": 0.32075471698113206,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 3,
+        "count_52w": 16,
+        "baseline_expected_count": 0.32075471698113206,
+        "data_age_days": 87,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-01-27",
+      "until": "2025-02-03",
+      "sector_id": "SO",
+      "expected_count_ml": 6.472560081363092,
+      "expected_count_baseline": 6.716981132075472,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 101,
+        "count_52w": 355,
+        "baseline_expected_count": 6.716981132075472,
+        "data_age_days": 87,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-01-27",
+      "until": "2025-02-03",
+      "sector_id": "SE",
+      "expected_count_ml": 3.8826429544055228,
+      "expected_count_baseline": 4.339622641509434,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2024-10-31",
+        "history_start": "2023-11-03",
+        "count_13w": 56,
+        "count_52w": 229,
+        "baseline_expected_count": 4.339622641509434,
+        "data_age_days": 87,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-03",
+      "until": "2025-02-10",
+      "sector_id": "NO",
+      "expected_count_ml": 5.868130920706942,
+      "expected_count_baseline": 6.69811320754717,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 74,
+        "count_52w": 354,
+        "baseline_expected_count": 6.69811320754717,
+        "data_age_days": 64,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-03",
+      "until": "2025-02-10",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4067056977290092,
+      "expected_count_baseline": 0.2830188679245283,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 3,
+        "count_52w": 14,
+        "baseline_expected_count": 0.2830188679245283,
+        "data_age_days": 64,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-03",
+      "until": "2025-02-10",
+      "sector_id": "SO",
+      "expected_count_ml": 6.472688710273298,
+      "expected_count_baseline": 6.69811320754717,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 101,
+        "count_52w": 354,
+        "baseline_expected_count": 6.69811320754717,
+        "data_age_days": 64,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-03",
+      "until": "2025-02-10",
+      "sector_id": "SE",
+      "expected_count_ml": 3.8505736018793852,
+      "expected_count_baseline": 4.3584905660377355,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 54,
+        "count_52w": 230,
+        "baseline_expected_count": 4.3584905660377355,
+        "data_age_days": 64,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-10",
+      "until": "2025-02-17",
+      "sector_id": "NO",
+      "expected_count_ml": 5.8804582702005606,
+      "expected_count_baseline": 6.69811320754717,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 74,
+        "count_52w": 354,
+        "baseline_expected_count": 6.69811320754717,
+        "data_age_days": 71,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-10",
+      "until": "2025-02-17",
+      "sector_id": "NE",
+      "expected_count_ml": 0.40756007595347243,
+      "expected_count_baseline": 0.2830188679245283,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 3,
+        "count_52w": 14,
+        "baseline_expected_count": 0.2830188679245283,
+        "data_age_days": 71,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-10",
+      "until": "2025-02-17",
+      "sector_id": "SO",
+      "expected_count_ml": 6.486286071506902,
+      "expected_count_baseline": 6.69811320754717,
+      "observed_count": 7,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 101,
+        "count_52w": 354,
+        "baseline_expected_count": 6.69811320754717,
+        "data_age_days": 71,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-10",
+      "until": "2025-02-17",
+      "sector_id": "SE",
+      "expected_count_ml": 3.8586626113412854,
+      "expected_count_baseline": 4.3584905660377355,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 54,
+        "count_52w": 230,
+        "baseline_expected_count": 4.3584905660377355,
+        "data_age_days": 71,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-17",
+      "until": "2025-02-24",
+      "sector_id": "NO",
+      "expected_count_ml": 5.900066772381854,
+      "expected_count_baseline": 6.69811320754717,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 74,
+        "count_52w": 354,
+        "baseline_expected_count": 6.69811320754717,
+        "data_age_days": 78,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-17",
+      "until": "2025-02-24",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4089190929332952,
+      "expected_count_baseline": 0.2830188679245283,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 3,
+        "count_52w": 14,
+        "baseline_expected_count": 0.2830188679245283,
+        "data_age_days": 78,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-17",
+      "until": "2025-02-24",
+      "sector_id": "SO",
+      "expected_count_ml": 6.507914718244548,
+      "expected_count_baseline": 6.69811320754717,
+      "observed_count": 6,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 101,
+        "count_52w": 354,
+        "baseline_expected_count": 6.69811320754717,
+        "data_age_days": 78,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-17",
+      "until": "2025-02-24",
+      "sector_id": "SE",
+      "expected_count_ml": 3.8715293966758213,
+      "expected_count_baseline": 4.3584905660377355,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 54,
+        "count_52w": 230,
+        "baseline_expected_count": 4.3584905660377355,
+        "data_age_days": 78,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-24",
+      "until": "2025-03-03",
+      "sector_id": "NO",
+      "expected_count_ml": 5.9267110949652375,
+      "expected_count_baseline": 6.69811320754717,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 74,
+        "count_52w": 354,
+        "baseline_expected_count": 6.69811320754717,
+        "data_age_days": 85,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-24",
+      "until": "2025-03-03",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4107657452921498,
+      "expected_count_baseline": 0.2830188679245283,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 3,
+        "count_52w": 14,
+        "baseline_expected_count": 0.2830188679245283,
+        "data_age_days": 85,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-24",
+      "until": "2025-03-03",
+      "sector_id": "SO",
+      "expected_count_ml": 6.537304043109434,
+      "expected_count_baseline": 6.69811320754717,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 101,
+        "count_52w": 354,
+        "baseline_expected_count": 6.69811320754717,
+        "data_age_days": 85,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-02-24",
+      "until": "2025-03-03",
+      "sector_id": "SE",
+      "expected_count_ml": 3.8890129747632662,
+      "expected_count_baseline": 4.3584905660377355,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2024-11-30",
+        "history_start": "2023-12-03",
+        "count_13w": 54,
+        "count_52w": 230,
+        "baseline_expected_count": 4.3584905660377355,
+        "data_age_days": 85,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-03",
+      "until": "2025-03-10",
+      "sector_id": "NO",
+      "expected_count_ml": 5.5390219883071525,
+      "expected_count_baseline": 6.433962264150943,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 60,
+        "count_52w": 340,
+        "baseline_expected_count": 6.433962264150943,
+        "data_age_days": 61,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-03",
+      "until": "2025-03-10",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4170523356000687,
+      "expected_count_baseline": 0.24528301886792453,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 4,
+        "count_52w": 12,
+        "baseline_expected_count": 0.24528301886792453,
+        "data_age_days": 61,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-03",
+      "until": "2025-03-10",
+      "sector_id": "SO",
+      "expected_count_ml": 6.145985918826641,
+      "expected_count_baseline": 6.547169811320755,
+      "observed_count": 7,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 83,
+        "count_52w": 346,
+        "baseline_expected_count": 6.547169811320755,
+        "data_age_days": 61,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-03",
+      "until": "2025-03-10",
+      "sector_id": "SE",
+      "expected_count_ml": 3.8800302766231907,
+      "expected_count_baseline": 4.150943396226415,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 55,
+        "count_52w": 219,
+        "baseline_expected_count": 4.150943396226415,
+        "data_age_days": 61,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-10",
+      "until": "2025-03-17",
+      "sector_id": "NO",
+      "expected_count_ml": 5.575874257067004,
+      "expected_count_baseline": 6.433962264150943,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 60,
+        "count_52w": 340,
+        "baseline_expected_count": 6.433962264150943,
+        "data_age_days": 68,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-10",
+      "until": "2025-03-17",
+      "sector_id": "NE",
+      "expected_count_ml": 0.41982707178831674,
+      "expected_count_baseline": 0.24528301886792453,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 4,
+        "count_52w": 12,
+        "baseline_expected_count": 0.24528301886792453,
+        "data_age_days": 68,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-10",
+      "until": "2025-03-17",
+      "sector_id": "SO",
+      "expected_count_ml": 6.186876445232383,
+      "expected_count_baseline": 6.547169811320755,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 83,
+        "count_52w": 346,
+        "baseline_expected_count": 6.547169811320755,
+        "data_age_days": 68,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-10",
+      "until": "2025-03-17",
+      "sector_id": "SE",
+      "expected_count_ml": 3.905844927450057,
+      "expected_count_baseline": 4.150943396226415,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 55,
+        "count_52w": 219,
+        "baseline_expected_count": 4.150943396226415,
+        "data_age_days": 68,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-17",
+      "until": "2025-03-24",
+      "sector_id": "NO",
+      "expected_count_ml": 5.618125566748144,
+      "expected_count_baseline": 6.433962264150943,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 60,
+        "count_52w": 340,
+        "baseline_expected_count": 6.433962264150943,
+        "data_age_days": 75,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-17",
+      "until": "2025-03-24",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4230083206481117,
+      "expected_count_baseline": 0.24528301886792453,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 4,
+        "count_52w": 12,
+        "baseline_expected_count": 0.24528301886792453,
+        "data_age_days": 75,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-17",
+      "until": "2025-03-24",
+      "sector_id": "SO",
+      "expected_count_ml": 6.233757637417653,
+      "expected_count_baseline": 6.547169811320755,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 83,
+        "count_52w": 346,
+        "baseline_expected_count": 6.547169811320755,
+        "data_age_days": 75,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-17",
+      "until": "2025-03-24",
+      "sector_id": "SE",
+      "expected_count_ml": 3.9354415531966,
+      "expected_count_baseline": 4.150943396226415,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 55,
+        "count_52w": 219,
+        "baseline_expected_count": 4.150943396226415,
+        "data_age_days": 75,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-24",
+      "until": "2025-03-31",
+      "sector_id": "NO",
+      "expected_count_ml": 5.665244020015293,
+      "expected_count_baseline": 6.433962264150943,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 60,
+        "count_52w": 340,
+        "baseline_expected_count": 6.433962264150943,
+        "data_age_days": 82,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-24",
+      "until": "2025-03-31",
+      "sector_id": "NE",
+      "expected_count_ml": 0.42655603376902174,
+      "expected_count_baseline": 0.24528301886792453,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 4,
+        "count_52w": 12,
+        "baseline_expected_count": 0.24528301886792453,
+        "data_age_days": 82,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-24",
+      "until": "2025-03-31",
+      "sector_id": "SO",
+      "expected_count_ml": 6.2860393129387315,
+      "expected_count_baseline": 6.547169811320755,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 83,
+        "count_52w": 346,
+        "baseline_expected_count": 6.547169811320755,
+        "data_age_days": 82,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-24",
+      "until": "2025-03-31",
+      "sector_id": "SE",
+      "expected_count_ml": 3.9684475650250657,
+      "expected_count_baseline": 4.150943396226415,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 55,
+        "count_52w": 219,
+        "baseline_expected_count": 4.150943396226415,
+        "data_age_days": 82,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-31",
+      "until": "2025-04-07",
+      "sector_id": "NO",
+      "expected_count_ml": 5.716623280353671,
+      "expected_count_baseline": 6.433962264150943,
+      "observed_count": 6,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 60,
+        "count_52w": 340,
+        "baseline_expected_count": 6.433962264150943,
+        "data_age_days": 89,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-31",
+      "until": "2025-04-07",
+      "sector_id": "NE",
+      "expected_count_ml": 0.43042455795447526,
+      "expected_count_baseline": 0.24528301886792453,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 4,
+        "count_52w": 12,
+        "baseline_expected_count": 0.24528301886792453,
+        "data_age_days": 89,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-31",
+      "until": "2025-04-07",
+      "sector_id": "SO",
+      "expected_count_ml": 6.343048693155313,
+      "expected_count_baseline": 6.547169811320755,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 83,
+        "count_52w": 346,
+        "baseline_expected_count": 6.547169811320755,
+        "data_age_days": 89,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-03-31",
+      "until": "2025-04-07",
+      "sector_id": "SE",
+      "expected_count_ml": 4.004438230186577,
+      "expected_count_baseline": 4.150943396226415,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2024-12-31",
+        "history_start": "2024-01-03",
+        "count_13w": 55,
+        "count_52w": 219,
+        "baseline_expected_count": 4.150943396226415,
+        "data_age_days": 89,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-07",
+      "until": "2025-04-14",
+      "sector_id": "NO",
+      "expected_count_ml": 5.260957913355757,
+      "expected_count_baseline": 6.037735849056604,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 46,
+        "count_52w": 319,
+        "baseline_expected_count": 6.037735849056604,
+        "data_age_days": 65,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-07",
+      "until": "2025-04-14",
+      "sector_id": "NE",
+      "expected_count_ml": 0.42830995841549613,
+      "expected_count_baseline": 0.2641509433962264,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 3,
+        "count_52w": 13,
+        "baseline_expected_count": 0.2641509433962264,
+        "data_age_days": 65,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-07",
+      "until": "2025-04-14",
+      "sector_id": "SO",
+      "expected_count_ml": 6.078567263481272,
+      "expected_count_baseline": 6.339622641509434,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 72,
+        "count_52w": 335,
+        "baseline_expected_count": 6.339622641509434,
+        "data_age_days": 65,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-07",
+      "until": "2025-04-14",
+      "sector_id": "SE",
+      "expected_count_ml": 3.823794919039163,
+      "expected_count_baseline": 4.056603773584905,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 46,
+        "count_52w": 214,
+        "baseline_expected_count": 4.056603773584905,
+        "data_age_days": 65,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-14",
+      "until": "2025-04-21",
+      "sector_id": "NO",
+      "expected_count_ml": 5.313642533671452,
+      "expected_count_baseline": 6.037735849056604,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 46,
+        "count_52w": 319,
+        "baseline_expected_count": 6.037735849056604,
+        "data_age_days": 72,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-14",
+      "until": "2025-04-21",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4325991673215902,
+      "expected_count_baseline": 0.2641509433962264,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 3,
+        "count_52w": 13,
+        "baseline_expected_count": 0.2641509433962264,
+        "data_age_days": 72,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-14",
+      "until": "2025-04-21",
+      "sector_id": "SO",
+      "expected_count_ml": 6.139439639503692,
+      "expected_count_baseline": 6.339622641509434,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 72,
+        "count_52w": 335,
+        "baseline_expected_count": 6.339622641509434,
+        "data_age_days": 72,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-14",
+      "until": "2025-04-21",
+      "sector_id": "SE",
+      "expected_count_ml": 3.8620874100251177,
+      "expected_count_baseline": 4.056603773584905,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 46,
+        "count_52w": 214,
+        "baseline_expected_count": 4.056603773584905,
+        "data_age_days": 72,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-21",
+      "until": "2025-04-28",
+      "sector_id": "NO",
+      "expected_count_ml": 5.368175765079004,
+      "expected_count_baseline": 6.037735849056604,
+      "observed_count": 7,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 46,
+        "count_52w": 319,
+        "baseline_expected_count": 6.037735849056604,
+        "data_age_days": 79,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-21",
+      "until": "2025-04-28",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4370388770590765,
+      "expected_count_baseline": 0.2641509433962264,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 3,
+        "count_52w": 13,
+        "baseline_expected_count": 0.2641509433962264,
+        "data_age_days": 79,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-21",
+      "until": "2025-04-28",
+      "sector_id": "SO",
+      "expected_count_ml": 6.202447920631406,
+      "expected_count_baseline": 6.339622641509434,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 72,
+        "count_52w": 335,
+        "baseline_expected_count": 6.339622641509434,
+        "data_age_days": 79,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-21",
+      "until": "2025-04-28",
+      "sector_id": "SE",
+      "expected_count_ml": 3.9017235174810634,
+      "expected_count_baseline": 4.056603773584905,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 46,
+        "count_52w": 214,
+        "baseline_expected_count": 4.056603773584905,
+        "data_age_days": 79,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-28",
+      "until": "2025-05-05",
+      "sector_id": "NO",
+      "expected_count_ml": 5.423771218477216,
+      "expected_count_baseline": 6.037735849056604,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 46,
+        "count_52w": 319,
+        "baseline_expected_count": 6.037735849056604,
+        "data_age_days": 86,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-28",
+      "until": "2025-05-05",
+      "sector_id": "NE",
+      "expected_count_ml": 0.44156506539307333,
+      "expected_count_baseline": 0.2641509433962264,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 3,
+        "count_52w": 13,
+        "baseline_expected_count": 0.2641509433962264,
+        "data_age_days": 86,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-28",
+      "until": "2025-05-05",
+      "sector_id": "SO",
+      "expected_count_ml": 6.266683504452913,
+      "expected_count_baseline": 6.339622641509434,
+      "observed_count": 8,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 72,
+        "count_52w": 335,
+        "baseline_expected_count": 6.339622641509434,
+        "data_age_days": 86,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-04-28",
+      "until": "2025-05-05",
+      "sector_id": "SE",
+      "expected_count_ml": 3.94213167427055,
+      "expected_count_baseline": 4.056603773584905,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-01-31",
+        "history_start": "2024-02-03",
+        "count_13w": 46,
+        "count_52w": 214,
+        "baseline_expected_count": 4.056603773584905,
+        "data_age_days": 86,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-05",
+      "until": "2025-05-12",
+      "sector_id": "NO",
+      "expected_count_ml": 5.2734465319618025,
+      "expected_count_baseline": 5.622641509433962,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 43,
+        "count_52w": 297,
+        "baseline_expected_count": 5.622641509433962,
+        "data_age_days": 65,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-05",
+      "until": "2025-05-12",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4348399520251969,
+      "expected_count_baseline": 0.24528301886792453,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 2,
+        "count_52w": 12,
+        "baseline_expected_count": 0.24528301886792453,
+        "data_age_days": 65,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-05",
+      "until": "2025-05-12",
+      "sector_id": "SO",
+      "expected_count_ml": 5.955020546744039,
+      "expected_count_baseline": 6.169811320754717,
+      "observed_count": 6,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 60,
+        "count_52w": 326,
+        "baseline_expected_count": 6.169811320754717,
+        "data_age_days": 65,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-05",
+      "until": "2025-05-12",
+      "sector_id": "SE",
+      "expected_count_ml": 3.7142890514554767,
+      "expected_count_baseline": 3.7735849056603774,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 38,
+        "count_52w": 199,
+        "baseline_expected_count": 3.7735849056603774,
+        "data_age_days": 65,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-12",
+      "until": "2025-05-19",
+      "sector_id": "NO",
+      "expected_count_ml": 5.3265790855076025,
+      "expected_count_baseline": 5.622641509433962,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 43,
+        "count_52w": 297,
+        "baseline_expected_count": 5.622641509433962,
+        "data_age_days": 72,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-12",
+      "until": "2025-05-19",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4392211772627716,
+      "expected_count_baseline": 0.24528301886792453,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 2,
+        "count_52w": 12,
+        "baseline_expected_count": 0.24528301886792453,
+        "data_age_days": 72,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-12",
+      "until": "2025-05-19",
+      "sector_id": "SO",
+      "expected_count_ml": 6.015020291910413,
+      "expected_count_baseline": 6.169811320754717,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 60,
+        "count_52w": 326,
+        "baseline_expected_count": 6.169811320754717,
+        "data_age_days": 72,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-12",
+      "until": "2025-05-19",
+      "sector_id": "SE",
+      "expected_count_ml": 3.7517123306553164,
+      "expected_count_baseline": 3.7735849056603774,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 38,
+        "count_52w": 199,
+        "baseline_expected_count": 3.7735849056603774,
+        "data_age_days": 72,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-19",
+      "until": "2025-05-26",
+      "sector_id": "NO",
+      "expected_count_ml": 5.378273936982783,
+      "expected_count_baseline": 5.622641509433962,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 43,
+        "count_52w": 297,
+        "baseline_expected_count": 5.622641509433962,
+        "data_age_days": 79,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-19",
+      "until": "2025-05-26",
+      "sector_id": "NE",
+      "expected_count_ml": 0.443483851891058,
+      "expected_count_baseline": 0.24528301886792453,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 2,
+        "count_52w": 12,
+        "baseline_expected_count": 0.24528301886792453,
+        "data_age_days": 79,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-19",
+      "until": "2025-05-26",
+      "sector_id": "SO",
+      "expected_count_ml": 6.073396517179748,
+      "expected_count_baseline": 6.169811320754717,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 60,
+        "count_52w": 326,
+        "baseline_expected_count": 6.169811320754717,
+        "data_age_days": 79,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-19",
+      "until": "2025-05-26",
+      "sector_id": "SE",
+      "expected_count_ml": 3.7881229815810697,
+      "expected_count_baseline": 3.7735849056603774,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 38,
+        "count_52w": 199,
+        "baseline_expected_count": 3.7735849056603774,
+        "data_age_days": 79,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-26",
+      "until": "2025-06-02",
+      "sector_id": "NO",
+      "expected_count_ml": 5.42768956786064,
+      "expected_count_baseline": 5.622641509433962,
+      "observed_count": 7,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 43,
+        "count_52w": 297,
+        "baseline_expected_count": 5.622641509433962,
+        "data_age_days": 86,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-26",
+      "until": "2025-06-02",
+      "sector_id": "NE",
+      "expected_count_ml": 0.44755858564060597,
+      "expected_count_baseline": 0.24528301886792453,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 2,
+        "count_52w": 12,
+        "baseline_expected_count": 0.24528301886792453,
+        "data_age_days": 86,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-26",
+      "until": "2025-06-02",
+      "sector_id": "SO",
+      "expected_count_ml": 6.129198940779646,
+      "expected_count_baseline": 6.169811320754717,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 60,
+        "count_52w": 326,
+        "baseline_expected_count": 6.169811320754717,
+        "data_age_days": 86,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-05-26",
+      "until": "2025-06-02",
+      "sector_id": "SE",
+      "expected_count_ml": 3.822928290713901,
+      "expected_count_baseline": 3.7735849056603774,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2025-02-28",
+        "history_start": "2024-03-02",
+        "count_13w": 38,
+        "count_52w": 199,
+        "baseline_expected_count": 3.7735849056603774,
+        "data_age_days": 86,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-02",
+      "until": "2025-06-09",
+      "sector_id": "NO",
+      "expected_count_ml": 5.238199138350714,
+      "expected_count_baseline": 5.39622641509434,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 38,
+        "count_52w": 285,
+        "baseline_expected_count": 5.39622641509434,
+        "data_age_days": 62,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-02",
+      "until": "2025-06-09",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4513771592369207,
+      "expected_count_baseline": 0.24528301886792453,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 2,
+        "count_52w": 12,
+        "baseline_expected_count": 0.24528301886792453,
+        "data_age_days": 62,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-02",
+      "until": "2025-06-09",
+      "sector_id": "SO",
+      "expected_count_ml": 6.0805660281249185,
+      "expected_count_baseline": 6.132075471698113,
+      "observed_count": 11,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 57,
+        "count_52w": 324,
+        "baseline_expected_count": 6.132075471698113,
+        "data_age_days": 62,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-02",
+      "until": "2025-06-09",
+      "sector_id": "SE",
+      "expected_count_ml": 3.6808377133525263,
+      "expected_count_baseline": 3.6226415094339623,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 33,
+        "count_52w": 191,
+        "baseline_expected_count": 3.6226415094339623,
+        "data_age_days": 62,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-09",
+      "until": "2025-06-16",
+      "sector_id": "NO",
+      "expected_count_ml": 5.278778665958422,
+      "expected_count_baseline": 5.39622641509434,
+      "observed_count": 11,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 38,
+        "count_52w": 285,
+        "baseline_expected_count": 5.39622641509434,
+        "data_age_days": 69,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-09",
+      "until": "2025-06-16",
+      "sector_id": "NE",
+      "expected_count_ml": 0.45487390905703334,
+      "expected_count_baseline": 0.24528301886792453,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 2,
+        "count_52w": 12,
+        "baseline_expected_count": 0.24528301886792453,
+        "data_age_days": 69,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-09",
+      "until": "2025-06-16",
+      "sector_id": "SO",
+      "expected_count_ml": 6.127671243198217,
+      "expected_count_baseline": 6.132075471698113,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 57,
+        "count_52w": 324,
+        "baseline_expected_count": 6.132075471698113,
+        "data_age_days": 69,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-09",
+      "until": "2025-06-16",
+      "sector_id": "SE",
+      "expected_count_ml": 3.7093526001797392,
+      "expected_count_baseline": 3.6226415094339623,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 33,
+        "count_52w": 191,
+        "baseline_expected_count": 3.6226415094339623,
+        "data_age_days": 69,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-16",
+      "until": "2025-06-23",
+      "sector_id": "NO",
+      "expected_count_ml": 5.3149076824296895,
+      "expected_count_baseline": 5.39622641509434,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 38,
+        "count_52w": 285,
+        "baseline_expected_count": 5.39622641509434,
+        "data_age_days": 76,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-16",
+      "until": "2025-06-23",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4579871570245325,
+      "expected_count_baseline": 0.24528301886792453,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 2,
+        "count_52w": 12,
+        "baseline_expected_count": 0.24528301886792453,
+        "data_age_days": 76,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-16",
+      "until": "2025-06-23",
+      "sector_id": "SO",
+      "expected_count_ml": 6.1696102501703605,
+      "expected_count_baseline": 6.132075471698113,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 57,
+        "count_52w": 324,
+        "baseline_expected_count": 6.132075471698113,
+        "data_age_days": 76,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-16",
+      "until": "2025-06-23",
+      "sector_id": "SE",
+      "expected_count_ml": 3.7347401509126144,
+      "expected_count_baseline": 3.6226415094339623,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 33,
+        "count_52w": 191,
+        "baseline_expected_count": 3.6226415094339623,
+        "data_age_days": 76,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-23",
+      "until": "2025-06-30",
+      "sector_id": "NO",
+      "expected_count_ml": 5.345933219134071,
+      "expected_count_baseline": 5.39622641509434,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 38,
+        "count_52w": 285,
+        "baseline_expected_count": 5.39622641509434,
+        "data_age_days": 83,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-23",
+      "until": "2025-06-30",
+      "sector_id": "NE",
+      "expected_count_ml": 0.46066063664062684,
+      "expected_count_baseline": 0.24528301886792453,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 2,
+        "count_52w": 12,
+        "baseline_expected_count": 0.24528301886792453,
+        "data_age_days": 83,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-23",
+      "until": "2025-06-30",
+      "sector_id": "SO",
+      "expected_count_ml": 6.205625075018811,
+      "expected_count_baseline": 6.132075471698113,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 57,
+        "count_52w": 324,
+        "baseline_expected_count": 6.132075471698113,
+        "data_age_days": 83,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-23",
+      "until": "2025-06-30",
+      "sector_id": "SE",
+      "expected_count_ml": 3.7565415300817246,
+      "expected_count_baseline": 3.6226415094339623,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 33,
+        "count_52w": 191,
+        "baseline_expected_count": 3.6226415094339623,
+        "data_age_days": 83,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-30",
+      "until": "2025-07-07",
+      "sector_id": "NO",
+      "expected_count_ml": 5.37128098629053,
+      "expected_count_baseline": 5.39622641509434,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 38,
+        "count_52w": 285,
+        "baseline_expected_count": 5.39622641509434,
+        "data_age_days": 90,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-30",
+      "until": "2025-07-07",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4628448611861039,
+      "expected_count_baseline": 0.24528301886792453,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 2,
+        "count_52w": 12,
+        "baseline_expected_count": 0.24528301886792453,
+        "data_age_days": 90,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-30",
+      "until": "2025-07-07",
+      "sector_id": "SO",
+      "expected_count_ml": 6.235049075097758,
+      "expected_count_baseline": 6.132075471698113,
+      "observed_count": 6,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 57,
+        "count_52w": 324,
+        "baseline_expected_count": 6.132075471698113,
+        "data_age_days": 90,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-06-30",
+      "until": "2025-07-07",
+      "sector_id": "SE",
+      "expected_count_ml": 3.7743531891719027,
+      "expected_count_baseline": 3.6226415094339623,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2025-03-31",
+        "history_start": "2024-04-02",
+        "count_13w": 33,
+        "count_52w": 191,
+        "baseline_expected_count": 3.6226415094339623,
+        "data_age_days": 90,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-07",
+      "until": "2025-07-14",
+      "sector_id": "NO",
+      "expected_count_ml": 5.687115510874196,
+      "expected_count_baseline": 5.339622641509434,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 47,
+        "count_52w": 282,
+        "baseline_expected_count": 5.339622641509434,
+        "data_age_days": 67,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-07",
+      "until": "2025-07-14",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4521637219444624,
+      "expected_count_baseline": 0.22641509433962265,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 1,
+        "count_52w": 11,
+        "baseline_expected_count": 0.22641509433962265,
+        "data_age_days": 67,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-07",
+      "until": "2025-07-14",
+      "sector_id": "SO",
+      "expected_count_ml": 6.090933557775007,
+      "expected_count_baseline": 5.886792452830188,
+      "observed_count": 6,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 54,
+        "count_52w": 311,
+        "baseline_expected_count": 5.886792452830188,
+        "data_age_days": 67,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-07",
+      "until": "2025-07-14",
+      "sector_id": "SE",
+      "expected_count_ml": 3.7463344732211614,
+      "expected_count_baseline": 3.4716981132075473,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 33,
+        "count_52w": 183,
+        "baseline_expected_count": 3.4716981132075473,
+        "data_age_days": 67,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-14",
+      "until": "2025-07-21",
+      "sector_id": "NO",
+      "expected_count_ml": 5.700466849350917,
+      "expected_count_baseline": 5.339622641509434,
+      "observed_count": 9,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 47,
+        "count_52w": 282,
+        "baseline_expected_count": 5.339622641509434,
+        "data_age_days": 74,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-14",
+      "until": "2025-07-21",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4532252426550988,
+      "expected_count_baseline": 0.22641509433962265,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 1,
+        "count_52w": 11,
+        "baseline_expected_count": 0.22641509433962265,
+        "data_age_days": 74,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-14",
+      "until": "2025-07-21",
+      "sector_id": "SO",
+      "expected_count_ml": 6.1052329183935115,
+      "expected_count_baseline": 5.886792452830188,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 54,
+        "count_52w": 311,
+        "baseline_expected_count": 5.886792452830188,
+        "data_age_days": 74,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-14",
+      "until": "2025-07-21",
+      "sector_id": "SE",
+      "expected_count_ml": 3.755129543323632,
+      "expected_count_baseline": 3.4716981132075473,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 33,
+        "count_52w": 183,
+        "baseline_expected_count": 3.4716981132075473,
+        "data_age_days": 74,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-21",
+      "until": "2025-07-28",
+      "sector_id": "NO",
+      "expected_count_ml": 5.706651049307442,
+      "expected_count_baseline": 5.339622641509434,
+      "observed_count": 6,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 47,
+        "count_52w": 282,
+        "baseline_expected_count": 5.339622641509434,
+        "data_age_days": 81,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-21",
+      "until": "2025-07-28",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4537169279152706,
+      "expected_count_baseline": 0.22641509433962265,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 1,
+        "count_52w": 11,
+        "baseline_expected_count": 0.22641509433962265,
+        "data_age_days": 81,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-21",
+      "until": "2025-07-28",
+      "sector_id": "SO",
+      "expected_count_ml": 6.111856232263464,
+      "expected_count_baseline": 5.886792452830188,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 54,
+        "count_52w": 311,
+        "baseline_expected_count": 5.886792452830188,
+        "data_age_days": 81,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-21",
+      "until": "2025-07-28",
+      "sector_id": "SE",
+      "expected_count_ml": 3.7592033275543413,
+      "expected_count_baseline": 3.4716981132075473,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 33,
+        "count_52w": 183,
+        "baseline_expected_count": 3.4716981132075473,
+        "data_age_days": 81,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-28",
+      "until": "2025-08-04",
+      "sector_id": "NO",
+      "expected_count_ml": 5.705524379824753,
+      "expected_count_baseline": 5.339622641509434,
+      "observed_count": 6,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 47,
+        "count_52w": 282,
+        "baseline_expected_count": 5.339622641509434,
+        "data_age_days": 88,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-28",
+      "until": "2025-08-04",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4536273501555574,
+      "expected_count_baseline": 0.22641509433962265,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 1,
+        "count_52w": 11,
+        "baseline_expected_count": 0.22641509433962265,
+        "data_age_days": 88,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-28",
+      "until": "2025-08-04",
+      "sector_id": "SO",
+      "expected_count_ml": 6.110649562740484,
+      "expected_count_baseline": 5.886792452830188,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 54,
+        "count_52w": 311,
+        "baseline_expected_count": 5.886792452830188,
+        "data_age_days": 88,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-07-28",
+      "until": "2025-08-04",
+      "sector_id": "SE",
+      "expected_count_ml": 3.7584611445065637,
+      "expected_count_baseline": 3.4716981132075473,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-04-30",
+        "history_start": "2024-05-02",
+        "count_13w": 33,
+        "count_52w": 183,
+        "baseline_expected_count": 3.4716981132075473,
+        "data_age_days": 88,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-04",
+      "until": "2025-08-11",
+      "sector_id": "NO",
+      "expected_count_ml": 5.616648352082028,
+      "expected_count_baseline": 4.867924528301887,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 49,
+        "count_52w": 257,
+        "baseline_expected_count": 4.867924528301887,
+        "data_age_days": 64,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-04",
+      "until": "2025-08-11",
+      "sector_id": "NE",
+      "expected_count_ml": 0.45063111073679474,
+      "expected_count_baseline": 0.20754716981132076,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 1,
+        "count_52w": 10,
+        "baseline_expected_count": 0.20754716981132076,
+        "data_age_days": 64,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-04",
+      "until": "2025-08-11",
+      "sector_id": "SO",
+      "expected_count_ml": 6.091003003585036,
+      "expected_count_baseline": 5.6415094339622645,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 56,
+        "count_52w": 298,
+        "baseline_expected_count": 5.6415094339622645,
+        "data_age_days": 64,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-04",
+      "until": "2025-08-11",
+      "sector_id": "SE",
+      "expected_count_ml": 3.704987660503808,
+      "expected_count_baseline": 3.30188679245283,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 33,
+        "count_52w": 174,
+        "baseline_expected_count": 3.30188679245283,
+        "data_age_days": 64,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-11",
+      "until": "2025-08-18",
+      "sector_id": "NO",
+      "expected_count_ml": 5.601224958374152,
+      "expected_count_baseline": 4.867924528301887,
+      "observed_count": 9,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 49,
+        "count_52w": 257,
+        "baseline_expected_count": 4.867924528301887,
+        "data_age_days": 71,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-11",
+      "until": "2025-08-18",
+      "sector_id": "NE",
+      "expected_count_ml": 0.44939367150217796,
+      "expected_count_baseline": 0.20754716981132076,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 1,
+        "count_52w": 10,
+        "baseline_expected_count": 0.20754716981132076,
+        "data_age_days": 71,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-11",
+      "until": "2025-08-18",
+      "sector_id": "SO",
+      "expected_count_ml": 6.07427702547296,
+      "expected_count_baseline": 5.6415094339622645,
+      "observed_count": 6,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 56,
+        "count_52w": 298,
+        "baseline_expected_count": 5.6415094339622645,
+        "data_age_days": 71,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-11",
+      "until": "2025-08-18",
+      "sector_id": "SE",
+      "expected_count_ml": 3.694813713375786,
+      "expected_count_baseline": 3.30188679245283,
+      "observed_count": 6,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 33,
+        "count_52w": 174,
+        "baseline_expected_count": 3.30188679245283,
+        "data_age_days": 71,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-18",
+      "until": "2025-08-25",
+      "sector_id": "NO",
+      "expected_count_ml": 5.578957445558014,
+      "expected_count_baseline": 4.867924528301887,
+      "observed_count": 8,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 49,
+        "count_52w": 257,
+        "baseline_expected_count": 4.867924528301887,
+        "data_age_days": 78,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-18",
+      "until": "2025-08-25",
+      "sector_id": "NE",
+      "expected_count_ml": 0.44760711955791,
+      "expected_count_baseline": 0.20754716981132076,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 1,
+        "count_52w": 10,
+        "baseline_expected_count": 0.20754716981132076,
+        "data_age_days": 78,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-18",
+      "until": "2025-08-25",
+      "sector_id": "SO",
+      "expected_count_ml": 6.05012890742402,
+      "expected_count_baseline": 5.6415094339622645,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 56,
+        "count_52w": 298,
+        "baseline_expected_count": 5.6415094339622645,
+        "data_age_days": 78,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-18",
+      "until": "2025-08-25",
+      "sector_id": "SE",
+      "expected_count_ml": 3.6801250850262264,
+      "expected_count_baseline": 3.30188679245283,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 33,
+        "count_52w": 174,
+        "baseline_expected_count": 3.30188679245283,
+        "data_age_days": 78,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-25",
+      "until": "2025-09-01",
+      "sector_id": "NO",
+      "expected_count_ml": 5.550218631081352,
+      "expected_count_baseline": 4.867924528301887,
+      "observed_count": 7,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 49,
+        "count_52w": 257,
+        "baseline_expected_count": 4.867924528301887,
+        "data_age_days": 85,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-25",
+      "until": "2025-09-01",
+      "sector_id": "NE",
+      "expected_count_ml": 0.44530136653990654,
+      "expected_count_baseline": 0.20754716981132076,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 1,
+        "count_52w": 10,
+        "baseline_expected_count": 0.20754716981132076,
+        "data_age_days": 85,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-25",
+      "until": "2025-09-01",
+      "sector_id": "SO",
+      "expected_count_ml": 6.018962953224317,
+      "expected_count_baseline": 5.6415094339622645,
+      "observed_count": 7,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 56,
+        "count_52w": 298,
+        "baseline_expected_count": 5.6415094339622645,
+        "data_age_days": 85,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-08-25",
+      "until": "2025-09-01",
+      "sector_id": "SE",
+      "expected_count_ml": 3.6611677021994953,
+      "expected_count_baseline": 3.30188679245283,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2025-05-31",
+        "history_start": "2024-06-02",
+        "count_13w": 33,
+        "count_52w": 174,
+        "baseline_expected_count": 3.30188679245283,
+        "data_age_days": 85,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-01",
+      "until": "2025-09-08",
+      "sector_id": "NO",
+      "expected_count_ml": 5.758520088282218,
+      "expected_count_baseline": 4.7924528301886795,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 58,
+        "count_52w": 253,
+        "baseline_expected_count": 4.7924528301886795,
+        "data_age_days": 62,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-01",
+      "until": "2025-09-08",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4425152833025232,
+      "expected_count_baseline": 0.20754716981132076,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 1,
+        "count_52w": 10,
+        "baseline_expected_count": 0.20754716981132076,
+        "data_age_days": 62,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-01",
+      "until": "2025-09-08",
+      "sector_id": "SO",
+      "expected_count_ml": 6.250044353829072,
+      "expected_count_baseline": 5.660377358490566,
+      "observed_count": 13,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 65,
+        "count_52w": 299,
+        "baseline_expected_count": 5.660377358490566,
+        "data_age_days": 62,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-01",
+      "until": "2025-09-08",
+      "sector_id": "SE",
+      "expected_count_ml": 3.7028955167283475,
+      "expected_count_baseline": 3.339622641509434,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 35,
+        "count_52w": 176,
+        "baseline_expected_count": 3.339622641509434,
+        "data_age_days": 62,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-08",
+      "until": "2025-09-15",
+      "sector_id": "NO",
+      "expected_count_ml": 5.716622775228893,
+      "expected_count_baseline": 4.7924528301886795,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 58,
+        "count_52w": 253,
+        "baseline_expected_count": 4.7924528301886795,
+        "data_age_days": 69,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-08",
+      "until": "2025-09-15",
+      "sector_id": "NE",
+      "expected_count_ml": 0.43929567113287343,
+      "expected_count_baseline": 0.20754716981132076,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 1,
+        "count_52w": 10,
+        "baseline_expected_count": 0.20754716981132076,
+        "data_age_days": 69,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-08",
+      "until": "2025-09-15",
+      "sector_id": "SO",
+      "expected_count_ml": 6.2045708535416635,
+      "expected_count_baseline": 5.660377358490566,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 65,
+        "count_52w": 299,
+        "baseline_expected_count": 5.660377358490566,
+        "data_age_days": 69,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-08",
+      "until": "2025-09-15",
+      "sector_id": "SE",
+      "expected_count_ml": 3.6759543286644534,
+      "expected_count_baseline": 3.339622641509434,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 35,
+        "count_52w": 176,
+        "baseline_expected_count": 3.339622641509434,
+        "data_age_days": 69,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-15",
+      "until": "2025-09-22",
+      "sector_id": "NO",
+      "expected_count_ml": 5.669780506953043,
+      "expected_count_baseline": 4.7924528301886795,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 58,
+        "count_52w": 253,
+        "baseline_expected_count": 4.7924528301886795,
+        "data_age_days": 76,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-15",
+      "until": "2025-09-22",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4356960623273403,
+      "expected_count_baseline": 0.20754716981132076,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 1,
+        "count_52w": 10,
+        "baseline_expected_count": 0.20754716981132076,
+        "data_age_days": 76,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-15",
+      "until": "2025-09-22",
+      "sector_id": "SO",
+      "expected_count_ml": 6.153730316412384,
+      "expected_count_baseline": 5.660377358490566,
+      "observed_count": 6,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 65,
+        "count_52w": 299,
+        "baseline_expected_count": 5.660377358490566,
+        "data_age_days": 76,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-15",
+      "until": "2025-09-22",
+      "sector_id": "SE",
+      "expected_count_ml": 3.64583339090043,
+      "expected_count_baseline": 3.339622641509434,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 35,
+        "count_52w": 176,
+        "baseline_expected_count": 3.339622641509434,
+        "data_age_days": 76,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-22",
+      "until": "2025-09-29",
+      "sector_id": "NO",
+      "expected_count_ml": 5.618760349287329,
+      "expected_count_baseline": 4.7924528301886795,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 58,
+        "count_52w": 253,
+        "baseline_expected_count": 4.7924528301886795,
+        "data_age_days": 83,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-22",
+      "until": "2025-09-29",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4317754023005524,
+      "expected_count_baseline": 0.20754716981132076,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 1,
+        "count_52w": 10,
+        "baseline_expected_count": 0.20754716981132076,
+        "data_age_days": 83,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-22",
+      "until": "2025-09-29",
+      "sector_id": "SO",
+      "expected_count_ml": 6.098355281948416,
+      "expected_count_baseline": 5.660377358490566,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 65,
+        "count_52w": 299,
+        "baseline_expected_count": 5.660377358490566,
+        "data_age_days": 83,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-22",
+      "until": "2025-09-29",
+      "sector_id": "SE",
+      "expected_count_ml": 3.6130259490252894,
+      "expected_count_baseline": 3.339622641509434,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 35,
+        "count_52w": 176,
+        "baseline_expected_count": 3.339622641509434,
+        "data_age_days": 83,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-29",
+      "until": "2025-10-06",
+      "sector_id": "NO",
+      "expected_count_ml": 5.564381824312268,
+      "expected_count_baseline": 4.7924528301886795,
+      "observed_count": 7,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 58,
+        "count_52w": 253,
+        "baseline_expected_count": 4.7924528301886795,
+        "data_age_days": 90,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-29",
+      "until": "2025-10-06",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4275966674839665,
+      "expected_count_baseline": 0.20754716981132076,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 1,
+        "count_52w": 10,
+        "baseline_expected_count": 0.20754716981132076,
+        "data_age_days": 90,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-29",
+      "until": "2025-10-06",
+      "sector_id": "SO",
+      "expected_count_ml": 6.039335223360532,
+      "expected_count_baseline": 5.660377358490566,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 65,
+        "count_52w": 299,
+        "baseline_expected_count": 5.660377358490566,
+        "data_age_days": 90,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-09-29",
+      "until": "2025-10-06",
+      "sector_id": "SE",
+      "expected_count_ml": 3.5780589795175874,
+      "expected_count_baseline": 3.339622641509434,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-06-30",
+        "history_start": "2024-07-02",
+        "count_13w": 35,
+        "count_52w": 176,
+        "baseline_expected_count": 3.339622641509434,
+        "data_age_days": 90,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-06",
+      "until": "2025-10-13",
+      "sector_id": "NO",
+      "expected_count_ml": 5.389838996668157,
+      "expected_count_baseline": 4.509433962264151,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 57,
+        "count_52w": 238,
+        "baseline_expected_count": 4.509433962264151,
+        "data_age_days": 66,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-06",
+      "until": "2025-10-13",
+      "sector_id": "NE",
+      "expected_count_ml": 0.43257341701452695,
+      "expected_count_baseline": 0.20754716981132076,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 2,
+        "count_52w": 10,
+        "baseline_expected_count": 0.20754716981132076,
+        "data_age_days": 66,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-06",
+      "until": "2025-10-13",
+      "sector_id": "SO",
+      "expected_count_ml": 5.943685348829849,
+      "expected_count_baseline": 5.547169811320755,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 65,
+        "count_52w": 293,
+        "baseline_expected_count": 5.547169811320755,
+        "data_age_days": 66,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-06",
+      "until": "2025-10-13",
+      "sector_id": "SE",
+      "expected_count_ml": 3.474727771650115,
+      "expected_count_baseline": 3.188679245283019,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 34,
+        "count_52w": 168,
+        "baseline_expected_count": 3.188679245283019,
+        "data_age_days": 66,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-13",
+      "until": "2025-10-20",
+      "sector_id": "NO",
+      "expected_count_ml": 5.332572091673879,
+      "expected_count_baseline": 4.509433962264151,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 57,
+        "count_52w": 238,
+        "baseline_expected_count": 4.509433962264151,
+        "data_age_days": 73,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-13",
+      "until": "2025-10-20",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4279773352409275,
+      "expected_count_baseline": 0.20754716981132076,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 2,
+        "count_52w": 10,
+        "baseline_expected_count": 0.20754716981132076,
+        "data_age_days": 73,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-13",
+      "until": "2025-10-20",
+      "sector_id": "SO",
+      "expected_count_ml": 5.880533840148839,
+      "expected_count_baseline": 5.547169811320755,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 65,
+        "count_52w": 293,
+        "baseline_expected_count": 5.547169811320755,
+        "data_age_days": 73,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-13",
+      "until": "2025-10-20",
+      "sector_id": "SE",
+      "expected_count_ml": 3.437808875686233,
+      "expected_count_baseline": 3.188679245283019,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 34,
+        "count_52w": 168,
+        "baseline_expected_count": 3.188679245283019,
+        "data_age_days": 73,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-20",
+      "until": "2025-10-27",
+      "sector_id": "NO",
+      "expected_count_ml": 5.27455810596971,
+      "expected_count_baseline": 4.509433962264151,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 57,
+        "count_52w": 238,
+        "baseline_expected_count": 4.509433962264151,
+        "data_age_days": 80,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-20",
+      "until": "2025-10-27",
+      "sector_id": "NE",
+      "expected_count_ml": 0.42332129485712455,
+      "expected_count_baseline": 0.20754716981132076,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 2,
+        "count_52w": 10,
+        "baseline_expected_count": 0.20754716981132076,
+        "data_age_days": 80,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-20",
+      "until": "2025-10-27",
+      "sector_id": "SO",
+      "expected_count_ml": 5.816558482615851,
+      "expected_count_baseline": 5.547169811320755,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 65,
+        "count_52w": 293,
+        "baseline_expected_count": 5.547169811320755,
+        "data_age_days": 80,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-20",
+      "until": "2025-10-27",
+      "sector_id": "SE",
+      "expected_count_ml": 3.4004083508477363,
+      "expected_count_baseline": 3.188679245283019,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 34,
+        "count_52w": 168,
+        "baseline_expected_count": 3.188679245283019,
+        "data_age_days": 80,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-27",
+      "until": "2025-11-03",
+      "sector_id": "NO",
+      "expected_count_ml": 5.216634303308356,
+      "expected_count_baseline": 4.509433962264151,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 57,
+        "count_52w": 238,
+        "baseline_expected_count": 4.509433962264151,
+        "data_age_days": 87,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-27",
+      "until": "2025-11-03",
+      "sector_id": "NE",
+      "expected_count_ml": 0.41867249231233866,
+      "expected_count_baseline": 0.20754716981132076,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 2,
+        "count_52w": 10,
+        "baseline_expected_count": 0.20754716981132076,
+        "data_age_days": 87,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-27",
+      "until": "2025-11-03",
+      "sector_id": "SO",
+      "expected_count_ml": 5.752682575109222,
+      "expected_count_baseline": 5.547169811320755,
+      "observed_count": 8,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 65,
+        "count_52w": 293,
+        "baseline_expected_count": 5.547169811320755,
+        "data_age_days": 87,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-10-27",
+      "until": "2025-11-03",
+      "sector_id": "SE",
+      "expected_count_ml": 3.363065965319818,
+      "expected_count_baseline": 3.188679245283019,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-07-31",
+        "history_start": "2024-08-02",
+        "count_13w": 34,
+        "count_52w": 168,
+        "baseline_expected_count": 3.188679245283019,
+        "data_age_days": 87,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-03",
+      "until": "2025-11-10",
+      "sector_id": "NO",
+      "expected_count_ml": 5.58810297628575,
+      "expected_count_baseline": 4.566037735849057,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 74,
+        "count_52w": 241,
+        "baseline_expected_count": 4.566037735849057,
+        "data_age_days": 63,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-03",
+      "until": "2025-11-10",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4097557647277708,
+      "expected_count_baseline": 0.16981132075471697,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 2,
+        "count_52w": 8,
+        "baseline_expected_count": 0.16981132075471697,
+        "data_age_days": 63,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-03",
+      "until": "2025-11-10",
+      "sector_id": "SO",
+      "expected_count_ml": 5.598295536968079,
+      "expected_count_baseline": 5.320754716981132,
+      "observed_count": 8,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 64,
+        "count_52w": 281,
+        "baseline_expected_count": 5.320754716981132,
+        "data_age_days": 63,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-03",
+      "until": "2025-11-10",
+      "sector_id": "SE",
+      "expected_count_ml": 3.3285735904231752,
+      "expected_count_baseline": 3.018867924528302,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 36,
+        "count_52w": 159,
+        "baseline_expected_count": 3.018867924528302,
+        "data_age_days": 63,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-10",
+      "until": "2025-11-17",
+      "sector_id": "NO",
+      "expected_count_ml": 5.528151982510425,
+      "expected_count_baseline": 4.566037735849057,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 74,
+        "count_52w": 241,
+        "baseline_expected_count": 4.566037735849057,
+        "data_age_days": 70,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-10",
+      "until": "2025-11-17",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4053597710596428,
+      "expected_count_baseline": 0.16981132075471697,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 2,
+        "count_52w": 8,
+        "baseline_expected_count": 0.16981132075471697,
+        "data_age_days": 70,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-10",
+      "until": "2025-11-17",
+      "sector_id": "SO",
+      "expected_count_ml": 5.538235194072916,
+      "expected_count_baseline": 5.320754716981132,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 64,
+        "count_52w": 281,
+        "baseline_expected_count": 5.320754716981132,
+        "data_age_days": 70,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-10",
+      "until": "2025-11-17",
+      "sector_id": "SE",
+      "expected_count_ml": 3.2928635658500767,
+      "expected_count_baseline": 3.018867924528302,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 36,
+        "count_52w": 159,
+        "baseline_expected_count": 3.018867924528302,
+        "data_age_days": 70,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-17",
+      "until": "2025-11-24",
+      "sector_id": "NO",
+      "expected_count_ml": 5.470792339437899,
+      "expected_count_baseline": 4.566037735849057,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 74,
+        "count_52w": 241,
+        "baseline_expected_count": 4.566037735849057,
+        "data_age_days": 77,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-17",
+      "until": "2025-11-24",
+      "sector_id": "NE",
+      "expected_count_ml": 0.4011537919444699,
+      "expected_count_baseline": 0.16981132075471697,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 2,
+        "count_52w": 8,
+        "baseline_expected_count": 0.16981132075471697,
+        "data_age_days": 77,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-17",
+      "until": "2025-11-24",
+      "sector_id": "SO",
+      "expected_count_ml": 5.480770928439709,
+      "expected_count_baseline": 5.320754716981132,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 64,
+        "count_52w": 281,
+        "baseline_expected_count": 5.320754716981132,
+        "data_age_days": 77,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-17",
+      "until": "2025-11-24",
+      "sector_id": "SE",
+      "expected_count_ml": 3.258697088622019,
+      "expected_count_baseline": 3.018867924528302,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 36,
+        "count_52w": 159,
+        "baseline_expected_count": 3.018867924528302,
+        "data_age_days": 77,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-24",
+      "until": "2025-12-01",
+      "sector_id": "NO",
+      "expected_count_ml": 5.416746707673192,
+      "expected_count_baseline": 4.566037735849057,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 74,
+        "count_52w": 241,
+        "baseline_expected_count": 4.566037735849057,
+        "data_age_days": 84,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-24",
+      "until": "2025-12-01",
+      "sector_id": "NE",
+      "expected_count_ml": 0.39719081752042606,
+      "expected_count_baseline": 0.16981132075471697,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 2,
+        "count_52w": 8,
+        "baseline_expected_count": 0.16981132075471697,
+        "data_age_days": 84,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-24",
+      "until": "2025-12-01",
+      "sector_id": "SO",
+      "expected_count_ml": 5.426626718788424,
+      "expected_count_baseline": 5.320754716981132,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 64,
+        "count_52w": 281,
+        "baseline_expected_count": 5.320754716981132,
+        "data_age_days": 84,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-11-24",
+      "until": "2025-12-01",
+      "sector_id": "SE",
+      "expected_count_ml": 3.226504614121609,
+      "expected_count_baseline": 3.018867924528302,
+      "observed_count": 6,
+      "evidence": {
+        "history_through": "2025-08-31",
+        "history_start": "2024-09-02",
+        "count_13w": 36,
+        "count_52w": 159,
+        "baseline_expected_count": 3.018867924528302,
+        "data_age_days": 84,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-01",
+      "until": "2025-12-08",
+      "sector_id": "NO",
+      "expected_count_ml": 5.29321684594483,
+      "expected_count_baseline": 4.339622641509434,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 74,
+        "count_52w": 229,
+        "baseline_expected_count": 4.339622641509434,
+        "data_age_days": 61,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-01",
+      "until": "2025-12-08",
+      "sector_id": "NE",
+      "expected_count_ml": 0.3956141547714965,
+      "expected_count_baseline": 0.18867924528301888,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 2,
+        "count_52w": 9,
+        "baseline_expected_count": 0.18867924528301888,
+        "data_age_days": 61,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-01",
+      "until": "2025-12-08",
+      "sector_id": "SO",
+      "expected_count_ml": 5.3413759503754745,
+      "expected_count_baseline": 5.113207547169812,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 65,
+        "count_52w": 270,
+        "baseline_expected_count": 5.113207547169812,
+        "data_age_days": 61,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-01",
+      "until": "2025-12-08",
+      "sector_id": "SE",
+      "expected_count_ml": 3.251366819383094,
+      "expected_count_baseline": 3.056603773584906,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 38,
+        "count_52w": 161,
+        "baseline_expected_count": 3.056603773584906,
+        "data_age_days": 61,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-08",
+      "until": "2025-12-15",
+      "sector_id": "NO",
+      "expected_count_ml": 5.248323866580724,
+      "expected_count_baseline": 4.339622641509434,
+      "observed_count": 2,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 74,
+        "count_52w": 229,
+        "baseline_expected_count": 4.339622641509434,
+        "data_age_days": 68,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-08",
+      "until": "2025-12-15",
+      "sector_id": "NE",
+      "expected_count_ml": 0.39225886089195094,
+      "expected_count_baseline": 0.18867924528301888,
+      "observed_count": 1,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 2,
+        "count_52w": 9,
+        "baseline_expected_count": 0.18867924528301888,
+        "data_age_days": 68,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-08",
+      "until": "2025-12-15",
+      "sector_id": "SO",
+      "expected_count_ml": 5.296074522662411,
+      "expected_count_baseline": 5.113207547169812,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 65,
+        "count_52w": 270,
+        "baseline_expected_count": 5.113207547169812,
+        "data_age_days": 68,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-08",
+      "until": "2025-12-15",
+      "sector_id": "SE",
+      "expected_count_ml": 3.223791235805873,
+      "expected_count_baseline": 3.056603773584906,
+      "observed_count": 9,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 38,
+        "count_52w": 161,
+        "baseline_expected_count": 3.056603773584906,
+        "data_age_days": 68,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-15",
+      "until": "2025-12-22",
+      "sector_id": "NO",
+      "expected_count_ml": 5.208435420892257,
+      "expected_count_baseline": 4.339622641509434,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 74,
+        "count_52w": 229,
+        "baseline_expected_count": 4.339622641509434,
+        "data_age_days": 75,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-15",
+      "until": "2025-12-22",
+      "sector_id": "NE",
+      "expected_count_ml": 0.3892776050346019,
+      "expected_count_baseline": 0.18867924528301888,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 2,
+        "count_52w": 9,
+        "baseline_expected_count": 0.18867924528301888,
+        "data_age_days": 75,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-15",
+      "until": "2025-12-22",
+      "sector_id": "SO",
+      "expected_count_ml": 5.255823161212623,
+      "expected_count_baseline": 5.113207547169812,
+      "observed_count": 4,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 65,
+        "count_52w": 270,
+        "baseline_expected_count": 5.113207547169812,
+        "data_age_days": 75,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-15",
+      "until": "2025-12-22",
+      "sector_id": "SE",
+      "expected_count_ml": 3.199289694954093,
+      "expected_count_baseline": 3.056603773584906,
+      "observed_count": 7,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 38,
+        "count_52w": 161,
+        "baseline_expected_count": 3.056603773584906,
+        "data_age_days": 75,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-22",
+      "until": "2025-12-29",
+      "sector_id": "NO",
+      "expected_count_ml": 5.17398750710026,
+      "expected_count_baseline": 4.339622641509434,
+      "observed_count": 6,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 74,
+        "count_52w": 229,
+        "baseline_expected_count": 4.339622641509434,
+        "data_age_days": 82,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-22",
+      "until": "2025-12-29",
+      "sector_id": "NE",
+      "expected_count_ml": 0.386702973634624,
+      "expected_count_baseline": 0.18867924528301888,
+      "observed_count": 0,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 2,
+        "count_52w": 9,
+        "baseline_expected_count": 0.18867924528301888,
+        "data_age_days": 82,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-22",
+      "until": "2025-12-29",
+      "sector_id": "SO",
+      "expected_count_ml": 5.2210618310755175,
+      "expected_count_baseline": 5.113207547169812,
+      "observed_count": 5,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 65,
+        "count_52w": 270,
+        "baseline_expected_count": 5.113207547169812,
+        "data_age_days": 82,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "from": "2025-12-22",
+      "until": "2025-12-29",
+      "sector_id": "SE",
+      "expected_count_ml": 3.1781300094244753,
+      "expected_count_baseline": 3.056603773584906,
+      "observed_count": 3,
+      "evidence": {
+        "history_through": "2025-09-30",
+        "history_start": "2024-10-02",
+        "count_13w": 38,
+        "count_52w": 161,
+        "baseline_expected_count": 3.056603773584906,
+        "data_age_days": 82,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    }
+  ]
+}

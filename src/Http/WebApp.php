@@ -13,6 +13,7 @@ use Fiscaliza\Http\Controller\CentralController;
 use Fiscaliza\Http\Controller\EquipmentController;
 use Fiscaliza\Http\Controller\OperationsController;
 use Fiscaliza\Http\Controller\PageController;
+use Fiscaliza\Http\Controller\PlanningController;
 use Fiscaliza\Http\Middleware\CsrfGuard;
 use Fiscaliza\Http\Middleware\RequireRole;
 use Fiscaliza\Http\Middleware\SecurityHeaders;
@@ -52,6 +53,7 @@ final class WebApp
         $ops = new OperationsController($services, $view);
         $auth = new AuthController($services, $view);
         $pages = new PageController($services, $view);
+        $planning = new PlanningController($services, $view);
         $operator = new RequireRole('OPERADOR', $base);
         $admin = new RequireRole('ADMIN', $base);
         $id = '{id:[0-9]+}';
@@ -63,7 +65,7 @@ final class WebApp
         $app->get('/saude', [$pages, 'health']);
 
         // Consulta: exige conta cadastrada pelo administrador (não há leitura pública nem cadastro aberto).
-        $app->group('', function (RouteCollectorProxy $g) use ($central, $equipment, $agents, $ops, $pages, $id): void {
+        $app->group('', function (RouteCollectorProxy $g) use ($central, $equipment, $agents, $ops, $pages, $planning, $id): void {
             $g->get('/', [$central, 'page']);
             $g->get('/api/central', [$central, 'snapshot']);
             $g->get('/equipamentos', [$equipment, 'index']);
@@ -72,11 +74,13 @@ final class WebApp
             $g->get("/agentes/{$id}", [$agents, 'show']);
             $g->get('/manutencao', [$ops, 'maintenance']);
             $g->get('/antecipacao', [$ops, 'analysis']);
+            $g->get('/planejar', [$planning, 'page']);
+            $g->get('/planejar/retrospecto', [$planning, 'replay']);
             $g->get('/sobre', [$pages, 'about']);
         })->add($operator);
 
         // Escrita: operador autenticado.
-        $app->group('', function (RouteCollectorProxy $g) use ($equipment, $agents, $ops, $id): void {
+        $app->group('', function (RouteCollectorProxy $g) use ($equipment, $agents, $ops, $planning, $id): void {
             $g->get('/equipamentos/novo', [$equipment, 'createForm']);
             $g->post('/equipamentos', [$equipment, 'store']);
             $g->get("/equipamentos/{$id}/editar", [$equipment, 'editForm']);
@@ -96,6 +100,9 @@ final class WebApp
             $g->post("/manutencoes/{$id}/cancelar", [$ops, 'cancel']);
             $g->post("/alertas/{$id}/reconhecer", [$ops, 'acknowledge']);
             $g->post('/antecipacao/recalcular', [$ops, 'recalculate']);
+            $g->post('/planejar/missoes', [$planning, 'confirm']);
+            $g->post("/planejar/missoes/{$id}/concluir", [$planning, 'complete']);
+            $g->post("/planejar/missoes/{$id}/cancelar", [$planning, 'cancel']);
         })->add($operator);
 
         // Contas: somente administrador.

@@ -27,6 +27,10 @@
 {% else %}<span class="fresh">{{ what }}: não se aplica nesta situação</span>{% endif %}
 {%- endmacro %}
 
+{# Origem de cada camada de dados (texto, não só cor): contagens reais agregadas × operação fictícia. #}
+{% macro origin_real() %}<span class="origin origin--real"><span class="origin__g" aria-hidden="true">◆</span>Real agregado · Infosiga-SP</span>{% endmacro %}
+{% macro origin_demo() %}<span class="origin origin--demo"><span class="origin__g" aria-hidden="true">◇</span>Fictício</span>{% endmacro %}
+
 {% macro field_error(errors, name) %}
 {% if errors[name] is defined %}<span class="error" id="err-{{ name|replace({'.': '-'}) }}">{{ errors[name] }}</span>{% endif %}
 {%- endmacro %}

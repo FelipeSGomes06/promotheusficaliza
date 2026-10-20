@@ -1,0 +1,165 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "NO",
+        "name": "Setor noroeste",
+        "experimental": true,
+        "official_neighborhood": false,
+        "centroid": {
+          "lat": -22.175,
+          "lng": -49.980000000000004
+        }
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -50.02,
+              -22.21
+            ],
+            [
+              -49.94,
+              -22.21
+            ],
+            [
+              -49.94,
+              -22.14
+            ],
+            [
+              -50.02,
+              -22.14
+            ],
+            [
+              -50.02,
+              -22.21
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "NE",
+        "name": "Setor nordeste",
+        "experimental": true,
+        "official_neighborhood": false,
+        "centroid": {
+          "lat": -22.175,
+          "lng": -49.9
+        }
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -49.94,
+              -22.21
+            ],
+            [
+              -49.86,
+              -22.21
+            ],
+            [
+              -49.86,
+              -22.14
+            ],
+            [
+              -49.94,
+              -22.14
+            ],
+            [
+              -49.94,
+              -22.21
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "SO",
+        "name": "Setor sudoeste",
+        "experimental": true,
+        "official_neighborhood": false,
+        "centroid": {
+          "lat": -22.245,
+          "lng": -49.980000000000004
+        }
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -50.02,
+              -22.28
+            ],
+            [
+              -49.94,
+              -22.28
+            ],
+            [
+              -49.94,
+              -22.21
+            ],
+            [
+              -50.02,
+              -22.21
+            ],
+            [
+              -50.02,
+              -22.28
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "SE",
+        "name": "Setor sudeste",
+        "experimental": true,
+        "official_neighborhood": false,
+        "centroid": {
+          "lat": -22.245,
+          "lng": -49.9
+        }
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -49.94,
+              -22.28
+            ],
+            [
+              -49.86,
+              -22.28
+            ],
+            [
+              -49.86,
+              -22.21
+            ],
+            [
+              -49.94,
+              -22.21
+            ],
+            [
+              -49.94,
+              -22.28
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

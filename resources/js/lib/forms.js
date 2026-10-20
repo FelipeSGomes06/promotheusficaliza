@@ -17,6 +17,7 @@ const LABELS = [
   [/^Recalcular/, 'Calculando…'],
   [/^Simular/, 'Simulando…'],
   [/^Abrir/, 'Abrindo…'],
+  [/^Confirmar/, 'Confirmando…'],
 ];
 const busyLabel = (btn) => {
   const text = (btn?.textContent || '').trim();

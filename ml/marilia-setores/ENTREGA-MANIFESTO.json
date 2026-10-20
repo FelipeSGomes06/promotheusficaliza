@@ -1,0 +1,145 @@
+{
+  "created_date": "2026-10-20",
+  "files": [
+    {
+      "path": "00-COMECE-AQUI.md",
+      "bytes": 3814,
+      "sha256": "01ba199b05bee15f26f5930f2c85ae9873126a9a024e104db152a2b64729cea6"
+    },
+    {
+      "path": "01-PROMPT-PARA-CLAUDE.md",
+      "bytes": 4165,
+      "sha256": "cb05720e30b50a624356801b489ce48b1df1ab1c0563c3cd8f5ccc5e9505fa90"
+    },
+    {
+      "path": "02-ESPECIFICACAO-PARA-CLAUDE.md",
+      "bytes": 8013,
+      "sha256": "516f8763419d16a7653deac10370cb8fc1a5be790d3253993f447c3c728a01e6"
+    },
+    {
+      "path": "03-CONTRATO-DOS-ARQUIVOS.md",
+      "bytes": 6097,
+      "sha256": "bea1c04e5c723acae0eba2cac41a198ee5b9c4143043ec98bf4011a282baf1bf"
+    },
+    {
+      "path": "04-METODO-E-LIMITES.md",
+      "bytes": 7168,
+      "sha256": "dbb89007b55dc30c8fab175797eba24d52158f149026daea3e2ccbe174f76a55"
+    },
+    {
+      "path": "05-VERIFICACAO-E-CONTEXTO.md",
+      "bytes": 5301,
+      "sha256": "cc1a08168482677cca79481834781a65c3983c2a5659d9ec1627792aa25f5c75"
+    },
+    {
+      "path": "config.json",
+      "bytes": 998,
+      "sha256": "c84f4f5e9e91c4ae7668f8669d6e334cf6e34a8606d3b5d4b39c86c548cd7205"
+    },
+    {
+      "path": "dados/contagens_diarias.csv",
+      "bytes": 192462,
+      "sha256": "dede0975615ba565f07f915d607ea4aea1b1067ea4055b81e4da9defa736523c"
+    },
+    {
+      "path": "dados/manifesto.json",
+      "bytes": 1586,
+      "sha256": "ba2dda3cc9598b04f7e806877071a8e6d53321976e3a19d8f7826128b86abe5a"
+    },
+    {
+      "path": "dados/setores.geojson",
+      "bytes": 3234,
+      "sha256": "a4f07f974a9debe3fdbfc86d89e7c46609eb3dd00b7a0f39a39dae94aa8a6deb"
+    },
+    {
+      "path": "preparar_dados.py",
+      "bytes": 7639,
+      "sha256": "7c46ba07b932dd45ff439a26fafacf124e560c18e98aea73e844de1ace9dad18"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 118,
+      "sha256": "0d6b30ac6c7b3c2261c432d5a5ddf70f4029ba845f94fcd8c80418d4b140cd5f"
+    },
+    {
+      "path": "runs/piloto-verificado/progresso.json",
+      "bytes": 1942,
+      "sha256": "378e24a83c03bd32f174d00a71e221eafa414d4c99459d3431a4eae150373181"
+    },
+    {
+      "path": "runs/piloto-verificado/selecao.json",
+      "bytes": 2467,
+      "sha256": "7da1bc49f4272132e7f01759647213cd6ee67f2804af36b69324961e4efd9498"
+    },
+    {
+      "path": "runs/piloto-verificado/status.json",
+      "bytes": 2756,
+      "sha256": "037b62dca375c122324c7ec72ecb6aba01f7769c38c0574893f862127f45f2dc"
+    },
+    {
+      "path": "runs/primeiro-treino-verificado/avaliacao.json",
+      "bytes": 2659,
+      "sha256": "9e5edf5b8c1f52245784ee92a97a02c6e5cce18325fb4f9ddae9a16ed78e5686"
+    },
+    {
+      "path": "runs/primeiro-treino-verificado/modelo.json",
+      "bytes": 2417,
+      "sha256": "5f85203963e50794d31afc015638f862bdd1f77659d368afa0885728fee12023"
+    },
+    {
+      "path": "runs/primeiro-treino-verificado/previsao.json",
+      "bytes": 2920,
+      "sha256": "90f1df12acec9bc62773baa39650e9b14ab22fd38c00bd2086db8adee41e6710"
+    },
+    {
+      "path": "runs/primeiro-treino-verificado/progresso.json",
+      "bytes": 1942,
+      "sha256": "378e24a83c03bd32f174d00a71e221eafa414d4c99459d3431a4eae150373181"
+    },
+    {
+      "path": "runs/primeiro-treino-verificado/RESULTADO.md",
+      "bytes": 700,
+      "sha256": "ba7c860bb708dbe0106f471757fff3588e9976e1af8996ba078c0f0079fb782b"
+    },
+    {
+      "path": "runs/primeiro-treino-verificado/retrospecto.json",
+      "bytes": 111332,
+      "sha256": "47bb6e02decfdaaf74d0a810393d62acba0575cab5382ca364facdc63d4a0661"
+    },
+    {
+      "path": "runs/primeiro-treino-verificado/selecao.json",
+      "bytes": 2467,
+      "sha256": "7da1bc49f4272132e7f01759647213cd6ee67f2804af36b69324961e4efd9498"
+    },
+    {
+      "path": "runs/primeiro-treino-verificado/status.json",
+      "bytes": 199,
+      "sha256": "19849f2476d5b881640c23f51c98f0b56a75d72e2fa43106c9778436e5ef6f92"
+    },
+    {
+      "path": "runs/primeiro-treino-verificado/vetores_paridade.json",
+      "bytes": 6748,
+      "sha256": "0efbd76ed55fa2ac0272e32df1cb91b3325a5155b754f095cb3e2f8b188c3404"
+    },
+    {
+      "path": "tests/test_protocolo.py",
+      "bytes": 2041,
+      "sha256": "59b748cef1fe88f58a7edf4fc7e633234d929966f4573fe35b7cdeabc7c2bb60"
+    },
+    {
+      "path": "TREINAR.cmd",
+      "bytes": 730,
+      "sha256": "048679de8ca7ea8f8f7f1f5e8817dafbebbaaa72e12c2ce228572f52985dc92c"
+    },
+    {
+      "path": "treino.py",
+      "bytes": 17952,
+      "sha256": "5da9b7832067d8ac07a3774bfff6ded84146daacf249250d9fb31ef03307b87b"
+    },
+    {
+      "path": "verificar_paridade.php",
+      "bytes": 986,
+      "sha256": "2e9013e848e7afddcb2216c28fb1ebd73bf92aefa661254979033f44081a2dda"
+    }
+  ]
+}

@@ -3,6 +3,20 @@
 Ambiente: Windows 11 + Docker Desktop 29.7.2; contêineres `php:8.5.11-apache-trixie` (PDO_FIREBIRD, fbclient 4.0.5)
 e `firebirdsql/firebird:5.0.4-trixie`. Data: 18/10/2026. Só está listado aqui o que de fato rodou.
 
+## Planejar reforço por setores (20/10/2026)
+
+Projeto Compose isolado `fiscaliza-marilia` (PHP 8.5.11, Firebird 5.0.4) sobre `main` em `132dc7f`.
+[Evidência completa](evidencias/2026-10-20-planejar-reforco.md).
+
+| Verificação | Resultado |
+|---|---|
+| `vendor/bin/phpunit` | **140 testes, 672 asserções, OK** (inclui concorrência em processos separados e 40 ciclos do simulador) |
+| `phpstan analyse` (nível 6) · `php-cs-fixer fix --dry-run` | 0 erros · 0 arquivos a corrigir |
+| `npm run build` | Node 24 local e `node:22-bookworm` (CI) com os mesmos 11 arquivos |
+| `urban:import` duas vezes · dois conjuntos adulterados | 1 execução (4 setores, 204 linhas) · recusados, nada gravado |
+| Treino reproduzido a partir de `ml/marilia-setores/` | saídas idênticas à execução de referência; paridade PHP/Python 2,7e-15 |
+| Navegador (painel do Claude Code, desktop e 375 px) | 17 capturas; missão confirmada e retrospecto revelado pela interface |
+
 ## Cartão de autoria na página Sobre (19/10/2026)
 
 Verificado só no navegador (Chromium headless 141 via Playwright, cabeçalhos reais de `SecurityHeaders`, destino

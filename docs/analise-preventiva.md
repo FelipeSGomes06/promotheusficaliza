@@ -1,5 +1,8 @@
 # Análise preventiva (parte 3)
 
+> Caso separado: o planejamento semanal de reforço por setores, com contagens reais do Infosiga-SP, está em
+> [planejamento-por-setores.md](planejamento-por-setores.md). Esta página trata só das revisões de equipamentos.
+
 **Pergunta operacional:** quais equipamentos merecem revisão nos próximos **7 dias**, e por quê?
 
 **Saída:** classe, índice 0–100 ("prioridade sugerida" na tela), fatores com pontos, sinais administrativos, ação
