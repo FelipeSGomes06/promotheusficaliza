@@ -20,25 +20,20 @@ final class PlanningController extends Controller
     {
         $query = $request->getQueryParams();
         $planning = $this->services->planning();
-        $week = $planning->week(self::param($query, 'metodo'));
+        // Só a média simples na tela (o Poisson experimental fica nos dados e no treino, não na interface).
+        $week = $planning->week('baseline');
         $selected = null;
         $candidates = ['eligible' => [], 'unavailable' => []];
         $map = null;
         $cellCount = filter_var(self::param($query, 'quadrados'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => PlanningService::MAX_CELLS]]) ?: PlanningService::MAX_CELLS;
         if ($week !== null) {
             $week['cells'] = array_slice($week['cells'], 0, $cellCount);
-            // Sem setor pedido, abre o 1º do método escolhido.
+            // Sem setor pedido, abre o 1º setor.
             $selected = $week['sectors'][strtoupper((string) self::param($query, 'setor'))] ?? array_values($week['sectors'])[0];
             $candidates = $planning->candidates($selected);
             $map = [
                 'tiles' => $this->services->config->get('MAP_TILE_URL', 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
                 'attribution' => $this->services->config->get('MAP_TILE_ATTRIBUTION', '&copy; colaboradores do OpenStreetMap'),
-                'selected' => $selected['sector_id'],
-                'sectors' => array_values(array_map(fn(array $s): array => [
-                    'id' => $s['sector_id'], 'name' => $s['name'], 'rank' => $s['rank'], 'value' => number_format($s['value'], 1, ',', '.'),
-                    'south' => $s['south'], 'north' => $s['north'], 'west' => $s['west'], 'east' => $s['east'],
-                    'href' => $this->services->config->basePath() . '/planejar?' . http_build_query(['setor' => $s['sector_id'], 'metodo' => $week['method'], 'quadrados' => $cellCount]) . '#setor',
-                ], $week['sectors'])),
                 // Mapa próprio dos quadrados: a grade inteira (simétrica, 8 × 8) e só os prioritários numerados.
                 'grid' => [
                     'south' => min(array_column($week['sectors'], 'south')), 'north' => max(array_column($week['sectors'], 'north')),
@@ -47,7 +42,6 @@ final class PlanningController extends Controller
                     'cells' => array_map(static fn(array $c): array => ['rank' => $c['rank_no'], 'south' => $c['south'], 'north' => $c['north'],
                         'west' => $c['west'], 'east' => $c['east']], $week['cells']),
                 ],
-                'agents' => array_map(static fn(array $c): array => ['call_sign' => $c['call_sign'], 'lat' => $c['lat'], 'lng' => $c['lng'], 'tier' => $c['tier'], 'point' => $c['point']], $candidates['eligible']),
             ];
         }
 
@@ -60,7 +54,7 @@ final class PlanningController extends Controller
     public function replay(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $query = $request->getQueryParams();
-        $replay = $this->services->planning()->replay(self::param($query, 'semana'), self::param($query, 'metodo'), self::param($query, 'revelar') === '1');
+        $replay = $this->services->planning()->replay(self::param($query, 'semana'), 'baseline', self::param($query, 'revelar') === '1');
 
         return $this->render($request, $response, 'planning/replay.twig', ['replay' => $replay, 'methods' => SectorForecast::METHODS]);
     }

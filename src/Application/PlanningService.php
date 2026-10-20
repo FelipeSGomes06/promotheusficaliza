@@ -154,10 +154,9 @@ final class PlanningService
             }
             $ranked = self::ordered($sectors, $method)[$sectorId];
             $reason = sprintf(
-                '%s: %dº de 4 (%s), %s registros esperados em 7 dias. %s: em atividade, %s, %s.',
+                '%s: %dº de 4, %s registros esperados em 7 dias. %s: em atividade, %s, %s.',
                 $sector['name'],
                 $ranked['rank'],
-                SectorForecast::methodLabel($method),
                 self::fmt($ranked['value']),
                 $agent['call_sign'],
                 self::POINT[$chosen['tier']],
@@ -309,7 +308,6 @@ final class PlanningService
                     $method === 'baseline'
                         ? sprintf('A referência repete a média das 52 semanas, com uma pseudocontagem de suavização: (%d + 1) ÷ 53 = %s registros em 7 dias.', $s['count_52w'], self::fmt($s['expected_baseline']))
                         : sprintf('O Poisson experimental combina setor, ritmo de 13 e de 52 semanas, época do ano e tendência desde 2020 e chega a %s (a referência daria %s). O modelo não decompõe a estimativa por variável.', self::fmt($s['expected_ml']), self::fmt($s['expected_baseline'])),
-                    sprintf('Fica em %dº de 4 por este método e em %dº com o outro (%s).', $position, $otherRank[$id], SectorForecast::methodLabel($other)),
                 ],
             ];
         }

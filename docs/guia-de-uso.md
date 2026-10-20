@@ -181,16 +181,8 @@ a tela diz isso e não mostra números (no servidor: `php bin/fiscaliza urban:im
   Os selos dizem a origem: **Real agregado · Infosiga-SP** para as contagens, **Fictício** para agentes e missões.
 - **Como ler:** o número é a contagem esperada de **registros** em 7 dias, não a chance de um acidente; a posição
   (1º a 4º) é prioridade relativa de planejamento, não emergência. Falhas e alertas ficam na Visão geral.
-- **Ordenar pela estimativa de:** "Referência histórica · escolhida no ajuste" (padrão) ou "Poisson experimental". Trocar
-  recalcula a ordem só na tela; a execução importada não muda (aparece o aviso "Só comparação").
-- **Mapa e lista:** os quatro setores com a posição escrita (1º…4º) e a estimativa; tons de azul e tracejados
-  diferentes, nunca vermelho. Tocar num setor (mapa ou lista) abre o detalhe. Pontos redondos = agentes de trânsito
-  livres; tracejado = sem posição recente (desenhado na base).
-- **Onde concentrar o reforço (quadrados de 2 km):** mapa só com a grade de quadrados iguais e os prioritários
-  numerados; ao lado, o bairro de referência, o setor, a parcela dos registros do último ano e os registros esperados
-  em 7 dias. **Mostrar 1, 2, 3 ou 4.** É uma lista quase fixa (o centro e arredores), calculada pela média simples.
-- **Detalhe do setor:** valores dos dois métodos com a posição de cada um, histórico usado (52 semanas), defasagem e
-  **Por que esta estimativa** (ritmo de 13 × 52 semanas, fórmula da referência ou o que entra no Poisson). São
+- **Detalhe do setor:** abre ao tocar num quadrado (o setor dele). Mostra a estimativa da semana, o histórico usado
+  (52 semanas), a defasagem e **Por que esta estimativa** (ritmo de 13 × 52 semanas e a conta da média). São
   associações, não causa.
 - **Sugerir agente de trânsito:** só agentes de trânsito em atividade e sem missão; primeiro quem tem posição atual,
   depois atrasada, por fim só a base; em cada grupo, o mais perto em linha reta da borda do setor. O primeiro vem
@@ -205,7 +197,7 @@ a tela diz isso e não mostra números (no servidor: `php bin/fiscaliza urban:im
 ### Retrospecto (`/planejar/retrospecto`)
 
 Faixa tracejada grafite/turquesa = **histórico**, não a previsão atual. Escolha a semana do teste de 2025 (ou use
-semana anterior/próxima) e o método. A tabela mostra a previsão do **modelo congelado em 01/01/2025** e as contagens de
+semana anterior/próxima). A tabela mostra a previsão do **modelo congelado em 01/01/2025** e as contagens de
 entrada daquela semana; a coluna "Registrado" fica **oculta** até **Revelar o que foi registrado** (os números nem
 são enviados antes). Depois, a página diz quantos registros houve e quantos caíram no setor priorizado por cada
 método. Abaixo, sempre, o resultado do teste inteiro e os limites — uma semana isolada não prova nada.

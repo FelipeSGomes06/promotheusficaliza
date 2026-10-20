@@ -166,7 +166,7 @@ final class PlanningTest extends FirebirdTestCase
         self::assertSame(['CONFIRMADA', 'SUGERIDO', 'SO', 'baseline', 1, 5.622641509433962, '2026-10-20', '2026-10-27'], [$mission['state'], $mission['selection'], $mission['sector_id'],
             $mission['method'], (int) $mission['rank_no'], $mission['expected_count'], $mission['period_from'], $mission['period_until']]);
         self::assertSame($this->userId(), (int) $mission['confirmed_by']);
-        self::assertStringContainsString('Setor sudoeste: 1º de 4 (Referência histórica), 5,6 registros esperados em 7 dias. Hermes 10: em atividade, posição atual, dentro do setor.', $mission['reason']);
+        self::assertStringContainsString('Setor sudoeste: 1º de 4, 5,6 registros esperados em 7 dias. Hermes 10: em atividade, posição atual, dentro do setor.', $mission['reason']);
         $this->assertRefused(fn() => $this->confirm($runId, $suggested), 'já está reservado');
     }
 
