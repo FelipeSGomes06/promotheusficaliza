@@ -310,7 +310,7 @@ export function criarCena({ host, reduzido, celular, duracao, ponteiro, nome, so
   }
 
   function criarTimeline() {
-    // Estado inicial da sequência (a timeline devolve tudo a ele ao rever).
+    // Estado inicial da sequência (a timeline parte dele).
     pecaA.visible = false;
     pecaB.visible = false;
     pecaA.position.z = 3.4;
@@ -496,17 +496,9 @@ export function criarCena({ host, reduzido, celular, duracao, ponteiro, nome, so
         tl.progress(1);
         aoEstado('pronta');
       } else {
-        aoEstado('montando');
         tl.play(0);
       }
     }),
-    pular: () => tl.progress(1),
-    rever() {
-      ponteiroLigado = false;
-      repousar();
-      aoEstado('montando');
-      tl.restart();
-    },
     definirReduzido(valor) {
       reduzido = valor;
       if (valor) {
