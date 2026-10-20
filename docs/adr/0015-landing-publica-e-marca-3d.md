@@ -64,7 +64,7 @@ final e uma última seção preta "Para o avaliador" pronta para um vídeo. Sem 
 
 Impactos: recuo de 0,8–0,9 unidade do conjunto, compressão da peça (0,84–0,86) e da base (0,93), retorno elástico
 curto, sombra no chão que aperta, tremor de câmera de ~3 px derivado do tempo da timeline (volta a zero sozinho e
-funciona igual ao rever). Nada de quique, explosão ou som. O texto e as chamadas nunca dependem da sequência.
+não depende do relógio da página). Nada de quique, explosão ou som. O texto e as chamadas nunca dependem da sequência.
 
 ### Quem controla o quê
 | Camada | Cuida de |
@@ -81,8 +81,9 @@ animações de rolagem quando muda a largura, a preferência do sistema ou o bot
 - Primeira pintura: marca oficial em SVG (inclinada, com sombra), nome, título e chamadas. O 3D substitui o SVG só
   quando está compilado; sem WebGL, sem o módulo, com contexto perdido ou sem JavaScript, o SVG fica.
 - Movimento: mesma chave `pf-motion` do sistema (mesma origem), aplicada antes da pintura por `boot.js`; com
-  movimento reduzido a marca aparece pronta, sem impactos, câmera, ponteiro, *scrub* ou entradas. Botão "Pular
-  animação"/"Rever montagem" e botão "Reduzir movimento" (com `aria-pressed`).
+  movimento reduzido a marca aparece pronta, sem impactos, câmera, ponteiro, *scrub* ou entradas. Botão "Reduzir
+  movimento" (com `aria-pressed`) no topo. A sequência dura ~4 s e roda uma vez; o botão "Pular animação"/"Rever
+  montagem" do palco foi retirado a pedido do autor (20/10/2026).
 - Ponteiro: só mouse, só com a marca pronta e visível, volta ao repouso parado 2,2 s. Nunca no toque.
 - Canvas `aria-hidden`; marca, textos e links no HTML; foco turquesa no escuro e azul no claro; títulos em ordem.
 

@@ -40,11 +40,11 @@ painel de navegador do app (Chromium) e Chrome do autor (Windows, 1920×1080 a 9
 |---|---|
 | Montagem (quadros fixos da timeline) | quadrado → haste e braço instalados → encaixe 1 (1,27 s) → braço curto de lado → encaixe 2 (1,88 s) → sensor, ondas e faixas pintadas pelo pulso → pose quase frontal com o nome ([folha](2026-10-20-landing-publica/capturas/02-montagem-quadro-a-quadro.jpg), [animação](2026-10-20-landing-publica/videos/montagem-da-marca.webp)) |
 | Cores renderizadas (pixel da captura) | base `#1d51e9` (oficial `#2152e8`), vias ≈ papel `#edf1f7`, sensor âmbar; a variante sem mapa de ambiente escurecia o azul e deixava o F cinza e foi descartada |
-| Pular / rever | "Pular animação" leva à pose final; vira "Rever montagem", que repete a sequência; rolar e redimensionar não reiniciam |
+| Uma vez só | a montagem roda uma vez quando a hero aparece; rolar e redimensionar não a reiniciam (o botão "Pular animação"/"Rever montagem" foi retirado depois, a pedido do autor) |
 | 360, 390, 768, 1366 (× 657 e 768), 1920 (× 960 e 1080) e ~2100 px | sem rolagem horizontal; em 360×640 e 1366×657 título e chamadas cabem na primeira tela (a nota de acesso em 1366×657 termina no limite) |
 | Celular (390) | menu abre com o botão, fecha com Esc devolvendo o foco e ao tocar num link; painel com "Reduzir movimento" e "Acessar sistema" |
-| Teclado | ordem: pular para o conteúdo → marca → âncoras → movimento → acessar → conhecer → acessar → pular/rever → acessar (placa) → autor; foco visível (turquesa no escuro, azul no claro) |
-| Movimento reduzido (botão e sistema) | escolha salva em `pf-motion`; marca pronta sem sequência, botão de pular oculto, sem entrada do texto, sem *scrub* nem transformações |
+| Teclado | ordem: pular para o conteúdo → marca → âncoras → movimento → acessar → conhecer → acessar → acessar (placa) → autor; foco visível (turquesa no escuro, azul no claro) |
+| Movimento reduzido (botão e sistema) | escolha salva em `pf-motion`; marca pronta sem sequência, sem entrada do texto, sem *scrub* nem transformações |
 | Sem WebGL | nenhum canvas; marca oficial em SVG, nome, título e chamadas no lugar; objetos das cenas ausentes sem deixar buraco |
 | Sem JavaScript | links da navegação visíveis, botões de menu e movimento ocultos, todo o conteúdo legível |
 | Vídeo ausente (`src` nulo ou arquivo inexistente) | "Vídeo de apresentação em breve.", sem player nem requisição |
