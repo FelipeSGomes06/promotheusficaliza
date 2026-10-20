@@ -46,3 +46,5 @@ assets:
     - npm ci
     - npm run build
     - test -z "$(git status --porcelain -- public/assets/build)" || (git status --porcelain -- public/assets/build; exit 1)
+    - npm run build:landing
+    - test -z "$(git status --porcelain -- landing/public/landing-assets/promotheus/build)" || (git status --porcelain -- landing/public/landing-assets/promotheus/build; exit 1)

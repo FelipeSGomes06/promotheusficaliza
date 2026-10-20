@@ -137,6 +137,12 @@ Feita pelo proprietário, fora deste repositório (nenhum dado da hospedagem fic
 | B. Proxy reverso do portal com prefixo (`/promotheusfiscaliza` → contêiner) | ✓ | ✗ (mesma origem) | Compose padrão; prefixo mantido. |
 | C. Hospedagem compartilhada do portal | Improvável (sem servidor Firebird; `pdo_firebird` incerto) | ✗ | Não recomendada. |
 
+### Landing pública na raiz do contêiner
+
+Com o `compose.yaml` padrão, o Apache do contêiner serve a landing (`landing/public`) em `/` e a aplicação em
+`/promotheusfiscaliza`. Publicar, conferir e voltar à página anterior: [landing/README.md](../landing/README.md#publicação-no-servidor-atual).
+A troca de `DocumentRoot` está na imagem, então a primeira atualização depois dela pede `docker compose up -d --build`.
+
 ### Opção A — origem dedicada (passo a passo)
 
 1. VPS/contêiner com Docker. DNS `fiscaliza.devfelipegomes.com.br` apontando para ele.

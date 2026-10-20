@@ -1,0 +1,3 @@
+Pasta do vídeo da seção "Para o avaliador".
+Coloque aqui o arquivo (ex.: apresentacao.mp4), a legenda opcional (apresentacao.pt-BR.vtt) e a capa opcional
+(capa.webp, 16:9) e aponte para eles em landing/config.php, chave 'video'. Passo a passo em landing/README.md.
