@@ -58,3 +58,5 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: test -z "$(git status --porcelain -- public/assets/build)" || (git status --porcelain -- public/assets/build; exit 1)
+      - run: npm run build:landing
+      - run: test -z "$(git status --porcelain -- landing/public/landing-assets/promotheus/build)" || (git status --porcelain -- landing/public/landing-assets/promotheus/build; exit 1)

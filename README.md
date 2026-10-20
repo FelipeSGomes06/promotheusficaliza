@@ -54,8 +54,8 @@ O comando `user:create` mostra **uma única vez** a senha gerada. Abra
 <http://localhost:8080/promotheusfiscaliza/> e entre com essa conta. **Não há acesso sem conta**: nenhuma tela, mapa
 ou API responde a visitantes, e não existe cadastro aberto — o administrador cadastra cada pessoa em **Contas** (ou
 pelo `user:create` no servidor) e entrega a senha gerada ([ADR-0014](docs/adr/0014-acesso-somente-com-conta-cadastrada.md)).
-A raiz <http://localhost:8080/> é uma página que simula o portal, para mostrar que a aplicação fica restrita ao
-prefixo. Banco já existente de uma versão anterior: rode `migrate` de novo (aplica a migração 0002; ver [operação](docs/operacao.md#atualizar-um-banco-existente-para-a-migração-0002)).
+A raiz <http://localhost:8080/> serve a **landing pública** do projeto ([landing/README.md](landing/README.md)); a
+aplicação continua restrita ao prefixo. Banco já existente de uma versão anterior: rode `migrate` de novo (aplica a migração 0002; ver [operação](docs/operacao.md#atualizar-um-banco-existente-para-a-migração-0002)).
 
 Testes, análise estática e estilo (usam o banco de testes `fiscaliza_test.fdb`, recriado a cada execução; os testes
 recusam rodar se o banco de testes for o mesmo do `DB_DSN`):
@@ -94,7 +94,7 @@ Comandos úteis: `php bin/fiscaliza` lista os comandos (`sim:tick` para cron, `a
 
 | Situação | Itens |
 |---|---|
-| **Implementado e verificado** | Partes 1, 2 e 3 descritas acima; identidade de trânsito, movimento e perfil compacto com capturas, vídeos e verificação no navegador ([evidência](docs/evidencias/2026-10-18-identidade-e-motion.md)); acesso somente com conta cadastrada pelo administrador ([ADR-0014](docs/adr/0014-acesso-somente-com-conta-cadastrada.md), [evidência](docs/evidencias/2026-10-19-identidade-com-acesso-por-conta.md)); cartão de autoria animado na página Sobre ([evidência](docs/evidencias/2026-10-19-cartao-de-autoria.md)); prova PHP/Firebird ([evidência](docs/evidencias/2026-10-18-prova-firebird.md)); **101 testes automatizados, 454 asserções** (unidade, integração no Firebird real, HTTP, concorrência com processos separados) ([verificação](docs/verificacao.md)); correções dos achados da auditoria de 18/10/2026 e redesenho com capturas antes/depois ([evidência](docs/evidencias/2026-10-18-correcoes-da-auditoria.md)); backup e restauração com gbak ([evidência](docs/evidencias/2026-10-18-backup-restauracao.md)); origem dedicada testada localmente. Rastreabilidade: [matriz de requisitos](docs/matriz-requisitos.md). |
+| **Implementado e verificado** | Partes 1, 2 e 3 descritas acima; identidade de trânsito, movimento e perfil compacto com capturas, vídeos e verificação no navegador ([evidência](docs/evidencias/2026-10-18-identidade-e-motion.md)); acesso somente com conta cadastrada pelo administrador ([ADR-0014](docs/adr/0014-acesso-somente-com-conta-cadastrada.md), [evidência](docs/evidencias/2026-10-19-identidade-com-acesso-por-conta.md)); cartão de autoria animado na página Sobre ([evidência](docs/evidencias/2026-10-19-cartao-de-autoria.md)); landing pública na raiz com a marca montada em 3D (Three.js + GSAP), capturas reais e seção "Para o avaliador" pronta para o vídeo ([ADR-0015](docs/adr/0015-landing-publica-e-marca-3d.md), [evidência](docs/evidencias/2026-10-20-landing-publica.md)); prova PHP/Firebird ([evidência](docs/evidencias/2026-10-18-prova-firebird.md)); **101 testes automatizados, 454 asserções** (unidade, integração no Firebird real, HTTP, concorrência com processos separados) ([verificação](docs/verificacao.md)); correções dos achados da auditoria de 18/10/2026 e redesenho com capturas antes/depois ([evidência](docs/evidencias/2026-10-18-correcoes-da-auditoria.md)); backup e restauração com gbak ([evidência](docs/evidencias/2026-10-18-backup-restauracao.md)); origem dedicada testada localmente. Rastreabilidade: [matriz de requisitos](docs/matriz-requisitos.md). |
 | **Pendente (depende do proprietário/infra)** | Publicação no endereço pretendido (DNS, TLS, redirecionamento no portal); repositório público (GitLab/GitHub) e varredura de segredos no histórico antes do primeiro push; ZIP de entrega gerado a partir do commit final; vídeo; conferência das condições finais da DSIN; teste com leitor de tela e com pessoa iniciante; conferir os termos da licença do GSAP; revisar as telas com o mapa de fundo real (as evidências desta rodada foram gravadas sem tiles). |
 | **Fora do escopo** | Integração real com IoT/órgãos, multas, reconhecimento de placas/faces, geolocalização de pessoas reais, app nativo, mensageria, alta disponibilidade, modelos 3D, heatmap e exportações. |
 
@@ -118,6 +118,7 @@ instalação que já está no ar para esta versão (backup, `git pull`, contêin
 - [Segurança e privacidade](docs/seguranca.md)
 - [Operação: configuração, simulador, backup e publicação](docs/operacao.md)
 - [Verificação executada](docs/verificacao.md) · [Matriz de requisitos](docs/matriz-requisitos.md)
+- [Landing pública: execução, publicação, vídeo e como voltar atrás](landing/README.md)
 - [Decisões (ADRs)](docs/adr/)
 - [IA e autoria](docs/ia-e-autoria.md) · [Licenças e fontes](docs/licencas-e-fontes.md) · [Roteiro do vídeo](docs/roteiro-video.md)
 - Planejamento original recebido: [docs/planejamento-codex-2026-10-18](docs/planejamento-codex-2026-10-18/00-LEIA-PRIMEIRO.md)
@@ -130,5 +131,5 @@ Code. Revisão, decisões e responsabilidade: autor do projeto. Detalhes em [doc
 ## Licença
 
 Código sob [licença MIT](LICENSE); a foto do autor (`public/assets/img/autor/`) não está incluída nela. Leaflet (BSD-2-Clause), Alpine.js e Tailwind CSS (MIT), GSAP (licença "Standard 'no
-charge'" da GreenSock, não MIT — termos a conferir antes de publicar), fonte Overpass (SIL OFL 1.1) e dados do
+charge'" da GreenSock, não MIT — termos a conferir antes de publicar), three.js (MIT, só na landing), fonte Overpass (SIL OFL 1.1) e dados do
 OpenStreetMap (ODbL) mantêm suas licenças — ver [docs/licencas-e-fontes.md](docs/licencas-e-fontes.md).

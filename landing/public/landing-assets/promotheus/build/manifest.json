@@ -1,0 +1,41 @@
+{
+  "landing/src/cena3d.js": {
+    "file": "cena3d-2gvUTnuS.js",
+    "name": "cena3d",
+    "src": "landing/src/cena3d.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "landing/src/pagina.js"
+    ]
+  },
+  "landing/src/landing.css": {
+    "file": "landing-CcUI5bVB.css",
+    "name": "landing",
+    "names": [
+      "landing.css"
+    ],
+    "src": "landing/src/landing.css",
+    "isEntry": true,
+    "assets": [
+      "overpass-latin-wght-normal.woff2",
+      "overpass-latin-ext-wght-normal.woff2"
+    ]
+  },
+  "landing/src/pagina.js": {
+    "file": "pagina-BxmWrPjc.js",
+    "name": "pagina",
+    "src": "landing/src/pagina.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "landing/src/cena3d.js"
+    ]
+  },
+  "node_modules/@fontsource-variable/overpass/files/overpass-latin-ext-wght-normal.woff2": {
+    "file": "overpass-latin-ext-wght-normal.woff2",
+    "src": "node_modules/@fontsource-variable/overpass/files/overpass-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2": {
+    "file": "overpass-latin-wght-normal.woff2",
+    "src": "node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2"
+  }
+}
