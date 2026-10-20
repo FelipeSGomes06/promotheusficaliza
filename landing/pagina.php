@@ -40,8 +40,6 @@ $img = static fn (string $nome): string => e(asset('img/' . $nome));
   <symbol id="i-menu" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h10"/></symbol>
   <symbol id="i-fechar" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></symbol>
   <symbol id="i-movimento" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 12h4l2-5 4 10 2-5h6"/></symbol>
-  <symbol id="i-pular" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M6 6.5l7 5.5-7 5.5zM16.5 6.5v11"/></symbol>
-  <symbol id="i-rever" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M20 11.5A8 8 0 0 0 6 6.6L4 8.5M4 4v4.5h4.5M4 12.5a8 8 0 0 0 14 4.9l2-1.9M20 20v-4.5h-4.5"/></symbol>
 </svg>
 
 <a class="pular-link" href="#conteudo">Pular para o conteúdo</a>
@@ -95,9 +93,6 @@ $img = static fn (string $nome): string => e(asset('img/' . $nome));
           </div>
         </div>
         <p class="palco__nome" aria-hidden="true" data-palco-nome><span>Promotheus</span> <strong>Fiscaliza</strong></p>
-        <button class="palco__ctl" type="button" data-palco-ctl hidden>
-          <svg class="icone" aria-hidden="true" focusable="false"><use href="#i-pular"></use></svg><span data-palco-ctl-rotulo>Pular animação</span>
-        </button>
       </div>
     </div>
   </section>

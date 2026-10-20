@@ -3,42 +3,25 @@ import { movimento } from './movimento.js';
 
 /*
  * Palco da hero. A primeira pintura já mostra a marca oficial em SVG (vale sem JavaScript e sem WebGL); quando o
- * módulo 3D carrega e a hero está na tela, o SVG dá lugar à marca 3D, que se monta uma vez. O botão discreto diz
- * "Pular animação" durante a montagem e "Rever montagem" depois. Sem WebGL, ou se o módulo falhar, fica o SVG.
+ * módulo 3D carrega e a hero está na tela, o SVG dá lugar à marca 3D, que se monta uma vez. Quem não quer a
+ * sequência usa "Reduzir movimento" (a marca aparece pronta). Sem WebGL, ou se o módulo falhar, fica o SVG.
  */
 export function iniciarPalco(raiz) {
   const host = raiz.querySelector('[data-palco-cena]');
   const estatico = raiz.querySelector('[data-palco-estatico]');
-  const botao = raiz.querySelector('[data-palco-ctl]');
-  const rotulo = botao.querySelector('[data-palco-ctl-rotulo]');
-  const icone = botao.querySelector('use');
   const montagem = raiz.dataset.montagem === '1';
   let controle = null;
-  let estado = 'estatico';
   const esperando = [];
 
-  const mostrarBotao = () => {
-    const montando = estado === 'montando';
-    botao.hidden = !montagem || movimento.reduzido() || !(montando || estado === 'pronta');
-    rotulo.textContent = montando ? 'Pular animação' : 'Rever montagem';
-    icone.setAttribute('href', montando ? '#i-pular' : '#i-rever');
-  };
-
-  const aoEstado = (novo) => {
-    estado = novo;
-    if (novo === 'pronta') controle?.ligarPonteiro();
-    if (novo === 'falhou') {
+  const aoEstado = (estado) => {
+    if (estado === 'pronta') controle?.ligarPonteiro();
+    if (estado === 'falhou') {
       host.querySelector('canvas')?.remove();
       gsap.set(estatico, { opacity: 1 });
     }
-    mostrarBotao();
   };
 
-  botao.addEventListener('click', () => (estado === 'montando' ? controle.pular() : controle.rever()));
-  movimento.aoMudar(() => {
-    controle?.definirReduzido(movimento.reduzido() || !montagem);
-    mostrarBotao();
-  });
+  movimento.aoMudar(() => controle?.definirReduzido(movimento.reduzido() || !montagem));
 
   const api = {
     /** Chama f(controle) quando a cena 3D estiver pronta — nunca, se não houver WebGL. */
