@@ -273,7 +273,9 @@ export function criarCena({ host, reduzido, celular, duracao, ponteiro, nome, so
     // Primeiro traço: haste de baixo para cima, depois o braço da esquerda para a direita.
     const haste = 26.5 - 6;
     const s = revela.p * (haste + 12.5);
-    const corteY = revela.p >= 1 ? 99 : 16 - Math.max(26.5 - s, 6);
+    // Folga de 0,02 nos dois cortes: um plano rente à parede da peça (topo do braço em y = 10) recorta pixel sim,
+    // pixel não, e a aresta chia.
+    const corteY = revela.p >= 1 ? 99 : 16.02 - Math.max(26.5 - s, 6);
     const corteX = revela.p >= 1 ? 99 : JUNTA_X + 0.02 + Math.max(0, s - haste);
     planosLocais[0].constant = corteY;
     planosLocais[1].constant = corteX;
