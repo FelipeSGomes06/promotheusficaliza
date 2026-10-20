@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "protocol_version": "marilia-setores-v1",
+  "config_sha256": "c84f4f5e9e91c4ae7668f8669d6e334cf6e34a8606d3b5d4b39c86c548cd7205",
+  "selected_before_test": "baseline",
+  "selected_alpha": 0.1,
+  "test_model": {
+    "kind": "poisson_log_link_standardized",
+    "alpha": 0.1,
+    "feature_names": [
+      "sector_NO",
+      "sector_NE",
+      "sector_SO",
+      "sector_SE",
+      "log1p_rate_13w",
+      "log1p_rate_52w",
+      "annual_sin",
+      "annual_cos",
+      "years_since_2020"
+    ],
+    "mean": [
+      0.25,
+      0.25,
+      0.25,
+      0.25,
+      1.6324361127412168,
+      1.6919692753502198,
+      0.0057032127916105775,
+      -0.06022158436873859,
+      2.485968514715949
+    ],
+    "scale": [
+      0.4330127018922193,
+      0.4330127018922193,
+      0.4330127018922193,
+      0.4330127018922193,
+      0.7467927326570246,
+      0.771414969389231,
+      0.7169063420171775,
+      0.6945402298755065,
+      1.3443730213712901
+    ],
+    "coefficients": [
+      0.18461530447017516,
+      -0.4643063905837369,
+      0.18573045138465213,
+      0.09396063472890988,
+      0.2691179958106795,
+      0.2560057205676659,
+      -0.02444754199672687,
+      -0.05682410433665227,
+      -0.025980527971040366
+    ],
+    "intercept": 1.291527038375713,
+    "training_from": "2020-03-02",
+    "training_labels_until": "2024-10-28",
+    "training_rows": 972
+  },
+  "poisson": {
+    "mae": 1.5903305092254256,
+    "mean_poisson_deviance": 1.2248926102872713,
+    "observed_count": 626,
+    "predicted_count": 802.0020877479245,
+    "rows": 204,
+    "weeks": 51,
+    "top_sectors_budget": 1,
+    "top_budget_captured": 246,
+    "top_budget_capture_fraction": 0.3929712460063898,
+    "from": "2025-01-06",
+    "until": "2025-12-29"
+  },
+  "baseline": {
+    "mae": 1.5951720310765818,
+    "mean_poisson_deviance": 1.2598504841324505,
+    "observed_count": 626,
+    "predicted_count": 782.1698113207535,
+    "rows": 204,
+    "weeks": 51,
+    "top_sectors_budget": 1,
+    "top_budget_captured": 233,
+    "top_budget_capture_fraction": 0.3722044728434505,
+    "from": "2025-01-06",
+    "until": "2025-12-29"
+  },
+  "poisson_deviance_relative_gain": 0.027747636950151033,
+  "limitations": [
+    "Retrospecto de snapshot revisado; primeira publicacao de cada registro nao e conhecida.",
+    "Dois meses completos retidos simulam atraso de publicacao; e uma hipotese.",
+    "Dados/teste real separados temporalmente; sem validacao prospectiva nem causal.",
+    "Cobertura: registros elegiveis no retangulo; setores nao sao bairros oficiais."
+  ]
+}

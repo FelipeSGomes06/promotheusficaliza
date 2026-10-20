@@ -1,5 +1,5 @@
 {% import '_ui.twig' as ui %}
-{% set links = not app.user ? [] : [['/', 'Visão geral', 'i-overview'], ['/equipamentos', 'Equipamentos', 'i-equipment'], ['/agentes', 'Agentes', 'i-agents'], ['/manutencao', 'Manutenção', 'i-wrench'], ['/antecipacao', 'Revisões recomendadas', 'i-chart'], ['/sobre', 'Sobre', 'i-info']] %}
+{% set links = not app.user ? [] : [['/', 'Visão geral', 'i-overview'], ['/equipamentos', 'Equipamentos', 'i-equipment'], ['/agentes', 'Agentes', 'i-agents'], ['/manutencao', 'Manutenção', 'i-wrench'], ['/antecipacao', 'Revisões recomendadas', 'i-chart'], ['/planejar', 'Planejar reforço', 'i-layers'], ['/sobre', 'Sobre', 'i-info']] %}
 {% if app.user and app.user.role == 'ADMIN' %}{% set links = links|merge([['/contas', 'Contas', 'i-users']]) %}{% endif %}
 <!doctype html>
 <html lang="pt-BR">
@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}Visão geral{% endblock %} · Promotheus Fiscaliza</title>
-  <meta name="description" content="Central de recursos de fiscalização de trânsito de Marília/SP — demonstração com dados fictícios (DSIN Coder Challenge 2026, etapa F.O.G.O.).">
+  <meta name="description" content="Central de recursos de fiscalização de trânsito de Marília/SP — demonstração com operação fictícia e contagens reais agregadas de sinistros do Infosiga-SP (DSIN Coder Challenge 2026, etapa F.O.G.O.).">
   <meta name="theme-color" content="#0f1a2b">
   <link rel="icon" href="{{ asset('img/favicon.svg') }}" type="image/svg+xml">
   {{ vite_styles() }}
@@ -45,7 +45,7 @@
           {{ ui.icon('i-motion') }}
           <span><span class="motion-pref__state" x-text="stateLabel">Animações</span><span class="motion-pref__why" id="motion-why" x-text="whyLabel">Segue a preferência do sistema</span></span>
         </button>
-        <p class="m-0">Dados fictícios · mapa <a href="https://www.openstreetmap.org/copyright" rel="noopener">© OpenStreetMap</a>{% if app.user %} · <a href="{{ url('/sobre') }}">o que é real</a>{% endif %}</p>
+        <p class="m-0">Operação fictícia · sinistros: <a href="https://dadosabertos.sp.gov.br/dataset/sinistros-infosiga" rel="noopener">Infosiga-SP</a> · mapa <a href="https://www.openstreetmap.org/copyright" rel="noopener">© OpenStreetMap</a>{% if app.user %} · <a href="{{ url('/sobre') }}">o que é real</a>{% endif %}</p>
       </div>
     </aside>
     <div class="rail-scrim" data-rail-scrim hidden></div>
@@ -66,8 +66,9 @@
           <details class="demo-badge" data-popover>
             <summary>Demonstração</summary>
             <div class="popover" role="note">
-              <p><strong>Tudo aqui é fictício.</strong> Dados, órgãos, marcas, modelos e agentes são inventados; os pontos em Marília/SP são ilustrativos.</p>
-              <p>Não há integração com prefeitura, polícia ou equipamentos reais.{% if app.user %} <a href="{{ url('/sobre') }}">O que é real, simulado e implementado</a>{% endif %}</p>
+              <p><strong>A operação é fictícia.</strong> Equipamentos, órgãos, marcas, modelos, agentes, posições, histórico operacional e missões são inventados; os pontos em Marília/SP são ilustrativos.</p>
+              <p><strong>Exceção real:</strong> em "Planejar reforço", as contagens históricas de sinistros são reais e agregadas por setor (Infosiga-SP/Detran-SP, CC BY 4.0).</p>
+              <p>Não há integração com prefeitura, polícia ou equipamentos reais, e nenhuma mensagem é enviada.{% if app.user %} <a href="{{ url('/sobre') }}">O que é real, simulado e implementado</a>{% endif %}</p>
             </div>
           </details>
         </div>

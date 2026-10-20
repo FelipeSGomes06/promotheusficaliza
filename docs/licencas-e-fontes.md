@@ -23,7 +23,10 @@
 | Slim, slim/psr7, Twig e dependências | Packagist (via `composer.lock`) | MIT / BSD-3-Clause | Execução. |
 | PHPUnit, PHPStan, PHP-CS-Fixer | Packagist (dev) | BSD-3-Clause / MIT | Qualidade. |
 | Imagens Docker | `php:8.5.11-apache-trixie`, `firebirdsql/firebird:5.0.4-trixie`, `composer:2.10` | Licenças dos projetos (PHP License, IDPL/IPL do Firebird, MIT) | Ambiente de execução. |
+| Contagens de sinistros de Marília (`ml/marilia-setores/dados/`, tabelas `URBAN_*`) | [Infosiga-SP / Detran-SP](https://dadosabertos.sp.gov.br/dataset/sinistros-infosiga), snapshot de 20/10/2026 (SHA-256 no `manifesto.json`) | **CC BY 4.0** — atribuição: "Fonte: Infosiga-SP / Detran-SP, snapshot de 20/10/2026; agregação e modelo pelo projeto Promotheus Fiscaliza." | Dados reais **agregados** (contagem por setor e dia); o arquivo bruto (141 MB) não está no repositório. A atribuição aparece na tela Planejar reforço e no rodapé do menu. |
+| Treino Python do planejamento (`ml/marilia-setores/`) | Pacote preparado pelo Codex para este projeto | MIT (código); dependências instaladas por `TREINAR.cmd` a partir do `requirements.txt` (numpy, scikit-learn: BSD-3-Clause) | Fora da aplicação web; nada dele é executado por HTTP. |
 | Enunciado do desafio | DSIN Coder Challenge 2026 | Da organizadora | Apenas referenciado; não reproduzido. |
 
 Nomes de bairros, logradouros e CEPs de logradouro de Marília são referências geográficas públicas. Órgãos, marcas,
-modelos, séries e agentes são fictícios; qualquer semelhança com produtos ou pessoas reais é coincidência.
+modelos, séries, agentes e missões são fictícios; qualquer semelhança com produtos ou pessoas reais é coincidência. A
+única camada de dados reais é a das contagens agregadas do Infosiga-SP (linha acima).

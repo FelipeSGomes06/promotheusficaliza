@@ -169,6 +169,47 @@ fora de serviço ficam em seções recolhidas. A "prioridade sugerida" (0–100)
 sintético e o retrospecto, no fim da página, mostra que o método acerta pouco (cerca de 2× o acaso). Operadores podem
 **Recalcular agora**. Detalhes em [análise preventiva](analise-preventiva.md).
 
+## Planejar reforço (`/planejar`)
+
+Planejamento preventivo semanal por setor ([método e resultados](planejamento-por-setores.md)). Sem execução importada,
+a tela diz isso e não mostra números (no servidor: `php bin/fiscaliza urban:import`).
+
+- **Atualização:** o topo diz se a previsão é "atualização automática" (o sistema baixa o Infosiga uma vez por mês e
+  recalcula toda segunda) ou "importada do treino", e quando o arquivo foi baixado.
+- **Topo (faixa azul contínua = previsão atual):** período previsto (7 dias), até quando vão os dados de entrada
+  (atraso de publicação de dois meses assumido), método escolhido no ajuste e quando a execução foi gerada e importada.
+  Os selos dizem a origem: **Real agregado · Infosiga-SP** para as contagens, **Fictício** para agentes e missões.
+- **Como ler:** o número é a contagem esperada de **registros** em 7 dias, não a chance de um acidente; a posição
+  (1º a 4º) é prioridade relativa de planejamento, não emergência. Falhas e alertas ficam na Visão geral.
+- **Ordenar pela estimativa de:** "Referência histórica · escolhida no ajuste" (padrão) ou "Poisson experimental". Trocar
+  recalcula a ordem só na tela; a execução importada não muda (aparece o aviso "Só comparação").
+- **Mapa e lista:** os quatro setores com a posição escrita (1º…4º) e a estimativa; tons de azul e tracejados
+  diferentes, nunca vermelho. Tocar num setor (mapa ou lista) abre o detalhe. Pontos redondos = agentes de trânsito
+  livres; tracejado = sem posição recente (desenhado na base).
+- **Onde concentrar o reforço (quadrados de 2 km):** mapa só com a grade de quadrados iguais e os prioritários
+  numerados; ao lado, o bairro de referência, o setor, a parcela dos registros do último ano e os registros esperados
+  em 7 dias. **Mostrar 1, 2, 3 ou 4.** É uma lista quase fixa (o centro e arredores), calculada pela média simples.
+- **Detalhe do setor:** valores dos dois métodos com a posição de cada um, histórico usado (52 semanas), defasagem e
+  **Por que esta estimativa** (ritmo de 13 × 52 semanas, fórmula da referência ou o que entra no Poisson). São
+  associações, não causa.
+- **Sugerir agente de trânsito:** só agentes de trânsito em atividade e sem missão; primeiro quem tem posição atual,
+  depois atrasada, por fim só a base; em cada grupo, o mais perto em linha reta da borda do setor. O primeiro vem
+  marcado como **Sugerido**; escolher outro exige justificativa. Ponto de apoio e observação são opcionais. Marque a
+  caixa de confirmação e use **Confirmar missão fictícia**. Agentes de trânsito fora da sugestão aparecem recolhidos,
+  com o motivo (em pausa, já reservado…).
+- **Missões fictícias:** confirmadas primeiro, com setor, período, método e estimativa congelados, motivo, autoria e
+  histórico. **Concluir** ou **Cancelar** pede motivo e libera o agente. Se outra pessoa reservar o mesmo agente ao
+  mesmo tempo, só uma confirmação vale; a outra recebe a mensagem e nada é gravado.
+- **Período encerrado:** a tela avisa e a confirmação fica indisponível até importar uma execução nova.
+
+### Retrospecto (`/planejar/retrospecto`)
+
+Faixa tracejada grafite/turquesa = **histórico**, não a previsão atual. Escolha a semana do teste de 2025 (ou use
+semana anterior/próxima) e o método. A tabela mostra a previsão do **modelo congelado em 01/01/2025** e as contagens de
+entrada daquela semana; a coluna "Registrado" fica **oculta** até **Revelar o que foi registrado** (os números nem
+são enviados antes). Depois, a página diz quantos registros houve e quantos caíram no setor priorizado por cada
+método. Abaixo, sempre, o resultado do teste inteiro e os limites — uma semana isolada não prova nada.
+
 ## Entrar e contas
 
 - **Entrar:** use a conta cadastrada pelo administrador. Depois do login você volta para a página que tinha pedido;

@@ -24,6 +24,9 @@ se presente, `Origin` igual a `APP_ORIGIN` (ou à origem da requisição).
 | GET/POST | `/agentes/novo`, `/agentes`, `/agentes/{id}/editar`, `/agentes/{id}`, `/agentes/{id}/situacao`, `/agentes/{id}/arquivar` | operador | Como nos equipamentos. |
 | GET | `/manutencao` | conta | Lista por andamento e urgência e encerradas recentes. |
 | GET | `/antecipacao` | conta | "Revisões recomendadas": última análise e retrospecto. `POST /antecipacao/recalcular`: operador. |
+| GET | `/planejar` | conta | Planejar reforço: previsão da execução importada mais recente. Query: `metodo` ∈ {baseline, poisson} (padrão: o escolhido no ajuste), `setor` ∈ {NO, NE, SO, SE}, `quadrados` ∈ {1…4} (padrão 4; os quadrados de 2 km só aparecem se a grade foi importada). Sem execução: estado vazio, sem números. |
+| GET | `/planejar/retrospecto` | conta | Semana do teste com a previsão congelada. Query: `semana` (AAAA-MM-DD de uma semana do teste), `metodo`, `revelar=1` (só então os registros observados entram no HTML). |
+| POST | `/planejar/missoes` · `/planejar/missoes/{id}/concluir` · `/cancelar` | operador | Missão fictícia (ver [Escrita](#planejar-reforço)). |
 | GET | `/sobre` | conta | O que é real, simulado e implementado; ajuda administrativa. |
 | GET/POST | `/entrar` · POST `/sair` | aberto | Login (sessão regenerada; volta ao `voltar` interno) e logout (sessão destruída; leva ao login). |
 | GET/POST | `/contas`, POST `/contas/{id}/situacao` | administrador | Lista, cria (senha exibida uma vez), ativa/desativa. |
@@ -106,6 +109,13 @@ volta para `/manutencao`.
 | `POST /entrar` | `username`, `password`, `voltar` | Mensagem única para conta inexistente, senha errada ou conta inativa; 5 falhas por usuário (20 por IP) em 15 min bloqueiam, inclusive com tentativas simultâneas. `voltar` só aceita caminho interno. |
 | `POST /contas` | `username` (3–40: letras, números, `.`, `-`, `_`; único), `display_name` (≤80), `role` (`OPERADOR`/`ADMIN`) | Senha gerada exibida uma vez. |
 | `POST /contas/{id}/situacao` | `active` (`0`/`1`) | Não desativa a própria conta nem o último administrador ativo. |
+
+### Planejar reforço
+
+| Rota | Campos | Efeito |
+|---|---|---|
+| `POST /planejar/missoes` | `run_id`, `sector_id`, `method`, `agent_id`, `confirm=1` (obrigatório), `justification` (≤300; obrigatória se o agente não for o sugerido), `support_point` (≤160), `note` (≤300) | O servidor recalcula tudo: a execução precisa ser a mais recente e o período não pode ter terminado; o agente é travado e reconferido (trânsito, não arquivado, em atividade, sem missão); estimativa, posição e motivo vêm do banco, nunca do navegador; autor = conta da sessão. Conflito (outra pessoa reservou o agente) → aviso, nada gravado. Sem comunicação externa. |
+| `POST /planejar/missoes/{id}/concluir` · `/cancelar` | `reason` (1–300) | Só missão `CONFIRMADA`; já encerrada → aviso. Libera o agente e grava a transição. |
 
 ## Contrato de `GET /api/central`
 

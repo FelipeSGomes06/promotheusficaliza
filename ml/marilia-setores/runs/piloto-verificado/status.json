@@ -1,0 +1,90 @@
+{
+  "status": "pilot_complete",
+  "selection": {
+    "selected_before_test": "baseline",
+    "selected_alpha": 0.1,
+    "metric": "mean_poisson_deviance",
+    "baseline_validation": {
+      "mae": 1.754826678367705,
+      "mean_poisson_deviance": 1.0610037924706939,
+      "observed_count": 784,
+      "predicted_count": 880.8867924528307,
+      "rows": 172,
+      "weeks": 43,
+      "top_sectors_budget": 1,
+      "top_budget_captured": 305,
+      "top_budget_capture_fraction": 0.38903061224489793,
+      "from": "2024-01-01",
+      "until": "2024-10-28"
+    },
+    "candidates": [
+      {
+        "alpha": 0.01,
+        "validation": {
+          "mae": 1.9318788420414044,
+          "mean_poisson_deviance": 1.2169107983298184,
+          "observed_count": 784,
+          "predicted_count": 960.3447018910392,
+          "rows": 172,
+          "weeks": 43,
+          "top_sectors_budget": 1,
+          "top_budget_captured": 288,
+          "top_budget_capture_fraction": 0.3673469387755102,
+          "from": "2024-01-01",
+          "until": "2024-10-28"
+        }
+      },
+      {
+        "alpha": 0.1,
+        "validation": {
+          "mae": 1.873997639065025,
+          "mean_poisson_deviance": 1.1747809989971323,
+          "observed_count": 784,
+          "predicted_count": 936.9632403323058,
+          "rows": 172,
+          "weeks": 43,
+          "top_sectors_budget": 1,
+          "top_budget_captured": 303,
+          "top_budget_capture_fraction": 0.3864795918367347,
+          "from": "2024-01-01",
+          "until": "2024-10-28"
+        }
+      },
+      {
+        "alpha": 1.0,
+        "validation": {
+          "mae": 1.8718169193051588,
+          "mean_poisson_deviance": 1.2720541628815318,
+          "observed_count": 784,
+          "predicted_count": 930.8437257360956,
+          "rows": 172,
+          "weeks": 43,
+          "top_sectors_budget": 1,
+          "top_budget_captured": 305,
+          "top_budget_capture_fraction": 0.38903061224489793,
+          "from": "2024-01-01",
+          "until": "2024-10-28"
+        }
+      },
+      {
+        "alpha": 10.0,
+        "validation": {
+          "mae": 2.16032386341878,
+          "mean_poisson_deviance": 1.929171379735928,
+          "observed_count": 784,
+          "predicted_count": 951.4829832618159,
+          "rows": 172,
+          "weeks": 43,
+          "top_sectors_budget": 1,
+          "top_budget_captured": 294,
+          "top_budget_capture_fraction": 0.375,
+          "from": "2024-01-01",
+          "until": "2024-10-28"
+        }
+      }
+    ],
+    "validation_label_availability_cutoff": "2024-11-01"
+  },
+  "seconds": 0.05184399999961897,
+  "final_test_evaluated": false
+}

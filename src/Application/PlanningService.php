@@ -1,0 +1,398 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Fiscaliza\Application;
+
+use DateTimeImmutable;
+use Fiscaliza\Domain\AgentRole;
+use Fiscaliza\Domain\AgentStatus;
+use Fiscaliza\Domain\Clock;
+use Fiscaliza\Domain\Freshness;
+use Fiscaliza\Domain\RuleViolation;
+use Fiscaliza\Domain\SectorForecast;
+use Fiscaliza\Domain\Time;
+use Fiscaliza\Domain\ValidationFailed;
+use Fiscaliza\Infrastructure\ConstraintViolation;
+use Fiscaliza\Infrastructure\Database;
+use Fiscaliza\Infrastructure\Repository\AgentRepository;
+use Fiscaliza\Infrastructure\Repository\MissionRepository;
+use Fiscaliza\Infrastructure\Repository\ReferenceRepository;
+use Fiscaliza\Infrastructure\Repository\UrbanRepository;
+
+/**
+ * Planejamento preventivo semanal por setores (ADR-0016): a semana prevista pela execução importada, a explicação
+ * pelas evidências, a sugestão de agente de trânsito, a missão fictícia confirmada pelo gestor e o retrospecto.
+ *
+ * A sugestão é uma regra operacional simples, separada do modelo: agentes de trânsito em atividade e sem missão
+ * vigente, ordenados pela confiabilidade da posição (atual → atrasada → só a base) e pela distância em linha reta até o
+ * retângulo do setor. Nada é enviado a pessoas: missão e agentes são fictícios.
+ */
+final class PlanningService
+{
+    public const STATES = ['CONFIRMADA' => 'Confirmada', 'CONCLUIDA' => 'Concluída', 'CANCELADA' => 'Cancelada'];
+    /** Quadrados prioritários que a tela pode mostrar (1 a 4). */
+    public const MAX_CELLS = 4;
+    private const POINT = [0 => 'posição atual', 1 => 'posição atrasada', 2 => 'base de trabalho (sem posição recente)'];
+
+    public function __construct(
+        private readonly Database $db,
+        private readonly UrbanRepository $urban,
+        private readonly MissionRepository $missions,
+        private readonly AgentRepository $agents,
+        private readonly ReferenceRepository $references,
+        private readonly Clock $clock,
+    ) {}
+
+    /**
+     * Semana prevista pela execução mais recente, com os setores na ordem do método escolhido.
+     *
+     * @return array<string, mixed>|null null quando nenhuma execução foi importada
+     */
+    public function week(?string $method): ?array
+    {
+        $run = $this->urban->latestRun();
+        if ($run === null) {
+            return null;
+        }
+        $method = self::method($method, $run);
+
+        return [
+            'run' => $run + ['last_day' => self::addDays((string) $run['until_date'], -1)],
+            'method' => $method,
+            'sectors' => self::ordered($this->urban->sectors($run['id']), $method),
+            // Quadrados de 2 km pela média simples (independem do método dos setores); vazio se a grade não foi importada.
+            'cells' => array_map(fn(array $c): array => $c + ['places' => $this->places($c)], $this->urban->topCells($run['id'], self::MAX_CELLS)),
+            'period' => self::period($run, Time::localDate($this->clock->now())),
+        ];
+    }
+
+    /**
+     * Candidatos para reforçar um setor: elegíveis em ordem de sugestão e, à parte, os de trânsito indisponíveis com o
+     * motivo. Guarda municipal e polícia não entram (não são escalados como trânsito por proximidade).
+     *
+     * @param array<string, mixed> $sector linha de UrbanRepository::sectors
+     * @return array{eligible: list<array<string, mixed>>, unavailable: list<array<string, mixed>>}
+     */
+    public function candidates(array $sector): array
+    {
+        $now = $this->clock->now();
+        $reserved = $this->missions->activeByAgent();
+        $eligible = [];
+        $unavailable = [];
+        foreach ($this->agents->allActive() as $agent) {
+            if ($agent['role'] !== AgentRole::Transito->value) {
+                continue;
+            }
+            $candidate = self::candidate($agent, $sector, $now);
+            $mission = $reserved[(int) $agent['id']] ?? null;
+            if ($agent['status'] !== AgentStatus::EmAtividade->value) {
+                $unavailable[] = $candidate + ['why' => AgentStatus::from($agent['status'])->label()];
+            } elseif ($mission !== null) {
+                $unavailable[] = $candidate + ['why' => "Reservado na missão fictícia #{$mission}"];
+            } else {
+                $eligible[] = $candidate;
+            }
+        }
+        usort($eligible, static fn(array $a, array $b): int => [$a['tier'], $a['distance_km'], $a['code']] <=> [$b['tier'], $b['distance_km'], $b['code']]);
+
+        return ['eligible' => $eligible, 'unavailable' => $unavailable];
+    }
+
+    /**
+     * Confirma uma missão fictícia. A elegibilidade é conferida de novo com a linha do agente travada; o índice
+     * único parcial garante uma única missão vigente por agente mesmo com confirmações simultâneas.
+     *
+     * @param array<string, mixed> $data
+     * @return int identificador da missão
+     */
+    public function confirm(array $data, int $actorId): int
+    {
+        $input = new Input($data);
+        $runId = (int) $input->int('run_id', 1, PHP_INT_MAX);
+        $sectorId = (string) $input->choice('sector_id', SectorForecast::SECTORS);
+        $method = (string) $input->choice('method', array_keys(SectorForecast::METHODS));
+        $agentId = (int) $input->int('agent_id', 1, PHP_INT_MAX);
+        $justification = $input->text('justification', 300, false);
+        $support = $input->text('support_point', 160, false);
+        $note = $input->text('note', 300, false);
+        if (!$input->flag('confirm')) {
+            $input->fail('confirm', 'Marque a confirmação de que esta é uma missão fictícia de demonstração.');
+        }
+        $input->assertValid();
+        $now = $this->clock->now();
+
+        return $this->db->transaction(function () use ($runId, $sectorId, $method, $agentId, $justification, $support, $note, $now, $actorId): int {
+            $run = $this->urban->latestRun();
+            if ($run === null || $run['id'] !== $runId) {
+                throw new RuleViolation('A previsão foi atualizada depois que você abriu a tela. Revise os números novos antes de confirmar.');
+            }
+            if (self::period($run, Time::localDate($now)) === 'ENCERRADA') {
+                throw new RuleViolation('O período desta previsão já terminou. Importe uma execução nova antes de planejar (php bin/fiscaliza urban:import).');
+            }
+            $sectors = $this->urban->sectors($runId);
+            $sector = $sectors[$sectorId] ?? throw new NotFound('Setor não encontrado.');
+            $agent = $this->agents->lock($agentId) ?? throw new NotFound('Agente não encontrado.');
+            if ($agent['role'] !== AgentRole::Transito->value) {
+                throw new RuleViolation('Só agentes de trânsito entram no reforço preventivo; guarda e polícia não são escalados por proximidade.');
+            }
+            if ($agent['archived_at'] !== null) {
+                throw new RuleViolation('Agente arquivado não recebe missão.');
+            }
+            if ($agent['status'] !== AgentStatus::EmAtividade->value) {
+                throw new RuleViolation("{$agent['call_sign']} está agora \"" . AgentStatus::from($agent['status'])->label() . '"; escolha um agente em atividade.');
+            }
+            $busy = $this->missions->activeForAgent($agentId);
+            if ($busy !== null) {
+                throw new RuleViolation("{$agent['call_sign']} já está reservado na missão fictícia #{$busy}.");
+            }
+            $eligible = $this->candidates($sector)['eligible'];
+            $chosen = array_values(array_filter($eligible, static fn(array $c): bool => $c['id'] === $agentId))[0] ?? self::candidate($agent, $sector, $now);
+            $selection = ($eligible[0]['id'] ?? null) === $agentId ? 'SUGERIDO' : 'MANUAL';
+            if ($selection === 'MANUAL' && $justification === null) {
+                throw new ValidationFailed(['justification' => 'Explique por que escolheu um agente diferente do sugerido.']);
+            }
+            $ranked = self::ordered($sectors, $method)[$sectorId];
+            $reason = sprintf(
+                '%s: %dº de 4 (%s), %s registros esperados em 7 dias. %s: em atividade, %s, %s.',
+                $sector['name'],
+                $ranked['rank'],
+                SectorForecast::methodLabel($method),
+                self::fmt($ranked['value']),
+                $agent['call_sign'],
+                self::POINT[$chosen['tier']],
+                $chosen['distance_label'],
+            );
+            $at = Time::toDb($now);
+            try {
+                $id = $this->missions->insert([
+                    'run_id' => $runId, 'sector_id' => $sectorId, 'period_from' => $run['as_of'], 'period_until' => $run['until_date'], 'method' => $method,
+                    'expected_count' => $ranked['value'], 'rank_no' => $ranked['rank'], 'agent_id' => $agentId, 'selection' => $selection,
+                    'reason' => mb_substr($reason, 0, 300), 'justification' => $selection === 'MANUAL' ? $justification : null, 'support_point' => $support,
+                    'note' => $note, 'confirmed_at' => $at, 'confirmed_by' => $actorId,
+                ]);
+            } catch (ConstraintViolation $e) {
+                // Barreira do banco para a corrida que a trava e a verificação acima não pegarem.
+                throw $e->constraint === 'UX_URBAN_MISSION_ACTIVE' ? new RuleViolation("Outra pessoa acabou de reservar {$agent['call_sign']}. Escolha outro agente.") : $e;
+            }
+            $this->missions->log($id, null, 'CONFIRMADA', $actorId, $at, $note);
+
+            return $id;
+        });
+    }
+
+    /** Conclui ou cancela uma missão vigente (libera o agente para novas sugestões), com motivo e histórico. */
+    public function close(int $missionId, string $state, string $reason, int $actorId): void
+    {
+        if (!in_array($state, ['CONCLUIDA', 'CANCELADA'], true)) {
+            throw new ValidationFailed(['state' => 'Situação final inválida.']);
+        }
+        $reason = trim($reason);
+        if ($reason === '' || mb_strlen($reason) > 300) {
+            throw new ValidationFailed(['reason' => 'Informe o motivo (até 300 caracteres).']);
+        }
+        $this->db->transaction(function () use ($missionId, $state, $reason, $actorId): void {
+            $mission = $this->missions->lock($missionId) ?? throw new NotFound('Missão não encontrada.');
+            $at = Time::toDb($this->clock->now());
+            if ($mission['state'] !== 'CONFIRMADA' || !$this->missions->close($missionId, $state, $at, $actorId, $reason)) {
+                throw new RuleViolation("A missão #{$missionId} já está " . mb_strtolower(self::STATES[$mission['state']] ?? $mission['state']) . '; nada foi alterado.');
+            }
+            $this->missions->log($missionId, 'CONFIRMADA', $state, $actorId, $at, $reason);
+        });
+    }
+
+    /**
+     * Missões recentes (vigentes primeiro) com o histórico de cada uma.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function missions(): array
+    {
+        $missions = $this->missions->recent();
+        $logs = $this->missions->logs(array_column($missions, 'id'));
+
+        return array_map(static fn(array $m): array => $m + ['log' => $logs[$m['id']] ?? []], $missions);
+    }
+
+    /**
+     * Retrospecto de uma semana do teste com as previsões do modelo congelado. Sem $reveal, os registros observados
+     * nem saem do servidor.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function replay(?string $week, ?string $method, bool $reveal): ?array
+    {
+        // O retrospecto é o da execução importada do treino; as semanais automáticas não têm retrospecto próprio.
+        $run = $this->urban->referenceRun();
+        if ($run === null) {
+            return null;
+        }
+        $method = self::method($method, $run);
+        $other = $method === 'baseline' ? 'poisson' : 'baseline';
+        $weeks = $this->urban->replayWeeks($run['id']);
+        $week = in_array($week, $weeks, true) ? $week : ($weeks[0] ?? null);
+        $rows = [];
+        foreach ($week === null ? [] : $this->urban->replay($run['id'], $week) as $row) {
+            $rows[(string) $row['sector_id']] = $row;
+        }
+        $names = array_map(static fn(array $s): string => (string) $s['name'], $this->urban->sectors($run['id']));
+        $rank = SectorForecast::rank(array_map(static fn(array $r): float => $r[SectorForecast::COLUMN[$method]], $rows));
+        $otherRank = SectorForecast::rank(array_map(static fn(array $r): float => $r[SectorForecast::COLUMN[$other]], $rows));
+        $sectors = [];
+        foreach ($rank as $id => $position) {
+            $r = $rows[$id];
+            $sectors[] = [
+                'sector_id' => $id, 'name' => $names[$id] ?? $id, 'rank' => $position, 'other_rank' => $otherRank[$id],
+                'value' => $r[SectorForecast::COLUMN[$method]], 'other_value' => $r[SectorForecast::COLUMN[$other]],
+                'count_13w' => $r['count_13w'], 'count_52w' => $r['count_52w'], 'history_through' => $r['history_through'],
+                'observed' => $reveal ? $r['observed_count'] : null,
+            ];
+        }
+        $index = $week === null ? 0 : (int) array_search($week, $weeks, true);
+        $first = array_search(1, $rank, true);
+        $firstOther = array_search(1, $otherRank, true);
+
+        return [
+            'run' => $run,
+            'method' => $method,
+            'other' => $other,
+            'weeks' => $weeks,
+            'week' => $week,
+            'week_last_day' => $week === null ? null : self::addDays($week, 6),
+            'previous' => $weeks[$index - 1] ?? null,
+            'next' => $weeks[$index + 1] ?? null,
+            'position' => $index + 1,
+            'sectors' => $sectors,
+            'reveal' => $reveal,
+            'first' => $first === false ? null : $first,
+            'first_other' => $firstOther === false ? null : $firstOther,
+            'week_result' => !$reveal || $rows === [] ? null : [
+                'observed' => array_sum(array_column($rows, 'observed_count')),
+                'captured' => $rows[$first]['observed_count'],
+                'captured_other' => $rows[$firstOther]['observed_count'],
+            ],
+        ];
+    }
+
+    /**
+     * Setores com a estimativa e a posição pelo método escolhido (a ordem importada fica em rank_no) e a explicação
+     * em frases a partir das evidências — associação, nunca causa.
+     *
+     * @param array<string, array<string, mixed>> $sectors
+     * @return array<string, array<string, mixed>> na ordem do método
+     */
+    private static function ordered(array $sectors, string $method): array
+    {
+        $other = $method === 'baseline' ? 'poisson' : 'baseline';
+        $rank = SectorForecast::rank(array_map(static fn(array $s): float => $s[SectorForecast::COLUMN[$method]], $sectors));
+        $otherRank = SectorForecast::rank(array_map(static fn(array $s): float => $s[SectorForecast::COLUMN[$other]], $sectors));
+        $ordered = [];
+        foreach ($rank as $id => $position) {
+            $s = $sectors[$id];
+            $r13 = $s['count_13w'] / 13;
+            $r52 = $s['count_52w'] / 52;
+            $trend = $r13 > $r52 * 1.1 ? 'acima da' : ($r13 < $r52 * 0.9 ? 'abaixo da' : 'perto da');
+            $ordered[$id] = $s + [
+                'value' => $s[SectorForecast::COLUMN[$method]],
+                'rank' => $position,
+                'other_rank' => $otherRank[$id],
+                'explanation' => [
+                    sprintf(
+                        '%d registros nas 13 semanas até %s (média de %s por semana) e %d nas 52 semanas (média de %s): o ritmo recente está %s média do ano.',
+                        $s['count_13w'],
+                        self::brDate((string) $s['history_through']),
+                        self::fmt($r13),
+                        $s['count_52w'],
+                        self::fmt($r52),
+                        $trend,
+                    ),
+                    $method === 'baseline'
+                        ? sprintf('A referência repete a média das 52 semanas, com uma pseudocontagem de suavização: (%d + 1) ÷ 53 = %s registros em 7 dias.', $s['count_52w'], self::fmt($s['expected_baseline']))
+                        : sprintf('O Poisson experimental combina setor, ritmo de 13 e de 52 semanas, época do ano e tendência desde 2020 e chega a %s (a referência daria %s). O modelo não decompõe a estimativa por variável.', self::fmt($s['expected_ml']), self::fmt($s['expected_baseline'])),
+                    sprintf('Fica em %dº de 4 por este método e em %dº com o outro (%s).', $position, $otherRank[$id], SectorForecast::methodLabel($other)),
+                ],
+            ];
+        }
+
+        return $ordered;
+    }
+
+    /**
+     * Ponto de referência e distância de um agente ao setor. Posição antiga ou ausente não vira "localização atual":
+     * usa a base e diz isso.
+     *
+     * @param array<string, mixed> $agent
+     * @param array<string, mixed> $sector
+     * @return array<string, mixed>
+     */
+    private static function candidate(array $agent, array $sector, DateTimeImmutable $now): array
+    {
+        $freshness = Freshness::of(Time::fromDb($agent['pos_observed_at']), $now, true, Freshness::POSITION_CURRENT, Freshness::POSITION_STALE);
+        $usable = $agent['pos_lat'] !== null && in_array($freshness, [Freshness::Atual, Freshness::Atrasada], true);
+        $tier = $usable ? ($freshness === Freshness::Atual ? 0 : 1) : 2;
+        [$lat, $lng] = $usable ? [(float) $agent['pos_lat'], (float) $agent['pos_lng']] : [(float) $agent['base_lat'], (float) $agent['base_lng']];
+        $km = SectorForecast::distanceToBoxKm($lat, $lng, ['south' => (float) $sector['south'], 'north' => (float) $sector['north'], 'west' => (float) $sector['west'], 'east' => (float) $sector['east']]);
+
+        return [
+            'id' => (int) $agent['id'], 'code' => $agent['code'], 'call_sign' => $agent['call_sign'], 'status' => $agent['status'],
+            'tier' => $tier, 'point' => self::POINT[$tier], 'observed_at' => $agent['pos_observed_at'], 'lat' => $lat, 'lng' => $lng,
+            'distance_km' => round($km, 3),
+            'distance_label' => $km < 0.05 ? 'dentro do setor' : self::fmt($km) . ' km em linha reta até a borda do setor',
+        ];
+    }
+
+    /**
+     * Bairros de referência do quadrado (cujo centro cai dentro dele, até três, o mais central primeiro); se nenhum,
+     * o mais próximo. São nomes para se localizar, não o limite do quadrado.
+     *
+     * @param array<string, mixed> $cell
+     * @return array{inside: list<string>, near: ?string}
+     */
+    private function places(array $cell): array
+    {
+        $lat = ($cell['south'] + $cell['north']) / 2;
+        $lng = ($cell['west'] + $cell['east']) / 2;
+        $regions = $this->references->regions();
+        usort($regions, static fn(array $a, array $b): int => hypot((float) $a['center_lat'] - $lat, (float) $a['center_lng'] - $lng)
+            <=> hypot((float) $b['center_lat'] - $lat, (float) $b['center_lng'] - $lng));
+        $inside = array_filter($regions, static fn(array $r): bool => (float) $r['center_lat'] >= $cell['south'] && (float) $r['center_lat'] < $cell['north']
+            && (float) $r['center_lng'] >= $cell['west'] && (float) $r['center_lng'] < $cell['east']);
+
+        return ['inside' => array_slice(array_column($inside, 'name'), 0, 3), 'near' => $inside === [] ? ($regions[0]['name'] ?? null) : null];
+    }
+
+    /** @param array<string, mixed> $run */
+    private static function method(?string $method, array $run): string
+    {
+        return isset(SectorForecast::METHODS[$method ?? '']) ? (string) $method : (string) $run['selected_method'];
+    }
+
+    /**
+     * FUTURA antes do início, VIGENTE durante, ENCERRADA a partir do fim exclusivo.
+     *
+     * @param array<string, mixed> $run
+     */
+    private static function period(array $run, string $today): string
+    {
+        return match (true) {
+            $today < (string) $run['as_of'] => 'FUTURA',
+            $today < (string) $run['until_date'] => 'VIGENTE',
+            default => 'ENCERRADA',
+        };
+    }
+
+    private static function fmt(float $value): string
+    {
+        return number_format($value, 1, ',', '.');
+    }
+
+    private static function brDate(string $ymd): string
+    {
+        return implode('/', array_reverse(explode('-', $ymd)));
+    }
+
+    private static function addDays(string $date, int $days): string
+    {
+        return (new DateTimeImmutable($date, Time::utc()))->modify(sprintf('%+d days', $days))->format('Y-m-d');
+    }
+}

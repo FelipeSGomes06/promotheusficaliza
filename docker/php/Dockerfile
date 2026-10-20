@@ -1,10 +1,11 @@
-# PHP 8.5 + Apache + PDO_FIREBIRD (fbclient 4.0 do Debian trixie, compatível com servidor Firebird 5).
+# PHP 8.5 + Apache + PDO_FIREBIRD (fbclient 4.0 do Debian trixie, compatível com servidor Firebird 5) + zip (leitura do
+# arquivo mensal do Infosiga-SP em urban:update).
 FROM php:8.5.11-apache-trixie
 
 RUN set -eux; \
     apt-get update; \
-    apt-get install -y --no-install-recommends firebird-dev libfbclient2 unzip; \
-    docker-php-ext-install -j"$(nproc)" pdo_firebird; \
+    apt-get install -y --no-install-recommends firebird-dev libfbclient2 unzip libzip-dev; \
+    docker-php-ext-install -j"$(nproc)" pdo_firebird zip; \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2.10 /usr/bin/composer /usr/local/bin/composer

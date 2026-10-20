@@ -49,6 +49,18 @@ numa sessão de terminal, sem gravá-las no servidor).
 | `sim:tick` | Um ciclo do simulador. Se outro ciclo do mesmo diretório ainda estiver rodando, este é **ignorado** (trava em `var/simulador.lock`). |
 | `sim:run [--interval=5] [--duration=0]` | Simulador contínuo (serviço `simulator` do Compose), com a mesma trava a cada ciclo. Falha de banco: registra e tenta no próximo ciclo. |
 | `analysis:run` | Recalcula a análise preventiva (também pelo botão "Recalcular agora", para operadores). |
+| `urban:update [--forcar-download] [--arquivo=…] [--semana=AAAA-MM-DD]` | Rotina agendável: download mensal do Infosiga-SP (guarda só 12 meses de contagens de Marília por quadrado e dia; apaga o ZIP) e previsão da semana. Idempotente. Serviço `atualizador` do Compose (`docker compose --profile atualizador up -d atualizador`, a cada 6 h) ou cron do host: `0 */6 * * * cd /srv/promotheus-fiscaliza && docker compose exec -T app php -d memory_limit=512M bin/fiscaliza urban:update >> var/atualizador.log 2>&1`. Saída 1 se o download falhar (a previsão semanal roda mesmo assim). Detalhes: [planejamento-por-setores.md](planejamento-por-setores.md#atualização-automática-mensal-e-semanal). |
+| `urban:import [--dir=…] [--setores=…] [--manifesto=…] [--grade=…\|--sem-grade]` | Importa uma execução **completa** do treino por setores (padrão: `ml/marilia-setores/runs/primeiro-treino-verificado`) e os quadrados de 2 km (padrão: `ml/marilia-grade-2km/dados/contagens_grade.csv`; uma execução já importada recebe os quadrados que faltam). Valida tudo antes de gravar; os mesmos bytes não duplicam; recusa referência com mais de 180 dias. Roda com a identidade da aplicação. Treino e avaliação ficam fora da web: [planejamento-por-setores.md](planejamento-por-setores.md#comandos). |
+
+### Atualizar um banco existente para a migração 0003
+
+`migrate` aplica `0003_planejamento_por_setores.sql` (somente `CREATE`, sem risco para dados existentes) e concede ao
+usuário da aplicação só leitura e inserção nas tabelas importadas e no histórico das missões. Depois, rode
+`urban:import` uma vez. A migração `0004_quadrados_de_2km.sql` (somente `CREATE`) acrescenta `URBAN_CELL`; depois dela,
+rodar `urban:import` de novo grava os quadrados na execução existente. A migração `0005_atualizacao_mensal_infosiga.sql`
+(somente `CREATE`) acrescenta `URBAN_SNAPSHOT` e `URBAN_DAILY`. **A imagem PHP precisa ser reconstruída**
+(`docker compose up -d --build`): ela ganhou a extensão `zip`. Depois, `urban:update` uma vez e o serviço `atualizador`. `demo:seed --reset` apaga as missões fictícias junto com os agentes, mas mantém as execuções
+importadas (dados reais).
 
 ### Atualizar um banco existente para a migração 0002
 

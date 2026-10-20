@@ -81,7 +81,7 @@ final class WebSecurityTest extends FirebirdTestCase
     {
         $equipment = $this->createEquipment();
         $agent = $this->createAgent();
-        foreach (['/', '/?visao=lista', '/equipamentos', "/equipamentos/{$equipment}", '/agentes', "/agentes/{$agent}", '/manutencao', '/antecipacao', '/sobre', '/contas'] as $path) {
+        foreach (['/', '/?visao=lista', '/equipamentos', "/equipamentos/{$equipment}", '/agentes', "/agentes/{$agent}", '/manutencao', '/antecipacao', '/planejar', '/planejar/retrospecto', '/sobre', '/contas'] as $path) {
             $response = $this->request('GET', $path);
             self::assertSame(302, $response->getStatusCode(), $path);
             self::assertStringStartsWith(self::BASE . '/entrar?voltar=', $response->getHeaderLine('Location'), $path);

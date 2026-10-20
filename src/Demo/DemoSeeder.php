@@ -89,12 +89,15 @@ final class DemoSeeder
         return $counts;
     }
 
-    /** Apaga dados de domínio preservando contas de acesso (credenciais criadas pelo avaliador). */
+    /**
+     * Apaga dados de domínio preservando contas de acesso (credenciais criadas pelo avaliador). Missões fictícias saem
+     * junto com os agentes; as execuções importadas do Infosiga (contagens reais agregadas, URBAN_RUN…) ficam.
+     */
     private function wipe(): void
     {
         $db = $this->services->database();
         $db->transaction(function () use ($db): void {
-            foreach (['ANALYSIS_RESULT', 'ANALYSIS_RUN', 'ALERT', 'RESOURCE_EVENT', 'MAINTENANCE_ORDER', 'EQUIPMENT', 'AGENT', 'REGION', 'AGENCY', 'APP_META'] as $table) {
+            foreach (['URBAN_MISSION_LOG', 'URBAN_MISSION', 'ANALYSIS_RESULT', 'ANALYSIS_RUN', 'ALERT', 'RESOURCE_EVENT', 'MAINTENANCE_ORDER', 'EQUIPMENT', 'AGENT', 'REGION', 'AGENCY', 'APP_META'] as $table) {
                 $db->execute("DELETE FROM {$table}");
             }
         });

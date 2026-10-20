@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Fiscaliza\Cli;
 
+use Fiscaliza\Application\UrbanImporter;
+use Fiscaliza\Application\UrbanUpdater;
 use Fiscaliza\Infrastructure\Repository\MetaRepository;
 use Fiscaliza\Services;
 
@@ -27,6 +29,8 @@ final class Console
                 'sim:tick' => $this->simTick(),
                 'sim:run' => $this->simRun($options),
                 'analysis:run' => $this->analysis(),
+                'urban:import' => $this->urbanImport($options),
+                'urban:update' => $this->urbanUpdate($options),
                 default => $this->help(),
             };
         } catch (\Fiscaliza\Domain\ValidationFailed $e) {
@@ -163,6 +167,41 @@ final class Console
         return 0;
     }
 
+    /** @param array<string, string|bool> $options */
+    private function urbanImport(array $options): int
+    {
+        $path = fn(string $key, string $default): string => is_string($options[$key] ?? null) ? $options[$key] : $this->services->root . '/' . $default;
+        $result = $this->services->urbanImporter()->import(
+            $path('dir', UrbanImporter::DEFAULT_RUN),
+            $path('setores', UrbanImporter::DEFAULT_SECTORS),
+            $path('manifesto', UrbanImporter::DEFAULT_MANIFEST),
+            ($options['sem-grade'] ?? false) ? null : $path('grade', UrbanImporter::DEFAULT_GRID),
+        );
+        echo ($result['created'] ? "Execução #{$result['id']} importada" : "Execução já importada antes (#{$result['id']}); nada foi duplicado")
+            . ": previsão de {$result['as_of']} a {$result['until']} (fim exclusivo), {$result['sectors']} setores, {$result['replay_rows']} linhas de retrospecto.\n";
+        echo "Quadrados de 2 km: {$result['cells']} de 64.\n";
+        echo "SHA-256 do conjunto: {$result['sha256']}\n";
+
+        return 0;
+    }
+
+    /** @param array<string, string|bool> $options */
+    private function urbanUpdate(array $options): int
+    {
+        $result = $this->services->urbanUpdater()->update(
+            $this->services->config->get('INFOSIGA_URL', UrbanUpdater::SOURCE_URL),
+            $this->services->root . '/var/infosiga',
+            is_string($options['arquivo'] ?? null) ? $options['arquivo'] : null,
+            (bool) ($options['forcar-download'] ?? false),
+            is_string($options['semana'] ?? null) ? $options['semana'] : null,
+        );
+        foreach ($result['messages'] as $message) {
+            echo date('Y-m-d H:i:s') . ' ' . $message . PHP_EOL;
+        }
+
+        return $result['ok'] ? 0 : 1;
+    }
+
     private function help(): int
     {
         echo <<<TXT
@@ -179,6 +218,14 @@ final class Console
               sim:run [--interval=5] [--duration=0]
                                               executa o simulador continuamente (mesma trava por ciclo)
               analysis:run                    recalcula a análise preventiva de 7 dias
+              urban:import [--dir=…] [--setores=…] [--manifesto=…] [--grade=…|--sem-grade]
+                                              importa uma execução completa do treino por setores (JSON validado;
+                                              padrão: ml/marilia-setores/runs/primeiro-treino-verificado) e os
+                                              quadrados de 2 km (ml/marilia-grade-2km/dados/contagens_grade.csv);
+                                              repetir com os mesmos arquivos não duplica nada
+              urban:update [--forcar-download] [--arquivo=dados_infosiga.zip] [--semana=AAAA-MM-DD]
+                                              rotina agendável: baixa o Infosiga-SP uma vez por mês (guarda só
+                                              12 meses de contagens de Marília) e calcula a previsão da semana
 
             TXT;
 

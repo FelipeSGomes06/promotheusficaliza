@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "protocol_version": "marilia-setores-v1",
+  "mode": "forecast",
+  "as_of": "2026-10-20",
+  "until": "2026-10-27",
+  "generated_at_utc": "2026-10-20T19:58:50.473823+00:00",
+  "source_snapshot_sha256": "009481bdf80a030b4261e1b4f1585c6e85dfb20fe59f7244b9652b07d8efc9c8",
+  "data_reference_through": "2026-07-31",
+  "selected_method": "baseline",
+  "candidate_method": "poisson",
+  "unit": "expected_registered_crashes_in_7_days",
+  "test_status": "experimental_retrospective",
+  "test_relative_gain": 0.027747636950151033,
+  "sectors": [
+    {
+      "sector_id": "NO",
+      "rank": 2,
+      "priority": "ACOMPANHAR",
+      "expected_count": 5.188679245283019,
+      "expected_count_ml": 5.3635058833503555,
+      "expected_count_baseline": 5.188679245283019,
+      "evidence": {
+        "history_through": "2026-07-31",
+        "history_start": "2025-08-02",
+        "count_13w": 79,
+        "count_52w": 274,
+        "baseline_expected_count": 5.188679245283019,
+        "data_age_days": 80,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "sector_id": "NE",
+      "rank": 4,
+      "priority": "ACOMPANHAR",
+      "expected_count": 0.3584905660377358,
+      "expected_count_ml": 0.40943486635310294,
+      "expected_count_baseline": 0.3584905660377358,
+      "evidence": {
+        "history_through": "2026-07-31",
+        "history_start": "2025-08-02",
+        "count_13w": 5,
+        "count_52w": 18,
+        "baseline_expected_count": 0.3584905660377358,
+        "data_age_days": 80,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "sector_id": "SO",
+      "rank": 1,
+      "priority": "PRIORITARIA",
+      "expected_count": 5.622641509433962,
+      "expected_count_ml": 5.7739887317055345,
+      "expected_count_baseline": 5.622641509433962,
+      "evidence": {
+        "history_through": "2026-07-31",
+        "history_start": "2025-08-02",
+        "count_13w": 88,
+        "count_52w": 297,
+        "baseline_expected_count": 5.622641509433962,
+        "data_age_days": 80,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    },
+    {
+      "sector_id": "SE",
+      "rank": 3,
+      "priority": "ACOMPANHAR",
+      "expected_count": 3.3207547169811322,
+      "expected_count_ml": 3.3285379585640573,
+      "expected_count_baseline": 3.3207547169811322,
+      "evidence": {
+        "history_through": "2026-07-31",
+        "history_start": "2025-08-02",
+        "count_13w": 47,
+        "count_52w": 175,
+        "baseline_expected_count": 3.3207547169811322,
+        "data_age_days": 80,
+        "availability": "assumed_publication_delay_not_observed"
+      }
+    }
+  ],
+  "notice": "Prioridade relativa. Nao e probabilidade individual. Fonte mensal; equipes ficticias na demonstracao."
+}

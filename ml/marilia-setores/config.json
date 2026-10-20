@@ -1,0 +1,25 @@
+{
+  "protocol_version": "marilia-setores-v1",
+  "snapshot_date": "2026-10-20",
+  "data_through": "2026-09-30",
+  "source_url": "https://infosiga.detran.sp.gov.br/painel/download/file/dados_infosiga.zip",
+  "source_sha256": "009481bdf80a030b4261e1b4f1585c6e85dfb20fe59f7244b9652b07d8efc9c8",
+  "source_catalog": "https://dadosabertos.sp.gov.br/dataset/sinistros-infosiga",
+  "license": "CC-BY-4.0",
+  "bounds": {"south": -22.28, "north": -22.14, "west": -50.02, "east": -49.86},
+  "sectors": [
+    {"id": "NO", "name": "Setor noroeste"},
+    {"id": "NE", "name": "Setor nordeste"},
+    {"id": "SO", "name": "Setor sudoeste"},
+    {"id": "SE", "name": "Setor sudeste"}
+  ],
+  "events_from": "2019-01-01",
+  "training_rows_from": "2020-03-02",
+  "availability_lag_months": 2,
+  "validation_issued_at": "2024-01-01",
+  "test_issued_at": "2025-01-01",
+  "test_until": "2026-01-01",
+  "alpha_candidates": [0.01, 0.1, 1.0, 10.0],
+  "selection_metric": "mean_poisson_deviance",
+  "top_sectors_budget": 1
+}

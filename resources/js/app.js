@@ -26,6 +26,8 @@ if (page === 'central') {
 } else if (page === 'sobre') {
   // Não registra componente no Alpine: carrega em paralelo, sem atrasar o resto da página.
   import('./pages/sobre.js').then((mod) => mod.init());
+} else if (page === 'planejar') {
+  import('./pages/planejar.js').then((mod) => mod.init());
 }
 
 initForms();

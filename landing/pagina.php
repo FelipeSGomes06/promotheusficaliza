@@ -19,7 +19,7 @@ $img = static fn (string $nome): string => e(asset('img/' . $nome));
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Promotheus Fiscaliza · Central de fiscalização urbana de Marília</title>
-  <meta name="description" content="Equipamentos, agentes e manutenção em uma central para acompanhar a fiscalização urbana de Marília/SP. Demonstração com dados fictícios para o DSIN Coder Challenge 2026.">
+  <meta name="description" content="Equipamentos, agentes e manutenção em uma central para acompanhar a fiscalização urbana de Marília/SP. Demonstração com operação fictícia e contagens reais agregadas de sinistros do Infosiga-SP para o DSIN Coder Challenge 2026.">
   <meta name="theme-color" content="#0f1a2b">
   <meta property="og:title" content="Promotheus Fiscaliza">
   <meta property="og:description" content="A cidade em movimento. A operação sob controle. Central de fiscalização urbana de Marília/SP (demonstração).">
@@ -241,7 +241,7 @@ $img = static fn (string $nome): string => e(asset('img/' . $nome));
   <div class="rodape__conteudo">
     <p class="rodape__marca"><svg class="icone" aria-hidden="true" focusable="false"><use href="#marca"></use></svg>Promotheus Fiscaliza · DSIN Coder Challenge 2026, etapa F.O.G.O.</p>
     <p>Desenvolvido por <a href="<?= e($config['autor']['url']) ?>" rel="author"><?= e($config['autor']['nome']) ?></a>.</p>
-    <p class="rodape__aviso">Projeto demonstrativo com dados fictícios. Sem integração com órgãos ou equipamentos reais.</p>
+    <p class="rodape__aviso">Projeto demonstrativo: equipamentos, agentes e missões são fictícios; o planejamento por setores usa contagens reais agregadas de sinistros (Fonte: Infosiga-SP / Detran-SP, CC BY 4.0). Sem integração com órgãos ou equipamentos reais.</p>
   </div>
 </footer>
 </body>

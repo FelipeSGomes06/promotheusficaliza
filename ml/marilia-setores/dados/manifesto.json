@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "protocol_version": "marilia-setores-v1",
+  "source": {
+    "source_url": "https://infosiga.detran.sp.gov.br/painel/download/file/dados_infosiga.zip",
+    "source_catalog": "https://dadosabertos.sp.gov.br/dataset/sinistros-infosiga",
+    "source_sha256": "009481bdf80a030b4261e1b4f1585c6e85dfb20fe59f7244b9652b07d8efc9c8",
+    "license": "CC-BY-4.0",
+    "snapshot_date": "2026-10-20",
+    "data_through": "2026-09-30"
+  },
+  "filters": {
+    "municipality": "MARILIA",
+    "from": "2019-01-01",
+    "through": "2026-09-30",
+    "record_types": [
+      "SINISTRO FATAL",
+      "SINISTRO NAO FATAL"
+    ],
+    "road_type": "VIAS URBANAS",
+    "bounds": {
+      "south": -22.28,
+      "north": -22.14,
+      "west": -50.02,
+      "east": -49.86
+    }
+  },
+  "counts": {
+    "marilia_records": 12725,
+    "outside_dates": 130,
+    "eligible": 8419,
+    "nonurban_or_unknown": 1497,
+    "notification_or_other": 2591,
+    "missing_or_invalid_gps": 63,
+    "outside_study_rectangle": 25
+  },
+  "eligible_by_year": {
+    "2019": 1446,
+    "2020": 1205,
+    "2021": 1231,
+    "2022": 1269,
+    "2023": 1096,
+    "2024": 919,
+    "2025": 636,
+    "2026": 617
+  },
+  "daily_sha256": "dede0975615ba565f07f915d607ea4aea1b1067ea4055b81e4da9defa736523c",
+  "limitations": [
+    "Setores experimentais; retangulo nao e limite municipal.",
+    "Zeros sao ausencia de registro elegivel no snapshot, nao prova de ausencia de acidente.",
+    "Snapshot revisado: nao existem datas de primeira publicacao por registro."
+  ]
+}

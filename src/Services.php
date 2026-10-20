@@ -13,6 +13,9 @@ use Fiscaliza\Application\EquipmentService;
 use Fiscaliza\Application\EventIngestor;
 use Fiscaliza\Application\History;
 use Fiscaliza\Application\MaintenanceService;
+use Fiscaliza\Application\PlanningService;
+use Fiscaliza\Application\UrbanImporter;
+use Fiscaliza\Application\UrbanUpdater;
 use Fiscaliza\Demo\DemoScenario;
 use Fiscaliza\Demo\DemoSeeder;
 use Fiscaliza\Demo\Simulator;
@@ -26,7 +29,9 @@ use Fiscaliza\Infrastructure\Repository\EquipmentRepository;
 use Fiscaliza\Infrastructure\Repository\EventRepository;
 use Fiscaliza\Infrastructure\Repository\MaintenanceRepository;
 use Fiscaliza\Infrastructure\Repository\MetaRepository;
+use Fiscaliza\Infrastructure\Repository\MissionRepository;
 use Fiscaliza\Infrastructure\Repository\ReferenceRepository;
+use Fiscaliza\Infrastructure\Repository\UrbanRepository;
 use Fiscaliza\Infrastructure\Repository\UserRepository;
 
 /**
@@ -131,6 +136,16 @@ final class Services
         return $this->shared(__FUNCTION__, fn() => new AnalysisRepository($this->database()));
     }
 
+    public function urbanRepository(): UrbanRepository
+    {
+        return $this->shared(__FUNCTION__, fn() => new UrbanRepository($this->database()));
+    }
+
+    public function missionRepository(): MissionRepository
+    {
+        return $this->shared(__FUNCTION__, fn() => new MissionRepository($this->database()));
+    }
+
     public function history(): History
     {
         return $this->shared(__FUNCTION__, fn() => new History($this->eventRepository(), $this->clock()));
@@ -227,6 +242,28 @@ final class Services
             $this->equipmentRepository(),
             $this->eventRepository(),
             $this->maintenanceRepository(),
+            $this->clock(),
+        ));
+    }
+
+    public function urbanImporter(): UrbanImporter
+    {
+        return new UrbanImporter($this->database(), $this->urbanRepository(), $this->clock());
+    }
+
+    public function urbanUpdater(): UrbanUpdater
+    {
+        return new UrbanUpdater($this->database(), $this->urbanRepository(), $this->clock());
+    }
+
+    public function planning(): PlanningService
+    {
+        return $this->shared(__FUNCTION__, fn() => new PlanningService(
+            $this->database(),
+            $this->urbanRepository(),
+            $this->missionRepository(),
+            $this->agentRepository(),
+            $this->referenceRepository(),
             $this->clock(),
         ));
     }

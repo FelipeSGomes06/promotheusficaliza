@@ -1,0 +1,150 @@
+{
+ "resumo": {
+  "weeks": 29,
+  "from": "2026-01-05",
+  "observed": 452,
+  "grade_referencia_1": {
+   "captured": 123,
+   "fraction": 0.2721238938053097
+  },
+  "grade_referencia_2": {
+   "captured": 181,
+   "fraction": 0.4004424778761062
+  },
+  "grade_referencia_4": {
+   "captured": 233,
+   "fraction": 0.5154867256637168
+  },
+  "grade_referencia_16": {
+   "captured": 412,
+   "fraction": 0.911504424778761
+  },
+  "grade_historico_1": {
+   "captured": 123,
+   "fraction": 0.2721238938053097
+  },
+  "grade_historico_2": {
+   "captured": 181,
+   "fraction": 0.4004424778761062
+  },
+  "grade_historico_4": {
+   "captured": 232,
+   "fraction": 0.5132743362831859
+  },
+  "grade_historico_16": {
+   "captured": 415,
+   "fraction": 0.918141592920354
+  },
+  "grade_poisson_1": {
+   "captured": 123,
+   "fraction": 0.2721238938053097
+  },
+  "grade_poisson_2": {
+   "captured": 181,
+   "fraction": 0.4004424778761062
+  },
+  "grade_poisson_4": {
+   "captured": 233,
+   "fraction": 0.5154867256637168
+  },
+  "grade_poisson_16": {
+   "captured": 406,
+   "fraction": 0.8982300884955752
+  },
+  "setores_16": {
+   "captured": 180,
+   "fraction": 0.39823008849557523
+  },
+  "desvio_grade_referencia": 0.3752583003099286,
+  "desvio_grade_poisson": 0.5211971358201388
+ },
+ "comparacoes": {
+  "grade_referencia_16_menos_setores": {
+   "diferenca": 0.5132743362831859,
+   "ic95": [
+    0.4642064124037819,
+    0.5614758324076446
+   ]
+  },
+  "grade_historico_16_menos_setores": {
+   "diferenca": 0.5199115044247787,
+   "ic95": [
+    0.466357456349585,
+    0.574170314567851
+   ]
+  },
+  "grade_poisson_16_menos_setores": {
+   "diferenca": 0.5,
+   "ic95": [
+    0.44941128840200045,
+    0.5471275211450879
+   ]
+  },
+  "poisson_4_menos_referencia_4": {
+   "diferenca": 0.0,
+   "ic95": [
+    0.0,
+    0.0
+   ]
+  }
+ },
+ "secundario": {
+  "weeks": 9,
+  "from": "2026-07-27",
+  "observed": 150,
+  "grade_referencia_1": {
+   "captured": 40,
+   "fraction": 0.26666666666666666
+  },
+  "grade_referencia_2": {
+   "captured": 53,
+   "fraction": 0.35333333333333333
+  },
+  "grade_referencia_4": {
+   "captured": 76,
+   "fraction": 0.5066666666666667
+  },
+  "grade_referencia_16": {
+   "captured": 139,
+   "fraction": 0.9266666666666666
+  },
+  "grade_historico_1": {
+   "captured": 40,
+   "fraction": 0.26666666666666666
+  },
+  "grade_historico_2": {
+   "captured": 53,
+   "fraction": 0.35333333333333333
+  },
+  "grade_historico_4": {
+   "captured": 70,
+   "fraction": 0.4666666666666667
+  },
+  "grade_historico_16": {
+   "captured": 138,
+   "fraction": 0.92
+  },
+  "grade_poisson_1": {
+   "captured": 40,
+   "fraction": 0.26666666666666666
+  },
+  "grade_poisson_2": {
+   "captured": 53,
+   "fraction": 0.35333333333333333
+  },
+  "grade_poisson_4": {
+   "captured": 77,
+   "fraction": 0.5133333333333333
+  },
+  "grade_poisson_16": {
+   "captured": 136,
+   "fraction": 0.9066666666666666
+  },
+  "setores_16": {
+   "captured": 67,
+   "fraction": 0.44666666666666666
+  },
+  "desvio_grade_referencia": 0.3423039452949273,
+  "desvio_grade_poisson": 0.4598366471494504
+ }
+}

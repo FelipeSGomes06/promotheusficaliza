@@ -1,7 +1,14 @@
 {
-  "_toasts-DA38cNte.js": {
-    "file": "toasts-DA38cNte.js",
-    "name": "toasts"
+  "_motion-C63kFjpS.js": {
+    "file": "motion-C63kFjpS.js",
+    "name": "motion"
+  },
+  "_toasts-CcFjfMp6.js": {
+    "file": "toasts-CcFjfMp6.js",
+    "name": "toasts",
+    "imports": [
+      "_motion-C63kFjpS.js"
+    ]
   },
   "node_modules/@fontsource-variable/overpass/files/overpass-latin-ext-wght-normal.woff2": {
     "file": "overpass-latin-ext-wght-normal-DvafStyF.woff2",
@@ -12,7 +19,7 @@
     "src": "node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "styles-DdXY91oY.css",
+    "file": "styles-qZy9Ai-7.css",
     "name": "styles",
     "names": [
       "styles.css"
@@ -25,34 +32,47 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "app-B1Q5cCxU.js",
+    "file": "app-niUMLFfz.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_toasts-DA38cNte.js"
+      "_toasts-CcFjfMp6.js",
+      "_motion-C63kFjpS.js"
     ],
     "dynamicImports": [
       "resources/js/pages/central.js",
-      "resources/js/pages/sobre.js"
+      "resources/js/pages/sobre.js",
+      "resources/js/pages/planejar.js"
     ]
   },
   "resources/js/pages/central.js": {
-    "file": "central-BYWEaZXh.js",
+    "file": "central-Co6BGNRI.js",
     "name": "central",
     "src": "resources/js/pages/central.js",
     "isDynamicEntry": true,
     "imports": [
-      "_toasts-DA38cNte.js"
+      "_toasts-CcFjfMp6.js",
+      "_motion-C63kFjpS.js"
+    ]
+  },
+  "resources/js/pages/planejar.js": {
+    "file": "planejar-BzCKVCdU.js",
+    "name": "planejar",
+    "src": "resources/js/pages/planejar.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_motion-C63kFjpS.js"
     ]
   },
   "resources/js/pages/sobre.js": {
-    "file": "sobre-B-SCq7Fa.js",
+    "file": "sobre-DwIDMJtm.js",
     "name": "sobre",
     "src": "resources/js/pages/sobre.js",
     "isDynamicEntry": true,
     "imports": [
-      "_toasts-DA38cNte.js"
+      "_toasts-CcFjfMp6.js",
+      "_motion-C63kFjpS.js"
     ]
   }
 }

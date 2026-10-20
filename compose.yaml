@@ -56,6 +56,23 @@ services:
     profiles: [simulador]
     restart: unless-stopped
 
+  # Planejar reforço: download mensal do Infosiga-SP (guarda só 12 meses de contagens de Marília) e previsão semanal.
+  # urban:update é idempotente; rodar a cada 6 h só faz trabalho quando chega um mês ou uma semana novos.
+  atualizador:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - .:/app
+    command: ["sh", "-c", "while true; do php -d memory_limit=512M bin/fiscaliza urban:update; sleep 21600; done"]
+    user: www-data
+    depends_on:
+      firebird:
+        condition: service_healthy
+    networks: [backend]
+    profiles: [atualizador]
+    restart: unless-stopped
+
 networks:
   backend: {}
 
