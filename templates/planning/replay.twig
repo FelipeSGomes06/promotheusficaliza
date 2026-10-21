@@ -45,7 +45,7 @@
 
   {% set sc = r.score %}
   {% set total_weeks = r.weeks|length %}
-  <section class="section score" aria-labelledby="placar-titulo">
+  <section class="section placar" aria-labelledby="placar-titulo">
     <div class="list-head"><h2 id="placar-titulo">Placar da previsão até aqui</h2><p class="hint">Acerto da prioridade = o setor que o modelo mandou priorizar foi o que mais teve registros na semana.</p></div>
     <div class="score__grid">
       {% set pct = sc.rate is null ? 0 : sc.rate * 100 %}
@@ -55,7 +55,7 @@
           <circle class="score__chance" cx="60" cy="60" r="52" pathLength="100" stroke-dasharray="0.6 99.4" stroke-dashoffset="-24.7"/>
           <circle class="score__fill" cx="60" cy="60" r="52" pathLength="100" stroke-dasharray="{{ pct|round(1) }} 100"/>
         </svg>
-        <div class="score__value"><strong>{{ sc.rate is null ? '—' : pct|number_format(0, ',', '.') ~ '%' }}</strong><span>acerto na prioridade</span></div>
+        <div class="score__value"><strong>{{ sc.rate is null ? '—' : pct|number_format(0, ',', '.') ~ '%' }}</strong><span>de acerto</span></div>
       </div>
       <dl class="score__facts">
         <div><dt>Semanas com a prioridade certa</dt><dd><strong>{{ sc.hits }}</strong> de {{ sc.counted }}</dd></div>
