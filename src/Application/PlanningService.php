@@ -267,6 +267,7 @@ final class PlanningService
         $index = $week === null ? 0 : (int) array_search($week, $weeks, true);
         $first = array_search(1, $rank, true);
         $firstOther = array_search(1, $otherRank, true);
+        $timeline = $week === null ? [] : $this->replayTimeline($run['id'], $method, $reveal ? $index : $index - 1);
 
         return [
             'run' => $run,
@@ -286,7 +287,67 @@ final class PlanningService
                 'observed' => array_sum(array_column($rows, 'observed_count')),
                 'captured' => $rows[$first]['observed_count'],
                 'captured_other' => $rows[$firstOther]['observed_count'],
+                'max' => max(array_column($rows, 'observed_count')),
             ],
+            'timeline' => $timeline,
+            'score' => self::replayScore($timeline),
+        ];
+    }
+
+    /**
+     * Semana a semana até $last (índice, inclusive): o setor priorizado acertou quando teve o maior número de
+     * registros da semana (empates contam). Semanas sem registro não entram na conta.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function replayTimeline(int $runId, string $method, int $last): array
+    {
+        $byWeek = [];
+        foreach ($this->urban->replay($runId) as $row) {
+            $byWeek[(string) $row['week_from']][(string) $row['sector_id']] = $row;
+        }
+        $timeline = [];
+        $hits = 0;
+        $counted = 0;
+        $captured = 0;
+        $observed = 0;
+        foreach (array_slice($byWeek, 0, max(0, $last + 1), true) as $week => $rows) {
+            $rank = SectorForecast::rank(array_map(static fn(array $r): float => $r[SectorForecast::COLUMN[$method]], $rows));
+            $top = (int) $rows[array_search(1, $rank, true)]['observed_count'];
+            $total = array_sum(array_column($rows, 'observed_count'));
+            $hit = $total > 0 ? $top === max(array_column($rows, 'observed_count')) : null;
+            if ($hit !== null) {
+                $counted++;
+                $hits += $hit ? 1 : 0;
+            }
+            $captured += $top;
+            $observed += $total;
+            $timeline[] = [
+                'week' => (string) $week, 'hit' => $hit, 'captured' => $top, 'observed' => $total,
+                'rate' => $counted > 0 ? $hits / $counted : null,
+                'capture_rate' => $observed > 0 ? $captured / $observed : null,
+            ];
+        }
+
+        return $timeline;
+    }
+
+    /**
+     * @param list<array<string, mixed>> $timeline
+     * @return array<string, mixed>
+     */
+    private static function replayScore(array $timeline): array
+    {
+        $counted = array_values(array_filter($timeline, static fn(array $t): bool => $t['hit'] !== null));
+        $hits = count(array_filter($counted, static fn(array $t): bool => $t['hit'] === true));
+        $last = $timeline === [] ? null : $timeline[count($timeline) - 1];
+
+        return [
+            'weeks' => count($timeline),
+            'counted' => count($counted),
+            'hits' => $hits,
+            'rate' => $counted === [] ? null : $hits / count($counted),
+            'capture_rate' => $last['capture_rate'] ?? null,
         ];
     }
 
