@@ -15,7 +15,7 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 $args = array_slice($_SERVER['argv'] ?? [], 1);
 $config = Fiscaliza\Config::load(dirname(__DIR__));
 // Só migração e carga da demonstração usam a identidade de dono; simulador, contas e análise rodam sem essas credenciais.
-if (!in_array($args[0] ?? '', ['migrate', 'demo:seed'], true)) {
+if (!in_array($args[0] ?? '', ['migrate', 'demo:seed', 'demo:seed-multas'], true)) {
     $config = $config->without(Fiscaliza\Config::PRIVILEGED);
 }
 $services = new Fiscaliza\Services($config, dirname(__DIR__));

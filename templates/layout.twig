@@ -1,5 +1,5 @@
 {% import '_ui.twig' as ui %}
-{% set links = not app.user ? [] : [['/', 'Visão geral', 'i-overview'], ['/equipamentos', 'Equipamentos', 'i-equipment'], ['/agentes', 'Agentes', 'i-agents'], ['/manutencao', 'Manutenção', 'i-wrench'], ['/antecipacao', 'Revisões recomendadas', 'i-chart'], ['/planejar', 'Planejar reforço', 'i-layers'], ['/sobre', 'Sobre', 'i-info']] %}
+{% set links = not app.user ? [] : [['/', 'Visão geral', 'i-overview'], ['/equipamentos', 'Equipamentos', 'i-equipment'], ['/agentes', 'Agentes', 'i-agents'], ['/multas', 'Multas', 'i-fines'], ['/manutencao', 'Manutenção', 'i-wrench'], ['/antecipacao', 'Revisões recomendadas', 'i-chart'], ['/planejar', 'Planejar reforço', 'i-layers'], ['/sobre', 'Sobre', 'i-info']] %}
 {% if app.user and app.user.role == 'ADMIN' %}{% set links = links|merge([['/contas', 'Contas', 'i-users']]) %}{% endif %}
 <!doctype html>
 <html lang="pt-BR">
@@ -66,7 +66,7 @@
           <details class="demo-badge" data-popover>
             <summary>Demonstração</summary>
             <div class="popover" role="note">
-              <p><strong>A operação é fictícia.</strong> Equipamentos, órgãos, marcas, modelos, agentes, posições, histórico operacional e missões são inventados; os pontos em Marília/SP são ilustrativos.</p>
+              <p><strong>A operação é fictícia.</strong> Equipamentos, órgãos, marcas, modelos, agentes, posições, histórico operacional, missões e multas são inventados; os pontos em Marília/SP são ilustrativos.</p>
               <p><strong>Exceção real:</strong> em "Planejar reforço", as contagens históricas de sinistros são reais e agregadas por setor (Infosiga-SP/Detran-SP, CC BY 4.0).</p>
               <p>Não há integração com prefeitura, polícia ou equipamentos reais, e nenhuma mensagem é enviada.{% if app.user %} <a href="{{ url('/sobre') }}">O que é real, simulado e implementado</a>{% endif %}</p>
             </div>

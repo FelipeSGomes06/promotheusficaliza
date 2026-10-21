@@ -135,6 +135,50 @@ final class Input
         return $text;
     }
 
+    /** Data e hora locais de Marília (AAAA-MM-DDTHH:MM, campo datetime-local), devolvidas como instante UTC do banco. */
+    public function localDateTime(string $key, bool $required = true): ?string
+    {
+        $text = $this->text($key, 19, $required);
+        if ($text === null) {
+            return null;
+        }
+        $format = strlen($text) === 19 ? 'Y-m-d\TH:i:s' : 'Y-m-d\TH:i';
+        $local = \DateTimeImmutable::createFromFormat('!' . $format, $text, \Fiscaliza\Domain\Time::local());
+        if ($local === false || $local->format($format) !== $text) {
+            $this->errors[$key] = 'Data e hora inválidas (use dia/mês/ano e hora:minuto).';
+
+            return null;
+        }
+
+        return \Fiscaliza\Domain\Time::toDb($local);
+    }
+
+    /**
+     * Valor em reais escrito à brasileira ("1.234,56", "293,47", "130") convertido para centavos sem passar por float.
+     * Ponto só como separador de milhar em grupos de três; no máximo duas casas decimais.
+     */
+    public function cents(string $key, int $min, int $max, bool $required = false): ?int
+    {
+        $text = $this->text($key, 20, $required);
+        if ($text === null) {
+            return null;
+        }
+        $text = (string) preg_replace('/^R\$\s*/u', '', $text);
+        if (preg_match('/^(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?$/', $text, $m) !== 1) {
+            $this->errors[$key] = 'Use o formato 1.234,56 (até duas casas decimais).';
+
+            return null;
+        }
+        $digits = ltrim(str_replace('.', '', $m[1]) . str_pad($m[2] ?? '', 2, '0'), '0');
+        if (strlen($digits) > 12 || (int) $digits < $min || (int) $digits > $max) {
+            $this->errors[$key] = sprintf('Informe um valor entre R$ %s e R$ %s.', number_format($min / 100, 2, ',', '.'), number_format($max / 100, 2, ',', '.'));
+
+            return null;
+        }
+
+        return (int) $digits;
+    }
+
     public function flag(string $key): bool
     {
         return in_array($this->data[$key] ?? null, [true, 1, '1', 'on', 'true'], true);

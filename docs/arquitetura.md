@@ -56,6 +56,7 @@ estavam arquivados; ajusta o limiar numa janela, avalia em outra e grava a execu
 | `Indicators.php` | Fórmulas dos cartões da central e denominadores. | `DomainRulesTest`, `CentralAndAnalysisTest` |
 | `AlertRules.php` | Condições que mantêm alertas abertos (furto, falha, sem comunicação, manutenção imediata/vencida, agente sem posição). | `DomainRulesTest`, `OperationsTest` |
 | `AttentionModel.php` | Índice heurístico de atenção preventiva e métricas de avaliação. | `AttentionModelTest` |
+| `FineRules.php`, `FineDocumentStatus.php` | Multas: vocabulário, código interno × AIT, placa (formato), campos mínimos para registrar, coerência das velocidades, motivos de "A conferir", avisos de andamento; seleção da conferência que vale (escopo, versão do sujeito, instante). | `FineRulesTest`, `FinesTest` |
 | `SectorForecast.php` | Setores e métodos do planejamento por setores, ordem com desempate, métricas do retrospecto (orçamento de 1 setor) e distância em linha reta ao retângulo. | `UrbanImportTest`, `PlanningTest` |
 | `Time.php`, `Clock.php` | Convenção UTC no banco / America/Sao_Paulo na tela; relógio injetável para testes e geração de histórico. | `DomainRulesTest` |
 | `ValidationFailed.php`, `RuleViolation.php` | Erros de campo (422) e de regra (409). | — |
@@ -76,6 +77,8 @@ estavam arquivados; ajusta o limiar numa janela, avalia em outra e grava a execu
 | `UrbanImporter.php` | pasta de uma execução + GeoJSON + manifesto → execução gravada (ou a existente) | Valida tudo antes da transação (contrato v1, métricas recalculadas); limites de tamanho/profundidade; SHA-256 do conjunto. Só pela CLI. |
 | `UrbanUpdater.php` | download mensal → contagens por quadrado e dia (12 meses); segunda-feira → execução da semana | curl só https, limite de tamanho; mesmos filtros do treino; idempotente por SHA-256 e por semana; média e Poisson em PHP com o modelo da referência. |
 | `PlanningService.php` | execução importada + agentes → semana, candidatos, missão, retrospecto | Ordem pelo método escolhido sem alterar a execução; explicação pelas evidências; reserva com trava do agente + índice único; período encerrado recusado. |
+| `FineService.php` | formulários de multa → rascunho, edição/retificação, registro, conferência, andamento, cancelamento | Uma transação por comando: trava multa → equipamento → agente, confere versão e estado, grava projeção + constatação + evento; chave de comando idempotente com impressão digital; snapshot da origem no registro; nova versão do sujeito quando muda a identidade ([ADR-0017](adr/0017-aba-multas.md)). |
+| `FineQuery.php`, `FineFilters.php` | query string → lista + três resumos do mesmo filtro; ficha | Leitura SNAPSHOT; filtros de listas fechadas; período local inclusivo → intervalo UTC semiaberto; "voltar" reconstruído. |
 | `AuthService.php` | credenciais → conta | Argon2id; vaga de tentativa reservada antes do hashing (cota atômica por usuário/IP, [ADR-0011](adr/0011-cota-de-login-atomica.md)); contas só por CLI/admin. |
 | `History.php` | registro de eventos manuais/sistema | Também calcula diferença campo a campo. |
 
@@ -85,7 +88,7 @@ estavam arquivados; ajusta o limiar numa janela, avalia em outra e grava a execu
 |---|---|
 | `Database.php` | Conexão PDO_FIREBIRD (UTF8, dialeto 3), `SET STATEMENT TIMEOUT`, transações (inclusive SNAPSHOT somente leitura), parâmetros posicionais, tradução de erros (`ConstraintViolation`, `ConcurrencyConflict`, `DatabaseUnavailable`) sem expor DSN/SQL. |
 | `Migrator.php` | Aplica `database/migrations/*.sql` uma vez (tabela `SCHEMA_MIGRATION`) com a identidade de migração e concede ao usuário da aplicação apenas DML (somente leitura+inserção nas tabelas de histórico). |
-| `Repository/*.php` | Todo o SQL: equipamentos, agentes, manutenção, eventos, alertas, contas, metadados, referência e análise. Colunas graváveis e ordenações vêm de listas fechadas. |
+| `Repository/*.php` | Todo o SQL: equipamentos, agentes, manutenção, eventos, alertas, contas, metadados, referência, análise, planejamento e multas (`FineRepository`: projeção, constatações e eventos). Colunas graváveis e ordenações vêm de listas fechadas. |
 
 ### `src/Http` — entrada web
 
@@ -105,8 +108,9 @@ estavam arquivados; ajusta o limiar numa janela, avalia em outra e grava a execu
 |---|---|
 | `Demo/DemoScenario.php` | Dados sintéticos: órgãos, bairros, bases e os perfis **compacto** (16 equipamentos e 7 agentes, padrão) e **completo** (48 e 21) — [ADR-0013](adr/0013-perfil-compacto-de-demonstracao.md). |
 | `Demo/DemoSeeder.php` | Carga + 240 dias de histórico reproduzível (falhas, corretivas, preventivas com atraso). |
+| `Demo/FineScenario.php` | Cenário de multas (12 casos curados ou 40), gravado pelos casos de uso; também pelo `demo:seed-multas`, sem apagar nada. |
 | `Demo/Simulator.php` | Ciclo ao vivo: sinais, falhas/recuperações, deslocamentos, duplicatas e atrasos intencionais. |
-| `Cli/Console.php` | `migrate`, `demo:seed [--reset] [--perfil=compacto\|completo]`, `user:create`, `sim:tick`, `sim:run` (trava `var/simulador.lock` por ciclo), `analysis:run`, `urban:import`. |
+| `Cli/Console.php` | `migrate`, `demo:seed [--reset] [--perfil=compacto\|completo]`, `user:create`, `sim:tick`, `sim:run` (trava `var/simulador.lock` por ciclo), `analysis:run`, `urban:import`, `demo:seed-multas`. |
 | `Services.php` | Raiz de composição: cria cada dependência uma vez; troca de identidade (aplicação × migração). |
 
 ### Apresentação
