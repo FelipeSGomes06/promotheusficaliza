@@ -348,7 +348,13 @@
   .chip--removable .chip__x { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; }
   @media (hover: hover) and (pointer: fine) { .chip--removable:hover { background: var(--color-brand-100); border-color: var(--color-brand-400); } }
   .chip--removable:hover .chip__x { background: var(--color-brand-200); }
-  .count-pill { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--color-brand-600); color: #fff; font-size: 0.72rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  /* Overpass tem o texto ~0,1em acima do centro da caixa de linha: desce o texto e sobe o ícone na mesma medida. */
+  .btn, .chip { padding-top: calc(var(--pad-y, 8px) + 0.2em); }
+  .chip { --pad-y: 4px; }
+  .btn--small { --pad-y: 5px; }
+  .btn--icon { --pad-y: 0px; }
+  .btn .icon, .chip .icon { position: relative; top: -0.1em; }
+  .count-pill { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0.2em 6px 0; line-height: 1; border-radius: 999px; background: var(--color-brand-600); color: #fff; font-size: 0.72rem; font-weight: 800; font-variant-numeric: tabular-nums; }
   .chip[aria-pressed="true"] .count-pill, .chip.is-active .count-pill { background: var(--color-teal-400); color: var(--color-graphite-950); }
 
   .seg { position: relative; display: inline-flex; padding: 3px; border-radius: var(--radius-md); background: var(--color-off-soft); border: 1px solid var(--color-line); }
