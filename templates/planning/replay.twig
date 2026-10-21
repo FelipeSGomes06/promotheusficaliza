@@ -46,7 +46,7 @@
   {% set sc = r.score %}
   {% set total_weeks = r.weeks|length %}
   <section class="section score" aria-labelledby="placar-titulo">
-    <div class="list-head"><h2 id="placar-titulo">Placar da previsão até aqui</h2><p class="hint">Acerto = o setor priorizado foi o que mais teve registros na semana.</p></div>
+    <div class="list-head"><h2 id="placar-titulo">Placar da previsão até aqui</h2><p class="hint">Acerto da prioridade = o setor que o modelo mandou priorizar foi o que mais teve registros na semana.</p></div>
     <div class="score__grid">
       {% set pct = sc.rate is null ? 0 : sc.rate * 100 %}
       <div class="score__ring" role="img" aria-label="{{ sc.rate is null ? 'Sem semanas reveladas' : pct|number_format(0, ',', '.') ~ '% de acerto' }}">
@@ -55,10 +55,10 @@
           <circle class="score__chance" cx="60" cy="60" r="52" pathLength="100" stroke-dasharray="0.6 99.4" stroke-dashoffset="-24.7"/>
           <circle class="score__fill" cx="60" cy="60" r="52" pathLength="100" stroke-dasharray="{{ pct|round(1) }} 100"/>
         </svg>
-        <div class="score__value"><strong>{{ sc.rate is null ? '—' : pct|number_format(0, ',', '.') ~ '%' }}</strong><span>de acerto</span></div>
+        <div class="score__value"><strong>{{ sc.rate is null ? '—' : pct|number_format(0, ',', '.') ~ '%' }}</strong><span>acerto na prioridade</span></div>
       </div>
       <dl class="score__facts">
-        <div><dt>Semanas acertadas</dt><dd><strong>{{ sc.hits }}</strong> de {{ sc.counted }}</dd></div>
+        <div><dt>Semanas com a prioridade certa</dt><dd><strong>{{ sc.hits }}</strong> de {{ sc.counted }}</dd></div>
         <div><dt>Se escolhesse ao acaso</dt><dd><strong>~25%</strong> (1 entre 4 setores)</dd></div>
         <div><dt>Registros no setor priorizado</dt><dd><strong>{{ sc.capture_rate is null ? '—' : (sc.capture_rate * 100)|number_format(0, ',', '.') ~ '%' }}</strong> do total observado</dd></div>
         <div><dt>Semanas reveladas</dt><dd>{{ sc.weeks }} de {{ total_weeks }}</dd></div>
@@ -73,7 +73,7 @@
       {% if t.capture_rate is not null %}{% set cpts = cpts|merge([(px + (loop.index0 * step))|round(1) ~ ',' ~ (py + (1 - t.capture_rate) * (H - 2 * py))|round(1)]) %}{% endif %}
     {% endfor %}
     <figure class="score__chart">
-      <svg viewBox="0 0 {{ W }} {{ H }}" role="img" aria-label="Taxa de acerto acumulada semana a semana">
+      <svg viewBox="0 0 {{ W }} {{ H }}" role="img" aria-label="Acerto acumulado da prioridade semana a semana">
         {% for g in [0, 0.5, 1] %}
           {% set gy = py + (1 - g) * (H - 2 * py) %}
           <line class="chart__grid" x1="{{ px }}" x2="{{ W - 10 }}" y1="{{ gy }}" y2="{{ gy }}"/>
@@ -86,14 +86,14 @@
         {% if pts|length > 1 %}<polyline class="chart__line" points="{{ pts|join(' ') }}" pathLength="100"/>{% endif %}
         {% if pts|length > 0 %}{% set lp = (pts|last)|split(',') %}<circle class="chart__dot" cx="{{ lp[0] }}" cy="{{ lp[1] }}" r="5"/>{% endif %}
       </svg>
-      <figcaption class="chart__legend"><span class="lg lg--hit">acerto acumulado</span><span class="lg lg--cap">registros no priorizado</span><span class="lg lg--chance">acaso</span></figcaption>
+      <figcaption class="chart__legend"><span class="lg lg--hit">acerto da prioridade (acumulado)</span><span class="lg lg--cap">registros no priorizado</span><span class="lg lg--chance">acaso</span></figcaption>
     </figure>
 
     <ol class="week-strip" aria-label="Resultado de cada semana">
       {% for w in r.weeks %}
         {% set t = r.timeline[loop.index0] ?? null %}
         {% set cls = t is null ? 'is-hidden' : (t.hit is null ? 'is-empty' : (t.hit ? 'is-hit' : 'is-miss')) %}
-        <li><a class="week-strip__dot {{ cls }}{{ w == r.week ? ' is-current' }}" href="{{ url('/planejar/retrospecto', {semana: w}) }}" title="{{ loop.index }}ª semana · {{ w|br_date }}{{ t is null ? ' · ainda não revelada' : (t.hit is null ? ' · sem registros' : (t.hit ? ' · acertou' : ' · errou')) }}">{{ t is null ? '' : (t.hit is null ? '·' : (t.hit ? '✓' : '✗')) }}</a></li>
+        <li><a class="week-strip__dot {{ cls }}{{ w == r.week ? ' is-current' }}" href="{{ url('/planejar/retrospecto', {semana: w}) }}" title="{{ loop.index }}ª semana · {{ w|br_date }}{{ t is null ? ' · ainda não revelada' : (t.hit is null ? ' · sem registros' : (t.hit ? ' · prioridade certa' : ' · prioridade errada')) }}">{{ t is null ? '' : (t.hit is null ? '·' : (t.hit ? '✓' : '✗')) }}</a></li>
       {% endfor %}
     </ol>
   </section>
@@ -134,19 +134,20 @@
       <div class="verdict section {{ w.observed == 0 ? 'verdict--empty' : (hit ? 'verdict--hit' : 'verdict--miss') }}" role="status">
         <span class="verdict__seal" aria-hidden="true">{{ w.observed == 0 ? '·' : (hit ? '✓' : '✗') }}</span>
         <div>
-          <p class="verdict__title">{{ w.observed == 0 ? 'Semana sem registros' : (hit ? 'Acertou!' : 'Errou desta vez') }}</p>
+          <p class="verdict__title">{{ w.observed == 0 ? 'Semana sem registros' : (hit ? 'Acertou a prioridade!' : 'Errou a prioridade desta vez') }}</p>
+          {% if w.observed > 0 %}<p class="verdict__why">O setor indicado para reforço ({{ names[r.first]|lower }}) {{ hit ? 'foi' : 'não foi' }} o que mais teve registros na semana.</p>{% endif %}
           <p class="m-0"><strong>{{ w.observed }} registros elegíveis</strong> na área de estudo. O {{ names[r.first]|lower }} (priorizado) teve <strong>{{ w.captured }}</strong>{% if w.observed > 0 %} ({{ (w.captured / w.observed * 100)|number_format(0, ',', '.') }}% do total){% endif %}.</p>
           <p class="hint m-0">Uma semana isolada não prova nada: o placar acima acumula todas até aqui.</p>
         </div>
       </div>
-      <p class="btn-row">
+      <p class="btn-row verdict-actions">
         {% if r.next %}<a class="btn btn--primary" href="{{ url('/planejar/retrospecto', {semana: r.next, revelar: 1}) }}">Próxima semana e revelar →</a>{% endif %}
         <a class="btn btn--small" href="{{ url('/planejar/retrospecto', {semana: r.week}) }}">Esconder os registros</a>
       </p>
     {% endif %}
   </section>
 
-  <section class="section" aria-labelledby="global-titulo">
+  <section class="section section--spaced" aria-labelledby="global-titulo">
     <div class="list-head"><h2 id="global-titulo">Resultado no teste inteiro</h2><p class="hint">{{ ev.baseline.weeks }} semanas completas, {{ ev.baseline.from|br_date }} a {{ ev.baseline.until|br_date }} (fim exclusivo), {{ ev.baseline.rows }} linhas setor × semana.</p></div>
     <div class="table-wrap"><table class="data">
       <thead><tr><th scope="col">Medida</th><th scope="col">Média simples</th></tr></thead>
