@@ -246,8 +246,8 @@ final class PlanningService
         $method = self::method($method, $run);
         $other = $method === 'baseline' ? 'poisson' : 'baseline';
         $weeks = $this->urban->replayWeeks($run['id']);
-        // Sem semana escolhida, abre na 48ª (ou na última, se o teste for mais curto).
-        $week = in_array($week, $weeks, true) ? $week : ($weeks === [] ? null : $weeks[min(47, count($weeks) - 1)]);
+        // Sem semana escolhida, abre na 45ª (ou na última, se o teste for mais curto).
+        $week = in_array($week, $weeks, true) ? $week : ($weeks === [] ? null : $weeks[min(44, count($weeks) - 1)]);
         $rows = [];
         foreach ($week === null ? [] : $this->urban->replay($run['id'], $week) as $row) {
             $rows[(string) $row['sector_id']] = $row;
