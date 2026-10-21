@@ -103,7 +103,7 @@
             <li><span class="speed-strip__n">{{ f.speed_measured_kmh ?? '—' }}</span><span class="speed-strip__l">km/h medidos</span></li>
             <li class="is-key"><span class="speed-strip__n">{{ f.speed_considered_kmh ?? '—' }}</span><span class="speed-strip__l">km/h considerados</span></li>
           </ul>
-          <p class="hint">{% if f.speed_considered_kmh is not null and f.speed_limit_kmh is not null %}A velocidade considerada ficou {{ f.speed_considered_kmh - f.speed_limit_kmh }} km/h acima do permitido. {% endif %}"Considerada" é a medida já descontado o erro admitido do aparelho, como consta no documento; o sistema só transcreve.</p>
+          <p class="hint">{% if f.speed_considered_kmh is not null and f.speed_limit_kmh is not null %}A velocidade considerada ficou {{ f.speed_considered_kmh - f.speed_limit_kmh }} km/h acima do permitido. {% endif %}A considerada é a medida menos a margem de erro do aparelho, calculada pelo sistema — {{ speed_rule }}</p>
         {% endif %}
         {% if f.notes %}<h3 class="form-sub">Relato</h3><p class="fine-note">{{ f.notes }}</p>{% else %}<p class="hint">Sem relato escrito ainda.</p>{% endif %}
         <h3 class="form-sub">Detalhes do registro</h3>
