@@ -1150,3 +1150,20 @@
   .st--DOC_PENDENCIA_INFORMADA, .st--DOC_REVISAR { --c: var(--color-warn); --s: var(--color-warn-soft); --i: var(--color-warn-ink); }
   .st--DOC_PENDENCIA_INFORMADA .st__g, .st--DOC_REVISAR .st__g { color: var(--color-graphite-950); }
 }
+
+/* Multas: frase do fato, faixa de velocidades e perguntas frequentes. */
+@layer components {
+  .fine-story { font-size: 1.05rem; line-height: 1.55; margin: 0 0 12px; overflow-wrap: anywhere; }
+  .speed-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: 0 0 8px; padding: 0; list-style: none; border: 1px solid var(--color-line); border-radius: var(--radius-md); overflow: hidden; }
+  .speed-strip li { display: flex; flex-direction: column; align-items: center; padding: 10px 8px; text-align: center; }
+  .speed-strip li + li { border-left: 1px solid var(--color-line); }
+  .speed-strip li.is-key { background: var(--color-warn-soft); }
+  .speed-strip__n { font-weight: 800; font-size: 1.5rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .speed-strip__l { font-size: 0.8rem; color: var(--color-muted); }
+  .faq { border-top: 1px solid var(--color-line); padding-top: 24px; margin-top: 32px; }
+  .faq__list { display: grid; gap: 8px; margin-top: 12px; }
+  .faq__list details { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-md); padding: 0 16px; }
+  .faq__list summary { cursor: pointer; font-weight: 650; min-height: 44px; display: flex; align-items: center; color: var(--color-ink); }
+  .faq__list details[open] summary { border-bottom: 1px solid var(--color-line); }
+  .faq__list p { margin: 10px 0 14px; line-height: 1.55; }
+}

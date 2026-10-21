@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Fiscaliza\Demo;
 
+use Fiscaliza\Application\FineService;
+use Fiscaliza\Domain\FineRules;
 use Fiscaliza\Domain\Time;
 use Fiscaliza\Services;
 
@@ -15,7 +17,78 @@ use Fiscaliza\Services;
 final class FineScenario
 {
     /** Versão da carga, gravada em APP_META "fines_seed": repetir a mesma versão não duplica nada. */
-    public const VERSION = 'multas-v1';
+    public const VERSION = 'multas-v2';
+
+    /** Carga anterior que upgrade() leva à versão atual (relatos descritivos; rascunho de radar com a placa lida). */
+    public const PREVIOUS = 'multas-v1';
+
+    /** Relato factual de cada caso (fictício), exibido em "O que aconteceu". */
+    private const RELATOS = [
+        'c01' => 'O radar fixo da Av. Sampaio Vidal registrou o veículo a 71 km/h num trecho regulamentado em 50 km/h. Descontado o erro admitido do medidor, a velocidade considerada foi 64 km/h. As duas imagens (fictícias) mostram a placa legível.',
+        'c02' => 'Medidor portátil operado pelo agente Hermes 04 em frente à escola, no horário de entrada dos alunos. O veículo passou a 58 km/h medidos (51 km/h considerados) onde o limite é 40 km/h. O documento não trouxe o registro no Inmetro nem a data da última verificação do medidor.',
+        'c03' => 'No cruzamento da Av. Sampaio Vidal, o radar registrou o veículo cruzando a faixa de retenção com o semáforo vermelho aceso havia cerca de 3 segundos. A sequência de imagens (fictícia) mostra o veículo antes e depois da faixa.',
+        'c04' => 'O agente Hermes 01 viu o veículo parado sobre a faixa de pedestres do calçadão, aguardando o semáforo abrir, e pedestres desviando pela pista. O condutor apresentou o CRLV-e no local.',
+        'c05' => 'O agente Hermes 06 viu o veículo fazer a conversão à esquerda onde a placa de regulamentação proíbe a manobra. O condutor não apresentou o documento do veículo, e o RENAVAM ficou sem informação.',
+        'c06' => 'Veículo parado sobre a faixa de pedestres em frente ao ponto de ônibus, no horário de pico. Abordado pelo agente Hermes 01, o condutor exibiu o CRLV do exercício anterior.',
+        'c07' => 'Carro particular circulando pela faixa exclusiva de ônibus por cerca de dois quarteirões, observado pelo agente Hermes 04. No local o CRLV do exercício não foi apresentado; dias depois o documento em dia foi mostrado na base.',
+        'c08' => 'A lombada eletrônica da Av. Rio Branco, junto à escola, registrou o veículo a 62 km/h (55 km/h considerados) num trecho de 40 km/h, no início da tarde.',
+        'c09' => 'O radar do cruzamento registrou o avanço do sinal vermelho, e a placa DMO9K56 foi lida na imagem. Marca, modelo, espécie e RENAVAM ainda não foram transcritos do documento do órgão; por isso o cadastro segue em rascunho.',
+        'c10' => 'Parada sobre a faixa de pedestres da praça, observada pelo agente Hermes 04. O mesmo fato foi lançado duas vezes por engano.',
+        'c11' => 'O radar do acesso ao Parque São Jorge registrou o caminhão a 104 km/h (97 km/h considerados) num trecho de 80 km/h, de madrugada. Dias depois o radar entrou em mau funcionamento; o registro guarda os dados do momento da ocorrência.',
+        'c12' => 'O agente Hermes 06 viu o veículo fazer o retorno onde a sinalização proíbe a manobra. A placa foi transcrita errada no primeiro lançamento e corrigida depois conforme o auto.',
+    ];
+
+    /** Chave de comando dos casos: estável entre versões, para encontrar a carga anterior. */
+    private static function uid(string $key): string
+    {
+        return md5('promotheus-multas:multas-v1:' . $key);
+    }
+
+    /** Relato dos registros de volume (perfil completo). */
+    private static function volumeRelato(int $i, bool $radar, ?string $kind): string
+    {
+        return $radar
+            ? sprintf('O radar registrou o veículo a %d km/h (%d km/h considerados) num trecho de %d km/h, durante fiscalização de rotina.', 55 + $i, 48 + $i, $i % 4 === 0 ? 50 : 40)
+            : sprintf('Durante fiscalização de rotina, o agente observou: %s.', mb_strtolower(FineRules::KINDS[$kind] ?? 'infração'));
+    }
+
+    /**
+     * Leva a carga anterior à versão atual sem apagar nada: troca o texto genérico pelo relato de cada caso e, no
+     * rascunho de radar, informa a placa lida na imagem. Cada mudança passa pelo caso de uso e fica no histórico.
+     *
+     * @return int registros atualizados
+     */
+    public static function upgrade(Services $s): int
+    {
+        $fines = $s->fines();
+        $repo = $s->fineRepository();
+        $count = 0;
+        $relatos = self::RELATOS;
+        for ($i = 1; $i <= 28; $i++) {
+            $relatos[sprintf('v%02d', $i)] = null; // calculado abaixo, se existir
+        }
+        foreach ($relatos as $key => $relato) {
+            $event = $repo->eventByUid(self::uid("{$key}:criar"));
+            $f = $event === null ? null : $repo->find((int) $event['fine_id']);
+            if ($f === null || $f['record_state'] === 'CANCELADO') {
+                continue;
+            }
+            if ($relato === null) {
+                $relato = self::volumeRelato((int) substr($key, 1), $f['source_kind'] === 'RADAR', $f['infraction_kind']);
+            }
+            $data = ['notes' => $relato] + FineService::formValues($f);
+            if ($key === 'c09') {
+                $data = ['vehicle_plate' => 'DMO9K56', 'vehicle_uf' => 'SP', 'description' => 'Avanço de sinal: placa lida na imagem, dados do veículo a transcrever',
+                    'evidence_reference' => 'DEMO-IMG-0909 (sequência fictícia de imagens)'] + $data;
+            }
+            $fines->update((int) $f['id'], $data + ['version' => (string) $f['version_no'], 'command_uid' => self::uid("{$key}:" . self::VERSION),
+                'reason' => 'Cenário de demonstração atualizado: relato descritivo da ocorrência.'], null, 'SEMENTE');
+            $count++;
+        }
+        $s->metaRepository()->set('fines_seed', self::VERSION, $count, Time::toDb($s->clock()->now()));
+
+        return $count;
+    }
 
     /** @return int multas criadas */
     public static function seed(Services $s, string $profile): int
@@ -37,7 +110,7 @@ final class FineScenario
 
         $at = static fn(int $daysAgo, string $time): string => $now->modify(sprintf('%+d days', -$daysAgo))->format('Y-m-d') . 'T' . $time;
         $day = static fn(int $daysAgo): string => $now->modify(sprintf('%+d days', -$daysAgo))->format('Y-m-d');
-        $uid = static fn(string $key): string => md5('promotheus-multas:' . self::VERSION . ':' . $key);
+        $uid = self::uid(...);
         $fines = $s->fines();
         $version = static fn(int $id): int => (int) $s->fineRepository()->find($id)['version_no'];
         $year = (int) $now->format('Y');
@@ -63,7 +136,7 @@ final class FineScenario
             'FAIXA_EXCLUSIVA' => 'Referência fictícia DEMO-ENQ-FXE (transcrição ilustrativa)'];
 
         $create = static function (string $key, array $data) use ($fines, $uid, $legal): int {
-            $data += ['legal_reference' => $legal[$data['infraction_kind'] ?? ''] ?? null, 'notes' => 'Registro sintético de demonstração.'];
+            $data += ['legal_reference' => $legal[$data['infraction_kind'] ?? ''] ?? null, 'notes' => self::RELATOS[$key] ?? null];
 
             return $fines->create($data + ['command_uid' => $uid("{$key}:criar")], null, 'SEMENTE');
         };
@@ -153,7 +226,8 @@ final class FineScenario
 
         // 9. Rascunho incompleto, com o caminho para completar na ficha.
         $create('c09', $radar('VS5-24-00201', 'AVANCO_SEMAFORO', 'Avenida Sampaio Vidal', 'Cruzamento semaforizado', 'Palmital')
-            + ['description' => 'Rascunho: avanço de sinal a completar com os dados do veículo', 'occurred_at' => $at(1, '18:40')]);
+            + ['description' => 'Avanço de sinal: placa lida na imagem, dados do veículo a transcrever', 'occurred_at' => $at(1, '18:40'),
+                'vehicle_plate' => 'DMO9K56', 'vehicle_uf' => 'SP', 'evidence_reference' => 'DEMO-IMG-0909 (sequência fictícia de imagens)']);
         $count++;
 
         // 10. Registro cancelado internamente com motivo (não é anulação do auto).
@@ -175,7 +249,7 @@ final class FineScenario
         // 12. Retificação da placa: a conferência anterior fica só no histórico; a nova identidade pede nova conferência.
         $base = $agent('Hermes 06', 'CONVERSAO_PROIBIDA', 'Avenida Brigadeiro Eduardo Gomes', 'Retorno sinalizado como proibido', 'Jardim Maria Izabel')
             + ['description' => 'Conversão proibida na Av. Brigadeiro Eduardo Gomes', 'occurred_at' => $at(12, '15:20'), 'external_ait' => 'DEMO-AIT-26-000112',
-                'legal_reference' => $legal['CONVERSAO_PROIBIDA'], 'notes' => 'Registro sintético de demonstração.']
+                'legal_reference' => $legal['CONVERSAO_PROIBIDA'], 'notes' => self::RELATOS['c12']]
             + $vehicle('DMO4E21', '08877665544', 'Cidália', 'Sedã 1.6', 'Passageiro', 'Bege', 2014);
         $id = $create('c12', $base);
         $register('c12', $id);
@@ -196,7 +270,7 @@ final class FineScenario
                         + ['speed_limit_kmh' => $i % 4 === 0 ? '50' : '40', 'speed_measured_kmh' => (string) (55 + $i), 'speed_considered_kmh' => (string) (48 + $i)]
                     : $agent(['Hermes 01', 'Hermes 04', 'Hermes 06'][$i % 3], ['PARADA_FAIXA', 'CONVERSAO_PROIBIDA', 'FAIXA_EXCLUSIVA'][$i % 3], $street, 'Fiscalização de rotina', $region);
                 $id = $create($key, $data + ['description' => "Registro de volume {$i} da demonstração", 'occurred_at' => $at(3 + $i * 3, sprintf('%02d:%02d', 7 + $i % 12, ($i * 13) % 60)),
-                    'external_ait' => sprintf('DEMO-AIT-26-%06d', 200 + $i)] + $vehicle($plate, sprintf('%011d', $i * 104729), 'Movix', 'Urbano 1.0', 'Passageiro', 'Prata', 2010 + $i % 14));
+                    'external_ait' => sprintf('DEMO-AIT-26-%06d', 200 + $i), 'notes' => self::volumeRelato($i, $i % 2 === 0, $data['infraction_kind'])] + $vehicle($plate, sprintf('%011d', $i * 104729), 'Movix', 'Urbano 1.0', 'Passageiro', 'Prata', 2010 + $i % 14));
                 $register($key, $id);
                 if ($i % 3 === 0) {
                     $check($key, $id, $regular(2 + $i * 3, '10:00', 'CONSULTA_OFICIAL_INFORMADA', sprintf('Consulta feita fora do sistema e informada à mão (fictícia): DEMO-CONS-%04d', 100 + $i)));

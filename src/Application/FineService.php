@@ -67,6 +67,27 @@ final class FineService
         return bin2hex(random_bytes(16));
     }
 
+    /**
+     * Cadastro gravado → nomes dos campos do formulário (data/hora local, operador do radar, dados do medidor).
+     *
+     * @param array<string, mixed> $fine
+     * @return array<string, mixed>
+     */
+    public static function formValues(array $fine): array
+    {
+        $values = array_intersect_key($fine, array_flip(self::CADASTRO));
+        $values['occurred_at'] = Time::fromDb($fine['occurred_at'])?->setTimezone(Time::local())->format('Y-m-d\TH:i');
+        if ($fine['source_kind'] === 'RADAR') {
+            $values['operator_agent_id'] = $fine['agent_id'];
+            $values['agent_id'] = null;
+        }
+        foreach (['meter_kind', 'inmetro_record', 'certificate', 'verified_on'] as $key) {
+            $values['radar_' . $key] = $fine['radar_details'][$key] ?? null;
+        }
+
+        return $values;
+    }
+
     /** @param array<string, mixed> $data campos do formulário + command_uid */
     public function create(array $data, ?int $actor, string $source = 'MANUAL'): int
     {
@@ -504,6 +525,9 @@ final class FineService
         if ($plate !== null) {
             $plate = FineRules::plate($plate);
             FineRules::isPlate($plate) ? $v['vehicle_plate'] = $plate : $in->fail('vehicle_plate', 'Use o formato AAA1234 ou AAA1A23 (só o formato é conferido, não a existência).');
+        } elseif ($source === 'RADAR') {
+            // O radar identifica o veículo pela placa na imagem: sem placa legível não há registro de radar, nem em rascunho.
+            $in->fail('vehicle_plate', 'Origem Radar: informe a placa lida na imagem. Sem placa legível o radar não gera registro.');
         }
         $renavam = $in->text('vehicle_renavam', 20, false);
         if ($renavam !== null) {
