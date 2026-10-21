@@ -273,7 +273,7 @@ final class PlanningTest extends FirebirdTestCase
         $hidden = $this->services->planning()->replay(null, null, false);
 
         self::assertCount(51, $hidden['weeks']);
-        self::assertSame('2025-01-06', $hidden['week']);
+        self::assertSame('2025-12-22', 'sem semana escolhida, abre na última do teste', $hidden['week']);
         self::assertSame('2025-01-01', $hidden['run']['model_issued_at'], 'modelo congelado no início do teste, não o de 2026');
         self::assertSame([null, null, null, null], array_column($hidden['sectors'], 'observed'));
         self::assertNull($hidden['week_result']);
