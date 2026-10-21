@@ -40,6 +40,16 @@ function sourceForm(form) {
   radios.forEach((r) => r.addEventListener('change', () => update()));
   kind?.addEventListener('change', () => update());
   update(false); // estado inicial sem animação: o servidor já entregou a página pronta
+
+  // Prévia da velocidade considerada com a mesma regra do servidor (FineRules::consideredSpeed), que é quem grava.
+  const measured = form.querySelector('#f-speed_measured_kmh');
+  const out = form.querySelector('[data-speed-considered]');
+  if (measured && out) {
+    measured.addEventListener('input', () => {
+      const m = Number.parseInt(measured.value, 10);
+      out.textContent = Number.isFinite(m) && m > 0 ? `${m <= 107 ? Math.max(0, m - 7) : Math.floor((m * 93 + 50) / 100)} km/h` : 'calculada ao salvar';
+    });
+  }
 }
 
 function checkForm(form) {

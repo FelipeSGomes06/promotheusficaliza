@@ -1,6 +1,6 @@
 {
   "base": "http://127.0.0.1:8099/promotheusfiscaliza",
-  "quando": "2026-10-21T23:27:32.524Z",
+  "quando": "2026-10-21T23:48:23.038Z",
   "capturas": [
     "01-lista-filtro-radar",
     "02-cadastro-radar",
@@ -144,7 +144,7 @@
     },
     "sem_js_rascunho_salvo": {
       "ok": true,
-      "detalhe": "http://127.0.0.1:8099/promotheusfiscaliza/multas/14"
+      "detalhe": "http://127.0.0.1:8099/promotheusfiscaliza/multas/16"
     }
   },
   "console": [],

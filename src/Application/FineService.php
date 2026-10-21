@@ -494,7 +494,7 @@ final class FineService
             'source_note' => $in->text('source_note', 300, false),
             'speed_limit_kmh' => $in->int('speed_limit_kmh', 1, 350, false),
             'speed_measured_kmh' => $in->int('speed_measured_kmh', 1, 350, false),
-            'speed_considered_kmh' => $in->int('speed_considered_kmh', 0, 350, false),
+            'speed_considered_kmh' => null, // calculada pelo servidor a partir da medida (FineRules::consideredSpeed)
             'radar_details' => array_filter([
                 'meter_kind' => $in->text('radar_meter_kind', 120, false),
                 'inmetro_record' => $in->text('radar_inmetro_record', 120, false),
@@ -560,8 +560,8 @@ final class FineService
         }
         if ($kind !== 'VELOCIDADE') {
             $v['speed_limit_kmh'] = $v['speed_measured_kmh'] = $v['speed_considered_kmh'] = null;
-        } elseif ($v['speed_considered_kmh'] !== null && $v['speed_measured_kmh'] !== null && $v['speed_considered_kmh'] > $v['speed_measured_kmh']) {
-            $in->fail('speed_considered_kmh', 'A velocidade considerada não pode superar a medida.');
+        } elseif ($v['speed_measured_kmh'] !== null) {
+            $v['speed_considered_kmh'] = FineRules::consideredSpeed($v['speed_measured_kmh']);
         }
         if ($v['external_ait'] !== null) {
             $v['ait_missing_reason'] = null;
