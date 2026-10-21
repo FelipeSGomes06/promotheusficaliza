@@ -15,7 +15,7 @@
     <div>
       <p class="crumbs"><a href="{{ url('/agentes') }}">Agentes</a> · {{ role.label }}</p>
       <h1>{{ role.label }} · {{ a.call_sign }}</h1>
-      <p class="muted"><span class="code-tag">{{ a.code }}</span> {{ a.agency_name }} · agente fictício (não é conta de acesso)</p>
+      <p class="muted"><span class="code-tag">{{ a.code }}</span> {{ a.agency_name }}</p>
       <div class="state">
         {{ ui.agent_status(a.status) }}
         {% if freshness.value == 'NAO_SE_APLICA' %}<span class="fresh">Fora de turno: posição não se aplica</span>{% else %}{{ ui.freshness(freshness.value, a.pos_observed_at, 'Posição') }}{% endif %}
