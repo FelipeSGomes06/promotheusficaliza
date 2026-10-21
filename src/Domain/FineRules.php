@@ -69,6 +69,18 @@ final class FineRules
         'renavam_missing_reason' => 'Por que o RENAVAM não está disponível', 'reason' => 'Motivo', 'version' => 'Versão', 'command_uid' => 'Formulário',
     ];
 
+    /** Regra usada no cálculo da velocidade considerada (mostrada na ficha junto com o valor). */
+    public const SPEED_RULE = 'Resolução Contran 798/2020 (art. 8º e Anexo III): até 107 km/h medidos, menos 7 km/h; acima, menos 7%, arredondado.';
+
+    /**
+     * Velocidade considerada = medida menos o erro máximo admitido do medidor: 7 km/h até 107 km/h medidos e 7% acima
+     * disso, com arredondamento matemático (as duas fórmulas coincidem em 100 km/h considerados).
+     */
+    public static function consideredSpeed(int $measured): int
+    {
+        return $measured <= 107 ? max(0, $measured - 7) : intdiv($measured * 93 + 50, 100);
+    }
+
     public static function code(int $id): string
     {
         return sprintf('DEMO-MUL-%06d', $id);
@@ -136,7 +148,6 @@ final class FineRules
         if (($f['infraction_kind'] ?? null) === 'VELOCIDADE') {
             $need('speed_limit_kmh', 'Informe a velocidade regulamentada do local.');
             $need('speed_measured_kmh', 'Informe a velocidade medida.');
-            $need('speed_considered_kmh', 'Informe a velocidade considerada.');
         }
         $need('vehicle_plate', 'Informe a placa.');
         $need('vehicle_uf', 'Escolha a UF de registro do veículo.');
@@ -164,7 +175,7 @@ final class FineRules
                 $errors['source_kind'] = 'Velocidade medida exige origem Radar. Medidor operado por agente: escolha Radar e indique o agente operador.';
             }
             if (isset($f['speed_considered_kmh'], $f['speed_limit_kmh']) && (int) $f['speed_considered_kmh'] <= (int) $f['speed_limit_kmh']) {
-                $errors['speed_considered_kmh'] = 'A velocidade considerada não supera a regulamentada: este registro de velocidade não pode ser registrado assim. Revise os valores transcritos.';
+                $errors['speed_measured_kmh'] = 'Descontada a margem de erro do aparelho, a velocidade considerada não passa do limite: não há excesso para registrar. Revise a velocidade medida.';
             }
         }
 
@@ -207,6 +218,11 @@ final class FineRules
             $occurred = Time::fromDb($f['occurred_at'] ?? null);
             if (isset($radar['verified_on']) && $occurred !== null && $radar['verified_on'] > Time::localDate($occurred)) {
                 $reasons[] = 'Última verificação do medidor informada é posterior à ocorrência: revisar o documento.';
+            }
+            // A verificação periódica do Inmetro vale 12 meses: mais antiga que isso no dia do fato pede atenção.
+            if (isset($radar['verified_on']) && $occurred !== null
+                && $radar['verified_on'] < $occurred->setTimezone(Time::local())->modify('-12 months')->format('Y-m-d')) {
+                $reasons[] = 'No dia da ocorrência, a última verificação do radar tinha mais de 12 meses (vencida): confira, pode ser motivo de contestação.';
             }
         }
 

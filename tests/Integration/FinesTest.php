@@ -149,16 +149,19 @@ final class FinesTest extends FirebirdTestCase
         self::assertNull($f['speed_measured_kmh'], 'vazio não vira zero');
         self::assertNull($f['speed_considered_kmh']);
 
-        $low = $fines->create($this->radarFine(['speed_considered_kmh' => '50', 'external_ait' => 'DEMO-AIT-9']), $this->user);
+        // 57 medidos − 7 de margem = 50 considerados: igual ao limite, não há excesso.
+        $low = $fines->create($this->radarFine(['speed_measured_kmh' => '57', 'external_ait' => 'DEMO-AIT-9']), $this->user);
+        self::assertSame(50, (int) $this->services->fineRepository()->find($low)['speed_considered_kmh'], 'considerada calculada pelo servidor');
         try {
             $fines->register($low, $this->cmd($low), $this->user);
             self::fail('considerada igual ao limite não registra');
         } catch (ValidationFailed $e) {
-            self::assertArrayHasKey('speed_considered_kmh', $e->errors);
+            self::assertArrayHasKey('speed_measured_kmh', $e->errors);
         }
         self::assertSame('RASCUNHO', $this->services->fineRepository()->find($low)['record_state'], 'o rascunho continua disponível');
-        $this->expectException(ValidationFailed::class);
-        $fines->create($this->radarFine(['speed_considered_kmh' => '80']), $this->user); // considerada > medida
+        // Valor de considerada enviado no POST é ignorado: o servidor sempre calcula a partir da medida.
+        $sent = $fines->create($this->radarFine(['speed_considered_kmh' => '80', 'external_ait' => 'DEMO-AIT-10']), $this->user);
+        self::assertSame(64, (int) $this->services->fineRepository()->find($sent)['speed_considered_kmh']);
     }
 
     public function testDocumentChecksAreTemporalAndRetificationRequiresANewOne(): void

@@ -115,11 +115,11 @@
         </div>
         <div class="speed-block" data-speed-block>
           <h3 class="form-sub">Velocidades (só para excesso de velocidade)</h3>
-          <p class="hint">Transcreva os três valores do documento, em km/h. O sistema não calcula tolerância, gravidade nem valor.</p>
+          <p class="hint">Informe o limite da via e a velocidade que o radar mediu, em km/h. A velocidade considerada é calculada pelo sistema: a medida menos a margem de erro do aparelho (7 km/h até 107 km/h; 7% acima disso).</p>
           <div class="form-grid form-grid--three">
             {{ ui.input('speed_limit_kmh', 'Regulamentada', v, errors, {type: 'number', inputmode: 'numeric', required: true}) }}
             {{ ui.input('speed_measured_kmh', 'Medida', v, errors, {type: 'number', inputmode: 'numeric', required: true}) }}
-            {{ ui.input('speed_considered_kmh', 'Considerada', v, errors, {type: 'number', inputmode: 'numeric', required: true}) }}
+            <div class="field"><span class="label">Considerada</span><output class="speed-calc" data-speed-considered for="f-speed_measured_kmh">{{ v.speed_considered_kmh ?? '' ? v.speed_considered_kmh ~ ' km/h' : 'calculada ao salvar' }}</output><span class="hint">Medida − margem de erro</span></div>
           </div>
         </div>
         <details class="advanced" {{ v.radar_inmetro_record ?? v.radar_certificate ?? v.radar_verified_on ?? v.evidence_reference ?? false ? 'open' }}>

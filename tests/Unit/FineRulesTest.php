@@ -125,9 +125,34 @@ final class FineRulesTest extends TestCase
     public function testSpeedCoherenceIsCheckedWithoutInventingTolerance(): void
     {
         self::assertSame([], FineRules::registrationConflicts(self::complete()));
-        self::assertArrayHasKey('speed_considered_kmh', FineRules::registrationConflicts(self::complete(['speed_considered_kmh' => 50])), 'considerada igual ao limite');
+        self::assertArrayHasKey('speed_measured_kmh', FineRules::registrationConflicts(self::complete(['speed_considered_kmh' => 50])), 'considerada igual ao limite');
         self::assertArrayHasKey('source_kind', FineRules::registrationConflicts(self::complete(['source_kind' => 'AGENTE'])), 'velocidade só por radar');
         self::assertSame([], FineRules::registrationConflicts(self::complete(['infraction_kind' => 'AVANCO_SEMAFORO', 'speed_considered_kmh' => null])));
+    }
+
+    /** @return iterable<string, array{0: int, 1: int}> */
+    public static function speeds(): iterable
+    {
+        yield 'abaixo de 107: menos 7' => [71, 64];
+        yield 'limite da faixa' => [107, 100];
+        yield 'acima: menos 7%, arredondado' => [108, 100];
+        yield '150 × 0,93 = 139,5 → 140' => [150, 140];
+        yield '194 → 180 (tabela do Anexo III)' => [194, 180];
+        yield 'nunca negativa' => [5, 0];
+    }
+
+    #[DataProvider('speeds')]
+    public function testConsideredSpeedFollowsTheContranMargin(int $measured, int $considered): void
+    {
+        self::assertSame($considered, FineRules::consideredSpeed($measured));
+    }
+
+    public function testExpiredMeterVerificationOnTheOccurrenceDayNeedsAttention(): void
+    {
+        $old = FineRules::attention(self::complete(['record_state' => 'REGISTRADO', 'radar_details' => ['inmetro_record' => 'I', 'certificate' => 'C', 'verified_on' => '2025-10-19']]));
+        self::assertCount(1, $old);
+        self::assertStringContainsString('mais de 12 meses', $old[0]);
+        self::assertSame([], FineRules::attention(self::complete(['record_state' => 'REGISTRADO', 'radar_details' => ['inmetro_record' => 'I', 'certificate' => 'C', 'verified_on' => '2025-10-21']])), 'menos de 12 meses');
     }
 
     public function testAttentionReasonsComeFromTheSameRuleAndCancelledHasNone(): void

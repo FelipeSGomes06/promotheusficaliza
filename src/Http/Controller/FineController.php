@@ -226,7 +226,7 @@ final class FineController extends Controller
             'labels' => FineRules::LABELS + FineService::PROGRESS_LABELS + ['scope' => 'Referência', 'checked_at' => 'Conferido em', 'document_status' => 'Resultado',
                 'source_type' => 'Fonte', 'source_reference' => 'Referência da fonte', 'crlv_exercise' => 'Exercício do CRLV', 'pending_items' => 'Pendência apontada',
                 'review_on' => 'Revisar em', 'effective_on' => 'Data a que se refere'],
-            'records' => FineFilters::RECORDS, 'sorts' => FineFilters::SORTS,
+            'records' => FineFilters::RECORDS, 'sorts' => FineFilters::SORTS, 'speed_rule' => FineRules::SPEED_RULE,
         ];
     }
 }
