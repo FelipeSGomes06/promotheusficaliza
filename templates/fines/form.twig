@@ -153,7 +153,7 @@
       <legend><span class="form-step__n" aria-hidden="true">3</span> Veículo autuado</legend>
       <p class="hint">É o veículo da ocorrência, não uma viatura do inventário. Use placas e números fictícios.</p>
       <div class="form-grid">
-        {{ ui.input('vehicle_plate', 'Placa', v, errors, {required: true, max: 10, autocomplete: 'off', placeholder: 'AAA1A23', help: 'Formato antigo ou Mercosul. Só o formato é conferido.'}) }}
+        {{ ui.input('vehicle_plate', 'Placa', v, errors, {required: true, max: 10, autocomplete: 'off', placeholder: 'AAA1A23', help: 'Formato antigo ou Mercosul. Obrigatória desde o rascunho quando a origem é radar (lida na imagem). Só o formato é conferido.'}) }}
         {{ ui.select('vehicle_uf', 'UF de registro', ufs|reduce((carry, u) => carry|merge({(u): u}), {}), v.vehicle_uf ?? '', errors, {empty: 'Escolha…', required: true}) }}
         {{ ui.input('vehicle_manufacturer', 'Marca', v, errors, {required: true, max: 80}) }}
         {{ ui.input('vehicle_model', 'Modelo', v, errors, {required: true, max: 80}) }}

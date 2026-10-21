@@ -85,6 +85,28 @@
 
       <section class="panel" aria-labelledby="ocorrencia">
         <h2 id="ocorrencia">{{ ui.icon('i-pin') }} O que aconteceu</h2>
+        {# Frase do fato montada só com o que foi informado; o que falta aparece como falta, nunca inventado. #}
+        {% set who = f.source_kind == 'RADAR' ? 'O radar ' ~ (snap.radar.codigo ?? equipment.code ?? '') ~ ' registrou' : (f.source_kind == 'AGENTE' ? 'O agente ' ~ (snap.agente.indicativo ?? agent.call_sign ?? '') ~ ' observou' : 'Foi informado') %}
+        {% set vehicle = f.vehicle_plate ? 'o veículo de placa ' ~ f.vehicle_plate ~ ([f.vehicle_manufacturer, f.vehicle_model]|filter(x => x) is empty ? '' : ' (' ~ [f.vehicle_manufacturer, f.vehicle_model]|filter(x => x)|join(' ') ~ ')') : 'um veículo com placa ainda não informada' %}
+        <p class="fine-story">
+          {% if f.infraction_kind == 'VELOCIDADE' %}{{ who }} {{ vehicle }} acima da velocidade permitida
+          {% elseif f.infraction_kind == 'AVANCO_SEMAFORO' %}{{ who }} {{ vehicle }} avançando o sinal vermelho
+          {% elseif f.infraction_kind == 'PARADA_FAIXA' %}{{ who }} {{ vehicle }} parado sobre a faixa de pedestres
+          {% elseif f.infraction_kind == 'CONVERSAO_PROIBIDA' %}{{ who }} {{ vehicle }} fazendo uma conversão proibida
+          {% elseif f.infraction_kind == 'FAIXA_EXCLUSIVA' %}{{ who }} {{ vehicle }} circulando em faixa exclusiva
+          {% else %}{{ who }} {{ vehicle }} ({{ kindLabel|lower }})
+          {% endif %}{{ place ? ' na ' ~ place }}{{ f.occurred_at ? ', em ' ~ f.occurred_at|local_dt('d/m/Y') ~ ' às ' ~ f.occurred_at|local_dt('H:i') }}.
+        </p>
+        {% if f.infraction_kind == 'VELOCIDADE' %}
+          <ul class="speed-strip" aria-label="Velocidades do registro">
+            <li><span class="speed-strip__n">{{ f.speed_limit_kmh ?? '—' }}</span><span class="speed-strip__l">km/h permitidos</span></li>
+            <li><span class="speed-strip__n">{{ f.speed_measured_kmh ?? '—' }}</span><span class="speed-strip__l">km/h medidos</span></li>
+            <li class="is-key"><span class="speed-strip__n">{{ f.speed_considered_kmh ?? '—' }}</span><span class="speed-strip__l">km/h considerados</span></li>
+          </ul>
+          <p class="hint">{% if f.speed_considered_kmh is not null and f.speed_limit_kmh is not null %}A velocidade considerada ficou {{ f.speed_considered_kmh - f.speed_limit_kmh }} km/h acima do permitido. {% endif %}"Considerada" é a medida já descontado o erro admitido do aparelho, como consta no documento; o sistema só transcreve.</p>
+        {% endif %}
+        {% if f.notes %}<h3 class="form-sub">Relato</h3><p class="fine-note">{{ f.notes }}</p>{% else %}<p class="hint">Sem relato escrito ainda.</p>{% endif %}
+        <h3 class="form-sub">Detalhes do registro</h3>
         <dl class="facts">
           <dt>Data e hora</dt><dd>{{ f.occurred_at ? f.occurred_at|local_dt('d/m/Y H:i') ~ ' (horário de Marília)' : 'não informada' }}</dd>
           <dt>Local</dt><dd>{{ place ?: 'não informado' }}{{ f.region_name ? ' · ' ~ f.region_name }} · Marília/SP</dd>
@@ -92,7 +114,6 @@
           <dt>Órgão autuador</dt><dd>{{ f.agency_name ?? 'não informado' }}</dd>
           <dt>AIT</dt><dd>{{ f.external_ait ?? ('não informado' ~ (f.ait_missing_reason ? ': ' ~ f.ait_missing_reason)) }}</dd>
         </dl>
-        {% if f.notes %}<p class="fine-note">{{ f.notes }}</p>{% endif %}
         {% if f.lat is not null %}<p class="hint">Ponto ilustrativo: {{ f.lat|number_format(6, ',', '') }}, {{ f.lng|number_format(6, ',', '') }}</p>{% endif %}
       </section>
 
@@ -272,13 +293,8 @@
         {% endif %}
         {% if f.source_note %}<p class="hint">Observação: {{ f.source_note }}</p>{% endif %}
         {% if f.source_kind == 'RADAR' %}
-          <h3 class="form-sub">Medição</h3>
+          <h3 class="form-sub">Medidor e evidência</h3>
           <dl class="facts">
-            {% if f.infraction_kind == 'VELOCIDADE' %}
-              <dt>Regulamentada</dt><dd>{{ f.speed_limit_kmh is null ? 'não informada' : f.speed_limit_kmh ~ ' km/h' }}</dd>
-              <dt>Medida</dt><dd>{{ f.speed_measured_kmh is null ? 'não informada' : f.speed_measured_kmh ~ ' km/h' }}</dd>
-              <dt>Considerada</dt><dd>{{ f.speed_considered_kmh is null ? 'não informada' : f.speed_considered_kmh ~ ' km/h' }} <span class="hint">(transcrita; o sistema não calcula a tolerância)</span></dd>
-            {% endif %}
             <dt>Medidor</dt><dd>{{ f.radar_details.meter_kind ?? 'não informado' }}</dd>
             <dt>Registro Inmetro</dt><dd>{{ f.radar_details.inmetro_record ?? 'a conferir' }}</dd>
             <dt>Certificado</dt><dd>{{ f.radar_details.certificate ?? 'a conferir' }}</dd>
@@ -329,5 +345,6 @@
       {% endif %}
     </div>
   </div>
+  {% include 'fines/_faq.twig' %}
 </div>
 {% endblock %}
