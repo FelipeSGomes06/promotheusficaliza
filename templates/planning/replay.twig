@@ -60,17 +60,15 @@
       <dl class="score__facts">
         <div><dt>Semanas com a prioridade certa</dt><dd><strong>{{ sc.hits }}</strong> de {{ sc.counted }}</dd></div>
         <div><dt>Se escolhesse ao acaso</dt><dd><strong>~25%</strong> (1 entre 4 setores)</dd></div>
-        <div><dt>Registros no setor priorizado</dt><dd><strong>{{ sc.capture_rate is null ? '—' : (sc.capture_rate * 100)|number_format(0, ',', '.') ~ '%' }}</strong> do total observado</dd></div>
         <div><dt>Semanas reveladas</dt><dd>{{ sc.weeks }} de {{ total_weeks }}</dd></div>
       </dl>
     </div>
 
     {% set W = 640 %}{% set H = 180 %}{% set px = 34 %}{% set py = 14 %}
     {% set step = total_weeks > 1 ? (W - px - 10) / (total_weeks - 1) : 0 %}
-    {% set pts = [] %}{% set cpts = [] %}
+    {% set pts = [] %}
     {% for t in r.timeline %}
       {% if t.rate is not null %}{% set pts = pts|merge([(px + (loop.index0 * step))|round(1) ~ ',' ~ (py + (1 - t.rate) * (H - 2 * py))|round(1)]) %}{% endif %}
-      {% if t.capture_rate is not null %}{% set cpts = cpts|merge([(px + (loop.index0 * step))|round(1) ~ ',' ~ (py + (1 - t.capture_rate) * (H - 2 * py))|round(1)]) %}{% endif %}
     {% endfor %}
     <figure class="score__chart">
       <svg viewBox="0 0 {{ W }} {{ H }}" role="img" aria-label="Acerto acumulado da prioridade semana a semana">
@@ -82,11 +80,10 @@
         {% set cy = py + 0.75 * (H - 2 * py) %}
         <line class="chart__chance" x1="{{ px }}" x2="{{ W - 10 }}" y1="{{ cy }}" y2="{{ cy }}"/>
         <text class="chart__label chart__label--chance" x="{{ W - 12 }}" y="{{ cy - 5 }}" text-anchor="end">acaso 25%</text>
-        {% if cpts|length > 1 %}<polyline class="chart__capture" points="{{ cpts|join(' ') }}" pathLength="100"/>{% endif %}
         {% if pts|length > 1 %}<polyline class="chart__line" points="{{ pts|join(' ') }}" pathLength="100"/>{% endif %}
         {% if pts|length > 0 %}{% set lp = (pts|last)|split(',') %}<circle class="chart__dot" cx="{{ lp[0] }}" cy="{{ lp[1] }}" r="5"/>{% endif %}
       </svg>
-      <figcaption class="chart__legend"><span class="lg lg--hit">acerto da prioridade (acumulado)</span><span class="lg lg--cap">registros no priorizado</span><span class="lg lg--chance">acaso</span></figcaption>
+      <figcaption class="chart__legend"><span class="lg lg--hit">acerto da prioridade (acumulado)</span><span class="lg lg--chance">acaso</span></figcaption>
     </figure>
 
     <ol class="week-strip" aria-label="Resultado de cada semana">
@@ -136,7 +133,7 @@
         <div>
           <p class="verdict__title">{{ w.observed == 0 ? 'Semana sem registros' : (hit ? 'Acertou a prioridade!' : 'Errou a prioridade desta vez') }}</p>
           {% if w.observed > 0 %}<p class="verdict__why">O setor indicado para reforço ({{ names[r.first]|lower }}) {{ hit ? 'foi' : 'não foi' }} o que mais teve registros na semana.</p>{% endif %}
-          <p class="m-0"><strong>{{ w.observed }} registros elegíveis</strong> na área de estudo. O {{ names[r.first]|lower }} (priorizado) teve <strong>{{ w.captured }}</strong>{% if w.observed > 0 %} ({{ (w.captured / w.observed * 100)|number_format(0, ',', '.') }}% do total){% endif %}.</p>
+          <p class="m-0"><strong>{{ w.observed }} registros elegíveis</strong> na área de estudo. O {{ names[r.first]|lower }} (priorizado) teve <strong>{{ w.captured }}</strong>.</p>
           <p class="hint m-0">Uma semana isolada não prova nada: o placar acima acumula todas até aqui.</p>
         </div>
       </div>
