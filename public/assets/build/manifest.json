@@ -24,7 +24,7 @@
     "src": "node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "styles-BizA33xv.css",
+    "file": "styles-C4m7TPc1.css",
     "name": "styles",
     "names": [
       "styles.css"
@@ -37,7 +37,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "app-CE3vVC-2.js",
+    "file": "app-oDNuWgVb.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -65,7 +65,7 @@
     ]
   },
   "resources/js/pages/multas.js": {
-    "file": "multas-nq-LmgZ-.js",
+    "file": "multas-DsjxDMO9.js",
     "name": "multas",
     "src": "resources/js/pages/multas.js",
     "isDynamicEntry": true,

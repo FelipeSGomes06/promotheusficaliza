@@ -154,7 +154,8 @@ protocolado ([ADR-0017](adr/0017-aba-multas.md)). Use só dados fictícios.
   **Radar** (do inventário; pode indicar o agente operador do medidor) ou **Agente de trânsito**; com JavaScript, o bloco
   da outra origem some e não é enviado, e o que foi digitado nele volta se você trocar de ideia. Sem JavaScript, os dois
   blocos aparecem: preencha só o da origem escolhida. Velocidades (regulamentada, medida, considerada) só em excesso de
-  velocidade, transcritas do documento. Com origem **Radar**, a placa lida na imagem é obrigatória desde o rascunho:
+  velocidade: o limite e a medida vêm do documento, e a **considerada é calculada** (medida − 7 km/h até 107 km/h;
+  −7% acima — Resolução Contran 798/2020), com prévia enquanto você digita. Com origem **Radar**, a placa lida na imagem é obrigatória desde o rascunho:
   sem placa legível o radar não gera registro; marca, modelo, espécie e RENAVAM podem vir depois.
 - **Ficha:** a próxima ação diz o que falta. **Registrar após conferência** aparece quando os campos com * estão
   completos; o servidor confere de novo e grava o retrato do radar ou do agente naquele momento. O código interno nunca

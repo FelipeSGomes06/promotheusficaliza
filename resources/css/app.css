@@ -1167,3 +1167,7 @@
   .faq__list details[open] summary { border-bottom: 1px solid var(--color-line); }
   .faq__list p { margin: 10px 0 14px; line-height: 1.55; }
 }
+
+@layer components {
+  .speed-calc { display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: var(--radius-sm); background: var(--color-warn-soft); font-weight: 750; font-variant-numeric: tabular-nums; }
+}

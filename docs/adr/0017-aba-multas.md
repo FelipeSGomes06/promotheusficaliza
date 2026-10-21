@@ -25,6 +25,10 @@ demonstração manual: nada é consultado no Detran/Senatran, emitido, cobrado o
   bloqueio (multa → equipamento → agente). Radar pode ter agente operador associado (mesma coluna `AGENT_ID`). Ao
   registrar, o servidor grava um snapshot do recurso; arquivar ou mudar o cadastro depois não o reescreve. Órgão
   autuador diferente do órgão do recurso exige justificativa.
+- **Velocidade considerada calculada** (pedido do autor em 21/10/2026): medida − 7 km/h até 107 km/h e −7% acima,
+  arredondado (Resolução Contran 798/2020, art. 8º e Anexo III); o valor enviado no formulário é ignorado. Verificação
+  do radar com mais de 12 meses na data da ocorrência vira motivo de "A conferir" (possível argumento de defesa;
+  quem decide é o órgão).
 - **Radar sempre com placa**: o radar identifica o veículo pela imagem, então origem Radar exige a placa lida desde o
   rascunho (pedido do autor em 21/10/2026, depois do primeiro merge); os demais dados do veículo podem vir depois.
 - **Veículo autuado** como colunas da multa, separado de `EQUIPMENT` (viaturas). Placa normalizada só no formato;
