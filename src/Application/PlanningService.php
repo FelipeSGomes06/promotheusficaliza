@@ -116,13 +116,14 @@ final class PlanningService
         $justification = $input->text('justification', 300, false);
         $support = $input->text('support_point', 160, false);
         $note = $input->text('note', 300, false);
+        $cellNo = $input->int('cell_no', 0, 63, false);
         if (!$input->flag('confirm')) {
             $input->fail('confirm', 'Marque a confirmação de que esta é uma missão fictícia de demonstração.');
         }
         $input->assertValid();
         $now = $this->clock->now();
 
-        return $this->db->transaction(function () use ($runId, $sectorId, $method, $agentId, $justification, $support, $note, $now, $actorId): int {
+        return $this->db->transaction(function () use ($runId, $sectorId, $method, $agentId, $justification, $support, $note, $cellNo, $now, $actorId): int {
             $run = $this->urban->latestRun();
             if ($run === null || $run['id'] !== $runId) {
                 throw new RuleViolation('A previsão foi atualizada depois que você abriu a tela. Revise os números novos antes de confirmar.');
@@ -132,6 +133,12 @@ final class PlanningService
             }
             $sectors = $this->urban->sectors($runId);
             $sector = $sectors[$sectorId] ?? throw new NotFound('Setor não encontrado.');
+            $cell = $cellNo === null ? null : ($this->urban->cell($runId, $cellNo) ?? throw new NotFound('Quadrado não encontrado.'));
+            if ($cell !== null && $cell['sector_id'] !== $sectorId) {
+                throw new RuleViolation('O quadrado escolhido não fica no setor informado. Recarregue a tela.');
+            }
+            // A sugestão e a distância são para o quadrado, quando há; senão, para o setor.
+            $target = $cell === null ? $sector : $cell + ['area_label' => 'quadrado'];
             $agent = $this->agents->lock($agentId) ?? throw new NotFound('Agente não encontrado.');
             if ($agent['role'] !== AgentRole::Transito->value) {
                 throw new RuleViolation('Só agentes de trânsito entram no reforço preventivo; guarda e polícia não são escalados por proximidade.');
@@ -146,14 +153,15 @@ final class PlanningService
             if ($busy !== null) {
                 throw new RuleViolation("{$agent['call_sign']} já está reservado na missão fictícia #{$busy}.");
             }
-            $eligible = $this->candidates($sector)['eligible'];
-            $chosen = array_values(array_filter($eligible, static fn(array $c): bool => $c['id'] === $agentId))[0] ?? self::candidate($agent, $sector, $now);
+            $eligible = $this->candidates($target)['eligible'];
+            $chosen = array_values(array_filter($eligible, static fn(array $c): bool => $c['id'] === $agentId))[0] ?? self::candidate($agent, $target, $now);
             $selection = ($eligible[0]['id'] ?? null) === $agentId ? 'SUGERIDO' : 'MANUAL';
             if ($selection === 'MANUAL' && $justification === null) {
                 throw new ValidationFailed(['justification' => 'Explique por que escolheu um agente diferente do sugerido.']);
             }
             $ranked = self::ordered($sectors, $method)[$sectorId];
-            $reason = sprintf(
+            $place = $cell === null ? '' : sprintf('Quadrado %d (%s), %s registros esperados em 7 dias. ', $cell['rank_no'], self::placeLabel($this->places($cell)), self::fmt($cell['expected']));
+            $reason = $place . sprintf(
                 '%s: %dº de 4, %s registros esperados em 7 dias. %s: em atividade, %s, %s.',
                 $sector['name'],
                 $ranked['rank'],
@@ -168,7 +176,7 @@ final class PlanningService
                     'run_id' => $runId, 'sector_id' => $sectorId, 'period_from' => $run['as_of'], 'period_until' => $run['until_date'], 'method' => $method,
                     'expected_count' => $ranked['value'], 'rank_no' => $ranked['rank'], 'agent_id' => $agentId, 'selection' => $selection,
                     'reason' => mb_substr($reason, 0, 300), 'justification' => $selection === 'MANUAL' ? $justification : null, 'support_point' => $support,
-                    'note' => $note, 'confirmed_at' => $at, 'confirmed_by' => $actorId,
+                    'note' => $note, 'confirmed_at' => $at, 'confirmed_by' => $actorId, 'cell_no' => $cell === null ? null : $cellNo,
                 ]);
             } catch (ConstraintViolation $e) {
                 // Barreira do banco para a corrida que a trava e a verificação acima não pegarem.
@@ -209,8 +217,17 @@ final class PlanningService
     {
         $missions = $this->missions->recent();
         $logs = $this->missions->logs(array_column($missions, 'id'));
+        $cells = [];
 
-        return array_map(static fn(array $m): array => $m + ['log' => $logs[$m['id']] ?? []], $missions);
+        return array_map(function (array $m) use ($logs, &$cells): array {
+            $cell = null;
+            if ($m['cell_no'] !== null) {
+                $cells[$m['run_id']] ??= $this->urban->topCells((int) $m['run_id'], 64);
+                $cell = array_values(array_filter($cells[$m['run_id']], static fn(array $c): bool => $c['cell_no'] === $m['cell_no']))[0] ?? null;
+            }
+
+            return $m + ['log' => $logs[$m['id']] ?? [], 'cell_label' => $cell === null ? null : 'Quadrado ' . $cell['rank_no'] . ' · ' . self::placeLabel($this->places($cell))];
+        }, $missions);
     }
 
     /**
@@ -325,6 +342,7 @@ final class PlanningService
      */
     private static function candidate(array $agent, array $sector, DateTimeImmutable $now): array
     {
+        $where = (string) ($sector['area_label'] ?? 'setor');
         $freshness = Freshness::of(Time::fromDb($agent['pos_observed_at']), $now, true, Freshness::POSITION_CURRENT, Freshness::POSITION_STALE);
         $usable = $agent['pos_lat'] !== null && in_array($freshness, [Freshness::Atual, Freshness::Atrasada], true);
         $tier = $usable ? ($freshness === Freshness::Atual ? 0 : 1) : 2;
@@ -335,7 +353,7 @@ final class PlanningService
             'id' => (int) $agent['id'], 'code' => $agent['code'], 'call_sign' => $agent['call_sign'], 'status' => $agent['status'],
             'tier' => $tier, 'point' => self::POINT[$tier], 'observed_at' => $agent['pos_observed_at'], 'lat' => $lat, 'lng' => $lng,
             'distance_km' => round($km, 3),
-            'distance_label' => $km < 0.05 ? 'dentro do setor' : self::fmt($km) . ' km em linha reta até a borda do setor',
+            'distance_label' => $km < 0.05 ? "dentro do {$where}" : self::fmt($km) . " km em linha reta até o {$where}",
         ];
     }
 
@@ -357,6 +375,12 @@ final class PlanningService
             && (float) $r['center_lng'] >= $cell['west'] && (float) $r['center_lng'] < $cell['east']);
 
         return ['inside' => array_slice(array_column($inside, 'name'), 0, 3), 'near' => $inside === [] ? ($regions[0]['name'] ?? null) : null];
+    }
+
+    /** @param array{inside: list<string>, near: ?string} $places */
+    public static function placeLabel(array $places): string
+    {
+        return $places['inside'] !== [] ? implode(', ', $places['inside']) : 'perto de ' . ($places['near'] ?? 'área sem bairro de referência');
     }
 
     /** @param array<string, mixed> $run */

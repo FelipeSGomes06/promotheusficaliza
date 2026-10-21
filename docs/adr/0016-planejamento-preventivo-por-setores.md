@@ -78,3 +78,11 @@ A pedido do autor, a tela ficou só com os quadrados de 2 km e a média simples:
 seletor de método e a comparação com o Poisson (também no retrospecto). Tocar num quadrado abre o setor dele, onde
 continuam a explicação, a sugestão de agente e a missão. O Poisson continua nos dados importados, no treino e nos
 testes de serviço, mas não aparece para quem planeja.
+
+## Adendo (20/10/2026) — tela em três passos
+
+A pedido do autor ("mais intuitiva, sem tirar o que faz"): resumo da semana em uma frase ("Reforce primeiro: <bairros>"),
+1 · onde (quantos lugares a equipe cobre, mapa e lista clicáveis, quadrado escolhido destacado, "já tem agente"),
+2 · quem (sugestão com a distância até o **quadrado**), 3 · confirmar, e a lista de missões "agente → quadrado". As
+definições e a origem dos dados ficam em "Como ler estes números". A missão guarda o quadrado (`URBAN_MISSION.CELL_NO`,
+migração 0006, opcional); o servidor confere que o quadrado é da execução atual e do setor informado.

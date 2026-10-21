@@ -119,3 +119,8 @@ igual em SO e NO e com diferença de 9e-16 e 1e-16 em SE e NE. Primeira tentativ
 mantém `allow_url_fopen` desligado; trocado por curl só https. Serviço `atualizador` rodou e registrou "Download
 mensal já feito neste mês" e "Previsão da semana … já calculada". Captura `20`: execução automática na tela.
 Verificação: PHPUnit **151 testes, 753 asserções, OK**; PHPStan 0; PHP-CS-Fixer 0.
+
+## Adendo — tela em três passos (20/10/2026)
+
+Resumo da semana + passos 1 (onde), 2 (quem) e 3 (confirmar); missão guarda o quadrado (migração 0006). Capturas `21`
+a `24` (painel do navegador, ~800 px). PHPUnit **152 testes, 763 asserções, OK**; PHPStan 0; PHP-CS-Fixer 0.

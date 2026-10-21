@@ -102,6 +102,12 @@ final class UrbanRepository
         );
     }
 
+    /** @return array<string, mixed>|null quadrado da execução, com a posição */
+    public function cell(int $runId, int $cellNo): ?array
+    {
+        return array_values(array_filter($this->topCells($runId, 64), static fn(array $c): bool => $c['cell_no'] === $cellNo))[0] ?? null;
+    }
+
     /**
      * Execução que a tela usa: a de período mais recente (empate: a importada por último).
      *

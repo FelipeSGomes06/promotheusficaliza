@@ -133,7 +133,7 @@ final class PlanningTest extends FirebirdTestCase
         self::assertSame([$inside, $far, $stale, $baseOnly], array_column($c['eligible'], 'id'), 'posição atual (perto → longe), atrasada, só base');
         self::assertSame([0, 0, 1, 2], array_column($c['eligible'], 'tier'));
         self::assertSame('dentro do setor', $c['eligible'][0]['distance_label']);
-        self::assertStringContainsString('km em linha reta até a borda do setor', $c['eligible'][1]['distance_label']);
+        self::assertStringContainsString('km em linha reta até o setor', $c['eligible'][1]['distance_label']);
         self::assertSame('base de trabalho (sem posição recente)', $c['eligible'][3]['point']);
         $unavailable = array_column($c['unavailable'], 'why', 'id');
         self::assertSame('Em pausa', $unavailable[$paused]);
@@ -168,6 +168,28 @@ final class PlanningTest extends FirebirdTestCase
         self::assertSame($this->userId(), (int) $mission['confirmed_by']);
         self::assertStringContainsString('Setor sudoeste: 1º de 4, 5,6 registros esperados em 7 dias. Hermes 10: em atividade, posição atual, dentro do setor.', $mission['reason']);
         $this->assertRefused(fn() => $this->confirm($runId, $suggested), 'já está reservado');
+    }
+
+    public function testMissionForASquareMeasuresDistanceToItAndKeepsTheSquare(): void
+    {
+        $runId = $this->services->urbanImporter()->import(
+            self::ROOT . '/' . UrbanImporter::DEFAULT_RUN,
+            self::ROOT . '/' . UrbanImporter::DEFAULT_SECTORS,
+            self::ROOT . '/' . UrbanImporter::DEFAULT_MANIFEST,
+            self::ROOT . '/' . UrbanImporter::DEFAULT_GRID,
+        )['id'];
+        $agent = $this->agentAt('Hermes 10', '-22.250000', '-49.980000');
+        $cell = $this->services->urbanRepository()->cell($runId, 27);
+
+        $c = $this->services->planning()->candidates($cell + ['area_label' => 'quadrado']);
+        self::assertStringEndsWith('km em linha reta até o quadrado', $c['eligible'][0]['distance_label'], 'fora do quadrado do centro, ainda que dentro do setor');
+        $this->assertRefused(fn() => $this->confirm($runId, $agent, ['cell_no' => '35']), 'não fica no setor');
+        $id = $this->confirm($runId, $agent, ['cell_no' => '27']);
+
+        $mission = array_values(array_filter($this->services->planning()->missions(), static fn(array $m): bool => $m['id'] === $id))[0];
+        self::assertSame(27, $mission['cell_no']);
+        self::assertSame('Quadrado 1 · Centro', $mission['cell_label']);
+        self::assertStringStartsWith('Quadrado 1 (Centro), 3,8 registros esperados em 7 dias.', $mission['reason']);
     }
 
     public function testClosingReleasesTheAgentAndKeepsTheHistory(): void

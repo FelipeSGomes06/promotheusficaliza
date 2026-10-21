@@ -29,9 +29,9 @@ final class PlanningHttpTest extends FirebirdTestCase
         $this->loginAs('OPERADOR');
         $html = (string) $this->request('GET', '/planejar')->getBody();
 
-        self::assertStringContainsString('Nenhuma execução de previsão foi importada', $html);
+        self::assertStringContainsString('Ainda não há previsão', $html);
         self::assertStringContainsString('php bin/fiscaliza urban:import', $html);
-        self::assertStringNotContainsString('esperados em 7 dias', $html);
+        self::assertStringNotContainsString('esperados na semana', $html);
         self::assertStringContainsString('Nenhuma execução com retrospecto', (string) $this->request('GET', '/planejar/retrospecto')->getBody());
     }
 
@@ -43,19 +43,20 @@ final class PlanningHttpTest extends FirebirdTestCase
 
         self::assertStringContainsString('20/10/2026 a 26/10/2026', $html);
         self::assertStringContainsString('31/07/2026', $html, 'data de referência dos dados');
-        self::assertStringContainsString('<strong>Média simples</strong> das últimas 52 semanas', $html);
+        self::assertStringContainsString('média do último ano', $html);
         self::assertStringNotContainsString('Poisson', $html, 'a tela mostra só a média simples');
         self::assertStringContainsString('Real agregado · Infosiga-SP', $html);
         self::assertStringContainsString('Fictício', $html);
-        self::assertStringContainsString('não a chance de um acidente', $html);
-        self::assertStringContainsString('<strong class="num">5,6</strong>', $html, 'estimativa arredondada a uma casa');
+        self::assertStringContainsString('Não é a chance de um acidente', $html);
+        self::assertStringContainsString('Reforce primeiro: <strong>Setor sudoeste</strong>', $html, 'sem quadrados, o alvo é o setor de maior estimativa');
+        self::assertStringContainsString('(297 + 1) ÷ 53 = 5,6', $html, 'estimativa arredondada a uma casa, com a conta');
         self::assertStringContainsString('href="' . self::BASE . '/planejar"', $html, 'item "Planejar reforço" no menu');
         preg_match_all('#<script\b(?![^>]*\bsrc=)([^>]*)>#', $html, $inline);
         self::assertSame([' type="application/json" id="plan-data"'], $inline[1]);
         self::assertDoesNotMatchRegularExpression('#\sstyle="#', $html);
         self::assertStringNotContainsString('Tudo aqui é fictício', $html, 'o aviso global reconhece a camada real');
 
-        self::assertStringNotContainsString('Onde concentrar o reforço', $html, 'sem grade importada, sem seção de quadrados');
+        self::assertStringContainsString('Os quadrados de 2 km ainda não foram calculados', $html);
         $this->services->urbanImporter()->import(
             self::ROOT . '/' . UrbanImporter::DEFAULT_RUN,
             self::ROOT . '/' . UrbanImporter::DEFAULT_SECTORS,
@@ -64,12 +65,16 @@ final class PlanningHttpTest extends FirebirdTestCase
         );
         $four = (string) $this->request('GET', '/planejar')->getBody();
         $two = (string) $this->request('GET', '/planejar?quadrados=2')->getBody();
-        self::assertSame(4, substr_count($four, 'cell-card"'), 'padrão: 4 quadrados');
-        self::assertSame(2, substr_count($two, 'cell-card"'));
+        self::assertSame(4, substr_count($four, '<a class="sector-card cell-card'), 'padrão: 4 quadrados');
+        self::assertSame(2, substr_count($two, '<a class="sector-card cell-card'));
         self::assertStringContainsString('Setor sudoeste · 26% dos registros do último ano', $two, 'o 1º quadrado é o do centro, no setor sudoeste');
-        self::assertSame(4, substr_count((string) $this->request('GET', '/planejar?quadrados=9')->getBody(), 'cell-card"'), 'fora de 1–4 volta ao padrão');
+        self::assertSame(4, substr_count((string) $this->request('GET', '/planejar?quadrados=9')->getBody(), '<a class="sector-card cell-card'), 'fora de 1–4 volta ao padrão');
 
-        self::assertStringContainsString('id="setor-titulo">Setor nordeste', (string) $this->request('GET', '/planejar?setor=NE')->getBody(), 'o quadrado abre o setor dele');
+        self::assertStringContainsString('Reforce primeiro: <strong>Centro</strong>', $four, 'o resumo diz onde, em palavras');
+        $second = (string) $this->request('GET', '/planejar?quadrado=2')->getBody();
+        self::assertStringContainsString('Quem enviar ao quadrado 2', $second, 'escolher um quadrado leva ao passo 2 dele');
+        self::assertStringContainsString('Quadrado 2, escolhido.', $second);
+        self::assertStringContainsString('<strong>setor noroeste</strong>', $second, 'a explicação é do setor do quadrado escolhido');
     }
 
     public function testConfirmingAMissionNeedsCsrfAnAccountAndAnEligibleAgent(): void
@@ -97,6 +102,7 @@ final class PlanningHttpTest extends FirebirdTestCase
         self::assertSame([$user, 'CONFIRMADA', $agent], [(int) $mission['confirmed_by'], rtrim($mission['state']), (int) $mission['agent_id']], 'autoria vem da sessão');
         $page = (string) $this->request('GET', '/planejar')->getBody();
         self::assertStringContainsString('Missão fictícia #', $page);
+        self::assertStringContainsString('Hermes 10 → Setor sudoeste', $page, 'missão sem quadrado mostra o setor');
         self::assertStringContainsString('&lt;b&gt;reforço&lt;/b&gt;', $page, 'observação escapada');
 
         $id = (int) $this->services->database()->value('SELECT ID FROM URBAN_MISSION');

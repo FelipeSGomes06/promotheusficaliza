@@ -4,173 +4,206 @@
 {% block page %}planejar{% endblock %}
 {% block head %}<link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}">{% endblock %}
 {% block scripts %}<script src="{{ asset('vendor/leaflet/leaflet.js') }}" defer></script>{% endblock %}
+{% macro place(c) %}{{ c.places.inside is not empty ? c.places.inside|join(', ') : 'Perto de ' ~ (c.places.near ?? 'área sem bairro de referência') }}{% endmacro %}
 {% block content %}
+{% import _self as here %}
 <div class="page">
   <div class="page-head">
     <div>
-      <p class="crumbs">Parte 3 do desafio · cidade preditiva · planejamento semanal por setor</p>
+      <p class="crumbs">Parte 3 do desafio · cidade preditiva</p>
       <h1>Planejar reforço preventivo</h1>
-      <p class="lead">Em que setor de Marília vale reforçar a presença de agentes de trânsito na semana, por quê, e quem está livre agora. É planejamento: nada é enviado a pessoas.</p>
+      <p class="lead">Em três passos: veja onde mais houve sinistros, escolha um agente de trânsito livre e confirme a missão. Tudo aqui é planejamento: nenhuma mensagem é enviada.</p>
     </div>
-    <a class="btn" href="{{ url('/planejar/retrospecto') }}">{{ ui.icon('i-clock') }}Retrospecto da previsão</a>
+    <a class="btn" href="{{ url('/planejar/retrospecto') }}">{{ ui.icon('i-clock') }}A previsão acertou no passado?</a>
   </div>
 
   {% if week is null %}
     <div class="empty">
-      <p><strong>Nenhuma execução de previsão foi importada.</strong> Nenhum número é mostrado até lá.</p>
-      <p class="m-0">No servidor: <code>php bin/fiscaliza urban:import</code> (importa a execução de referência em <code>ml/marilia-setores</code>).</p>
+      <p><strong>Ainda não há previsão.</strong> Nenhum número é mostrado até lá.</p>
+      <p class="m-0">No servidor: <code>php bin/fiscaliza urban:import</code> e depois <code>php bin/fiscaliza urban:update</code>.</p>
     </div>
   {% else %}
   {% set run = week.run %}
-  {% set ev = run.evaluation %}
+  {% set s = selected %}
 
-  <section class="era era--forecast" aria-label="Previsão atual">
-    <p class="era__kicker">{{ ui.icon('i-layers') }} Previsão atual · execução #{{ run.id }} · {{ run.files is empty ? 'atualização automática' : 'importada do treino' }}</p>
-    <dl class="era__facts">
-      <div><dt>Período previsto</dt><dd><strong>{{ run.as_of|br_date }} a {{ run.last_day|br_date }}</strong> (7 dias)</dd></div>
-      <div><dt>Dados de entrada até</dt><dd><strong>{{ run.data_reference_through|br_date }}</strong> · atraso de publicação de dois meses assumido, não observado</dd></div>
-      <div><dt>Como é calculado</dt><dd><strong>Média simples</strong> das últimas 52 semanas</dd></div>
-      <div><dt>Arquivo do Infosiga / cálculo</dt><dd>baixado em {{ run.provenance.source.snapshot_date|br_date }} · calculado em {{ run.imported_at|local_dt }}</dd></div>
+  {# Resumo da semana: o que importa numa linha; o resto a um toque. #}
+  <section class="week-summary" aria-label="Resumo da semana">
+    <div class="week-summary__main">
+      <p class="week-summary__kicker">{{ ui.icon('i-layers') }} Semana de {{ run.as_of|br_date }} a {{ run.last_day|br_date }}</p>
+      {% if week.cells is not empty %}
+        {% set top = week.cells|first %}
+        <p class="week-summary__headline">Reforce primeiro: <strong>{{ here.place(top) }}</strong></p>
+        <p class="week-summary__sub">{{ top.expected|number_format(1, ',', '.') }} sinistros esperados na semana nesse quadrado de 2 km · {{ (top.share * 100)|number_format(0, ',', '.') }}% de todos os registros do último ano na área</p>
+      {% else %}
+        <p class="week-summary__headline">Reforce primeiro: <strong>{{ s.name }}</strong></p>
+      {% endif %}
+    </div>
+    <dl class="week-summary__facts">
+      <div><dt>Dados até</dt><dd>{{ run.data_reference_through|br_date }}</dd></div>
+      <div><dt>Atualização</dt><dd>{{ run.files is empty ? 'automática' : 'importada' }} · {{ run.provenance.source.snapshot_date|br_date }}</dd></div>
+      <div><dt>Cálculo</dt><dd>média do último ano</dd></div>
     </dl>
   </section>
 
   {% if week.period == 'ENCERRADA' %}
-    <div class="flash flash--warning section" role="status">O período desta previsão terminou em {{ run.last_day|br_date }}. Os números ficam para consulta; para planejar outra semana, gere e importe uma execução nova (<code>treino.py --as-of AAAA-MM-DD</code> e <code>php bin/fiscaliza urban:import --dir=…</code>).</div>
+    <div class="flash flash--warning section" role="status">Esta previsão terminou em {{ run.last_day|br_date }}. A atualização automática gera a próxima semana; se ela não apareceu, rode <code>php bin/fiscaliza urban:update</code> no servidor.</div>
   {% elseif week.period == 'FUTURA' %}
     <div class="flash flash--warning section" role="status">Esta previsão começa em {{ run.as_of|br_date }}: o planejamento é antecipado.</div>
   {% endif %}
 
-  <div class="callout section">
-    <p class="origin-line">{{ ui.origin_real() }} Contagens de sinistros registrados, agregadas por setor e semana — Fonte: <a href="{{ run.provenance.source.source_catalog }}" rel="noopener">Infosiga-SP / Detran-SP</a> ({{ run.provenance.source.license|replace({'-': ' '}) }}), snapshot de {{ run.provenance.source.snapshot_date|br_date }}; agregação pelo projeto Promotheus Fiscaliza.</p>
-    <p class="origin-line">{{ ui.origin_demo() }} Agentes, posições, sugestões e missões são da demonstração. Nenhum agente real é acionado.</p>
-    <p><strong>Como ler:</strong> o número é a <strong>contagem esperada de registros em 7 dias</strong>, não a chance de um acidente. A ordem dos quadrados e setores é <strong>prioridade relativa de planejamento</strong>: o 1º não é emergência nem incidente em curso — falhas e alertas ficam na Visão geral. Priorizar um setor não comprova que deslocar agentes evita sinistros.</p>
-  </div>
-
-  {% if week.cells is not empty %}
-  <section class="section panel" id="quadrados" aria-labelledby="quadrados-titulo">
-    <p class="crumbs">{{ ui.origin_real() }} Quadrados de 2 × 2 km</p>
-    <h2 id="quadrados-titulo">Onde concentrar o reforço</h2>
-    <p class="hint">A área foi dividida em quadrados iguais de 2 km. Estes são os que mais tiveram registros no último ano. Toque num quadrado para ver o setor e sugerir um agente.</p>
-    <nav class="method-switch" aria-label="Quantos quadrados mostrar">
-      <span class="hint">Mostrar:</span>
-      <span class="seg">{% for n in 1..4 %}<a class="seg__link" href="{{ url('/planejar', {setor: selected.sector_id, quadrados: n}) }}#quadrados" {% if n == cell_count %}aria-current="true"{% endif %}>{{ n }}</a>{% endfor %}</span>
-    </nav>
-    <div class="plan-grid section">
-      <div class="plan-map plan-map--cells" id="cell-map" role="img" aria-label="Grade de quadrados de 2 km com os {{ week.cells|length }} prioritários numerados. A mesma informação está na lista."></div>
-      <ol class="sector-list">
-        {% for c in week.cells %}
-          <li><a class="sector-card cell-card" href="{{ url('/planejar', {setor: c.sector_id, quadrados: cell_count}) }}#setor">
-            <span class="sector-card__rank cell-card__rank" aria-hidden="true">{{ c.rank_no }}</span>
-            <span class="sector-card__main">
-              <span class="sector-card__title">{{ c.places.inside is not empty ? c.places.inside|join(', ') : 'Perto de ' ~ (c.places.near ?? 'área sem bairro de referência') }}</span>
-              <span class="sector-card__sub">{{ c.sector_name }} · {{ (c.share * 100)|number_format(0, ',', '.') }}% dos registros do último ano</span>
-            </span>
-            <span class="sector-card__value"><strong class="num">{{ c.expected|number_format(1, ',', '.') }}</strong><span class="hint">esperados em 7 dias</span></span>
-            <span class="visually-hidden">Quadrado {{ c.rank_no }}.</span>
-          </a></li>
-        {% endfor %}
-      </ol>
+  <details class="method section how-to-read">
+    <summary>{{ ui.icon('i-info') }} Como ler estes números (e de onde vêm)</summary>
+    <div>
+      <ul class="factor-list">
+        <li><strong>"Sinistros esperados"</strong> é quantos registros de sinistro devem aparecer na semana, pela média do último ano. Não é a chance de um acidente.</li>
+        <li>A ordem 1, 2, 3, 4 é <strong>prioridade de planejamento</strong>, não emergência. Falhas e alertas de verdade ficam na Visão geral.</li>
+        <li>Mandar um agente para lá não garante que acidentes deixem de acontecer: ninguém mediu esse efeito.</li>
+        <li>{{ ui.origin_real() }} Contagens de sinistros registrados — Fonte: <a href="{{ run.provenance.source.source_catalog }}" rel="noopener">Infosiga-SP / Detran-SP</a> ({{ run.provenance.source.license|replace({'-': ' '}) }}), arquivo de {{ run.provenance.source.snapshot_date|br_date }}; agregação pelo projeto Promotheus Fiscaliza. Os dados mais novos têm cerca de dois meses porque o Infosiga publica com atraso.</li>
+        <li>{{ ui.origin_demo() }} Agentes, posições e missões são da demonstração. Nenhum agente real é acionado.</li>
+      </ul>
     </div>
-    <p class="hint m-0">Bairros = referência para se localizar, não o limite do quadrado. No teste com semanas de 2026, os 4 primeiros quadrados concentraram 51% dos registros, e o setor inteiro priorizado, 40% — numa área 4 vezes maior. A lista muda pouco de semana para semana.</p>
-  </section>
-  {% endif %}
+  </details>
 
-  {% set s = selected %}
-  <section class="section panel sector-detail" id="setor" aria-labelledby="setor-titulo">
-    <div class="sector-detail__head">
-      <div>
-        <p class="crumbs">{{ ui.origin_real() }} Setor {{ s.rank }}º de 4 em registros esperados</p>
-        <h2 id="setor-titulo">{{ s.name }} <span class="code-tag">{{ s.sector_id }}</span></h2>
-      </div>
-      <p class="sector-detail__value"><strong class="num">{{ s.value|number_format(1, ',', '.') }}</strong> registros esperados em 7 dias</p>
-    </div>
-    <dl class="facts">
-      <dt>Histórico usado</dt><dd>{{ s.history_start|br_date }} a {{ s.history_through|br_date }} · {{ s.count_13w }} registros em 13 semanas, {{ s.count_52w }} em 52</dd>
-      <dt>Defasagem</dt><dd>{{ s.data_age_days }} dias entre o fim dos dados e a emissão</dd>
-    </dl>
-    <h3 class="section">Por que esta estimativa</h3>
-    <ul class="factor-list">{% for line in s.explanation %}<li>{{ line }}</li>{% endfor %}</ul>
-    <p class="hint">As frases descrevem associações nos registros. Não indicam causa nem dizem o que acontecerá em cada rua.</p>
-
-    <h3 class="section">{{ ui.icon('i-agents') }} Sugerir agente de trânsito {{ ui.origin_demo() }}</h3>
-    <p class="hint">Regra simples, separada da previsão: só agentes de trânsito em atividade e sem outra missão; primeiro quem tem posição atual, depois posição atrasada e por fim quem só tem a base; em cada grupo, o mais perto em linha reta da borda do setor. Distância em linha reta não é tempo de chegada nem rota. Guarda municipal e polícia não entram.</p>
-    {% if candidates.eligible is empty %}
-      <div class="empty">Nenhum agente de trânsito em atividade e livre agora. Conclua ou cancele uma missão, ou aguarde alguém voltar da pausa.</div>
-    {% elseif week.period == 'ENCERRADA' %}
-      <div class="empty">Período encerrado: importe uma execução nova para confirmar missões.</div>
+  {# ---------------- Passo 1: onde ---------------- #}
+  <section class="section panel step" id="quadrados" aria-labelledby="passo-1">
+    <h2 class="step__title" id="passo-1"><span class="step__n" aria-hidden="true">1</span>Onde reforçar</h2>
+    {% if week.cells is empty %}
+      <p class="hint">Os quadrados de 2 km ainda não foram calculados (rode <code>php bin/fiscaliza urban:import</code>). Por enquanto, o alvo é o setor com mais registros: <strong>{{ s.name }}</strong>.</p>
     {% else %}
+      <div class="step__question">
+        <p class="m-0">Quantos lugares a equipe consegue cobrir nesta semana?</p>
+        <nav class="seg" aria-label="Quantos lugares mostrar">{% for n in 1..4 %}<a class="seg__link" href="{{ url('/planejar', {quadrados: n}) }}#quadrados" {% if n == cell_count %}aria-current="true"{% endif %}>{{ n }}</a>{% endfor %}</nav>
+      </div>
+      <p class="hint">A área foi dividida em quadrados iguais de 2 × 2 km. Aqui {{ week.cells|length == 1 ? 'está o que mais teve' : 'estão os ' ~ week.cells|length ~ ' que mais tiveram' }} sinistros no último ano. <strong>Escolha um</strong> para ver quem pode ir.</p>
+      <div class="plan-grid">
+        <div class="plan-map plan-map--cells" id="cell-map" role="img" aria-label="Grade de quadrados de 2 km com os prioritários numerados de 1 a {{ week.cells|length }}; o escolhido fica destacado. A mesma informação está na lista."></div>
+        <ol class="sector-list">
+          {% for c in week.cells %}
+            {% set chosen = cell and c.cell_no == cell.cell_no %}
+            <li><a class="sector-card cell-card{{ chosen ? ' is-chosen' }}" href="{{ url('/planejar', {quadrado: loop.index, quadrados: cell_count}) }}#agente" {% if chosen %}aria-current="true"{% endif %}>
+              <span class="sector-card__rank cell-card__rank" aria-hidden="true">{{ c.rank_no }}</span>
+              <span class="sector-card__main">
+                <span class="sector-card__title">{{ here.place(c) }}</span>
+                <span class="sector-card__sub">{{ c.sector_name }} · {{ (c.share * 100)|number_format(0, ',', '.') }}% dos registros do último ano</span>
+                {% if assigned[c.cell_no] is defined %}<span class="cell-card__status cell-card__status--ok">✓ {{ assigned[c.cell_no]|join(', ') }} designado{{ assigned[c.cell_no]|length > 1 ? 's' }}</span>
+                {% else %}<span class="cell-card__status">Sem agente designado</span>{% endif %}
+              </span>
+              <span class="sector-card__value"><strong class="num">{{ c.expected|number_format(1, ',', '.') }}</strong><span class="hint">sinistros esperados na semana</span></span>
+              <span class="visually-hidden">Quadrado {{ c.rank_no }}{{ chosen ? ', escolhido' }}.</span>
+            </a></li>
+          {% endfor %}
+        </ol>
+      </div>
+    {% endif %}
+
+    <details class="method section">
+      <summary>Por que {{ cell ? 'este quadrado' : 'este setor' }}?</summary>
+      <div>
+        {% if cell %}
+          <p>No quadrado {{ cell.rank_no }} ({{ here.place(cell) }}) houve <strong>{{ cell.count_52w }} registros nas últimas 52 semanas</strong> ({{ cell.count_13w }} nas últimas 13). Em média, {{ cell.expected|number_format(1, ',', '.') }} por semana: é o número que aparece no cartão.</p>
+        {% endif %}
+        <p>Ele fica no <strong>{{ s.name|lower }}</strong>, {{ s.rank }}º de 4 setores em registros esperados ({{ s.value|number_format(1, ',', '.') }} na semana):</p>
+        <ul class="factor-list">{% for line in s.explanation %}<li>{{ line }}</li>{% endfor %}</ul>
+        <p class="hint">Histórico usado: {{ s.history_start|br_date }} a {{ s.history_through|br_date }}. As frases descrevem o que foi registrado; não indicam a causa. No teste com 29 semanas de 2026, os 4 primeiros quadrados concentraram 51% dos registros — mais que o setor inteiro priorizado (40%), numa área 4 vezes menor. A lista muda pouco de semana para semana.</p>
+      </div>
+    </details>
+  </section>
+
+  {# ---------------- Passos 2 e 3: quem e confirmar ---------------- #}
+  {% set target = cell ? 'quadrado ' ~ cell.rank_no : s.name|lower %}
+  <section class="section panel step" id="agente" aria-labelledby="passo-2">
+    <h2 class="step__title" id="passo-2"><span class="step__n" aria-hidden="true">2</span>Quem enviar ao {{ target }}</h2>
+    {% if cell %}<p class="step__target">{{ ui.icon('i-pin') }} {{ here.place(cell) }} · {{ s.name }}</p>{% endif %}
+    {% if cell and assigned[cell.cell_no] is defined %}
+      <p class="flash flash--success m-0" role="status">{{ assigned[cell.cell_no]|join(', ') }} já {{ assigned[cell.cell_no]|length > 1 ? 'estão' : 'está' }} neste quadrado. Você pode mandar mais alguém ou escolher outro quadrado no passo 1.</p>
+    {% endif %}
+
+    {% if candidates.eligible is empty %}
+      <div class="empty section">Nenhum agente de trânsito está livre agora. Conclua ou cancele uma missão abaixo, ou aguarde alguém voltar da pausa.</div>
+    {% elseif week.period == 'ENCERRADA' %}
+      <div class="empty section">A semana desta previsão já terminou; aguarde a próxima atualização para confirmar missões.</div>
+    {% else %}
+      <p class="hint">Sugerimos primeiro quem está mais perto e com posição recente. Só entram agentes de trânsito em atividade e sem outra missão (guarda e polícia não). A distância é em linha reta, não é tempo de chegada.</p>
       <form class="stack mission-form" method="post" action="{{ url('/planejar/missoes') }}">
         {{ ui.csrf(app.csrf) }}
         <input type="hidden" name="run_id" value="{{ run.id }}">
         <input type="hidden" name="sector_id" value="{{ s.sector_id }}">
-        <input type="hidden" name="method" value="{{ week.method }}">
+        <input type="hidden" name="method" value="baseline">
+        {% if cell %}
+          <input type="hidden" name="cell_no" value="{{ cell.cell_no }}">
+          <input type="hidden" name="cell_rank" value="{{ cell.rank_no }}">
+          <input type="hidden" name="cell_count" value="{{ cell_count }}">
+        {% endif %}
         <fieldset class="candidates">
-          <legend>Agente da missão</legend>
+          <legend class="visually-hidden">Agente da missão</legend>
           {% for c in candidates.eligible %}
             <label class="candidate">
               <input type="radio" name="agent_id" value="{{ c.id }}" {% if loop.first %}checked{% endif %} required>
               <span class="candidate__main">
                 <span class="candidate__title">{{ c.call_sign }} <span class="code-tag">{{ c.code }}</span>{% if loop.first %} <span class="tag">Sugerido</span>{% endif %}</span>
-                <span class="candidate__sub">{{ c.distance_label }} · a partir da {{ c.point }}{% if c.tier == 1 %} (recebida em {{ c.observed_at|local_dt('d/m H:i') }}){% endif %}</span>
+                <span class="candidate__sub">{{ c.distance_label|capitalize }}{% if c.tier == 1 %} · posição recebida às {{ c.observed_at|local_dt('H:i') }}{% endif %}</span>
               </span>
-              {% if c.tier == 0 %}<span class="fresh fresh--ATUAL">Posição atual</span>{% elseif c.tier == 1 %}<span class="fresh fresh--ATRASADA">Posição atrasada</span>{% else %}<span class="fresh fresh--SEM_INFORMACAO">Sem posição recente — usa a base</span>{% endif %}
+              {% if c.tier == 0 %}<span class="fresh fresh--ATUAL">Posição atual</span>{% elseif c.tier == 1 %}<span class="fresh fresh--ATRASADA">Posição atrasada</span>{% else %}<span class="fresh fresh--SEM_INFORMACAO">Sem posição recente — contamos da base</span>{% endif %}
             </label>
           {% endfor %}
         </fieldset>
-        <div class="form-grid">
-          {{ ui.input('justification', 'Justificativa para trocar o sugerido', {}, {}, {type: 'textarea', max: 300, help: 'Obrigatória só se escolher outro agente.'}) }}
-          {{ ui.input('note', 'Observação', {}, {}, {type: 'textarea', max: 300}) }}
-          {{ ui.input('support_point', 'Ponto de apoio ou descrição', {}, {}, {max: 160, class: 'span-2', help: 'O gestor define o ponto. O centro do setor não indica posto nem local seguro de parada.'}) }}
-        </div>
-        <label class="check-confirm"><input type="checkbox" name="confirm" value="1" required><span>Confirmo uma <strong>missão fictícia de demonstração</strong> no {{ s.name|lower }} de {{ run.as_of|br_date }} a {{ run.last_day|br_date }}. Nenhuma mensagem é enviada e nenhum agente real é acionado.</span></label>
-        <div class="btn-row"><button class="btn btn--primary" type="submit">{{ ui.icon('i-check') }}Confirmar missão fictícia</button></div>
+        {% if candidates.unavailable is not empty %}
+          <details class="more-actions">
+            <summary>Por que outros agentes de trânsito não aparecem? ({{ candidates.unavailable|length }})</summary>
+            <ul class="factor-list">{% for c in candidates.unavailable %}<li><strong>{{ c.call_sign }}</strong> — {{ c.why }}</li>{% endfor %}</ul>
+          </details>
+        {% endif %}
+
+        <h2 class="step__title section" id="passo-3"><span class="step__n" aria-hidden="true">3</span>Confirmar a missão</h2>
+        {{ ui.input('justification', 'Escolheu outro agente que não o sugerido? Diga por quê', {}, {}, {type: 'textarea', max: 300, help: 'Só é obrigatório nesse caso.'}) }}
+        <details class="more-actions">
+          <summary>Adicionar ponto de apoio ou observação (opcional)</summary>
+          <div class="form-grid section">
+            {{ ui.input('support_point', 'Ponto de apoio', {}, {}, {max: 160, help: 'Onde o agente deve ficar. O centro do quadrado no mapa não é um local seguro de parada.'}) }}
+            {{ ui.input('note', 'Observação', {}, {}, {type: 'textarea', max: 300}) }}
+          </div>
+        </details>
+        <label class="check-confirm"><input type="checkbox" name="confirm" value="1" required><span>Entendo que é uma <strong>missão fictícia de demonstração</strong> ({{ target }}, {{ run.as_of|br_date }} a {{ run.last_day|br_date }}): nenhuma mensagem é enviada e nenhum agente real é acionado.</span></label>
+        <div class="btn-row"><button class="btn btn--primary" type="submit">{{ ui.icon('i-check') }}Confirmar missão</button></div>
       </form>
     {% endif %}
-    {% if candidates.unavailable is not empty %}
-      <details class="method section">
-        <summary>Agentes de trânsito fora da sugestão ({{ candidates.unavailable|length }})</summary>
-        <ul class="factor-list">{% for c in candidates.unavailable %}<li><strong>{{ c.call_sign }}</strong> <span class="code-tag">{{ c.code }}</span> — {{ c.why }}</li>{% endfor %}</ul>
-      </details>
-    {% endif %}
   </section>
-
   {% endif %}
 
+  {# ---------------- Acompanhar ---------------- #}
   <section class="section" id="missoes" aria-labelledby="missoes-titulo">
-    <div class="list-head"><h2 id="missoes-titulo">Missões fictícias {{ ui.origin_demo() }}</h2><p class="hint">A reserva fica na missão, não no cadastro do agente: o simulador mexe na posição e na situação, nunca na reserva.</p></div>
+    <div class="list-head"><h2 id="missoes-titulo">Missões {{ ui.origin_demo() }}</h2><p class="hint">Quando a ronda terminar, conclua a missão; se não for acontecer, cancele. Nos dois casos o agente fica livre de novo.</p></div>
     {% if missions is empty %}
-      <div class="empty">Nenhuma missão confirmada ainda.</div>
+      <div class="empty">Nenhuma missão ainda. Confirme a primeira no passo 3.</div>
     {% else %}
     <ul class="rows">
       {% for m in missions %}
         <li class="mission">
           <div class="order__head">
-            <span class="order__title">#{{ m.id }} · {{ m.agent_call_sign }} <span class="code-tag">{{ m.agent_code }}</span> no {{ m.sector_name|lower }}</span>
+            <span class="order__title">{{ m.agent_call_sign }} → {{ m.cell_label ?? m.sector_name }}</span>
             {{ ui.status(m.state, states[m.state] ?? m.state, m.state == 'CONFIRMADA' ? '●' : (m.state == 'CONCLUIDA' ? '✓' : '–')) }}
           </div>
-          <p class="order__meta">{{ m.period_from|br_date }} a {{ m.period_until|date_modify('-1 day')|date('d/m/Y') }} ·{{ m.expected_count|number_format(1, ',', '.') }} esperados, {{ m.rank_no }}º · {{ m.selection == 'MANUAL' ? 'escolha manual' : 'agente sugerido' }}</p>
-          <p class="order__reason">{{ m.reason }}</p>
-          {% if m.justification %}<p class="hint m-0">Justificativa: {{ m.justification }}</p>{% endif %}
+          <p class="order__meta">Missão #{{ m.id }} · {{ m.period_from|br_date }} a {{ m.period_until|date_modify('-1 day')|date('d/m/Y') }} · {{ m.sector_name }} · {{ m.selection == 'MANUAL' ? 'escolha manual' : 'agente sugerido' }} · confirmada por {{ m.confirmed_by_name }} em {{ m.confirmed_at|local_dt }}</p>
+          {% if m.justification %}<p class="hint m-0">Por que outro agente: {{ m.justification }}</p>{% endif %}
           {% if m.support_point %}<p class="hint m-0">Ponto de apoio: {{ m.support_point }}</p>{% endif %}
           {% if m.note %}<p class="hint m-0">Observação: {{ m.note }}</p>{% endif %}
-          <p class="hint m-0">Confirmada por {{ m.confirmed_by_name }} em {{ m.confirmed_at|local_dt }}{% if m.closed_at %} · {{ (states[m.state] ?? m.state)|lower }} por {{ m.closed_by_name }} em {{ m.closed_at|local_dt }}: {{ m.close_reason }}{% endif %}</p>
+          {% if m.closed_at %}<p class="hint m-0">{{ states[m.state] ?? m.state }} por {{ m.closed_by_name }} em {{ m.closed_at|local_dt }}: {{ m.close_reason }}</p>{% endif %}
           {% if m.state == 'CONFIRMADA' %}
             <div class="mission__actions">
               {% for action, label in {concluir: 'Concluir', cancelar: 'Cancelar'} %}
                 <form class="inline-form mission__close" method="post" action="{{ url('/planejar/missoes/' ~ m.id ~ '/' ~ action) }}">
                   {{ ui.csrf(app.csrf) }}
                   <label class="visually-hidden" for="motivo-{{ action }}-{{ m.id }}">Motivo para {{ label|lower }} a missão #{{ m.id }}</label>
-                  <input id="motivo-{{ action }}-{{ m.id }}" name="reason" maxlength="300" required placeholder="Motivo para {{ label|lower }}">
+                  <input id="motivo-{{ action }}-{{ m.id }}" name="reason" maxlength="300" required placeholder="{{ action == 'concluir' ? 'Como foi? (ex.: ronda feita)' : 'Por que cancelar?' }}">
                   <button class="btn btn--small{{ action == 'cancelar' ? ' btn--danger' }}" type="submit">{{ label }}</button>
                 </form>
               {% endfor %}
             </div>
           {% endif %}
-          {% if m.log is not empty %}
-            <details class="mission__log"><summary>Histórico ({{ m.log|length }})</summary>
-              <ol class="timeline">{% for l in m.log %}<li>{{ l.at_time|local_dt }} · {{ l.actor_name }}: {{ l.from_state ? (states[l.from_state] ?? l.from_state) ~ ' → ' : '' }}{{ states[l.to_state] ?? l.to_state }}{% if l.note %} — {{ l.note }}{% endif %}</li>{% endfor %}</ol>
-            </details>
-          {% endif %}
+          <details class="mission__log"><summary>Detalhes e histórico</summary>
+            <p class="hint">{{ m.reason }}</p>
+            <ol class="timeline">{% for l in m.log %}<li>{{ l.at_time|local_dt }} · {{ l.actor_name }}: {{ l.from_state ? (states[l.from_state] ?? l.from_state) ~ ' → ' : '' }}{{ states[l.to_state] ?? l.to_state }}{% if l.note %} — {{ l.note }}{% endif %}</li>{% endfor %}</ol>
+          </details>
         </li>
       {% endfor %}
     </ul>
@@ -183,13 +216,14 @@
       <summary>Como a previsão é feita e seus limites</summary>
       <div>
         <ul class="factor-list">
-          <li>Uma linha é um setor numa segunda-feira; o alvo é a quantidade de registros elegíveis (sinistros fatais e não fatais em vias urbanas, com coordenada no retângulo de estudo) nos 7 dias seguintes, com zero quando não houve registro.</li>
-          <li><strong>Média simples:</strong> setor = (registros em 52 semanas + 1) ÷ 53; quadrado = (registros em 52 semanas + 0,1) ÷ 52,1. Um modelo estatístico mais complexo foi testado e não melhorou a escolha dos quadrados.</li>
-          <li>Em cada corte, os dados terminam dois meses antes do mês da emissão: hipótese de atraso de publicação, porque a base não informa quando cada registro apareceu.</li>
+          <li>Conta só sinistros fatais e não fatais registrados em vias urbanas de Marília, com coordenada dentro da área de estudo (lat. −22,28 a −22,14; long. −50,02 a −49,86). Quadrados e setores não são bairros oficiais.</li>
+          <li><strong>Média do último ano:</strong> quadrado = (registros em 52 semanas + 0,1) ÷ 52,1; setor = (registros em 52 semanas + 1) ÷ 53. Um modelo estatístico mais complexo foi testado e não escolheu lugares melhores.</li>
+          <li>Os dados terminam cerca de dois meses antes da semana prevista: é uma hipótese de atraso de publicação, porque o Infosiga não informa quando cada registro apareceu.</li>
+          <li>O sistema baixa o arquivo do Infosiga uma vez por mês e recalcula a previsão toda segunda-feira.</li>
         </ul>
-        <p class="hint">Limitações registradas pelo treino e pelo manifesto (texto original dos arquivos importados):</p>
-        <ul class="factor-list">{% for l in ev.limitations|merge(run.provenance.limitations) %}<li>{{ l }}</li>{% endfor %}</ul>
-        <p class="hint">Registros elegíveis no período guardado: {{ run.provenance.counts.eligible }} (de {{ run.provenance.counts.marilia_records }} registros de Marília no arquivo). Conjunto: SHA-256 <code>{{ run.bundle_sha256|slice(0, 16) }}…</code>; aviso: "{{ run.notice }}"</p>
+        <p class="hint">Limitações registradas pelo treino e pelo manifesto (texto original):</p>
+        <ul class="factor-list">{% for l in run.evaluation.limitations|merge(run.provenance.limitations) %}<li>{{ l }}</li>{% endfor %}</ul>
+        <p class="hint">Registros elegíveis no período guardado: {{ run.provenance.counts.eligible }} (de {{ run.provenance.counts.marilia_records }} registros de Marília no arquivo). Execução #{{ run.id }}, SHA-256 <code>{{ run.bundle_sha256|slice(0, 16) }}…</code>.</p>
       </div>
     </details>
   </div>

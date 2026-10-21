@@ -24,10 +24,10 @@ final class MissionRepository
     {
         return $this->db->insert(
             'INSERT INTO URBAN_MISSION (RUN_ID, SECTOR_ID, PERIOD_FROM, PERIOD_UNTIL, METHOD, EXPECTED_COUNT, RANK_NO, AGENT_ID, SELECTION, REASON,
-                JUSTIFICATION, SUPPORT_POINT, NOTE, STATE, CONFIRMED_AT, CONFIRMED_BY) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                JUSTIFICATION, SUPPORT_POINT, NOTE, STATE, CONFIRMED_AT, CONFIRMED_BY, CELL_NO) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [$m['run_id'], $m['sector_id'], $m['period_from'], $m['period_until'], $m['method'], json_encode((float) $m['expected_count'], JSON_THROW_ON_ERROR),
                 $m['rank_no'], $m['agent_id'], $m['selection'], $m['reason'], $m['justification'], $m['support_point'], $m['note'], 'CONFIRMADA',
-                $m['confirmed_at'], $m['confirmed_by']],
+                $m['confirmed_at'], $m['confirmed_by'], $m['cell_no'] ?? null],
         );
     }
 
@@ -126,6 +126,7 @@ final class MissionRepository
         $row['id'] = (int) $row['id'];
         $row['agent_id'] = (int) $row['agent_id'];
         $row['expected_count'] = (float) $row['expected_count'];
+        $row['cell_no'] = isset($row['cell_no']) ? (int) $row['cell_no'] : null;
 
         return $row;
     }

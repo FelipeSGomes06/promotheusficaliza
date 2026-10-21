@@ -171,28 +171,25 @@ sintético e o retrospecto, no fim da página, mostra que o método acerta pouco
 
 ## Planejar reforço (`/planejar`)
 
-Planejamento preventivo semanal por setor ([método e resultados](planejamento-por-setores.md)). Sem execução importada,
-a tela diz isso e não mostra números (no servidor: `php bin/fiscaliza urban:import`).
+Planejamento preventivo semanal ([método e resultados](planejamento-por-setores.md)), em três passos:
 
-- **Atualização:** o topo diz se a previsão é "atualização automática" (o sistema baixa o Infosiga uma vez por mês e
-  recalcula toda segunda) ou "importada do treino", e quando o arquivo foi baixado.
-- **Topo (faixa azul contínua = previsão atual):** período previsto (7 dias), até quando vão os dados de entrada
-  (atraso de publicação de dois meses assumido), método escolhido no ajuste e quando a execução foi gerada e importada.
-  Os selos dizem a origem: **Real agregado · Infosiga-SP** para as contagens, **Fictício** para agentes e missões.
-- **Como ler:** o número é a contagem esperada de **registros** em 7 dias, não a chance de um acidente; a posição
-  (1º a 4º) é prioridade relativa de planejamento, não emergência. Falhas e alertas ficam na Visão geral.
-- **Detalhe do setor:** abre ao tocar num quadrado (o setor dele). Mostra a estimativa da semana, o histórico usado
-  (52 semanas), a defasagem e **Por que esta estimativa** (ritmo de 13 × 52 semanas e a conta da média). São
-  associações, não causa.
-- **Sugerir agente de trânsito:** só agentes de trânsito em atividade e sem missão; primeiro quem tem posição atual,
-  depois atrasada, por fim só a base; em cada grupo, o mais perto em linha reta da borda do setor. O primeiro vem
-  marcado como **Sugerido**; escolher outro exige justificativa. Ponto de apoio e observação são opcionais. Marque a
-  caixa de confirmação e use **Confirmar missão fictícia**. Agentes de trânsito fora da sugestão aparecem recolhidos,
-  com o motivo (em pausa, já reservado…).
-- **Missões fictícias:** confirmadas primeiro, com setor, período, método e estimativa congelados, motivo, autoria e
-  histórico. **Concluir** ou **Cancelar** pede motivo e libera o agente. Se outra pessoa reservar o mesmo agente ao
-  mesmo tempo, só uma confirmação vale; a outra recebe a mensagem e nada é gravado.
-- **Período encerrado:** a tela avisa e a confirmação fica indisponível até importar uma execução nova.
+- **Resumo da semana (faixa escura no topo):** período, "Reforce primeiro: <bairros>", quantos sinistros são esperados
+  ali na semana, até quando vão os dados e se a previsão é automática. **Como ler estes números** abre as definições e
+  a origem: contagens reais agregadas do Infosiga-SP; agentes e missões fictícios.
+- **1. Onde reforçar:** responda "Quantos lugares a equipe consegue cobrir nesta semana?" (1 a 4). O mapa mostra a
+  grade de quadrados iguais de 2 km e só os prioritários numerados; a lista ao lado traz os bairros de referência, o
+  setor, a parcela dos registros do último ano, os sinistros esperados na semana e se o quadrado **já tem agente
+  designado**. Toque num quadrado (no mapa ou na lista) para escolhê-lo. **Por que este quadrado?** mostra a conta e
+  as frases sobre o setor dele.
+- **2. Quem enviar:** agentes de trânsito em atividade e sem missão, o sugerido primeiro (posição atual antes de
+  posição atrasada, e esta antes de só a base; depois, o mais perto em linha reta **do quadrado**). Guarda e polícia
+  não entram; **Por que outros agentes não aparecem?** diz o motivo de cada um.
+- **3. Confirmar a missão:** se trocou o sugerido, diga por quê; ponto de apoio e observação são opcionais; marque que
+  é uma missão fictícia e **Confirmar missão**. A missão guarda o quadrado e o setor.
+- **Missões:** "agente → quadrado", situação, quem confirmou; **Concluir** ("como foi?") ou **Cancelar** ("por quê?")
+  liberam o agente. **Detalhes e histórico** mostra o motivo registrado e as transições. Se duas pessoas confirmarem o
+  mesmo agente ao mesmo tempo, só uma vale.
+- **Semana encerrada:** a tela avisa e não confirma missões até a atualização seguinte.
 
 ### Retrospecto (`/planejar/retrospecto`)
 
