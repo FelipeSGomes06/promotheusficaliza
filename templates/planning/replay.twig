@@ -43,43 +43,106 @@
     </span>
   </form>
 
-  <section class="section" aria-labelledby="semana-titulo">
-    <div class="list-head"><h2 id="semana-titulo">Previsão congelada · média simples</h2><p class="hint">Orçamento: um setor priorizado por semana (o 1º).</p></div>
-    <div class="table-wrap"><table class="data">
-      <caption>Registros esperados de {{ r.week|br_date }} a {{ r.week_last_day|br_date }}{{ r.reveal ? ' e registros observados depois' : '' }}</caption>
-      <thead><tr>
-        <th scope="col">Setor</th>
-        <th scope="col">Esperados</th>
-        <th scope="col" class="wide-only">Entrada: 13 / 52 semanas</th>
-        <th scope="col">Registrado</th>
-      </tr></thead>
-      <tbody>
-        {% for s in r.sectors %}
-          <tr {% if s.rank == 1 %}class="is-priority"{% endif %}>
-            <th scope="row">{{ s.rank }}º · {{ s.name }}{% if s.rank == 1 %} <span class="tag">priorizado</span>{% endif %}</th>
-            <td class="num">{{ s.value|number_format(1, ',', '.') }}</td>
-            <td class="num wide-only">{{ s.count_13w }} / {{ s.count_52w }}</td>
-            <td class="num">{% if r.reveal %}<strong>{{ s.observed }}</strong>{% else %}<span class="hint">oculto</span>{% endif %}</td>
-          </tr>
+  {% set sc = r.score %}
+  {% set total_weeks = r.weeks|length %}
+  <section class="section score" aria-labelledby="placar-titulo">
+    <div class="list-head"><h2 id="placar-titulo">Placar da previsão até aqui</h2><p class="hint">Acerto = o setor priorizado foi o que mais teve registros na semana.</p></div>
+    <div class="score__grid">
+      {% set pct = sc.rate is null ? 0 : sc.rate * 100 %}
+      <div class="score__ring" role="img" aria-label="{{ sc.rate is null ? 'Sem semanas reveladas' : pct|number_format(0, ',', '.') ~ '% de acerto' }}">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="score__track" cx="60" cy="60" r="52"/>
+          <circle class="score__chance" cx="60" cy="60" r="52" pathLength="100" stroke-dasharray="0.6 99.4" stroke-dashoffset="-24.7"/>
+          <circle class="score__fill" cx="60" cy="60" r="52" pathLength="100" stroke-dasharray="{{ pct|round(1) }} 100"/>
+        </svg>
+        <div class="score__value"><strong>{{ sc.rate is null ? '—' : pct|number_format(0, ',', '.') ~ '%' }}</strong><span>de acerto</span></div>
+      </div>
+      <dl class="score__facts">
+        <div><dt>Semanas acertadas</dt><dd><strong>{{ sc.hits }}</strong> de {{ sc.counted }}</dd></div>
+        <div><dt>Se escolhesse ao acaso</dt><dd><strong>~25%</strong> (1 entre 4 setores)</dd></div>
+        <div><dt>Registros no setor priorizado</dt><dd><strong>{{ sc.capture_rate is null ? '—' : (sc.capture_rate * 100)|number_format(0, ',', '.') ~ '%' }}</strong> do total observado</dd></div>
+        <div><dt>Semanas reveladas</dt><dd>{{ sc.weeks }} de {{ total_weeks }}</dd></div>
+      </dl>
+    </div>
+
+    {% set W = 640 %}{% set H = 180 %}{% set px = 34 %}{% set py = 14 %}
+    {% set step = total_weeks > 1 ? (W - px - 10) / (total_weeks - 1) : 0 %}
+    {% set pts = [] %}{% set cpts = [] %}
+    {% for t in r.timeline %}
+      {% if t.rate is not null %}{% set pts = pts|merge([(px + (loop.index0 * step))|round(1) ~ ',' ~ (py + (1 - t.rate) * (H - 2 * py))|round(1)]) %}{% endif %}
+      {% if t.capture_rate is not null %}{% set cpts = cpts|merge([(px + (loop.index0 * step))|round(1) ~ ',' ~ (py + (1 - t.capture_rate) * (H - 2 * py))|round(1)]) %}{% endif %}
+    {% endfor %}
+    <figure class="score__chart">
+      <svg viewBox="0 0 {{ W }} {{ H }}" role="img" aria-label="Taxa de acerto acumulada semana a semana">
+        {% for g in [0, 0.5, 1] %}
+          {% set gy = py + (1 - g) * (H - 2 * py) %}
+          <line class="chart__grid" x1="{{ px }}" x2="{{ W - 10 }}" y1="{{ gy }}" y2="{{ gy }}"/>
+          <text class="chart__label" x="{{ px - 6 }}" y="{{ gy + 4 }}" text-anchor="end">{{ (g * 100)|round }}%</text>
         {% endfor %}
-      </tbody>
-    </table></div>
+        {% set cy = py + 0.75 * (H - 2 * py) %}
+        <line class="chart__chance" x1="{{ px }}" x2="{{ W - 10 }}" y1="{{ cy }}" y2="{{ cy }}"/>
+        <text class="chart__label chart__label--chance" x="{{ W - 12 }}" y="{{ cy - 5 }}" text-anchor="end">acaso 25%</text>
+        {% if cpts|length > 1 %}<polyline class="chart__capture" points="{{ cpts|join(' ') }}" pathLength="100"/>{% endif %}
+        {% if pts|length > 1 %}<polyline class="chart__line" points="{{ pts|join(' ') }}" pathLength="100"/>{% endif %}
+        {% if pts|length > 0 %}{% set lp = (pts|last)|split(',') %}<circle class="chart__dot" cx="{{ lp[0] }}" cy="{{ lp[1] }}" r="5"/>{% endif %}
+      </svg>
+      <figcaption class="chart__legend"><span class="lg lg--hit">acerto acumulado</span><span class="lg lg--cap">registros no priorizado</span><span class="lg lg--chance">acaso</span></figcaption>
+    </figure>
+
+    <ol class="week-strip" aria-label="Resultado de cada semana">
+      {% for w in r.weeks %}
+        {% set t = r.timeline[loop.index0] ?? null %}
+        {% set cls = t is null ? 'is-hidden' : (t.hit is null ? 'is-empty' : (t.hit ? 'is-hit' : 'is-miss')) %}
+        <li><a class="week-strip__dot {{ cls }}{{ w == r.week ? ' is-current' }}" href="{{ url('/planejar/retrospecto', {semana: w}) }}" title="{{ loop.index }}ª semana · {{ w|br_date }}{{ t is null ? ' · ainda não revelada' : (t.hit is null ? ' · sem registros' : (t.hit ? ' · acertou' : ' · errou')) }}">{{ t is null ? '' : (t.hit is null ? '·' : (t.hit ? '✓' : '✗')) }}</a></li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <section class="section" aria-labelledby="semana-titulo">
+    <div class="list-head"><h2 id="semana-titulo">{{ r.position }}ª semana · {{ r.week|br_date }} a {{ r.week_last_day|br_date }}</h2><p class="hint">Média simples · um setor priorizado por semana (o 1º).</p></div>
+    {% set scale = 1 %}
+    {% for s in r.sectors %}{% set scale = max(scale, s.value, s.observed ?? 0) %}{% endfor %}
+    {% set w = r.week_result %}
+    <ul class="duel {{ r.reveal ? 'is-revealed' }}">
+      {% for s in r.sectors %}
+        {% set best = r.reveal and w.max > 0 and s.observed == w.max %}
+        <li class="duel__row{{ s.rank == 1 ? ' is-priority' }}{{ best ? ' is-best' }}">
+          <div class="duel__name">
+            <span class="duel__rank">{{ s.rank }}º</span> {{ s.name }}
+            {% if s.rank == 1 %}<span class="tag">priorizado</span>{% endif %}
+            {% if best %}<span class="tag tag--best">mais registros</span>{% endif %}
+            <span class="duel__base">base: {{ s.count_52w }} registros em 52 semanas ({{ s.count_13w }} nas últimas 13)</span>
+          </div>
+          <div class="duel__bars">
+            <div class="bar bar--expected"><svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><rect height="10" width="{{ (s.value / scale * 100)|round(1) }}"/></svg><b>Previsto {{ s.value|number_format(1, ',', '.') }}</b></div>
+            <div class="bar bar--observed">{% if r.reveal %}<svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><rect height="10" width="{{ (s.observed / scale * 100)|round(1) }}"/></svg><b>Registrado {{ s.observed }}</b>{% else %}<b class="hint">Registrado: ?</b>{% endif %}</div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
 
     {% if not r.reveal %}
-      <form method="get" action="{{ url('/planejar/retrospecto') }}" class="section">
+      <form method="get" action="{{ url('/planejar/retrospecto') }}" class="section reveal-cta">
         <input type="hidden" name="semana" value="{{ r.week }}">
         <input type="hidden" name="revelar" value="1">
-        <button class="btn btn--primary" type="submit">{{ ui.icon('i-check') }}Revelar o que foi registrado</button>
-        <p class="hint">Os registros desta semana só são enviados ao navegador depois deste clique.</p>
+        <button class="btn btn--primary btn--big" type="submit">{{ ui.icon('i-check') }}Revelar o que aconteceu</button>
+        <p class="hint">Aposta feita: o modelo escolheu o {{ (r.sectors|first).name|lower }}. Os registros desta semana só são enviados ao navegador depois do clique.</p>
       </form>
     {% else %}
-      {% set w = r.week_result %}
       {% set names = {} %}{% for s in r.sectors %}{% set names = names|merge({(s.sector_id): s.name}) %}{% endfor %}
-      <div class="callout section reveal" role="status">
-        <p><strong>{{ w.observed }} registros elegíveis</strong> na área de estudo nesta semana. Setor priorizado: {{ names[r.first]|lower }}, com <strong>{{ w.captured }}</strong>{% if w.observed > 0 %} ({{ (w.captured / w.observed * 100)|number_format(0, ',', '.') }}%){% endif %}.</p>
-        <p class="hint m-0">Uma semana isolada não prova nada: veja o resultado do teste inteiro abaixo e navegue pelas outras semanas.</p>
+      {% set hit = w.observed > 0 and w.captured == w.max %}
+      <div class="verdict section {{ w.observed == 0 ? 'verdict--empty' : (hit ? 'verdict--hit' : 'verdict--miss') }}" role="status">
+        <span class="verdict__seal" aria-hidden="true">{{ w.observed == 0 ? '·' : (hit ? '✓' : '✗') }}</span>
+        <div>
+          <p class="verdict__title">{{ w.observed == 0 ? 'Semana sem registros' : (hit ? 'Acertou!' : 'Errou desta vez') }}</p>
+          <p class="m-0"><strong>{{ w.observed }} registros elegíveis</strong> na área de estudo. O {{ names[r.first]|lower }} (priorizado) teve <strong>{{ w.captured }}</strong>{% if w.observed > 0 %} ({{ (w.captured / w.observed * 100)|number_format(0, ',', '.') }}% do total){% endif %}.</p>
+          <p class="hint m-0">Uma semana isolada não prova nada: o placar acima acumula todas até aqui.</p>
+        </div>
       </div>
-      <p><a class="btn btn--small" href="{{ url('/planejar/retrospecto', {semana: r.week}) }}">Esconder os registros</a></p>
+      <p class="btn-row">
+        {% if r.next %}<a class="btn btn--primary" href="{{ url('/planejar/retrospecto', {semana: r.next, revelar: 1}) }}">Próxima semana e revelar →</a>{% endif %}
+        <a class="btn btn--small" href="{{ url('/planejar/retrospecto', {semana: r.week}) }}">Esconder os registros</a>
+      </p>
     {% endif %}
   </section>
 
