@@ -59,7 +59,8 @@ usuário da aplicação só leitura e inserção nas tabelas importadas e no his
 `urban:import` uma vez. A migração `0004_quadrados_de_2km.sql` (somente `CREATE`) acrescenta `URBAN_CELL`; depois dela,
 rodar `urban:import` de novo grava os quadrados na execução existente. A migração `0005_atualizacao_mensal_infosiga.sql`
 (somente `CREATE`) acrescenta `URBAN_SNAPSHOT` e `URBAN_DAILY`. **A imagem PHP precisa ser reconstruída**
-(`docker compose up -d --build`): ela ganhou a extensão `zip`. Depois, `urban:update` uma vez e o serviço `atualizador`. `demo:seed --reset` apaga as missões fictícias junto com os agentes, mas mantém as execuções
+(`docker compose up -d --build`): ela ganhou a extensão `zip`. A migração `0006_missao_por_quadrado.sql` só acrescenta a
+coluna anulável `CELL_NO` em `URBAN_MISSION`. Depois, `urban:update` uma vez e o serviço `atualizador`. `demo:seed --reset` apaga as missões fictícias junto com os agentes, mas mantém as execuções
 importadas (dados reais).
 
 ### Atualizar um banco existente para a migração 0002

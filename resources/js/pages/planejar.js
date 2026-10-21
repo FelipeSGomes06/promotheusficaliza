@@ -32,10 +32,12 @@ function cellsMap(box, data) {
       L.rectangle([[g.south + r * dLat, g.west + c * dLng], [g.south + (r + 1) * dLat, g.west + (c + 1) * dLng]], { className: 'grid-line', interactive: false }).addTo(map);
     }
   }
+  // Quadrados prioritários: número no centro; tocar abre o passo 2 para aquele quadrado (a lista faz o mesmo).
   g.cells.forEach((cell) => {
-    L.rectangle([[cell.south, cell.west], [cell.north, cell.east]], { className: 'cell-shape', interactive: false })
-      .bindTooltip(text(String(cell.rank)), { permanent: true, direction: 'center', className: 'cell-label' })
+    const shape = L.rectangle([[cell.south, cell.west], [cell.north, cell.east]], { className: `cell-shape${cell.selected ? ' cell-shape--selected' : ''}` })
+      .bindTooltip(text(String(cell.rank)), { permanent: true, direction: 'center', className: `cell-label${cell.selected ? ' is-selected' : ''}` })
       .addTo(map);
+    shape.on('click', () => window.location.assign(cell.href));
   });
   map.fitBounds([[g.south, g.west], [g.north, g.east]], { padding: [4, 4], animate: false });
 }
