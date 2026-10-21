@@ -139,6 +139,38 @@ Agentes são equipes fictícias mostradas no mapa — **não** são contas de ac
 **Exemplo.** "Agente de trânsito · Hermes 06" em atividade, mas "Sem informação recente": o rádio não transmitiu há
 mais de 30 min. Aparece em "precisam de atenção" como "Em atividade sem posição recente" — não é falha do agente.
 
+## Multas (`/multas`)
+
+Registro **demonstrativo** de infrações informadas à mão: nada é consultado no Detran/Senatran, emitido, cobrado ou
+protocolado ([ADR-0017](adr/0017-aba-multas.md)). Use só dados fictícios.
+
+- **Lista:** três resumos do mesmo filtro da lista — registros, **a conferir** (rascunhos, documentação não verificada
+  ou com pendência, revisão marcada que passou, dados do medidor ou evidência a conferir) e **pagamento informado**
+  (lançado à mão; não é arrecadação). Busca por código interno (`DEMO-MUL-000023`), AIT, placa ou RENAVAM; origem e
+  etapa à mão; em **Mais filtros**, período da ocorrência, órgão autuador, radar, agente (da constatação ou operador do
+  radar), documentação, pagamento, rascunhos/cancelados e ordem. A URL guarda os filtros, e a ficha volta para eles.
+- **Cadastrar multa:** um formulário em cinco etapas (ocorrência, como foi constatada, veículo, documentação, revisão).
+  Salvar cria um **rascunho**: só a descrição é obrigatória, mas o que for preenchido precisa estar bem formado. Escolha
+  **Radar** (do inventário; pode indicar o agente operador do medidor) ou **Agente de trânsito**; com JavaScript, o bloco
+  da outra origem some e não é enviado, e o que foi digitado nele volta se você trocar de ideia. Sem JavaScript, os dois
+  blocos aparecem: preencha só o da origem escolhida. Velocidades (regulamentada, medida, considerada) só em excesso de
+  velocidade, transcritas do documento.
+- **Ficha:** a próxima ação diz o que falta. **Registrar após conferência** aparece quando os campos com * estão
+  completos; o servidor confere de novo e grava o retrato do radar ou do agente naquele momento. O código interno nunca
+  substitui o número do AIT.
+- **Documentação:** "Não verificada" é o ponto de partida e não significa regular. **Registrar conferência documental**
+  acrescenta uma constatação com resultado, fonte (CRLV apresentado, consulta feita fora do sistema, relato) e data de
+  referência — na data da ocorrência ou posterior. Uma regularidade posterior aparece separada e não corrige a
+  ocorrência. Corrigir placa, UF, RENAVAM, marca, modelo, espécie ou data/hora pede nova conferência; as anteriores
+  ficam em "Todas as conferências", marcadas como anteriores à retificação.
+- **Andamento:** etapa administrativa, pagamento e contestação são independentes (pagamento informado e recurso em
+  análise podem coexistir). Valores em reais (`1.234,56`). O sistema não calcula prazos, descontos nem decide nada.
+- **Mais ações:** retificar (registrado: exige motivo; o original fica no histórico) e **cancelar registro** (interno,
+  com motivo; o registro fica somente leitura e não é anulação do auto).
+- **Erros:** campo inválido volta com tudo o que foi digitado e um resumo com links; se outra pessoa salvou antes, a tela
+  mostra "Salvo agora × Sua versão" e salvar de novo é uma decisão consciente. Enviar o mesmo formulário duas vezes não
+  duplica nada.
+
 ## Manutenção (`/manutencao`)
 
 Uma lista, da mais urgente para a mais distante: **Em andamento**, **Urgentes** (imediatas ou vencidas), **Próximos 7

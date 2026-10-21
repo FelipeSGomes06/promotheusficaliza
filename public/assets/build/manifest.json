@@ -1,12 +1,17 @@
 {
+  "_gsap-DoH2NsWW.js": {
+    "file": "gsap-DoH2NsWW.js",
+    "name": "gsap"
+  },
   "_motion-C63kFjpS.js": {
     "file": "motion-C63kFjpS.js",
     "name": "motion"
   },
-  "_toasts-CcFjfMp6.js": {
-    "file": "toasts-CcFjfMp6.js",
+  "_toasts-vGhalwYq.js": {
+    "file": "toasts-vGhalwYq.js",
     "name": "toasts",
     "imports": [
+      "_gsap-DoH2NsWW.js",
       "_motion-C63kFjpS.js"
     ]
   },
@@ -19,7 +24,7 @@
     "src": "node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "styles-CQabgjbH.css",
+    "file": "styles-CKeL2ubU.css",
     "name": "styles",
     "names": [
       "styles.css"
@@ -32,27 +37,40 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "app-DVIeiii8.js",
+    "file": "app-CE3vVC-2.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_toasts-CcFjfMp6.js",
+      "_gsap-DoH2NsWW.js",
+      "_toasts-vGhalwYq.js",
       "_motion-C63kFjpS.js"
     ],
     "dynamicImports": [
       "resources/js/pages/central.js",
       "resources/js/pages/sobre.js",
-      "resources/js/pages/planejar.js"
+      "resources/js/pages/planejar.js",
+      "resources/js/pages/multas.js"
     ]
   },
   "resources/js/pages/central.js": {
-    "file": "central-Co6BGNRI.js",
+    "file": "central-DSaC_oYh.js",
     "name": "central",
     "src": "resources/js/pages/central.js",
     "isDynamicEntry": true,
     "imports": [
-      "_toasts-CcFjfMp6.js",
+      "_gsap-DoH2NsWW.js",
+      "_toasts-vGhalwYq.js",
+      "_motion-C63kFjpS.js"
+    ]
+  },
+  "resources/js/pages/multas.js": {
+    "file": "multas-nq-LmgZ-.js",
+    "name": "multas",
+    "src": "resources/js/pages/multas.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_gsap-DoH2NsWW.js",
       "_motion-C63kFjpS.js"
     ]
   },
@@ -66,12 +84,13 @@
     ]
   },
   "resources/js/pages/sobre.js": {
-    "file": "sobre-DwIDMJtm.js",
+    "file": "sobre-BoiukqlN.js",
     "name": "sobre",
     "src": "resources/js/pages/sobre.js",
     "isDynamicEntry": true,
     "imports": [
-      "_toasts-CcFjfMp6.js",
+      "_gsap-DoH2NsWW.js",
+      "_toasts-vGhalwYq.js",
       "_motion-C63kFjpS.js"
     ]
   }

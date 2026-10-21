@@ -1,0 +1,96 @@
+{% extends 'layout.twig' %}
+{% import '_ui.twig' as ui %}
+{% import 'fines/_fine.twig' as fine %}
+{% block title %}Multas{% endblock %}
+{% block page %}multas{% endblock %}
+{% block content %}
+{% set f = filters %}
+{% set query = f.toArray %}
+{% set more = f.moreCount %}
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Multas</h1>
+      <p class="lead">Registros de infrações e conferência de veículos. Dados fictícios, informados manualmente.</p>
+    </div>
+    <a class="btn btn--primary" href="{{ url('/multas/novo') }}">{{ ui.icon('i-plus', null, 'icon icon--pop') }}<span>Cadastrar multa</span></a>
+  </div>
+
+  <ul class="kpi-strip fine-kpis section" aria-label="Resumo do filtro atual">
+    <li class="kpi"><span class="kpi__n">{{ result.total }}</span><span class="kpi__label">registros no filtro</span></li>
+    <li class="kpi"><span class="kpi__n kpi__n--warn">{{ result.attention }}</span><span class="kpi__label">a conferir</span></li>
+    <li class="kpi"><span class="kpi__n">{{ result.paid }}</span><span class="kpi__label">pagamento informado</span></li>
+  </ul>
+  <p class="hint">Os três números contam o mesmo conjunto da lista, antes da paginação. "Pagamento informado" é o que foi lançado manualmente, não arrecadação confirmada.</p>
+
+  {% if f.errors is not empty %}
+    <div class="flash flash--error section" role="alert">{% for msg in f.errors %}{{ msg }} {% endfor %}O restante do filtro foi aplicado.</div>
+  {% endif %}
+
+  <form class="stack section" method="get" action="{{ url('/multas') }}" role="search" aria-label="Filtrar multas">
+    <div class="filters">
+      <div class="field field--search"><label for="q">Buscar</label><input id="q" type="search" name="q" value="{{ f.q }}" placeholder="Código interno, AIT, placa ou RENAVAM" maxlength="60"></div>
+      <div class="field"><label for="origem">Origem</label>
+        <select id="origem" name="origem"><option value="">Radar ou agente</option>{% for k, l in source_kinds %}<option value="{{ k }}" {{ f.source == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="etapa">Etapa administrativa</label>
+        <select id="etapa" name="etapa"><option value="">Todas as etapas</option>{% for k, l in stages %}<option value="{{ k }}" {{ f.stage == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
+    </div>
+    <div class="filter-bar">
+      <button class="btn btn--primary" type="submit">{{ ui.icon('i-filter') }}<span>Filtrar</span></button>
+      <details class="more-filters more-filters--inline" {{ more > 0 or f.errors is not empty ? 'open' }}>
+        <summary class="chip">{{ ui.icon('i-layers') }}<span>Mais filtros</span> {% if more %}<span class="count-pill">{{ more }}</span>{% endif %}</summary>
+        <div class="more-filters__body">
+          <div class="field"><label for="de">Ocorrência a partir de</label><input id="de" type="date" name="de" value="{{ raw.de }}" {% if f.errors.de is defined %}aria-invalid="true"{% endif %}></div>
+          <div class="field"><label for="ate">Ocorrência até</label><input id="ate" type="date" name="ate" value="{{ raw.ate }}" {% if f.errors.ate is defined %}aria-invalid="true"{% endif %}></div>
+          <div class="field"><label for="orgao">Órgão autuador</label>
+            <select id="orgao" name="orgao"><option value="">Todos os órgãos</option>{% for a in agencies %}<option value="{{ a.id }}" {{ f.agency == a.id ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select></div>
+          <div class="field"><label for="radar">Radar</label>
+            <select id="radar" name="radar"><option value="">Todos os radares</option>{% for r in sources.radars %}<option value="{{ r.id }}" {{ f.radar == r.id ? 'selected' }}>{{ r.code }} · {{ r.street ?? r.model }}{{ r.archived_at ? ' (arquivado)' }}</option>{% endfor %}</select></div>
+          <div class="field"><label for="agente">Agente (da constatação ou operador do radar)</label>
+            <select id="agente" name="agente"><option value="">Todos os agentes</option>{% for g in sources.agents %}<option value="{{ g.id }}" {{ f.agent == g.id ? 'selected' }}>{{ g.code }} · {{ g.call_sign }}{{ g.archived_at ? ' (arquivado)' }}</option>{% endfor %}</select></div>
+          <div class="field"><label for="documentacao">Documentação na ocorrência</label>
+            <select id="documentacao" name="documentacao"><option value="">Qualquer situação</option>{% for k, l in doc_labels %}<option value="{{ k }}" {{ f.document == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
+          <div class="field"><label for="pagamento">Pagamento</label>
+            <select id="pagamento" name="pagamento"><option value="">Qualquer situação</option>{% for k, l in payments %}<option value="{{ k }}" {{ f.payment == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
+          <div class="field"><label for="cadastro">Cadastro</label>
+            <select id="cadastro" name="cadastro">{% for k, l in {ativo: 'Rascunhos e registrados', rascunho: 'Só rascunhos', registrado: 'Só registrados', cancelado: 'Só cancelados internamente', todos: 'Todos, inclusive cancelados'} %}<option value="{{ k }}" {{ f.record == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
+          <div class="field"><label for="ordem">Ordenar por</label>
+            <select id="ordem" name="ordem">{% for k, l in sorts %}<option value="{{ k }}" {{ f.sort == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
+        </div>
+      </details>
+      <p class="result-count"><strong>{{ result.total }}</strong> {{ result.total == 1 ? 'registro' : 'registros' }}{{ f.isEmpty ? '' : ' no filtro' }}
+        {% if not f.isEmpty %}<a class="btn btn--quiet btn--small" href="{{ url('/multas') }}"><span>Limpar filtros</span></a>{% endif %}</p>
+    </div>
+  </form>
+
+  <div class="section">
+  {% if result.rows is empty %}
+    {% if f.isEmpty %}
+      <div class="empty">Nenhuma multa cadastrada ainda. <a href="{{ url('/multas/novo') }}">Cadastrar a primeira</a> (rascunho que você completa depois).</div>
+    {% else %}
+      <div class="empty">Nenhum registro com estes filtros. <a href="{{ url('/multas') }}">Limpar filtros</a>.</div>
+    {% endif %}
+  {% else %}
+    <ul class="rows" aria-label="Multas, página {{ result.page }} de {{ result.pages }}">
+      {% for r in result.rows %}
+        {% set place = [r.street, r.address_ref]|filter(v => v)|join(', ') %}
+        <li><a class="row fine-row" href="{{ url('/multas/' ~ r.id, {voltar: query is empty ? null : query|url_encode}) }}" aria-label="Abrir {{ r.code }}: {{ kinds[r.infraction_kind] ?? 'tipo a definir' }}{{ r.vehicle_plate ? ', placa ' ~ r.vehicle_plate }}">
+          <span class="row__thumb">{{ ui.icon(r.source_kind == 'AGENTE' ? 'i-agents' : (r.source_kind == 'RADAR' ? 'i-RADAR' : 'i-fines')) }}</span>
+          <span class="row__main">
+            <span class="row__title">{{ source_kinds[r.source_kind] ?? 'Origem a definir' }} · {{ kinds[r.infraction_kind] ?? 'tipo a definir' }}</span>
+            <span class="row__sub"><span class="code-tag">{{ r.code }}</span> {{ r.vehicle_plate ? 'placa ' ~ r.vehicle_plate ~ (r.vehicle_uf ? '/' ~ r.vehicle_uf) : 'sem placa' }}{{ r.vehicle_model ? ' · ' ~ r.vehicle_manufacturer ~ ' ' ~ r.vehicle_model }} · {{ r.occurred_at ? r.occurred_at|local_dt('d/m/Y H:i') : 'data a informar' }}</span>
+            <span class="row__sub">{{ place ?: 'local a informar' }}{{ r.equipment_code ? ' · ' ~ r.equipment_code }}{{ r.agent_call_sign ? ' · ' ~ r.agent_call_sign }}{{ r.external_ait ? ' · AIT ' ~ r.external_ait }}{{ r.vehicle_renavam ? ' · RENAVAM ···' ~ r.vehicle_renavam|slice(-4) }}</span>
+          </span>
+          <span class="row__meta">{{ fine.state(r.record_state) }}
+            <span class="tag">{{ stages[r.process_stage] }}</span>
+            {{ fine.doc(r.occ_doc_status, r.occ_doc_review_on, today) }}
+            {% if r.attention is not empty %}<span class="tag tag--warn">A conferir: {{ r.attention|length }}</span>{% endif %}
+            {% if r.payment_status == 'PAGAMENTO_INFORMADO' %}<span class="tag">Pagamento informado</span>{% endif %}</span>
+        </a></li>
+      {% endfor %}
+    </ul>
+    {{ ui.pagination(result.page, result.pages, query, '/multas') }}
+  {% endif %}
+  </div>
+</div>
+{% endblock %}

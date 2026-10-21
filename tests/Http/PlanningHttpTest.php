@@ -118,10 +118,10 @@ final class PlanningHttpTest extends FirebirdTestCase
         $revealed = (string) $this->request('GET', '/planejar/retrospecto?semana=2025-01-06&revelar=1')->getBody();
 
         self::assertStringContainsString('Histórico · teste de 2025 · não é a previsão atual', $hidden);
-        self::assertStringContainsString('Revelar o que foi registrado', $hidden);
-        self::assertSame(4, substr_count($hidden, '<span class="hint">oculto</span>'));
+        self::assertStringContainsString('Revelar o que aconteceu', $hidden);
+        self::assertSame(4, substr_count($hidden, '<b class="hint">Registrado: ?</b>'));
         self::assertStringContainsString('registros elegíveis</strong> na área de estudo', $revealed);
-        self::assertStringNotContainsString('<span class="hint">oculto</span>', $revealed);
+        self::assertStringNotContainsString('Registrado: ?', $revealed);
         self::assertStringNotContainsString('Poisson', $revealed);
         self::assertStringContainsString('233 de 626 · 37,2%', $revealed);
         self::assertStringContainsString('<option value="2025-12-22"', $hidden, 'todas as semanas do teste navegáveis');

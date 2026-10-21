@@ -12,10 +12,12 @@ namespace Fiscaliza\Infrastructure;
 final class Migrator
 {
     /**
-     * Tabelas em que o usuário da aplicação só lê e acrescenta: histórico não é alterado nem apagado, e uma execução
-     * importada do planejamento por setores (URBAN_RUN e filhas) não muda depois de gravada.
+     * Tabelas em que o usuário da aplicação só lê e acrescenta: histórico não é alterado nem apagado, uma execução
+     * importada do planejamento por setores (URBAN_RUN e filhas) não muda depois de gravada, e o histórico e as
+     * conferências documentais das multas (FINE_EVENT, FINE_DOCUMENT_CHECK) são imutáveis.
      */
-    private const APPEND_ONLY = ['RESOURCE_EVENT', 'LOGIN_ATTEMPT', 'URBAN_RUN', 'URBAN_SECTOR', 'URBAN_FORECAST', 'URBAN_REPLAY', 'URBAN_CELL', 'URBAN_SNAPSHOT', 'URBAN_DAILY', 'URBAN_MISSION_LOG'];
+    public const APPEND_ONLY = ['RESOURCE_EVENT', 'LOGIN_ATTEMPT', 'URBAN_RUN', 'URBAN_SECTOR', 'URBAN_FORECAST', 'URBAN_REPLAY', 'URBAN_CELL', 'URBAN_SNAPSHOT', 'URBAN_DAILY', 'URBAN_MISSION_LOG',
+        'FINE_EVENT', 'FINE_DOCUMENT_CHECK'];
 
     public function __construct(private readonly Database $db, private readonly string $directory) {}
 
@@ -38,7 +40,8 @@ final class Migrator
 
     /**
      * Concede ao usuário da aplicação apenas DML nas tabelas do esquema (somente leitura+inserção nas append-only).
-     * O nome do usuário vem da configuração e é validado como identificador simples antes de entrar no SQL.
+     * Numa append-only, UPDATE/DELETE concedidos antes (por uma versão anterior desta lista) são revogados: a ordem das
+     * migrações não pode deixar um histórico mutável. O nome do usuário é validado como identificador simples.
      *
      * @return list<string> tabelas tratadas
      */
@@ -55,8 +58,17 @@ final class Migrator
             if ($table === 'SCHEMA_MIGRATION') {
                 continue;
             }
-            $privileges = in_array($table, self::APPEND_ONLY, true) ? 'SELECT, INSERT' : 'SELECT, INSERT, UPDATE, DELETE';
-            $this->db->pdo()->exec("GRANT {$privileges} ON {$table} TO USER {$user}");
+            $appendOnly = in_array($table, self::APPEND_ONLY, true);
+            $this->db->pdo()->exec('GRANT ' . ($appendOnly ? 'SELECT, INSERT' : 'SELECT, INSERT, UPDATE, DELETE') . " ON {$table} TO USER {$user}");
+            if ($appendOnly) {
+                $granted = $this->db->all(
+                    "SELECT DISTINCT TRIM(RDB\$PRIVILEGE) AS P FROM RDB\$USER_PRIVILEGES WHERE RDB\$USER = ? AND RDB\$RELATION_NAME = ? AND RDB\$PRIVILEGE IN ('U', 'D')",
+                    [$user, $table],
+                );
+                foreach ($granted as $row) {
+                    $this->db->pdo()->exec(($row['p'] === 'U' ? 'REVOKE UPDATE' : 'REVOKE DELETE') . " ON {$table} FROM USER {$user}");
+                }
+            }
         }
 
         return $tables;

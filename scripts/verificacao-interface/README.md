@@ -13,6 +13,10 @@ node scripts/verificacao-interface/verify.cjs   /tmp/saida   # relatório JSON (
 node scripts/verificacao-interface/record.cjs   /tmp/videos  # vídeos WebM das interações
 node scripts/verificacao-interface/captures.cjs /tmp/fotos   # capturas JPEG 1440×900 e 390×844
 node scripts/verificacao-interface/fps.cjs                   # intervalos entre quadros durante as animações
+node scripts/verificacao-interface/multas.cjs  /tmp/multas  # aba Multas: capturas 1440/390/360 px + relatório (filtro, origem, 422, 409, sem JS, movimento reduzido)
 ```
 
 `verify.cjs` e `record.cjs` registram falhas simuladas e ciência de alertas: use só em banco de demonstração.
+
+`multas.cjs` também grava rascunhos e edições de teste (precisa do cenário de multas: `demo:seed` ou `demo:seed-multas`).
+`PF_CHROMIUM` aponta um executável do Chromium já instalado quando a versão do Playwright não traz o seu.

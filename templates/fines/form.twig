@@ -1,0 +1,194 @@
+{% extends 'layout.twig' %}
+{% import '_ui.twig' as ui %}
+{% set registered = existing and existing.record_state == 'REGISTRADO' %}
+{% set heading = existing ? (registered ? 'Retificar ' : 'Completar ') ~ existing.code : 'Cadastrar multa' %}
+{% block title %}{{ heading }}{% endblock %}
+{% block page %}multas-form{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}">{% endblock %}
+{% block scripts %}<script src="{{ asset('vendor/leaflet/leaflet.js') }}" defer></script>{% endblock %}
+{% block content %}
+{% set v = values %}
+{% set source = v.source_kind ?? '' %}
+{% set agencyNames = {} %}{% for a in agencies %}{% set agencyNames = agencyNames|merge({(a.id ~ ''): a.name}) %}{% endfor %}
+<div class="page page--narrow">
+  <p class="crumbs"><a href="{{ url('/multas') }}">Multas</a>{% if existing %} · <a href="{{ url('/multas/' ~ existing.id) }}">{{ existing.code }}</a>{% endif %}</p>
+  <h1>{{ heading }}</h1>
+  <p class="lead">Use só dados fictícios. {{ registered ? 'O registro já foi conferido: mudar os dados cria uma retificação com motivo, e o original continua no histórico.' : 'Rascunho aceita campos em branco; o que for preenchido precisa estar bem formado. Os campos com * são exigidos para registrar.' }}</p>
+
+  {% if changes is not null %}
+    <section class="conflict section" role="alert" aria-labelledby="conflito">
+      <h2 id="conflito">O registro mudou enquanto você editava</h2>
+      <p>{{ errors._form }} Compare o que está salvo agora com a sua versão.</p>
+      {% if changes is not empty %}
+        <div class="table-wrap"><table>
+          <thead><tr><th scope="col">Campo</th><th scope="col">Salvo agora</th><th scope="col">Sua versão</th></tr></thead>
+          <tbody>{% for field, c in changes %}<tr><th scope="row">{{ labels[field] ?? field }}</th>
+            <td>{{ field == 'agency_id' ? (agencyNames[c.antes ~ ''] ?? '—') : (c.antes is iterable ? c.antes|json_encode : (c.antes ?? '—')) }}</td>
+            <td>{{ field == 'agency_id' ? (agencyNames[c.depois ~ ''] ?? '—') : (c.depois is iterable ? c.depois|json_encode : (c.depois ?? '—')) }}</td></tr>{% endfor %}</tbody>
+        </table></div>
+      {% else %}<p class="small">Seus dados não diferem do que está salvo agora, ou ainda têm campos a corrigir.</p>{% endif %}
+      <p class="small">Para manter a sua versão, revise e salve de novo. Para ficar com a salva, <a href="{{ url('/multas/' ~ existing.id ~ '/editar') }}">descarte suas alterações</a>.</p>
+    </section>
+  {% elseif errors._form is defined %}
+    <div class="flash flash--error section" role="alert">{{ errors._form }}</div>
+  {% endif %}
+  {{ ui.error_summary(errors, labels) }}
+
+  <form method="post" action="{{ existing ? url('/multas/' ~ existing.id) : url('/multas') }}" class="stack section" novalidate data-fine-form>
+    {{ ui.csrf(app.csrf) }}
+    <input type="hidden" name="command_uid" value="{{ v.command_uid ?? '' }}">
+    {% if existing %}<input type="hidden" name="version" value="{{ v.version ?? existing.version_no }}">{% endif %}
+
+    <fieldset class="form-step">
+      <legend><span class="form-step__n" aria-hidden="true">1</span> Ocorrência</legend>
+      <div class="form-grid">
+        {{ ui.input('description', 'Descrição curta', v, errors, {required: true, max: 240, class: 'span-2', help: 'Identifica o registro na lista (5 a 240 caracteres). Ex.: "Excesso de velocidade na Av. Sampaio Vidal".'}) }}
+        {{ ui.select('infraction_kind', 'Tipo de infração', kinds, v.infraction_kind ?? '', errors, {empty: 'A definir', required: true, dataAttr: 'fine-kind', help: 'Categoria desta demonstração, não o catálogo nacional.'}) }}
+        {{ ui.input('occurred_at', 'Data e hora da ocorrência', v, errors, {type: 'datetime-local', required: true, help: 'Horário de Marília. Não pode estar no futuro.'}) }}
+        {{ ui.input('legal_reference', 'Enquadramento informado', v, errors, {required: true, max: 120, help: 'Transcreva do documento. O sistema não sugere nem confere o enquadramento.'}) }}
+        <div class="form-grid form-grid--pair">
+          {{ ui.input('infraction_code', 'Código', v, errors, {max: 20}) }}
+          {{ ui.input('infraction_detail', 'Desdobramento', v, errors, {max: 10}) }}
+        </div>
+        {{ ui.select('agency_id', 'Órgão autuador', agencyNames, v.agency_id ?? '', errors, {empty: 'Escolha…', required: true}) }}
+        {{ ui.input('external_ait', 'Número do AIT (externo)', v, errors, {max: 40, help: 'Número do auto emitido pelo órgão, se houver. Não é o código interno DEMO-MUL-….'}) }}
+        {{ ui.input('ait_missing_reason', 'Se não há AIT: por quê', v, errors, {max: 160, class: 'span-2', help: 'Exigido para registrar sem número de AIT (ex.: "auto ainda não recebido").'}) }}
+      </div>
+      <h3 class="form-sub">Onde</h3>
+      <p class="hint">Endereço ou referência bastam. O ponto no mapa é opcional e ilustrativo.</p>
+      <div class="form-grid">
+        {{ ui.input('street', 'Logradouro', v, errors, {max: 120, placeholder: 'Ex.: Avenida Sampaio Vidal', class: 'span-2'}) }}
+        {{ ui.input('address_ref', 'Número ou referência', v, errors, {max: 160}) }}
+        <div class="field {{ errors.region_id is defined ? 'has-error' }}">
+          <label for="f-region_id">Bairro <span class="optional">(opcional)</span></label>
+          <select id="f-region_id" name="region_id"><option value="">Sem bairro</option>{% for r in regions %}<option value="{{ r.id }}" {{ ((v.region_id ?? '') ~ '') == (r.id ~ '') ? 'selected' }}>{{ r.name }}</option>{% endfor %}</select>
+          {{ ui.field_error(errors, 'region_id') }}
+        </div>
+      </div>
+      <div class="picker" id="picker" data-picker data-lat="f-lat" data-lng="f-lng" data-status="picker-status" data-tiles="{{ app.map.tiles }}" data-attribution="{{ app.map.attribution }}" role="application" aria-label="Mapa opcional para marcar o local. Os campos de coordenadas em Opções avançadas fazem o mesmo."></div>
+      <p class="picker-status" id="picker-status" aria-live="polite"></p>
+      <p><button type="button" class="btn btn--quiet btn--small" data-clear-point="picker">Remover ponto marcado</button></p>
+      <details class="advanced" {{ errors.lat is defined or errors.lng is defined ? 'open' }}>
+        <summary>Opções avançadas: coordenadas</summary>
+        <div class="form-grid">
+          {{ ui.input('lat', 'Latitude', v, errors, {max: 20, inputmode: 'decimal', placeholder: '-22.213900'}) }}
+          {{ ui.input('lng', 'Longitude', v, errors, {max: 20, inputmode: 'decimal', placeholder: '-49.945800'}) }}
+        </div>
+      </details>
+      <div class="form-grid">
+        {{ ui.input('notes', 'Relato factual', v, errors, {type: 'textarea', max: 1000, class: 'span-2', help: 'O que foi observado, sem dados pessoais reais nem interpretação jurídica.'}) }}
+      </div>
+    </fieldset>
+
+    <fieldset class="form-step">
+      <legend><span class="form-step__n" aria-hidden="true">2</span> Como foi constatada</legend>
+      <div class="field {{ errors.source_kind is defined ? 'has-error' }}">
+        <span class="label" id="lbl-source">Origem principal <span class="req" aria-hidden="true">*</span></span>
+        <div class="checks checks--inline" role="radiogroup" aria-labelledby="lbl-source" {% if errors.source_kind is defined %}aria-describedby="err-source_kind"{% endif %}>
+          <label><input type="radio" id="f-source_kind" name="source_kind" value="RADAR" data-fine-source {{ source == 'RADAR' ? 'checked' }}> Radar</label>
+          <label><input type="radio" name="source_kind" value="AGENTE" data-fine-source {{ source == 'AGENTE' ? 'checked' }}> Agente de trânsito</label>
+          <label><input type="radio" name="source_kind" value="" data-fine-source {{ source == '' ? 'checked' }}> Ainda não sei</label>
+        </div>
+        {{ ui.field_error(errors, 'source_kind') }}
+      </div>
+      <p class="hint" data-fine-nojs>Preencha só o bloco da origem escolhida; o outro é ignorado ao salvar (um radar indicado com origem Agente é recusado).</p>
+
+      <fieldset class="source-block" data-source-block="RADAR">
+        <legend>Radar</legend>
+        <div class="form-grid">
+          <div class="field span-2 {{ errors.equipment_id is defined ? 'has-error' }}">
+            <label for="f-equipment_id">Radar do inventário <span class="req" aria-hidden="true">*</span></label>
+            <span class="hint" id="f-equipment_id-help">Arquivados aparecem no fim, para registro histórico: o cadastro atual pode diferir do que valia na ocorrência.</span>
+            <select id="f-equipment_id" name="equipment_id" aria-describedby="{{ errors.equipment_id is defined ? 'err-equipment_id ' }}f-equipment_id-help"><option value="">Escolha…</option>
+              {% for r in sources.radars %}<option value="{{ r.id }}" {{ ((v.equipment_id ?? '') ~ '') == (r.id ~ '') ? 'selected' }}>{{ r.code }} · {{ r.manufacturer }} {{ r.model }}{{ r.street ? ' · ' ~ r.street }} · {{ r.agency_code }}{{ r.speed_limit_kmh ? ' · limite cadastrado ' ~ r.speed_limit_kmh ~ ' km/h' }}{{ r.archived_at ? ' (arquivado)' }}</option>{% endfor %}
+            </select>
+            {{ ui.field_error(errors, 'equipment_id') }}
+          </div>
+          <div class="field span-2 {{ errors.operator_agent_id is defined ? 'has-error' }}">
+            <label for="f-operator_agent_id">Agente operador associado <span class="optional">(opcional)</span></label>
+            <span class="hint" id="f-operator_agent_id-help">Para medidor portátil operado por agente. A origem principal continua sendo o radar.</span>
+            <select id="f-operator_agent_id" name="operator_agent_id" aria-describedby="{{ errors.operator_agent_id is defined ? 'err-operator_agent_id ' }}f-operator_agent_id-help"><option value="">Nenhum</option>
+              {% for g in sources.agents %}<option value="{{ g.id }}" {{ ((v.operator_agent_id ?? '') ~ '') == (g.id ~ '') ? 'selected' }}>{{ g.code }} · {{ g.call_sign }} · {{ g.agency_code }}{{ g.archived_at ? ' (arquivado)' }}</option>{% endfor %}
+            </select>
+            {{ ui.field_error(errors, 'operator_agent_id') }}
+          </div>
+        </div>
+        <div class="speed-block" data-speed-block>
+          <h3 class="form-sub">Velocidades (só para excesso de velocidade)</h3>
+          <p class="hint">Transcreva os três valores do documento, em km/h. O sistema não calcula tolerância, gravidade nem valor.</p>
+          <div class="form-grid form-grid--three">
+            {{ ui.input('speed_limit_kmh', 'Regulamentada', v, errors, {type: 'number', inputmode: 'numeric', required: true}) }}
+            {{ ui.input('speed_measured_kmh', 'Medida', v, errors, {type: 'number', inputmode: 'numeric', required: true}) }}
+            {{ ui.input('speed_considered_kmh', 'Considerada', v, errors, {type: 'number', inputmode: 'numeric', required: true}) }}
+          </div>
+        </div>
+        <details class="advanced" {{ v.radar_inmetro_record ?? v.radar_certificate ?? v.radar_verified_on ?? v.evidence_reference ?? false ? 'open' }}>
+          <summary>Dados do medidor e evidência</summary>
+          <p class="hint">Copie do documento quando disponíveis. Ausentes, o registro aparece como "A conferir"; nada é estimado.</p>
+          <div class="form-grid">
+            {{ ui.input('radar_meter_kind', 'Tipo de medidor informado', v, errors, {max: 120}) }}
+            {{ ui.input('radar_inmetro_record', 'Registro no Inmetro', v, errors, {max: 120}) }}
+            {{ ui.input('radar_certificate', 'Certificado de verificação', v, errors, {max: 120}) }}
+            {{ ui.input('radar_verified_on', 'Última verificação metrológica', v, errors, {type: 'date'}) }}
+            {{ ui.input('evidence_reference', 'Referência da evidência', v, errors, {max: 240, class: 'span-2', help: 'Identificação textual da imagem ou documento fictício. Não é upload nem link.'}) }}
+          </div>
+        </details>
+      </fieldset>
+
+      <fieldset class="source-block" data-source-block="AGENTE">
+        <legend>Agente de trânsito</legend>
+        <div class="field {{ errors.agent_id is defined ? 'has-error' }}">
+          <label for="f-agent_id">Agente da constatação <span class="req" aria-hidden="true">*</span></label>
+          <span class="hint" id="f-agent_id-help">Só agentes de trânsito do cadastro (guarda e polícia ficam de fora). Não é a conta de quem está lançando.</span>
+          <select id="f-agent_id" name="agent_id" aria-describedby="{{ errors.agent_id is defined ? 'err-agent_id ' }}f-agent_id-help"><option value="">Escolha…</option>
+            {% for g in sources.agents %}<option value="{{ g.id }}" {{ ((v.agent_id ?? '') ~ '') == (g.id ~ '') ? 'selected' }}>{{ g.code }} · {{ g.call_sign }} · {{ g.agency_code }}{{ g.archived_at ? ' (arquivado)' }}</option>{% endfor %}
+          </select>
+          {{ ui.field_error(errors, 'agent_id') }}
+        </div>
+      </fieldset>
+      {{ ui.input('source_note', 'Observação sobre a origem', v, errors, {type: 'textarea', max: 300, help: 'Exigida quando o órgão autuador difere do órgão do radar ou do agente.'}) }}
+    </fieldset>
+
+    <fieldset class="form-step">
+      <legend><span class="form-step__n" aria-hidden="true">3</span> Veículo autuado</legend>
+      <p class="hint">É o veículo da ocorrência, não uma viatura do inventário. Use placas e números fictícios.</p>
+      <div class="form-grid">
+        {{ ui.input('vehicle_plate', 'Placa', v, errors, {required: true, max: 10, autocomplete: 'off', placeholder: 'AAA1A23', help: 'Formato antigo ou Mercosul. Só o formato é conferido.'}) }}
+        {{ ui.select('vehicle_uf', 'UF de registro', ufs|reduce((carry, u) => carry|merge({(u): u}), {}), v.vehicle_uf ?? '', errors, {empty: 'Escolha…', required: true}) }}
+        {{ ui.input('vehicle_manufacturer', 'Marca', v, errors, {required: true, max: 80}) }}
+        {{ ui.input('vehicle_model', 'Modelo', v, errors, {required: true, max: 80}) }}
+        {{ ui.input('vehicle_species', 'Espécie', v, errors, {required: true, max: 40, help: 'Como consta na informação disponível (ex.: passageiro, carga).'}) }}
+        <div class="form-grid form-grid--pair">
+          {{ ui.input('vehicle_color', 'Cor', v, errors, {max: 30}) }}
+          {{ ui.input('vehicle_year', 'Ano', v, errors, {type: 'number', inputmode: 'numeric'}) }}
+        </div>
+        {{ ui.input('vehicle_renavam', 'RENAVAM', v, errors, {max: 11, inputmode: 'numeric', autocomplete: 'off', help: '11 dígitos, com os zeros à esquerda. O formato do RENAVAM não confirma o cadastro nem a regularidade do veículo.'}) }}
+        {{ ui.input('renavam_missing_reason', 'Se não há RENAVAM: por quê', v, errors, {max: 160, help: 'Exigido para registrar sem RENAVAM.'}) }}
+      </div>
+    </fieldset>
+
+    <fieldset class="form-step">
+      <legend><span class="form-step__n" aria-hidden="true">4</span> Documentação na ocorrência</legend>
+      {% if existing %}
+        <p>Situação atual: <strong>{{ doc_labels[existing.occ_doc_status] }}</strong>.</p>
+      {% endif %}
+      <p class="hint">Começa como "Não verificada", que é um estado legítimo (não significa regular). A conferência é lançada na ficha, depois de salvar, com resultado, fonte e data. Mudar placa, UF, RENAVAM, marca, modelo, espécie ou a data/hora da ocorrência pede uma nova conferência.</p>
+    </fieldset>
+
+    <fieldset class="form-step">
+      <legend><span class="form-step__n" aria-hidden="true">5</span> Revisão</legend>
+      <p><strong>Salvar este cadastro não emite uma autuação oficial.</strong> Não há consulta a Detran ou Senatran, cobrança nem protocolo.</p>
+      {% if registered %}
+        {{ ui.input('reason', 'Motivo da retificação', v, errors, {type: 'textarea', max: 300, required: true, help: 'Fica no histórico junto com o antes e o depois de cada campo.'}) }}
+      {% else %}
+        <p class="hint">Depois de salvar, a ficha mostra o que ainda falta e oferece "Registrar após conferência" quando os campos com * estiverem completos.</p>
+      {% endif %}
+    </fieldset>
+
+    <div class="form-actions">
+      <a class="btn btn--quiet" href="{{ existing ? url('/multas/' ~ existing.id) : url('/multas') }}">Cancelar</a>
+      <button class="btn btn--primary" type="submit">{{ registered ? 'Salvar retificação' : 'Salvar rascunho' }}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -47,7 +47,7 @@ abstract class FirebirdTestCase extends TestCase
     {
         $owner = self::ownerDatabase();
         $owner->transaction(static function (Database $db): void {
-            foreach (['URBAN_MISSION_LOG', 'URBAN_MISSION', 'URBAN_DAILY', 'URBAN_SNAPSHOT', 'URBAN_CELL', 'URBAN_REPLAY', 'URBAN_FORECAST', 'URBAN_SECTOR', 'URBAN_RUN', 'ANALYSIS_RESULT', 'ANALYSIS_RUN', 'ALERT', 'RESOURCE_EVENT', 'MAINTENANCE_ORDER', 'EQUIPMENT', 'AGENT', 'REGION', 'AGENCY', 'APP_META', 'LOGIN_ATTEMPT', 'APP_USER'] as $table) {
+            foreach (['FINE_DOCUMENT_CHECK', 'FINE_EVENT', 'FINE', 'URBAN_MISSION_LOG', 'URBAN_MISSION', 'URBAN_DAILY', 'URBAN_SNAPSHOT', 'URBAN_CELL', 'URBAN_REPLAY', 'URBAN_FORECAST', 'URBAN_SECTOR', 'URBAN_RUN', 'ANALYSIS_RESULT', 'ANALYSIS_RUN', 'ALERT', 'RESOURCE_EVENT', 'MAINTENANCE_ORDER', 'EQUIPMENT', 'AGENT', 'REGION', 'AGENCY', 'APP_META', 'LOGIN_ATTEMPT', 'APP_USER'] as $table) {
                 $db->execute("DELETE FROM {$table}");
             }
         });
