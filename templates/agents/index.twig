@@ -12,10 +12,6 @@
     </div>
     {% if app.user %}<a class="btn btn--primary" href="{{ url('/agentes/novo') }}">{{ ui.icon('i-plus', null, 'icon icon--pop') }}<span>Cadastrar agente</span></a>{% endif %}
   </div>
-  <details class="callout">
-    <summary><strong>Agente não é conta de acesso</strong></summary>
-    <p>Agentes são recursos operacionais mostrados no mapa. Quem entra no sistema usa uma conta (operador ou administrador), que é outra coisa e não aparece aqui.</p>
-  </details>
 
   <form class="stack section" method="get" action="{{ url('/agentes') }}" role="search" aria-label="Filtrar agentes">
     <div class="filters">
