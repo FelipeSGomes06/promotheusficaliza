@@ -68,7 +68,9 @@ final class PlanningController extends Controller
     public function replay(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $query = $request->getQueryParams();
-        $replay = $this->services->planning()->replay(self::param($query, 'semana'), 'baseline', self::param($query, 'revelar') === '1');
+        // A primeira abertura (sem semana escolhida) já vem revelada; navegando, o avaliador escolhe quando revelar.
+        $week = self::param($query, 'semana');
+        $replay = $this->services->planning()->replay($week, 'baseline', $week === null || self::param($query, 'revelar') === '1');
 
         return $this->render($request, $response, 'planning/replay.twig', ['replay' => $replay, 'methods' => SectorForecast::METHODS]);
     }
