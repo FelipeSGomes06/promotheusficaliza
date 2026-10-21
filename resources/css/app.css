@@ -1049,7 +1049,7 @@
   @keyframes score-ring { from { stroke-dasharray: 0 100; } }
   .score__value { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
   .score__value strong { font-size: 2.2rem; line-height: 1; color: var(--color-brand-700); animation: score-pop 0.6s 0.9s var(--ease-out-strong) both; }
-  .score__value span { font-size: 0.8rem; color: var(--color-muted); font-weight: 650; }
+  .score__value span { max-width: 96px; line-height: 1.2; font-size: 0.8rem; color: var(--color-muted); font-weight: 650; }
   @keyframes score-pop { from { opacity: 0; transform: scale(0.6); } }
   .score__facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px 22px; margin: 0; }
   .score__facts dt { font-size: 0.82rem; color: var(--color-muted); }
