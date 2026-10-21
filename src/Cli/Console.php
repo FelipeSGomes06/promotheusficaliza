@@ -112,6 +112,12 @@ final class Console
 
             return 0;
         }
+        if ($meta->text('fines_seed') === FineScenario::PREVIOUS) {
+            $count = FineScenario::upgrade($owner);
+            echo 'Cenário de multas atualizado para ' . FineScenario::VERSION . ": {$count} registro(s) com relato descritivo (alterações no histórico de cada um). Nada foi apagado.\n";
+
+            return 0;
+        }
         if ((int) $owner->database()->value("SELECT COUNT(*) FROM FINE WHERE CREATED_SOURCE = 'SEMENTE'") > 0) {
             fwrite(STDERR, "Conflito: há multas de uma carga anterior (parcial ou de outra versão) sem o marcador desta versão. Nada foi alterado.\n");
 
@@ -245,7 +251,8 @@ final class Console
                                               carrega o cenário sintético de Marília (--reset apaga e recarrega;
                                               compacto = 16 equipamentos e 7 agentes, o padrão; completo = 48 e 21)
               demo:seed-multas                acrescenta o cenário de multas (12 ou 40, conforme o perfil) a uma
-                                              demonstração já carregada, sem apagar nada; repetir não duplica
+                                              demonstração já carregada, sem apagar nada; repetir não duplica;
+                                              uma carga da versão anterior é atualizada (relatos)
               user:create <usuario> [--role=ADMIN|OPERADOR] [--name="Nome"]
                                               cria conta com senha gerada (exibida uma vez)
               sim:tick                        executa um ciclo do simulador (para cron); ignora o ciclo se

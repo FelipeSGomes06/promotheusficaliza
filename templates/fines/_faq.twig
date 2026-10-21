@@ -1,0 +1,31 @@
+{# Perguntas frequentes da aba Multas: termos técnicos em linguagem comum. Funciona sem JavaScript (<details>). #}
+<section class="section faq" aria-labelledby="faq-titulo" id="perguntas">
+  <h2 id="faq-titulo">Perguntas frequentes e termos usados</h2>
+  <p class="hint">Explicações gerais para ler esta demonstração. Não são orientação jurídica; prazos e regras dependem do documento e do órgão.</p>
+  <div class="faq__list">
+    <details><summary>O que é o AIT? É o mesmo que o código DEMO-MUL?</summary>
+      <p><strong>AIT</strong> é o Auto de Infração de Trânsito: o documento que o órgão de trânsito lavra ao constatar a infração, com número próprio. O código <strong>DEMO-MUL-000…</strong> é só o número interno deste sistema e nunca substitui o AIT. Quando o AIT ainda não chegou, o registro guarda o motivo.</p></details>
+    <details><summary>O que é RENAVAM? Por que ele pode faltar?</summary>
+      <p>É o número de 11 dígitos do Registro Nacional de Veículos Automotores, que identifica o veículo no cadastro (diferente da placa). Números antigos ganharam zeros à esquerda, por isso ele é guardado como texto. Ele nem sempre está à mão (por exemplo, quando o documento não foi apresentado); nesse caso o registro explica o motivo. O formato certo não prova que o veículo existe nem que está regular.</p></details>
+    <details><summary>Por que um registro de radar sempre tem placa?</summary>
+      <p>O radar identifica o veículo pela imagem. Sem placa legível não há como saber quem foi registrado, então o sistema não aceita registro de radar sem a placa lida. Marca, modelo, espécie e RENAVAM vêm depois, do cadastro do veículo informado pelo órgão; enquanto não forem transcritos, o registro fica em rascunho.</p></details>
+    <details><summary>Velocidade regulamentada, medida e considerada: qual a diferença?</summary>
+      <p><strong>Regulamentada</strong> é o limite da via. <strong>Medida</strong> é o que o aparelho registrou. <strong>Considerada</strong> é a medida depois de descontado o erro máximo admitido do aparelho — é ela que se compara com o limite. Os três números são copiados do documento; o sistema não calcula a tolerância.</p></details>
+    <details><summary>O que são Inmetro, certificado e verificação do radar?</summary>
+      <p>Medidores de velocidade passam por verificação metrológica periódica (feita pela rede do Inmetro). O documento da infração costuma trazer o registro do aparelho, o certificado e a data da última verificação. Quando esses dados faltam, o registro aparece como "a conferir" — o que não significa que a multa seja inválida.</p></details>
+    <details><summary>Agente da constatação e agente operador: qual a diferença?</summary>
+      <p>Na origem <strong>Agente de trânsito</strong>, o agente viu a infração. Na origem <strong>Radar</strong>, o aparelho registrou; se era um medidor portátil, o agente que o operava aparece como <strong>operador associado</strong>. O nome de quem usa o sistema nunca vira o agente da ocorrência.</p></details>
+    <details><summary>O que é o CRLV e o que quer dizer "Não verificada"?</summary>
+      <p>O <strong>CRLV</strong> (ou CRLV-e, digital) é o documento de licenciamento anual do veículo. <strong>Não verificada</strong> quer dizer que ninguém registrou uma conferência dos documentos para aquela data — não quer dizer que estejam em dia nem atrasados. <strong>Regularidade informada</strong> e <strong>Pendência informada</strong> são o que alguém viu e anotou, com a fonte.</p></details>
+    <details><summary>Por que há documentação "na data da ocorrência" e "posterior"?</summary>
+      <p>O que vale para a multa é a situação no dia do fato. Se o documento foi regularizado depois, isso aparece separado e não muda o que foi informado para a ocorrência. Se a placa ou a data forem corrigidas, as conferências antigas ficam no histórico e é preciso conferir de novo.</p></details>
+    <details><summary>Rascunho, registrado e registro cancelado</summary>
+      <p><strong>Rascunho</strong> aceita dados incompletos. <strong>Registrado</strong> quer dizer que os dados mínimos foram conferidos aqui — não é a emissão do auto. <strong>Registro cancelado</strong> é um cancelamento interno (engano, duplicidade): não anula a multa no órgão.</p></details>
+    <details><summary>Autuação, penalidade, defesa prévia e recurso</summary>
+      <p>A <strong>autuação</strong> é o início: o auto e a notificação de que a infração foi registrada. Nessa fase cabe a <strong>defesa prévia</strong>. Se ela não for aceita (ou não for apresentada), vem a <strong>notificação da penalidade</strong>, com o valor. Contra a penalidade cabe <strong>recurso em 1ª instância</strong> e depois em <strong>2ª instância</strong>. Pagar não encerra a discussão e recorrer não cancela o registro: por isso etapa, pagamento e contestação aparecem separados.</p></details>
+    <details><summary>Enquadramento, código e desdobramento</summary>
+      <p>O <strong>enquadramento</strong> é a regra de trânsito em que a conduta se encaixa, como escrito no documento. <strong>Código</strong> e <strong>desdobramento</strong> são a numeração da infração na tabela oficial. Aqui tudo é transcrito à mão e não é conferido contra a tabela.</p></details>
+    <details><summary>Os dados são reais? O sistema consulta o Detran?</summary>
+      <p>Não. Placas, RENAVAM, autos, pagamentos e pessoas desta demonstração são fictícios, e nada é consultado no Detran ou na Senatran, emitido, cobrado ou protocolado. Para conferir um caso real, use os serviços oficiais.</p></details>
+  </div>
+</section>

@@ -154,7 +154,8 @@ protocolado ([ADR-0017](adr/0017-aba-multas.md)). Use só dados fictícios.
   **Radar** (do inventário; pode indicar o agente operador do medidor) ou **Agente de trânsito**; com JavaScript, o bloco
   da outra origem some e não é enviado, e o que foi digitado nele volta se você trocar de ideia. Sem JavaScript, os dois
   blocos aparecem: preencha só o da origem escolhida. Velocidades (regulamentada, medida, considerada) só em excesso de
-  velocidade, transcritas do documento.
+  velocidade, transcritas do documento. Com origem **Radar**, a placa lida na imagem é obrigatória desde o rascunho:
+  sem placa legível o radar não gera registro; marca, modelo, espécie e RENAVAM podem vir depois.
 - **Ficha:** a próxima ação diz o que falta. **Registrar após conferência** aparece quando os campos com * estão
   completos; o servidor confere de novo e grava o retrato do radar ou do agente naquele momento. O código interno nunca
   substitui o número do AIT.
@@ -165,6 +166,10 @@ protocolado ([ADR-0017](adr/0017-aba-multas.md)). Use só dados fictícios.
   ficam em "Todas as conferências", marcadas como anteriores à retificação.
 - **Andamento:** etapa administrativa, pagamento e contestação são independentes (pagamento informado e recurso em
   análise podem coexistir). Valores em reais (`1.234,56`). O sistema não calcula prazos, descontos nem decide nada.
+- **O que aconteceu:** uma frase com o fato (quem constatou, veículo, local, data), as três velocidades quando é excesso
+  de velocidade e o relato escrito; os dados técnicos ficam em "Detalhes do registro".
+- **Perguntas frequentes:** no fim da lista e da ficha, os termos explicados (AIT, RENAVAM, velocidade considerada,
+  Inmetro, CRLV, "Não verificada", autuação, penalidade, defesa prévia, recurso, enquadramento).
 - **Mais ações:** retificar (registrado: exige motivo; o original fica no histórico) e **cancelar registro** (interno,
   com motivo; o registro fica somente leitura e não é anulação do auto).
 - **Erros:** campo inválido volta com tudo o que foi digitado e um resumo com links; se outra pessoa salvou antes, a tela
