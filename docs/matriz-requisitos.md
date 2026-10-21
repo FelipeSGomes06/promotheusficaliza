@@ -5,7 +5,7 @@ Requisito → onde está (fluxo/documento) → como foi verificado → o que fal
 da auditoria de 18/10/2026. Estado em 18/10/2026.
 
 A extensão "Planejar reforço" (`ML-*`, critérios de `ml/marilia-setores/02-ESPECIFICACAO-PARA-CLAUDE.md`) foi
-acrescentada em 20/10/2026 — seção no fim.
+acrescentada em 20/10/2026, e a aba Multas (`MUL-*`) em 21/10/2026 — seções no fim.
 
 Legenda da coluna Verificação: **T** = teste automatizado (Firebird real), **N** = verificação no navegador (capturas,
 medidas, console), **M** = conferência manual por comando. "Implementado" não significa "publicado".
@@ -106,3 +106,27 @@ medidas, console), **M** = conferência manual por comando. "Implementado" não 
 | ML-12 Documentação, autoria, atribuição; sem promessa de probabilidade, causa ou precisão não medida | README, guia, este documento, [IA e autoria](ia-e-autoria.md), [licenças](licencas-e-fontes.md), avisos globais | M revisão do texto | — |
 | Pedido de 20/10/2026 — grade de 2 km com 1 a 4 quadrados | Seção "Onde concentrar o reforço" ([método](planejamento-por-setores.md#quadrados-de-2-km-dentro-dos-setores)); experimento em `ml/marilia-grade-2km/` | T `UrbanImportTest` (grade confere com a execução; 4 arquivos fora do contrato), `PlanningTest::testGridIsAdded…`, `PlanningHttpTest` (1–4, padrão 4); N `18`, `19`; M teste único em 2026 | Missão continua por setor |
 | Pedido de 20/10/2026 — atualização mensal com 12 meses | `urban:update` + serviço `atualizador` ([método](planejamento-por-setores.md#atualização-automática-mensal-e-semanal)) | T `UrbanUpdaterTest` (PHP reproduz a referência, filtros, idempotência, recusas, falha de download, paridade do Poisson); M download real (12 s, arquivo idêntico); N `20` | Revisões grandes do Infosiga só geram aviso |
+
+## Extensão — aba Multas (21/10/2026)
+
+[ADR-0017](adr/0017-aba-multas.md) · [guia](guia-de-uso.md#multas-multas) · [rotas](http.md#multas) ·
+[evidência](evidencias/2026-10-21-multas.md). IDs do pacote de planejamento `promotheus-multas-2026-10-20` (documento 05).
+Capturas citadas: `2026-10-21-multas/capturas/`. Testes: `FineRulesTest` (U), `FinesTest` (T), `FinesHttpTest` (H).
+
+| ID | Fluxo / documento | Verificação | Pendência |
+|---|---|---|---|
+| MUL-01 Multas no menu; visitante sem dados; conta desativada perde acesso | Menu entre Agentes e Manutenção | H rotas sem conta, CSRF, `Origin`, conta desativada; N menu ativo | — |
+| MUL-02 Rascunho → completar → registrar; código interno ≠ AIT | Cadastro + ficha (próxima ação) | T `testDraftIsCompleted…`; H fluxo completo; N `02`, `06` | — |
+| MUL-03 Radar do inventário, agente do cadastro, recusa de origem manipulada, radar + operador | Etapa 2 do formulário | T `testSourceIsChecked…` (câmera, guarda, radar com origem Agente), snapshot com operador | — |
+| MUL-04 Veículo autuado fora do inventário; zeros do RENAVAM | Etapa 3; colunas da multa | T zeros após salvar/reabrir/buscar; nenhum `EQUIPMENT` criado | — |
+| MUL-05 RENAVAM ausente justificado registra; malformado → erro por campo | Etapa 3 | T `testRenavamKeeps…`; H 422 com link | — |
+| MUL-06 Não verificada; regularidade com fonte/referência; pendência com descrição; sem consulta externa | Ficha → conferência | T `testDocumentChecks…`; H 422 de pendência; N `08` | — |
+| MUL-07 Posterior não corrige a ocorrência; lançamento atrasado não substitui; retificação pede nova conferência | `FineDocumentStatus::select` + `SUBJECT_VERSION` | U seleção; T conferências; N `08`, `10` | — |
+| MUL-08 Três velocidades distintas; nulo ≠ zero; sem tolerância inventada | Bloco de radar | U coerência; T nulos e registro recusado mantendo o rascunho | — |
+| MUL-09 Pagamento + recurso coexistem; encerramento/cancelamento não simulam decisão | Ficha → andamento; Mais ações | T andamento e cancelamento; N `07`; `DemoProfileTest` (caso 8) | — |
+| MUL-10 Autor/origem/instante/motivo com antes/depois; web não altera históricos | `FINE_EVENT`, `FINE_DOCUMENT_CHECK`, `Migrator::APPEND_ONLY` | T `UPDATE`/`DELETE` negados, inclusive após `GRANT` indevido; N `09` | — |
+| MUL-11 Duas abas sem perda; repetição sem duplicar | `VERSION_NO` + `command_uid` | T versão, reenvio, outros dados, outra conta, processos paralelos; H duplo envio; N `05` | — |
+| MUL-12 Lista, total e três resumos do mesmo filtro; paginação; sem duplicar por JOIN | `FineRepository::search` (SNAPSHOT) | T 24 multas, 3 conferências + eventos numa delas, filtros; N resumos = linhas | — |
+| MUL-13 Sem JS, teclado, celular, movimento reduzido | Formulários comuns; `pages/multas.js` | H fluxo só com formulários; N sem JS, skip link, 390/360 px, zoom 200% (720 px), `prefers-reduced-motion` e `pf-motion` | Leitor de tela não testado |
+| MUL-14 CSP, prefixo, builds, telas existentes | — | H sem inline/CDN, prefixo vazio; N 0 violações; M build idêntico Node 24 × 22; suíte inteira OK (teste do retrospecto atualizado aos textos do redesenho) | — |
+| MUL-15 Migração vazia/existente; seed não destrutivo repetível; reset preserva contas | `0007_multas.sql`, `demo:seed-multas`, `DemoSeeder::wipe` | M banco da versão anterior atualizado sem reset (contagens iguais), segunda execução sem efeito, carga 2× sem duplicar; T recusa sem marcador, conflito de versão, manual preservado | Banco publicado não atualizado |

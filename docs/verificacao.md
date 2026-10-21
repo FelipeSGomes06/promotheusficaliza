@@ -3,6 +3,20 @@
 Ambiente: Windows 11 + Docker Desktop 29.7.2; contêineres `php:8.5.11-apache-trixie` (PDO_FIREBIRD, fbclient 4.0.5)
 e `firebirdsql/firebird:5.0.4-trixie`. Data: 18/10/2026. Só está listado aqui o que de fato rodou.
 
+## Aba Multas (21/10/2026)
+
+Projeto Compose isolado `pf-multas` (PHP 8.5.11, Firebird 5.0.4) sobre `main` em `3ef2904`.
+[Evidência completa](evidencias/2026-10-21-multas.md).
+
+| Verificação | Resultado |
+|---|---|
+| `vendor/bin/phpunit` | **199 testes, 1058 asserções, OK**. Antes da correção: 1 falha em `PlanningHttpTest::testReplayKeepsObservedCountsHiddenUntilRevealed`, igual no `HEAD` limpo (`3ef2904`) — o teste procurava textos que o redesenho do retrospecto trocou ("Revelar o que foi registrado" → "Revelar o que aconteceu"; "oculto" → "Registrado: ?"); o teste foi atualizado, o comportamento (registros ocultos até revelar) continua conferido |
+| Testes novos | `FineRulesTest`, `FinesTest` (15, inclusive processos concorrentes e rollback por falha no histórico), `FinesHttpTest` (7); `DemoProfileTest` confere 12/40 multas |
+| `phpstan analyse` (nível 6) · `php-cs-fixer fix --dry-run` · `composer validate --strict` · `composer audit` | 0 erros · 0 arquivos · válido · sem avisos |
+| `npm run build` · `npm run build:landing` | Node 24 (Windows) e `node:22-bookworm`: 20 arquivos com SHA-256 idênticos; landing sem mudança |
+| Migração | banco populado pela versão anterior: só a 0007 aplicada, contagens iguais; segunda execução sem efeito; `demo:seed-multas` 2× sem duplicar |
+| Navegador (`scripts/verificacao-interface/multas.cjs`) | 26 verificações OK, 0 erros de console, 0 violações de CSP; 19 capturas (1440, 390 e 360 px, movimento reduzido, sem JavaScript) |
+
 ## Planejar reforço por setores (20/10/2026)
 
 Projeto Compose isolado `fiscaliza-marilia` (PHP 8.5.11, Firebird 5.0.4) sobre `main` em `132dc7f`.

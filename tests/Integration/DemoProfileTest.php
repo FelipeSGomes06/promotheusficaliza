@@ -77,6 +77,12 @@ final class DemoProfileTest extends FirebirdTestCase
         self::assertGreaterThanOrEqual(1, $late, 'exemplo de evento atrasado que não altera a situação');
         $orphans = (int) $this->services->database()->value("SELECT COUNT(*) FROM RESOURCE_EVENT ev WHERE ev.RESOURCE_KIND = 'EQUIPAMENTO' AND NOT EXISTS (SELECT 1 FROM EQUIPMENT e WHERE e.ID = ev.RESOURCE_ID)");
         self::assertSame(0, $orphans);
+
+        // Multas: 12 casos, sem mudar os recursos da central nem entrar no histórico deles.
+        $fines = $this->services->fineQuery()->list(\Fiscaliza\Application\FineFilters::fromQuery(['cadastro' => 'todos']), 1);
+        self::assertSame(12, $fines['total']);
+        self::assertSame(1, $fines['paid']);
+        self::assertSame(0, (int) $this->services->database()->value("SELECT COUNT(*) FROM RESOURCE_EVENT WHERE SUMMARY CONTAINING 'DEMO-MUL'"));
     }
 
     public function testFullProfileRemainsAvailableForVolumeAndMethodology(): void
@@ -87,6 +93,7 @@ final class DemoProfileTest extends FirebirdTestCase
         self::assertSame(48, $snap['kpis']['equipment']['total']);
         self::assertSame(21, $snap['kpis']['agents']['total']);
         self::assertSame(DemoScenario::FULL, $this->services->metaRepository()->text('profile'));
+        self::assertSame(40, (int) $this->services->database()->value('SELECT COUNT(*) FROM FINE'), 'cenário de multas do perfil completo');
     }
 
     public function testCompactSelectionIsASubsetAndUnknownProfilesAreRejected(): void

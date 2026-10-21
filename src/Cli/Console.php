@@ -6,6 +6,8 @@ namespace Fiscaliza\Cli;
 
 use Fiscaliza\Application\UrbanImporter;
 use Fiscaliza\Application\UrbanUpdater;
+use Fiscaliza\Demo\DemoScenario;
+use Fiscaliza\Demo\FineScenario;
 use Fiscaliza\Infrastructure\Repository\MetaRepository;
 use Fiscaliza\Services;
 
@@ -25,6 +27,7 @@ final class Console
             return match ($command) {
                 'migrate' => $this->migrate(),
                 'demo:seed' => $this->seed($options),
+                'demo:seed-multas' => $this->seedFines(),
                 'user:create' => $this->createUser($options),
                 'sim:tick' => $this->simTick(),
                 'sim:run' => $this->simRun($options),
@@ -87,6 +90,36 @@ final class Console
         foreach ($summary as $label => $count) {
             echo str_pad($label, 34) . $count . PHP_EOL;
         }
+
+        return 0;
+    }
+
+    /**
+     * Acrescenta o cenário de multas a uma demonstração já carregada, sem apagar nada. Exige o marcador do conjunto
+     * sintético; a mesma versão não é carregada duas vezes; carga anterior parcial ou de outra versão é conflito.
+     */
+    private function seedFines(): int
+    {
+        $owner = $this->services->asMigrationIdentity();
+        $meta = $owner->metaRepository();
+        if ($meta->text('dataset') !== MetaRepository::DATASET_MARKER) {
+            fwrite(STDERR, "Recusado: este banco não tem o marcador do conjunto sintético de demonstração.\n");
+
+            return 1;
+        }
+        if ($meta->text('fines_seed') === FineScenario::VERSION) {
+            echo 'Cenário de multas já carregado (' . FineScenario::VERSION . "): nada foi duplicado.\n";
+
+            return 0;
+        }
+        if ((int) $owner->database()->value("SELECT COUNT(*) FROM FINE WHERE CREATED_SOURCE = 'SEMENTE'") > 0) {
+            fwrite(STDERR, "Conflito: há multas de uma carga anterior (parcial ou de outra versão) sem o marcador desta versão. Nada foi alterado.\n");
+
+            return 1;
+        }
+        $profile = $meta->text('profile') ?? DemoScenario::COMPACT;
+        $count = FineScenario::seed($owner, $profile);
+        echo "Multas de demonstração acrescentadas: {$count} (perfil {$profile}). Registros já existentes foram mantidos.\n";
 
         return 0;
     }
@@ -211,6 +244,8 @@ final class Console
               demo:seed [--reset] [--perfil=compacto|completo]
                                               carrega o cenário sintético de Marília (--reset apaga e recarrega;
                                               compacto = 16 equipamentos e 7 agentes, o padrão; completo = 48 e 21)
+              demo:seed-multas                acrescenta o cenário de multas (12 ou 40, conforme o perfil) a uma
+                                              demonstração já carregada, sem apagar nada; repetir não duplica
               user:create <usuario> [--role=ADMIN|OPERADOR] [--name="Nome"]
                                               cria conta com senha gerada (exibida uma vez)
               sim:tick                        executa um ciclo do simulador (para cron); ignora o ciclo se

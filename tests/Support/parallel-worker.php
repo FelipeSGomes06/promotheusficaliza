@@ -39,6 +39,8 @@ $action = match ($case) {
     // Dois gestores confirmando o mesmo agente: args = execução, setor, agente, conta.
     'mission' => static fn() => $services->planning()->confirm(['run_id' => $args[0], 'sector_id' => $args[1], 'method' => 'baseline', 'agent_id' => $args[2],
         'confirm' => '1', 'justification' => 'teste concorrente', 'note' => "gestor {$n}"], (int) $args[3]),
+    // Duas criações de multa ao mesmo tempo: args = AIT, órgão, chave do comando, conta.
+    'fine-create' => static fn() => $services->fines()->create(['description' => 'Corrida concorrente', 'agency_id' => $args[1], 'external_ait' => $args[0], 'command_uid' => $args[2]], (int) $args[3]),
     'http-login' => (static function () use ($http, $args) {
         // Sessão própria e token CSRF obtidos do formulário real, antes da largada.
         $form = (string) $http('GET', '/entrar', [], $args[2])->getBody();

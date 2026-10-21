@@ -23,6 +23,14 @@ final class ReferenceRepository
         return array_map(self::trim(...), $this->db->all('SELECT ID, NAME, ZONE, CENTER_LAT, CENTER_LNG FROM REGION ORDER BY NAME'));
     }
 
+    /** @return array<string, mixed>|null */
+    public function agency(int $id): ?array
+    {
+        $row = $this->db->one('SELECT ID, CODE, NAME, KIND FROM AGENCY WHERE ID = ?', [$id]);
+
+        return $row === null ? null : self::trim($row);
+    }
+
     public function agencyExists(int $id): bool
     {
         return (int) $this->db->value('SELECT COUNT(*) FROM AGENCY WHERE ID = ?', [$id]) === 1;

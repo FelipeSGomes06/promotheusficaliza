@@ -85,6 +85,7 @@ final class DemoSeeder
         $counts['alertas abertos'] = $alerts['opened'];
         $run = $this->services->analysis()->run(null);
         $counts['análise preventiva (execução)'] = $run['id'];
+        $counts['multas (cenário ' . FineScenario::VERSION . ')'] = FineScenario::seed($this->services, $this->profile);
 
         return $counts;
     }
@@ -97,7 +98,7 @@ final class DemoSeeder
     {
         $db = $this->services->database();
         $db->transaction(function () use ($db): void {
-            foreach (['URBAN_MISSION_LOG', 'URBAN_MISSION', 'ANALYSIS_RESULT', 'ANALYSIS_RUN', 'ALERT', 'RESOURCE_EVENT', 'MAINTENANCE_ORDER', 'EQUIPMENT', 'AGENT', 'REGION', 'AGENCY', 'APP_META'] as $table) {
+            foreach (['FINE_DOCUMENT_CHECK', 'FINE_EVENT', 'FINE', 'URBAN_MISSION_LOG', 'URBAN_MISSION', 'ANALYSIS_RESULT', 'ANALYSIS_RUN', 'ALERT', 'RESOURCE_EVENT', 'MAINTENANCE_ORDER', 'EQUIPMENT', 'AGENT', 'REGION', 'AGENCY', 'APP_META'] as $table) {
                 $db->execute("DELETE FROM {$table}");
             }
         });

@@ -1,0 +1,157 @@
+{
+  "base": "http://127.0.0.1:8099/promotheusfiscaliza",
+  "quando": "2026-10-21T21:20:52.534Z",
+  "capturas": [
+    "01-lista-filtro-radar",
+    "02-cadastro-radar",
+    "03-cadastro-agente",
+    "04-cadastro-erro-422",
+    "05-conflito-409",
+    "06-ficha-completa",
+    "07-pagamento-e-recurso",
+    "08-documentacao-apos-retificacao",
+    "09-historico-antes-depois",
+    "10-ocorrencia-x-posterior",
+    "11-lista-celular-390",
+    "12-ficha-celular-390",
+    "13-cadastro-celular-390",
+    "11-lista-celular-360",
+    "12-ficha-celular-360",
+    "13-cadastro-celular-360",
+    "14-movimento-reduzido-sistema",
+    "14-movimento-reduzido-pf-motion",
+    "15-sem-javascript-rascunho"
+  ],
+  "verificacoes": {
+    "resumos_do_mesmo_filtro": {
+      "ok": true,
+      "detalhe": {
+        "resumos": [
+          "6",
+          "3",
+          "1"
+        ],
+        "linhas": 6
+      }
+    },
+    "radar_mostra_so_bloco_radar": {
+      "ok": true,
+      "detalhe": {
+        "opacity": "1"
+      }
+    },
+    "agente_desabilita_bloco_radar": {
+      "ok": true,
+      "detalhe": null
+    },
+    "troca_rapida_termina_na_ultima_escolha": {
+      "ok": true,
+      "detalhe": {
+        "hidden": false,
+        "opacity": "1",
+        "transform": "none"
+      }
+    },
+    "valores_preservados_ao_alternar": {
+      "ok": true,
+      "detalhe": null
+    },
+    "erro_422_foco_no_resumo_e_digitacao": {
+      "ok": true,
+      "detalhe": null
+    },
+    "resumo_leva_ao_campo": {
+      "ok": true,
+      "detalhe": null
+    },
+    "conflito_409_mantem_digitacao": {
+      "ok": true,
+      "detalhe": null
+    },
+    "retificacao_conferencia_antiga_so_no_historico": {
+      "ok": true,
+      "detalhe": null
+    },
+    "zoom_200_sem_rolagem_horizontal /multas": {
+      "ok": true,
+      "detalhe": null
+    },
+    "zoom_200_sem_rolagem_horizontal /multas/8": {
+      "ok": true,
+      "detalhe": null
+    },
+    "zoom_200_sem_rolagem_horizontal /multas/novo": {
+      "ok": true,
+      "detalhe": null
+    },
+    "falha_de_conexao_sem_falso_sucesso": {
+      "ok": true,
+      "detalhe": null
+    },
+    "voltar_sem_botao_preso": {
+      "ok": true,
+      "detalhe": null
+    },
+    "teclado_skip_link": {
+      "ok": true,
+      "detalhe": null
+    },
+    "menu_ativo_multas": {
+      "ok": true,
+      "detalhe": null
+    },
+    "sem_rolagem_horizontal_lista_390": {
+      "ok": true,
+      "detalhe": null
+    },
+    "sem_rolagem_horizontal_ficha_390": {
+      "ok": true,
+      "detalhe": null
+    },
+    "sem_rolagem_horizontal_cadastro_390": {
+      "ok": true,
+      "detalhe": null
+    },
+    "sem_rolagem_horizontal_lista_360": {
+      "ok": true,
+      "detalhe": null
+    },
+    "sem_rolagem_horizontal_ficha_360": {
+      "ok": true,
+      "detalhe": null
+    },
+    "sem_rolagem_horizontal_cadastro_360": {
+      "ok": true,
+      "detalhe": null
+    },
+    "movimento_reduzido_sistema": {
+      "ok": true,
+      "detalhe": {
+        "opacity": "1",
+        "inline": ""
+      }
+    },
+    "movimento_reduzido_pf-motion": {
+      "ok": true,
+      "detalhe": {
+        "opacity": "1",
+        "inline": ""
+      }
+    },
+    "sem_js_blocos_visiveis": {
+      "ok": true,
+      "detalhe": null
+    },
+    "sem_js_rascunho_salvo": {
+      "ok": true,
+      "detalhe": "http://127.0.0.1:8099/promotheusfiscaliza/multas/20"
+    }
+  },
+  "console": [],
+  "recursos": [
+    "error: Failed to load resource: net::ERR_FAILED",
+    "error: Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)",
+    "error: Failed to load resource: the server responded with a status of 409 (Conflict)"
+  ],
+  "ok": true
+}

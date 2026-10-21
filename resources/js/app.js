@@ -28,6 +28,8 @@ if (page === 'central') {
   import('./pages/sobre.js').then((mod) => mod.init());
 } else if (page === 'planejar') {
   import('./pages/planejar.js').then((mod) => mod.init());
+} else if (page === 'multas' || page === 'multas-form') {
+  import('./pages/multas.js').then((mod) => mod.init());
 }
 
 initForms();
