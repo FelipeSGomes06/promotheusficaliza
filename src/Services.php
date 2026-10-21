@@ -11,6 +11,8 @@ use Fiscaliza\Application\AuthService;
 use Fiscaliza\Application\CentralQuery;
 use Fiscaliza\Application\EquipmentService;
 use Fiscaliza\Application\EventIngestor;
+use Fiscaliza\Application\FineQuery;
+use Fiscaliza\Application\FineService;
 use Fiscaliza\Application\History;
 use Fiscaliza\Application\MaintenanceService;
 use Fiscaliza\Application\PlanningService;
@@ -27,6 +29,7 @@ use Fiscaliza\Infrastructure\Repository\AlertRepository;
 use Fiscaliza\Infrastructure\Repository\AnalysisRepository;
 use Fiscaliza\Infrastructure\Repository\EquipmentRepository;
 use Fiscaliza\Infrastructure\Repository\EventRepository;
+use Fiscaliza\Infrastructure\Repository\FineRepository;
 use Fiscaliza\Infrastructure\Repository\MaintenanceRepository;
 use Fiscaliza\Infrastructure\Repository\MetaRepository;
 use Fiscaliza\Infrastructure\Repository\MissionRepository;
@@ -144,6 +147,34 @@ final class Services
     public function missionRepository(): MissionRepository
     {
         return $this->shared(__FUNCTION__, fn() => new MissionRepository($this->database()));
+    }
+
+    public function fineRepository(): FineRepository
+    {
+        return $this->shared(__FUNCTION__, fn() => new FineRepository($this->database()));
+    }
+
+    public function fines(): FineService
+    {
+        return $this->shared(__FUNCTION__, fn() => new FineService(
+            $this->database(),
+            $this->fineRepository(),
+            $this->referenceRepository(),
+            $this->equipmentRepository(),
+            $this->agentRepository(),
+            $this->clock(),
+        ));
+    }
+
+    public function fineQuery(): FineQuery
+    {
+        return $this->shared(__FUNCTION__, fn() => new FineQuery(
+            $this->database(),
+            $this->fineRepository(),
+            $this->equipmentRepository(),
+            $this->agentRepository(),
+            $this->clock(),
+        ));
     }
 
     public function history(): History

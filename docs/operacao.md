@@ -45,6 +45,7 @@ numa sessão de terminal, sem gravá-las no servidor).
 |---|---|
 | `migrate` | Aplica migrações pendentes (identidade de migração) e sincroniza GRANTs mínimos do usuário da aplicação. Nunca roda por HTTP. |
 | `demo:seed [--perfil=compacto\|completo]` | Carrega o cenário sintético e 240 dias de histórico; recusa se já houver dados. `--reset` apaga dados de domínio (preserva contas) apenas com `DEMO_ALLOW_RESET=true` e o marcador do conjunto sintético. `--perfil` sobrepõe `DEMO_PROFILE`. Para levar uma demonstração existente de 69 para 23 recursos: `demo:seed --reset` (mesmas proteções; banco sem o marcador sintético é recusado). |
+| `demo:seed-multas` | Acrescenta o cenário de multas (12 no perfil compacto, 40 no completo) a uma demonstração **já carregada**, sem apagar nada: exige o marcador do conjunto sintético; a mesma versão não é carregada duas vezes; carga de outra versão ou parcial é recusada sem tocar em nada. Roda com a identidade de migração. `demo:seed` já inclui as multas. |
 | `user:create <usuário> --role=ADMIN\|OPERADOR --name="…"` | Cria conta com senha aleatória exibida uma vez. |
 | `sim:tick` | Um ciclo do simulador. Se outro ciclo do mesmo diretório ainda estiver rodando, este é **ignorado** (trava em `var/simulador.lock`). |
 | `sim:run [--interval=5] [--duration=0]` | Simulador contínuo (serviço `simulator` do Compose), com a mesma trava a cada ciclo. Falha de banco: registra e tenta no próximo ciclo. |
@@ -62,6 +63,15 @@ rodar `urban:import` de novo grava os quadrados na execução existente. A migra
 (`docker compose up -d --build`): ela ganhou a extensão `zip`. A migração `0006_missao_por_quadrado.sql` só acrescenta a
 coluna anulável `CELL_NO` em `URBAN_MISSION`. Depois, `urban:update` uma vez e o serviço `atualizador`. `demo:seed --reset` apaga as missões fictícias junto com os agentes, mas mantém as execuções
 importadas (dados reais).
+
+### Atualizar um banco existente para a migração 0007 (multas)
+
+`migrate` aplica `0007_multas.sql` (somente `CREATE` de `FINE`, `FINE_DOCUMENT_CHECK` e `FINE_EVENT`; nada muda em
+recursos, contas ou histórico) e concede ao usuário da aplicação só leitura e inserção nas duas tabelas de histórico,
+revogando `UPDATE`/`DELETE` se tiverem sido concedidos antes. A aba fica vazia até haver cadastros; numa demonstração,
+`php bin/fiscaliza demo:seed-multas` acrescenta os casos sem apagar nada. Não use `demo:seed --reset` como procedimento
+de atualização. Verificado em 21/10/2026 num banco populado pela versão anterior
+([evidência](evidencias/2026-10-21-multas.md#migração-de-banco-existente)).
 
 ### Atualizar um banco existente para a migração 0002
 

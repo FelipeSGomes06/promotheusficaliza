@@ -11,6 +11,7 @@ use Fiscaliza\Http\Controller\AgentController;
 use Fiscaliza\Http\Controller\AuthController;
 use Fiscaliza\Http\Controller\CentralController;
 use Fiscaliza\Http\Controller\EquipmentController;
+use Fiscaliza\Http\Controller\FineController;
 use Fiscaliza\Http\Controller\OperationsController;
 use Fiscaliza\Http\Controller\PageController;
 use Fiscaliza\Http\Controller\PlanningController;
@@ -54,6 +55,7 @@ final class WebApp
         $auth = new AuthController($services, $view);
         $pages = new PageController($services, $view);
         $planning = new PlanningController($services, $view);
+        $fines = new FineController($services, $view);
         $operator = new RequireRole('OPERADOR', $base);
         $admin = new RequireRole('ADMIN', $base);
         $id = '{id:[0-9]+}';
@@ -65,13 +67,15 @@ final class WebApp
         $app->get('/saude', [$pages, 'health']);
 
         // Consulta: exige conta cadastrada pelo administrador (não há leitura pública nem cadastro aberto).
-        $app->group('', function (RouteCollectorProxy $g) use ($central, $equipment, $agents, $ops, $pages, $planning, $id): void {
+        $app->group('', function (RouteCollectorProxy $g) use ($central, $equipment, $agents, $ops, $pages, $planning, $fines, $id): void {
             $g->get('/', [$central, 'page']);
             $g->get('/api/central', [$central, 'snapshot']);
             $g->get('/equipamentos', [$equipment, 'index']);
             $g->get("/equipamentos/{$id}", [$equipment, 'show']);
             $g->get('/agentes', [$agents, 'index']);
             $g->get("/agentes/{$id}", [$agents, 'show']);
+            $g->get('/multas', [$fines, 'index']);
+            $g->get("/multas/{$id}", [$fines, 'show']);
             $g->get('/manutencao', [$ops, 'maintenance']);
             $g->get('/antecipacao', [$ops, 'analysis']);
             $g->get('/planejar', [$planning, 'page']);
@@ -80,7 +84,7 @@ final class WebApp
         })->add($operator);
 
         // Escrita: operador autenticado.
-        $app->group('', function (RouteCollectorProxy $g) use ($equipment, $agents, $ops, $planning, $id): void {
+        $app->group('', function (RouteCollectorProxy $g) use ($equipment, $agents, $ops, $planning, $fines, $id): void {
             $g->get('/equipamentos/novo', [$equipment, 'createForm']);
             $g->post('/equipamentos', [$equipment, 'store']);
             $g->get("/equipamentos/{$id}/editar", [$equipment, 'editForm']);
@@ -95,6 +99,14 @@ final class WebApp
             $g->post("/agentes/{$id}", [$agents, 'update']);
             $g->post("/agentes/{$id}/situacao", [$agents, 'changeStatus']);
             $g->post("/agentes/{$id}/arquivar", [$agents, 'archive']);
+            $g->get('/multas/novo', [$fines, 'createForm']);
+            $g->post('/multas', [$fines, 'store']);
+            $g->get("/multas/{$id}/editar", [$fines, 'editForm']);
+            $g->post("/multas/{$id}", [$fines, 'update']);
+            $g->post("/multas/{$id}/registrar", [$fines, 'register']);
+            $g->post("/multas/{$id}/conferencias", [$fines, 'addCheck']);
+            $g->post("/multas/{$id}/andamento", [$fines, 'progress']);
+            $g->post("/multas/{$id}/cancelar", [$fines, 'cancel']);
             $g->post("/manutencoes/{$id}/iniciar", [$ops, 'start']);
             $g->post("/manutencoes/{$id}/concluir", [$ops, 'complete']);
             $g->post("/manutencoes/{$id}/cancelar", [$ops, 'cancel']);

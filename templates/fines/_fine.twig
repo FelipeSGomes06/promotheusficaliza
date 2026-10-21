@@ -1,0 +1,24 @@
+{# Selos e formatações da aba Multas: texto + símbolo (nunca só cor). #}
+{% import '_ui.twig' as ui %}
+
+{% macro state(code) %}
+{% import '_ui.twig' as ui %}
+{% set labels = {RASCUNHO: ['Rascunho', '✎'], REGISTRADO: ['Registrado', '✓'], CANCELADO: ['Registro cancelado', '–']} %}
+{{ ui.status('FINE_' ~ code, labels[code][0] ?? code, labels[code][1] ?? '•') }}
+{%- endmacro %}
+
+{% macro doc(code, review_on = null, today = null) %}
+{% import '_ui.twig' as ui %}
+{% if review_on and today and review_on < today %}{{ ui.status('DOC_REVISAR', 'Revisar conferência', '↻') }}
+{% else %}
+{% set labels = {NAO_VERIFICADA: ['Documentação não verificada', '?'], REGULARIDADE_INFORMADA: ['Regularidade informada', '✓'], PENDENCIA_INFORMADA: ['Pendência informada', '!']} %}
+{{ ui.status('DOC_' ~ code, labels[code][0] ?? code, labels[code][1] ?? '•') }}
+{% endif %}
+{%- endmacro %}
+
+{% macro money(cents) %}{% if cents is null %}não informado{% else %}R$ {{ (cents / 100)|number_format(2, ',', '.') }}{% endif %}{% endmacro %}
+
+{% macro money_input(cents) %}{% if cents is not null %}{{ (cents / 100)|number_format(2, ',', '.') }}{% endif %}{% endmacro %}
+
+{# Valor de uma diferença do histórico, legível (listas viram texto; vazio vira travessão). #}
+{% macro diff_value(v) %}{% if v is null or v == '' %}—{% elseif v is iterable %}{{ v|json_encode(constant('JSON_UNESCAPED_UNICODE')) }}{% else %}{{ v }}{% endif %}{% endmacro %}
