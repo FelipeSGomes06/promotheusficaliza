@@ -25,6 +25,8 @@ demonstração manual: nada é consultado no Detran/Senatran, emitido, cobrado o
   bloqueio (multa → equipamento → agente). Radar pode ter agente operador associado (mesma coluna `AGENT_ID`). Ao
   registrar, o servidor grava um snapshot do recurso; arquivar ou mudar o cadastro depois não o reescreve. Órgão
   autuador diferente do órgão do recurso exige justificativa.
+- **Radar sempre com placa**: o radar identifica o veículo pela imagem, então origem Radar exige a placa lida desde o
+  rascunho (pedido do autor em 21/10/2026, depois do primeiro merge); os demais dados do veículo podem vir depois.
 - **Veículo autuado** como colunas da multa, separado de `EQUIPMENT` (viaturas). Placa normalizada só no formato;
   RENAVAM `VARCHAR(11)` com zeros à esquerda; ausência aceita com justificativa. Sem CPF, CNH ou proprietário.
 - **Documentação** temporal e imutável: cada conferência tem escopo (ocorrência ou posterior), data de referência,

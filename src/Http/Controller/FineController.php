@@ -81,7 +81,7 @@ final class FineController extends Controller
             throw new HttpError(409, 'Registro cancelado internamente: fica somente para consulta.');
         }
 
-        return $this->form($request, $response, self::formValues($fine) + ['version' => $fine['version_no'], 'command_uid' => FineService::newCommandUid()], [], $fine);
+        return $this->form($request, $response, FineService::formValues($fine) + ['version' => $fine['version_no'], 'command_uid' => FineService::newCommandUid()], [], $fine);
     }
 
     /** @param array<string, string> $args */
@@ -214,28 +214,6 @@ final class FineController extends Controller
             'values' => $values, 'errors' => $errors, 'existing' => $existing, 'changes' => $changes,
             'agencies' => $refs->agencies(), 'regions' => $refs->regions(), 'sources' => $this->services->fineRepository()->sourceOptions(),
         ] + self::vocabulary(), $status);
-    }
-
-    /**
-     * Cadastro gravado → nomes dos campos do formulário (data/hora local, operador do radar, dados do medidor).
-     *
-     * @param array<string, mixed> $fine
-     * @return array<string, mixed>
-     */
-    private static function formValues(array $fine): array
-    {
-        $values = array_intersect_key($fine, array_flip(FineService::CADASTRO));
-        $occurred = Time::fromDb($fine['occurred_at']);
-        $values['occurred_at'] = $occurred?->setTimezone(Time::local())->format('Y-m-d\TH:i');
-        if ($fine['source_kind'] === 'RADAR') {
-            $values['operator_agent_id'] = $fine['agent_id'];
-            $values['agent_id'] = null;
-        }
-        foreach (['meter_kind', 'inmetro_record', 'certificate', 'verified_on'] as $key) {
-            $values['radar_' . $key] = $fine['radar_details'][$key] ?? null;
-        }
-
-        return $values;
     }
 
     /** @return array<string, mixed> listas fechadas e rótulos usados pelos templates */

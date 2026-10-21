@@ -102,6 +102,7 @@ final class FinesTest extends FirebirdTestCase
             ['source_kind' => 'AGENTE', 'equipment_id' => '', 'operator_agent_id' => '', 'agent_id' => (string) $guard, 'agent_id'],
             ['agent_id' => (string) $this->agent, 'agent_id'],
             ['source_kind' => '', 'source_kind'],
+            ['vehicle_plate' => '', 'vehicle_plate'], // radar lê a placa na imagem: obrigatória até no rascunho
         ];
         foreach ($cases as $case) {
             $field = array_pop($case);
@@ -450,6 +451,14 @@ final class FinesTest extends FirebirdTestCase
 
         [$code, $out] = $run();
         self::assertSame([0, true], [$code, str_contains($out, 'nada foi duplicado')]);
+        // Carga da versão anterior: atualizada no lugar (relatos), com evento, sem apagar nem duplicar.
+        $owner->metaRepository()->set('fines_seed', 'multas-v1', 12, '2026-10-18 15:00:00');
+        [$code, $out] = $run();
+        self::assertSame([0, true], [$code, str_contains($out, 'atualizado')], $out);
+        self::assertSame('multas-v2', $owner->metaRepository()->text('fines_seed'));
+        self::assertSame(0, (int) $owner->database()->value("SELECT COUNT(*) FROM FINE WHERE CREATED_SOURCE = 'SEMENTE' AND RECORD_STATE <> 'CANCELADO' AND NOTES IS NULL"));
+        self::assertSame(0, (int) $owner->database()->value("SELECT COUNT(*) FROM FINE WHERE SOURCE_KIND = 'RADAR' AND VEHICLE_PLATE IS NULL"), 'todo registro de radar tem placa');
+        self::assertSame(13, (int) $owner->database()->value('SELECT COUNT(*) FROM FINE'));
         $owner->metaRepository()->set('fines_seed', 'versao-antiga', 0, '2026-10-18 15:00:00');
         self::assertSame(1, $run()[0], 'carga de outra versão já presente: conflito, sem tocar em nada');
         self::assertSame(13, (int) $owner->database()->value('SELECT COUNT(*) FROM FINE'));

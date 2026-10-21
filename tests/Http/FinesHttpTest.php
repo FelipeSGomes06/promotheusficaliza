@@ -127,12 +127,12 @@ final class FinesHttpTest extends FirebirdTestCase
         self::assertMatchesRegularExpression('/value="RADAR"[^>]*checked/', $new, 'radar sugerido pela query, sem gravar nada');
         self::assertSame(0, $this->fines());
 
-        $created = $this->request('POST', '/multas', ['_csrf' => $this->session->csrfToken(), 'command_uid' => $uid, 'description' => 'Rascunho pelo formulário', 'source_kind' => 'RADAR', 'equipment_id' => (string) $this->radar,
+        $created = $this->request('POST', '/multas', ['_csrf' => $this->session->csrfToken(), 'command_uid' => $uid, 'description' => 'Rascunho pelo formulário', 'source_kind' => 'RADAR', 'equipment_id' => (string) $this->radar, 'vehicle_plate' => 'DMO1A23',
             'created_source' => 'SEMENTE', 'record_state' => 'REGISTRADO']);
         self::assertSame(303, $created->getStatusCode());
         self::assertMatchesRegularExpression('#^' . self::BASE . '/multas/(\d+)$#', $created->getHeaderLine('Location'));
         $id = (int) basename($created->getHeaderLine('Location'));
-        $again = $this->request('POST', '/multas', ['_csrf' => $this->session->csrfToken(), 'command_uid' => $uid, 'description' => 'Rascunho pelo formulário', 'source_kind' => 'RADAR', 'equipment_id' => (string) $this->radar]);
+        $again = $this->request('POST', '/multas', ['_csrf' => $this->session->csrfToken(), 'command_uid' => $uid, 'description' => 'Rascunho pelo formulário', 'source_kind' => 'RADAR', 'equipment_id' => (string) $this->radar, 'vehicle_plate' => 'DMO1A23']);
         self::assertSame($created->getHeaderLine('Location'), $again->getHeaderLine('Location'), 'duplo envio do mesmo formulário');
         self::assertSame(1, $this->fines());
         self::assertSame(['RASCUNHO', 'MANUAL'], array_values(array_map('rtrim', $this->services->database()->one('SELECT RECORD_STATE, CREATED_SOURCE FROM FINE')))); // campos do servidor ignorados
