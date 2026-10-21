@@ -39,8 +39,8 @@
       {% endif %}
     </div>
     <dl class="week-summary__facts">
-      <div><dt>Dados até</dt><dd>{{ run.data_reference_through|br_date }}</dd></div>
-      <div><dt>Atualização</dt><dd>{{ run.files is empty ? 'automática' : 'importada' }} · {{ run.provenance.source.snapshot_date|br_date }}</dd></div>
+      <div><dt>Dados até</dt><dd>{{ run.data_reference_through|br_date }}<span class="week-summary__note">os 2 meses mais recentes ainda estão incompletos no Infosiga</span></dd></div>
+      <div><dt>Previsão</dt><dd>{{ run.files is empty ? 'calculada pelo sistema' : 'pacote inicial' }}<span class="week-summary__note">arquivo do Infosiga de {{ run.provenance.source.snapshot_date|br_date }}</span></dd></div>
       <div><dt>Cálculo</dt><dd>média do último ano</dd></div>
     </dl>
   </section>
