@@ -259,6 +259,25 @@ final class WebSecurityTest extends FirebirdTestCase
         self::assertSame('Minha versão', $this->services->equipmentRepository()->find($id)['model']);
     }
 
+    /** O quadro "Salvo agora × Sua versão" mostra o nome do órgão e do bairro certos (IDs não começam em 0). */
+    public function testEditConflictTableNamesTheRightAgencyAndRegion(): void
+    {
+        $refs = $this->services->referenceRepository();
+        $guarda = $refs->insertAgency('GCM', 'Guarda Municipal (teste)', 'GUARDA');
+        $zona = $refs->insertRegion('Zona Norte (teste)', 'NORTE', '-22.190000', '-49.940000');
+        $id = $this->createEquipment();
+        $old = (string) $this->services->equipmentRepository()->find($id)['version_no'];
+        $ana = $this->services->auth()->createUser('ana', 'Ana', 'OPERADOR', 'senha-de-teste-bem-longa')['id'];
+        $this->services->equipment()->update($id, $this->equipmentData(['agency_id' => (string) $guarda, 'region_id' => (string) $zona, 'version' => $old]), $ana);
+        $this->loginAs('OPERADOR');
+
+        $conflict = $this->request('POST', "/equipamentos/{$id}", ['_csrf' => $this->session->csrfToken(), 'version' => $old] + $this->equipmentData());
+        $html = (string) $conflict->getBody();
+        self::assertSame(409, $conflict->getStatusCode());
+        self::assertMatchesRegularExpression('#<th scope="row">Órgão responsável</th>\s*<td>Guarda Municipal \(teste\)</td>\s*<td>Departamento de Trânsito \(teste\)</td>#', $html);
+        self::assertMatchesRegularExpression('#<th scope="row">Bairro</th>\s*<td>Zona Norte \(teste\)</td>\s*<td>Centro</td>#', $html);
+    }
+
     public function testAcknowledgeAlertViaJsonUsesHeaderToken(): void
     {
         $this->createEquipment(['status' => 'FURTADO']);
