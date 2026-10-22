@@ -1,6 +1,6 @@
 /*
- * Planejar reforço: mapa da grade de quadrados de 2 km (linhas finas) com só os prioritários numerados, a partir do
- * JSON que o servidor deixa na página (#plan-data). Sem JavaScript, a lista ao lado tem a mesma informação.
+ * Planejar reforço: mapa de calor da grade de quadrados de 2 km (cor = sinistros esperados na semana) com os
+ * prioritários numerados por cima, a partir do JSON que o servidor deixa na página (#plan-data). Sem JavaScript, a lista ao lado tem a mesma informação.
  * Texto do servidor entra por textContent, nunca por innerHTML.
  */
 import { motion } from '../lib/motion.js';
@@ -22,20 +22,31 @@ function baseMap(box, data) {
   return map;
 }
 
+/*
+ * Faixa de cor 0–4 do quadrado. A previsão é muito concentrada (poucos quadrados no centro somam boa parte dos
+ * registros); em escala linear quase tudo cairia na faixa mais clara. A raiz da posição entre o mínimo e o máximo
+ * da semana espalha os valores baixos e mantém o maior sempre na faixa vermelha e o menor na mais clara. Quantis
+ * dariam faixas do mesmo tamanho, mas pintariam do mesmo vermelho quadrados com valores muito diferentes.
+ */
+const band = (value, min, max) => (max > min ? Math.min(4, Math.floor(Math.sqrt((value - min) / (max - min)) * 5)) : 0);
+
 function cellsMap(box, data) {
   const L = window.L;
   const g = data.grid;
   const map = baseMap(box, data);
-  const dLat = (g.north - g.south) / g.size;
-  const dLng = (g.east - g.west) / g.size;
-  for (let r = 0; r < g.size; r += 1) {
-    for (let c = 0; c < g.size; c += 1) {
-      L.rectangle([[g.south + r * dLat, g.west + c * dLng], [g.south + (r + 1) * dLat, g.west + (c + 1) * dLng]], { className: 'grid-line', interactive: false }).addTo(map);
-    }
-  }
+  const values = g.all.map((cell) => cell.expected);
+  const [min, max] = [Math.min(...values), Math.max(...values)];
+  const rect = (cell) => [[cell.south, cell.west], [cell.north, cell.east]];
+  const priority = new Set(g.cells.map((cell) => cell.rank));
+  // Demais quadrados: só cor e, ao tocar ou passar o mouse, o valor e o bairro (no mesmo texto da lista).
+  g.all.filter((cell) => !priority.has(cell.rank)).forEach((cell) => {
+    L.rectangle(rect(cell), { className: `heat heat--${band(cell.expected, min, max)}` })
+      .bindTooltip(text(cell.label), { direction: 'top', className: 'heat-tip' })
+      .addTo(map);
+  });
   // Quadrados prioritários: número no centro; tocar abre o passo 2 para aquele quadrado (a lista faz o mesmo).
   g.cells.forEach((cell) => {
-    const shape = L.rectangle([[cell.south, cell.west], [cell.north, cell.east]], { className: `cell-shape${cell.selected ? ' cell-shape--selected' : ''}` })
+    const shape = L.rectangle(rect(cell), { className: `heat heat--${band(cell.expected, min, max)} cell-shape${cell.selected ? ' cell-shape--selected' : ''}` })
       .bindTooltip(text(String(cell.rank)), { permanent: true, direction: 'center', className: `cell-label${cell.selected ? ' is-selected' : ''}` })
       .addTo(map);
     shape.on('click', () => window.location.assign(cell.href));
@@ -65,5 +76,5 @@ export function init() {
   if (!source || !window.L) return;
   const data = JSON.parse(source.textContent);
   const cells = document.getElementById('cell-map');
-  if (cells && data.grid && data.grid.cells.length) cellsMap(cells, data);
+  if (cells && data.grid && data.grid.all.length) cellsMap(cells, data);
 }

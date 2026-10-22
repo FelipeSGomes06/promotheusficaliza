@@ -76,7 +76,11 @@
       </div>
       <p class="hint">A área foi dividida em quadrados iguais de 2 × 2 km. Aqui {{ week.cells|length == 1 ? 'está o que mais teve' : 'estão os ' ~ week.cells|length ~ ' que mais tiveram' }} sinistros no último ano. <strong>Escolha um</strong> para ver quem pode ir.</p>
       <div class="plan-grid">
-        <div class="plan-map plan-map--cells" id="cell-map" role="img" aria-label="Grade de quadrados de 2 km com os prioritários numerados de 1 a {{ week.cells|length }}; o escolhido fica destacado. A mesma informação está na lista."></div>
+        {% set hot = week.grid|first %}
+        <div class="plan-map-wrap">
+          <div class="plan-map plan-map--cells" id="cell-map" role="img" aria-label="Mapa de calor da área em quadrados de 2 km: quanto mais vermelho, mais sinistros esperados na semana. O mais vermelho é {{ here.place(hot) }}, com {{ hot.expected|number_format(1, ',', '.') }}. Os prioritários estão numerados de 1 a {{ week.cells|length }}; o escolhido fica destacado. Os valores dos prioritários estão na lista."></div>
+          <p class="heat-legend"><span>menos</span><span class="heat-legend__bar" aria-hidden="true"></span><span>mais</span><span class="heat-legend__text">Cor = sinistros esperados na semana, por quadrado de 2 km</span></p>
+        </div>
         <ol class="sector-list">
           {% for c in week.cells %}
             {% set chosen = cell and c.cell_no == cell.cell_no %}

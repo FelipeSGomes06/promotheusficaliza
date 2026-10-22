@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fiscaliza\Infrastructure\Repository;
 
+use Fiscaliza\Domain\SectorForecast;
 use Fiscaliza\Infrastructure\Database;
 
 /**
@@ -102,10 +103,20 @@ final class UrbanRepository
         );
     }
 
+    /**
+     * Todos os quadrados da execução (a grade inteira), na ordem de prioridade: o mapa de calor pinta cada um.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function allCells(int $runId): array
+    {
+        return $this->topCells($runId, SectorForecast::GRID ** 2);
+    }
+
     /** @return array<string, mixed>|null quadrado da execução, com a posição */
     public function cell(int $runId, int $cellNo): ?array
     {
-        return array_values(array_filter($this->topCells($runId, 64), static fn(array $c): bool => $c['cell_no'] === $cellNo))[0] ?? null;
+        return array_values(array_filter($this->allCells($runId), static fn(array $c): bool => $c['cell_no'] === $cellNo))[0] ?? null;
     }
 
     /**

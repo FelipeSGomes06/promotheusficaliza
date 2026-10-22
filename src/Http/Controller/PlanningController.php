@@ -55,12 +55,15 @@ final class PlanningController extends Controller
             $map = [
                 'tiles' => $this->services->config->get('MAP_TILE_URL', 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
                 'attribution' => $this->services->config->get('MAP_TILE_ATTRIBUTION', '&copy; colaboradores do OpenStreetMap'),
-                // Grade inteira (simétrica, 8 × 8) e só os quadrados prioritários, numerados e clicáveis.
+                // Grade inteira (8 × 8) pintada pelo valor esperado e, por cima, só os prioritários, numerados e clicáveis.
                 'grid' => [
                     'south' => min(array_column($week['sectors'], 'south')), 'north' => max(array_column($week['sectors'], 'north')),
                     'west' => min(array_column($week['sectors'], 'west')), 'east' => max(array_column($week['sectors'], 'east')),
-                    'size' => SectorForecast::GRID,
-                    'cells' => array_map(static fn(array $c): array => ['rank' => $c['rank_no'], 'south' => $c['south'], 'north' => $c['north'],
+                    'all' => array_map(static fn(array $c): array => ['rank' => $c['rank_no'], 'sector_id' => $c['sector_id'], 'expected' => $c['expected'],
+                        'south' => $c['south'], 'north' => $c['north'], 'west' => $c['west'], 'east' => $c['east'],
+                        'label' => ucfirst(PlanningService::placeLabel($c['places'])) . ' · ' . $c['sector_name'] . ': '
+                            . number_format($c['expected'], 1, ',', '.') . ' sinistros esperados na semana'], $week['grid']),
+                    'cells' => array_map(static fn(array $c): array => ['rank' => $c['rank_no'], 'expected' => $c['expected'], 'south' => $c['south'], 'north' => $c['north'],
                         'west' => $c['west'], 'east' => $c['east'], 'selected' => $c['cell_no'] === ($cell['cell_no'] ?? null),
                         'href' => $base . http_build_query(['quadrado' => $c['rank_no'], 'quadrados' => $cellCount]) . '#agente'], $week['cells']),
                 ],

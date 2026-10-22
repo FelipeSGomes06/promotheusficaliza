@@ -77,6 +77,37 @@ final class PlanningHttpTest extends FirebirdTestCase
         self::assertStringContainsString('<strong>setor noroeste</strong>', $second, 'a explicação é do setor do quadrado escolhido');
     }
 
+    public function testHeatMapCarriesTheWholeGridWhileTheListKeepsOnlyThePriorities(): void
+    {
+        $this->services->urbanImporter()->import(
+            self::ROOT . '/' . UrbanImporter::DEFAULT_RUN,
+            self::ROOT . '/' . UrbanImporter::DEFAULT_SECTORS,
+            self::ROOT . '/' . UrbanImporter::DEFAULT_MANIFEST,
+            self::ROOT . '/' . UrbanImporter::DEFAULT_GRID,
+        );
+        $this->loginAs('OPERADOR');
+        $html = (string) $this->request('GET', '/planejar?quadrados=2&quadrado=2')->getBody();
+        self::assertSame(1, preg_match('#<script type="application/json" id="plan-data">(.*?)</script>#s', $html, $m));
+        $grid = json_decode($m[1], true, flags: JSON_THROW_ON_ERROR)['grid'];
+
+        $rows = $this->services->database()->all('SELECT RANK_NO, SECTOR_ID, EXPECTED FROM URBAN_CELL ORDER BY RANK_NO');
+        self::assertCount(64, $rows);
+        self::assertSame(
+            array_map(static fn(array $r): array => [(int) $r['rank_no'], trim((string) $r['sector_id'])], $rows),
+            array_map(static fn(array $c): array => [$c['rank'], $c['sector_id']], $grid['all']),
+            'os 64 quadrados, um a um, na ordem de prioridade',
+        );
+        foreach ($rows as $i => $r) {
+            self::assertEqualsWithDelta((float) $r['expected'], $grid['all'][$i]['expected'], 1e-12, "quadrado {$r['rank_no']}: mesmo valor de URBAN_CELL");
+        }
+        self::assertSame('Centro · Setor sudoeste: 3,8 sinistros esperados na semana', $grid['all'][0]['label'], 'tooltip no formato da lista');
+        self::assertSame([1, 2], array_column($grid['cells'], 'rank'), 'clicáveis: só os prioritários pedidos');
+        self::assertSame([false, true], array_column($grid['cells'], 'selected'));
+        self::assertSame(2, substr_count($html, '<a class="sector-card cell-card'), 'a lista continua só com os prioritários');
+        self::assertStringContainsString('Cor = sinistros esperados na semana, por quadrado de 2 km', $html);
+        self::assertStringContainsString('aria-label="Mapa de calor da área em quadrados de 2 km', $html);
+    }
+
     public function testConfirmingAMissionNeedsCsrfAnAccountAndAnEligibleAgent(): void
     {
         $runId = $this->import();
