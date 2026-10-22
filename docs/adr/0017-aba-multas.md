@@ -50,7 +50,9 @@ demonstração manual: nada é consultado no Detran/Senatran, emitido, cobrado o
 - **Interface** no padrão das telas existentes (lista `.rows`, `kpi-strip`, formulário por etapas numeradas, ficha com
   próxima ação), ícone `i-fines` no sprite local, tudo funcional sem JavaScript. `pages/multas.js` só esconde e
   desabilita o bloco de origem que não se aplica (preservando o que foi digitado) com entrada de 0,2 s que respeita
-  `pf-motion`; sem novo temporizador, sem 3D, sem biblioteca nova.
+  `pf-motion`; sem novo temporizador, sem 3D, sem biblioteca nova. Desde 22/10/2026 também tira da vista os campos
+  que só valem numa situação (`data-show-if`), sem desabilitá-los: continuam sendo enviados e reaparecem com valor ou
+  erro.
 - **Demonstração**: 12 casos no perfil compacto e 40 no completo, gravados pelos mesmos casos de uso com origem
   `SEMENTE`; `demo:seed-multas` acrescenta o cenário a um banco de demonstração existente sem apagar nada (marcador
   `fines_seed`; outra versão ou carga parcial é conflito).
@@ -61,7 +63,8 @@ demonstração manual: nada é consultado no Detran/Senatran, emitido, cobrado o
 - Um repositório (`FineRepository`) para projeção, constatações e eventos, em vez de três: é o mesmo agregado.
   `FineDocumentStatus` e `FineRules` ficaram como regras puras; `FineQuery` e `FineFilters` como no plano.
 - A conferência documental é lançada **na ficha**, depois de salvar, e não junto do cadastro: um único caminho, com
-  evento próprio, que já conhece a data da ocorrência e a versão do sujeito. O formulário explica isso na etapa 4.
+  evento próprio, que já conhece a data da ocorrência e a versão do sujeito. O formulário explica isso na dica da
+  etapa "Veículo autuado" (a antiga etapa 4, só de texto, saiu em 22/10/2026: `docs/evidencias/2026-10-22-multas-campos.md`).
 - Campos de valor em reais (`nominal_amount`, `paid_amount`) na interface, gravados em `*_CENTS`; motivos com nomes
   próprios por formulário da ficha (`check_reason`, `progress_reason`, `reason`) para não repetir `id` na página.
 - Caso 11 do cenário: em vez de arquivar um recurso da demonstração (o que mudaria a central), usa um radar que hoje
