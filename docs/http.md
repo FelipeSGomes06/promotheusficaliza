@@ -118,7 +118,7 @@ volta para `/manutencao`.
 
 | Rota | Campos | Efeito |
 |---|---|---|
-| `POST /planejar/missoes` | `run_id`, `sector_id`, `method`, `agent_id`, `confirm=1` (obrigatório), `justification` (≤300; obrigatória se o agente não for o sugerido), `support_point` (≤160), `note` (≤300) | O servidor recalcula tudo: a execução precisa ser a mais recente e o período não pode ter terminado; o agente é travado e reconferido (trânsito, não arquivado, em atividade, sem missão); estimativa, posição e motivo vêm do banco, nunca do navegador; autor = conta da sessão. Conflito (outra pessoa reservou o agente) → aviso, nada gravado. Sem comunicação externa. |
+| `POST /planejar/missoes` | `run_id`, `sector_id`, `method`, `agent_id`, `suggested_agent_id` (o sugerido que a tela mostrou; só decide se a justificativa é exigida), `confirm=1` (obrigatório), `justification` (≤300; obrigatória se o agente não for o sugerido mostrado nem o primeiro elegível do momento), `support_point` (≤160), `note` (≤300) | O servidor recalcula tudo: a execução precisa ser a mais recente e o período não pode ter terminado; o agente é travado e reconferido (trânsito, não arquivado, em atividade, sem missão); estimativa, posição e motivo vêm do banco, nunca do navegador; autor = conta da sessão. Campo inválido → 422 com a tela no passo 3, o erro junto do campo e o que foi digitado. Conflito (outra pessoa reservou o agente) → aviso, nada gravado. Sem comunicação externa. |
 | `POST /planejar/missoes/{id}/concluir` · `/cancelar` | `reason` (1–300) | Só missão `CONFIRMADA`; já encerrada → aviso. Libera o agente e grava a transição. |
 
 ### Multas

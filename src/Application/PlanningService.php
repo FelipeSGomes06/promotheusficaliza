@@ -113,6 +113,7 @@ final class PlanningService
         $sectorId = (string) $input->choice('sector_id', SectorForecast::SECTORS);
         $method = (string) $input->choice('method', array_keys(SectorForecast::METHODS));
         $agentId = (int) $input->int('agent_id', 1, PHP_INT_MAX);
+        $suggestedId = $input->int('suggested_agent_id', 1, PHP_INT_MAX, false);
         $justification = $input->text('justification', 300, false);
         $support = $input->text('support_point', 160, false);
         $note = $input->text('note', 300, false);
@@ -123,7 +124,7 @@ final class PlanningService
         $input->assertValid();
         $now = $this->clock->now();
 
-        return $this->db->transaction(function () use ($runId, $sectorId, $method, $agentId, $justification, $support, $note, $cellNo, $now, $actorId): int {
+        return $this->db->transaction(function () use ($runId, $sectorId, $method, $agentId, $suggestedId, $justification, $support, $note, $cellNo, $now, $actorId): int {
             $run = $this->urban->latestRun();
             if ($run === null || $run['id'] !== $runId) {
                 throw new RuleViolation('A previsão foi atualizada depois que você abriu a tela. Revise os números novos antes de confirmar.');
@@ -155,7 +156,9 @@ final class PlanningService
             }
             $eligible = $this->candidates($target)['eligible'];
             $chosen = array_values(array_filter($eligible, static fn(array $c): bool => $c['id'] === $agentId))[0] ?? self::candidate($agent, $target, $now);
-            $selection = ($eligible[0]['id'] ?? null) === $agentId ? 'SUGERIDO' : 'MANUAL';
+            // A ordem muda com o relógio e o simulador: vale o sugerido que a tela mostrou (ou o primeiro de agora).
+            // Limite conhecido: suggested_agent_id vem do cliente e só decide se a justificativa é exigida (auditoria, não segurança).
+            $selection = in_array($agentId, [$suggestedId, $eligible[0]['id'] ?? null], true) ? 'SUGERIDO' : 'MANUAL';
             if ($selection === 'MANUAL' && $justification === null) {
                 throw new ValidationFailed(['justification' => 'Explique por que escolheu um agente diferente do sugerido.']);
             }

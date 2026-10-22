@@ -1,0 +1,1 @@
+import{r as e,t}from"./motion-C-xOv77E.js";function n(n,r,i=!0){let a=!n.hidden;a!==r&&(e.killTweensOf(n),n.hidden=!r,`disabled`in n&&(n.disabled=!r),r?i&&!a&&!t.reduced()&&e.fromTo(n,{opacity:0,y:8},{opacity:1,y:0,duration:t.d(.2),ease:`power3.out`,clearProps:`opacity,transform`}):e.set(n,{clearProps:`opacity,transform`}))}export{n as t};
