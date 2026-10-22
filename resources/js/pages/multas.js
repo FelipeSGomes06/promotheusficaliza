@@ -4,23 +4,7 @@
  * fica oculto e desabilitado (não é enviado), mas o que foi digitado nele continua no lugar se a pessoa voltar atrás.
  * Movimento: entrada curta (opacidade + 8 px) só no bloco que aparece; a troca rápida termina sempre na última escolha.
  */
-import { gsap } from 'gsap';
-import { motion } from '../lib/motion.js';
-
-function reveal(el, on, animate = true) {
-  const was = !el.hidden;
-  if (was === on) return; // nada muda: uma entrada em andamento continua até o fim
-  gsap.killTweensOf(el);
-  el.hidden = !on;
-  if ('disabled' in el) el.disabled = !on;
-  if (!on) {
-    gsap.set(el, { clearProps: 'opacity,transform' });
-    return;
-  }
-  if (animate && !was && !motion.reduced()) {
-    gsap.fromTo(el, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: motion.d(0.2), ease: 'power3.out', clearProps: 'opacity,transform' });
-  }
-}
+import { reveal } from '../lib/reveal.js';
 
 function sourceForm(form) {
   const radios = form.querySelectorAll('[data-fine-source]');
