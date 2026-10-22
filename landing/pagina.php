@@ -152,10 +152,6 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
         <?= $captura('sistema-visao-geral', [800, 1280, 1920], [1920, 1200], '(min-width: 1260px) 1180px, calc(100vw - 32px)',
             'Tela Visão geral de Marília no Promotheus Fiscaliza: menu com Visão geral, Equipamentos, Agentes, Multas, Manutenção, Revisões recomendadas e Planejar reforço; resumos (9 de 14 equipamentos em serviço funcionando, 9 recursos que precisam de atenção, 3 manutenções urgentes), filtros, a lista de recursos, o mapa do centro de Marília e a ficha aberta de um radar na Avenida Rio Branco com manutenção vencida.',
             [780, 1300], 'vitrine__tela') ?>
-        <span class="vitrine__ponto vitrine__ponto--1" aria-hidden="true">1</span>
-        <span class="vitrine__ponto vitrine__ponto--2" aria-hidden="true">2</span>
-        <span class="vitrine__ponto vitrine__ponto--3" aria-hidden="true">3</span>
-        <span class="vitrine__ponto vitrine__ponto--4" aria-hidden="true">4</span>
       </div>
       <figcaption>
         <ol class="vitrine__legenda" data-vitrine-legenda>
