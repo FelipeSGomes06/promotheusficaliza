@@ -56,7 +56,7 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
   <meta property="og:image" content="<?= e(rtrim($publica, '/') . asset('img/compartilhar-1200x630.jpg')) ?>">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Marca do Promotheus Fiscaliza sobre a silhueta dos prédios de Marília/SP.">
+  <meta property="og:image:alt" content="Marca do Promotheus Fiscaliza sobre a foto do terminal rodoviário de Marília/SP.">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="<?= e(asset('img/favicon.svg')) ?>" type="image/svg+xml">
   <link rel="preload" href="/landing-assets/promotheus/build/overpass-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -124,10 +124,10 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
 
       <div class="palco" data-palco data-montagem="<?= $hero['montagem'] ? '1' : '0' ?>" data-duracao="<?= e((float) $hero['duracao']) ?>" data-ponteiro="<?= $hero['ponteiro'] ? '1' : '0' ?>">
         <div class="palco__foto" aria-hidden="true">
-          <!-- Marília/SP vista de longe: Filipe Mesquita de Oliveira / Wikimedia Commons, CC BY-SA 3.0 (recorte e cor). -->
+          <!-- Terminal rodoviário de Marília/SP: foto de Pedro Monteiro (@pvictormonteiro), recorte e tratamento de cor. -->
           <picture data-palco-foto>
-            <source media="(max-width: 959.98px)" srcset="<?= $img('marilia-720.webp') ?>" width="720" height="430">
-            <img src="<?= $img('marilia-1280.webp') ?>" width="1280" height="764" alt="" decoding="async" fetchpriority="high">
+            <source media="(max-width: 959.98px)" srcset="<?= $img('marilia-720.webp') ?>" width="720" height="360">
+            <img src="<?= $img('marilia-1280.webp') ?>" width="1280" height="640" alt="" decoding="async" fetchpriority="high">
           </picture>
         </div>
         <div class="palco__sombra" aria-hidden="true" data-palco-sombra></div>
@@ -405,7 +405,7 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
     <p class="rodape__marca"><svg class="icone" aria-hidden="true" focusable="false"><use href="#marca"></use></svg>Promotheus Fiscaliza · DSIN Coder Challenge 2026, etapa F.O.G.O.</p>
     <p>Desenvolvido por <a href="<?= e($config['autor']['url']) ?>" rel="author"><?= e($config['autor']['nome']) ?></a>.</p>
     <p class="rodape__aviso">Projeto demonstrativo: equipamentos, agentes, posições, missões e multas são fictícios. O planejamento usa contagens reais agregadas de sinistros. Fonte: Infosiga-SP / Detran-SP, CC BY 4.0. Sem integração com órgãos ou equipamentos reais.</p>
-    <p class="rodape__aviso">Foto de Marília na abertura: <a href="https://commons.wikimedia.org/wiki/File:Mar%C3%ADlia_panorama3.JPG">Filipe Mesquita de Oliveira / Wikimedia Commons</a>, <a href="https://creativecommons.org/licenses/by-sa/3.0/deed.pt-br" rel="license">CC BY-SA 3.0</a>; recorte e tratamento de cor, sob a mesma licença. Mapas das capturas © colaboradores do OpenStreetMap.</p>
+    <p class="rodape__aviso">Foto de Marília na abertura: Pedro Monteiro (@pvictormonteiro); recorte e tratamento de cor. Mapas das capturas © colaboradores do OpenStreetMap.</p>
   </div>
 </footer>
 
