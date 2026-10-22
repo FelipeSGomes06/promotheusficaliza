@@ -222,10 +222,10 @@ final class FineController extends Controller
         return [
             'kinds' => FineRules::KINDS, 'source_kinds' => FineRules::SOURCES, 'states' => FineRules::STATES, 'stages' => FineRules::STAGES,
             'payments' => FineRules::PAYMENTS, 'contests' => FineRules::CONTESTS, 'contest_kinds' => FineRules::CONTEST_KINDS, 'ufs' => FineRules::UFS,
-            'doc_labels' => FineDocumentStatus::LABELS, 'doc_sources' => FineDocumentStatus::SOURCE_TYPES, 'doc_scopes' => FineDocumentStatus::SCOPES,
+            'doc_labels' => FineDocumentStatus::LABELS, 'doc_sources' => FineDocumentStatus::SOURCE_TYPES, 'doc_scopes' => FineDocumentStatus::SCOPES, 'review_choices' => FineDocumentStatus::REVIEW_CHOICES,
             'labels' => FineRules::LABELS + FineService::PROGRESS_LABELS + ['scope' => 'Referência', 'checked_at' => 'Conferido em', 'document_status' => 'Resultado',
                 'source_type' => 'Fonte', 'source_reference' => 'Referência da fonte', 'crlv_exercise' => 'Exercício do CRLV', 'pending_items' => 'Pendência apontada',
-                'review_on' => 'Revisar em', 'effective_on' => 'Data a que se refere'],
+                'review_on' => 'Lembrar de conferir de novo em', 'review_choice' => 'Lembrete', 'effective_on' => 'Data a que se refere'],
             'records' => FineFilters::RECORDS, 'sorts' => FineFilters::SORTS, 'speed_rule' => FineRules::SPEED_RULE,
         ];
     }
