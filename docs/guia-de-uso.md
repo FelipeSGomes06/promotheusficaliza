@@ -145,7 +145,7 @@ Registro **demonstrativo** de infrações informadas à mão: nada é consultado
 protocolado ([ADR-0017](adr/0017-aba-multas.md)). Use só dados fictícios.
 
 - **Lista:** três resumos do mesmo filtro da lista — registros, **a conferir** (rascunhos, documentação não verificada
-  ou com pendência, revisão marcada que passou, dados do medidor ou evidência a conferir) e **pagamento informado**
+  ou com pendência, lembrete de conferir de novo que passou, dados do medidor ou evidência a conferir) e **pagamento informado**
   (lançado à mão; não é arrecadação). Busca por código interno (`DEMO-MUL-000023`), AIT, placa ou RENAVAM; origem e
   etapa à mão; em **Mais filtros**, período da ocorrência, órgão autuador, radar, agente (da constatação ou operador do
   radar), documentação, pagamento, rascunhos/cancelados e ordem. A URL guarda os filtros, e a ficha volta para eles.
@@ -164,7 +164,10 @@ protocolado ([ADR-0017](adr/0017-aba-multas.md)). Use só dados fictícios.
   acrescenta uma constatação com resultado, fonte (CRLV apresentado, consulta feita fora do sistema, relato) e data de
   referência — na data da ocorrência ou posterior. Uma regularidade posterior aparece separada e não corrige a
   ocorrência. Corrigir placa, UF, RENAVAM, marca, modelo, espécie ou data/hora pede nova conferência; as anteriores
-  ficam em "Todas as conferências", marcadas como anteriores à retificação.
+  ficam em "Todas as conferências", marcadas como anteriores à retificação. Depois de escolher o resultado aparece
+  **Quer ser lembrado de conferir de novo?** (Não precisa, Em 30 dias, Em 90 dias ou Escolher data); com resultado
+  "Em dia" ela vem recolhida, já em "Não precisa". Passada a data, a multa mostra **Documentos: precisam ser conferidos
+  de novo** — um lembrete seu, não um prazo legal. Sem JavaScript, as opções e a data aparecem juntas: use só uma.
 - **Andamento:** etapa administrativa, pagamento e contestação são independentes (pagamento informado e recurso em
   análise podem coexistir). Valores em reais (`1.234,56`). O sistema não calcula prazos, descontos nem decide nada.
 - **O que aconteceu:** uma frase com o fato (quem constatou, veículo, local, data), as três velocidades quando é excesso
