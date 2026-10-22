@@ -20,7 +20,7 @@ export function animarRolagem(palco) {
       cenas.forEach((cena) => ScrollTrigger.create({ trigger: cena, start: 'top 65%', end: 'bottom 35%', toggleClass: 'is-ativa' }));
 
       if (movimento.reduzido()) {
-        objetos.forEach((o) => o.pose(1));
+        objetos.forEach((o) => { o.girar(0); o.pose(1); });
         return undefined;
       }
 
@@ -44,19 +44,23 @@ export function animarRolagem(palco) {
       objetos.forEach((o) => {
         if (!largo) return o.pose(1);
         const estado = { t: 0 };
-        return gsap.fromTo(estado, { t: 0 }, { t: 1, ease: 'none', onUpdate: () => o.pose(estado.t), scrollTrigger: { trigger: o.cena, start: 'top 95%', end: 'center 55%', scrub: 0.8 } });
+        gsap.fromTo(estado, { t: 0 }, { t: 1, ease: 'none', onUpdate: () => o.pose(estado.t), scrollTrigger: { trigger: o.el, start: 'top 100%', end: 'center 45%', scrub: 0.8 } });
+        // Depois de assentado, balança devagar de um lado para o outro.
+        const giro = { v: -0.35 };
+        return gsap.to(giro, { v: 0.35, duration: 2.6, ease: 'sine.inOut', repeat: -1, yoyo: true, onUpdate: () => o.girar(giro.v) });
       });
 
       // Placa final: sobe do poste e endireita.
       gsap.fromTo('.placa-final__face', { rotationX: 9, y: 46, transformPerspective: 1400 },
         { rotationX: 0, y: 0, ease: 'none', scrollTrigger: { trigger: '[data-placa]', start: 'top 95%', end: 'top 45%', scrub: 0.6 } });
 
-      return () => objetos.forEach((o) => o.pose(1));
+      return () => objetos.forEach((o) => { o.girar(0); o.pose(1); });
     });
   };
 
   palco.quandoPronto((controle) => {
     objetos = gsap.utils.toArray('[data-objeto]').map((el) => ({
+      el,
       cena: el.closest('[data-cena]'),
       ...controle.objeto(el, el.dataset.objeto, el.closest('.cena--inversa') ? -1 : 1),
     }));

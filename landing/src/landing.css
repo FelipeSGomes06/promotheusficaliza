@@ -232,11 +232,11 @@ a { color: inherit; }
    cobertura fica embaixo. A máscara elíptica (estática) funde as bordas no asfalto. A imagem tem 6% de sobra: o deslocamento pelo mouse (±12 × ±8 px,
    palco.js) nunca mostra a borda. Sem a foto, fica o fundo da hero. */
 .palco__foto {
-  position: absolute; inset: 0 -14% 9% -4%; overflow: hidden; pointer-events: none;
-  --borda: radial-gradient(farthest-side at 50% 52%, #000 56%, rgb(0 0 0 / 0.55) 80%, transparent);
+  position: absolute; inset: -4% -34% 9% -4%; overflow: hidden; pointer-events: none;
+  --borda: radial-gradient(farthest-side at 50% 52%, #000 60%, rgb(0 0 0 / 0.55) 80%, transparent);
   -webkit-mask-image: var(--borda); mask-image: var(--borda);
 }
-.palco__foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 100%; scale: 1.06; }
+.palco__foto img { width: 100%; height: 100%; object-fit: cover; object-position: 0% 100%; scale: 1.06; }
 .palco__cena { position: absolute; inset: 0 0 13%; }
 .palco__cena canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .palco__estatico { position: absolute; inset: 0; display: grid; place-items: center; }
@@ -305,12 +305,12 @@ a { color: inherit; }
   background: var(--marca); color: #fff; font: 800 0.85rem/1 var(--fonte);
   box-shadow: 0 0 0 3px #fff, 0 8px 18px -6px rgb(15 26 43 / 0.6);
 }
-/* Posições sobre a captura desktop (1440 × 900): resumos, filtros, mapa e ficha aberta. */
+/* Posições sobre a captura desktop (1440 × 900): resumos, busca e filtros, radar no mapa e o indicador de atualização. */
 .vitrine__ponto { pointer-events: none; }
-.vitrine__ponto--1 { left: 39.2%; top: 16.4%; }
-.vitrine__ponto--2 { left: 62.5%; top: 6.9%; }
-.vitrine__ponto--3 { left: 45.8%; top: 71%; }
-.vitrine__ponto--4 { left: 72.6%; top: 16.7%; }
+.vitrine__ponto--1 { left: 41.8%; top: 15.4%; }
+.vitrine__ponto--2 { left: 39%; top: 7.6%; }
+.vitrine__ponto--3 { left: 54.9%; top: 52.9%; }
+.vitrine__ponto--4 { left: 63.4%; top: 3%; }
 .vitrine figcaption { margin-top: 70px; }
 .vitrine__legenda { counter-reset: ponto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px 28px; margin: 0; padding: 0; list-style: none; }
 .vitrine__legenda li { counter-increment: ponto; position: relative; padding-left: 40px; font-size: 0.97rem; color: var(--apagado); }
@@ -345,7 +345,7 @@ a { color: inherit; }
 .indice a::before { content: counter(indice, decimal-leading-zero); color: var(--marca-700); font-size: 0.8rem; letter-spacing: 0.06em; }
 .indice li:last-child a::before { content: "→"; }
 .indice a:hover { box-shadow: inset 0 0 0 2px var(--marca); color: var(--marca-800); }
-.via { --vao: clamp(80px, 11vw, 150px); position: relative; max-width: var(--largura); margin: 0 auto; display: grid; gap: var(--vao); }
+.via { --vao: clamp(120px, 13vw, 190px); position: relative; max-width: var(--largura); margin: 0 auto; display: grid; gap: var(--vao); }
 .via__pista {
   position: absolute; top: -48px; bottom: -48px; left: 50%; width: 46px; translate: -50% 0; border-radius: 23px;
   background:
@@ -385,12 +385,16 @@ a { color: inherit; }
 /* Objeto 3D no canto da página, do lado da captura, no vão vertical depois da cena (a última usa o respiro da seção):
    fica longe da via e não cobre texto nem captura em nenhuma largura. Metade dele avança sobre a margem da tela. */
 .cena__objeto {
-  --obj: clamp(92px, 8.4vw, 132px);
+  --obj: clamp(116px, 11.5vw, 176px);
   position: absolute; z-index: 2; width: var(--obj); aspect-ratio: 1; top: calc(100% + (var(--vao) - var(--obj)) / 2);
   right: calc(-0.45 * var(--obj)); pointer-events: none;
 }
 .cena--inversa .cena__objeto { right: auto; left: calc(-0.45 * var(--obj)); }
 .cena__objeto canvas { width: 100%; height: 100%; }
+/* Flutua de leve, além do giro do 3D; parado com movimento reduzido. */
+@keyframes pf-flutua { 50% { transform: translateY(-10px); } }
+html:not([data-motion="reduced"]) .cena__objeto { animation: pf-flutua 3.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { html:not([data-motion="full"]) .cena__objeto { animation: none; } }
 /* Selo, nota de limites e detalhamento opcional dentro das cenas. */
 .selo {
   display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px 10px; padding: 5px 10px 3px; border-radius: 6px;
