@@ -89,3 +89,9 @@ Foto como textura no Three.js (dependeria do WebGL e de pós-processamento); um 
 (disputaria a rotação com o da marca); distorção de água, partículas, vídeo em autoplay ou mapa "ao vivo" fictício
 (proibidos pelo pedido); mesma imagem desktop maior no celular (continuaria ilegível); zoom só por hover (inacessível
 no toque e no teclado).
+
+## Atualização (22/10/2026, mesma data)
+A foto do Commons foi trocada, a pedido do autor, por uma foto aérea do terminal rodoviário de Marília de **Pedro
+Monteiro** (@pvictormonteiro), com crédito no rodapé e em [licenças e fontes](../licencas-e-fontes.md). Recorte
+1280 × 640 sem a marca d'água, mesmo tratamento (dessaturação, escurecimento em gradiente), 77 KB no desktop e 28 KB no
+celular. O comportamento do palco não mudou.
