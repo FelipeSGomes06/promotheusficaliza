@@ -418,25 +418,15 @@ export function criarCena({ host, reduzido, celular, duracao, ponteiro, nome, so
     aoEstado('falhou');
   });
 
-  // ---------- Resposta ao ponteiro (só mouse, só com a marca pronta e visível) ----------
+  // ---------- Resposta ao ponteiro (só com a marca pronta e visível) ----------
+  // Quem ouve o mouse é o palco (palco.js), que move também a foto: aqui só se gira o pivô, em até ~5° × 3,5°.
   let ponteiroLigado = false;
-  let ocioso = 0;
   const giroY = gsap.quickTo(pivo.rotation, 'y', { duration: 0.9, ease: 'power3.out', onUpdate: invalidar });
   const giroX = gsap.quickTo(pivo.rotation, 'x', { duration: 0.9, ease: 'power3.out', onUpdate: invalidar });
   const repousar = () => {
     giroY(0);
     giroX(0);
   };
-  if (ponteiro && !celular && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    window.addEventListener('pointermove', (evento) => {
-      if (!ponteiroLigado || !visivel || evento.pointerType !== 'mouse') return;
-      giroY((evento.clientX / window.innerWidth - 0.5) * 0.42);
-      giroX((evento.clientY / window.innerHeight - 0.5) * 0.24);
-      clearTimeout(ocioso);
-      ocioso = setTimeout(repousar, 2200);
-    }, { passive: true });
-    document.documentElement.addEventListener('pointerleave', repousar);
-  }
 
   // ---------- Objetos das cenas de recursos (mesmo renderer, mesmos materiais e luzes) ----------
   let objetos = null;
@@ -507,11 +497,18 @@ export function criarCena({ host, reduzido, celular, duracao, ponteiro, nome, so
         tl.progress(1);
         repousar();
       }
-      ponteiroLigado = !valor && tl.progress() === 1;
+      ponteiroLigado = !valor && ponteiro && tl.progress() === 1;
     },
     ligarPonteiro() {
-      ponteiroLigado = !reduzido;
+      ponteiroLigado = !reduzido && ponteiro;
     },
+    /** Posição normalizada do mouse no palco, de -1 a 1 em cada eixo (0, 0 = repouso). */
+    apontar(x, y) {
+      if (!ponteiroLigado || !visivel) return;
+      giroY(x * 0.09);
+      giroX(y * 0.06);
+    },
+    repousar,
     /** Liga um objeto 3D a um contêiner; pose(t) com t de 0 (entrando) a 1 (assentado). */
     objeto(contenedor, tipo, lado) {
       const tela = document.createElement('canvas');

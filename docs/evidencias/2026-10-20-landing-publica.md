@@ -62,7 +62,10 @@ painel de navegador do app (Chromium) e Chrome do autor (Windows, 1920×1080 a 9
 O TBT do celular vem de duas tarefas: avaliar o three.js (~0,95 s com CPU 4×) e montar a cena (geração do mapa de
 ambiente e shaders, ~0,96 s), ambas depois do carregamento e com a página já pintada. Sem o mapa de ambiente o TBT
 caía para 510 ms, mas as cores da marca não se sustentavam. Com a GPU ligada no headless o resultado foi o mesmo
-(48), então o custo é de CPU. Em produção o Apache comprime CSS e JS (`DEFLATE`), o que o servidor de teste não faz.
+(48), então o custo é de CPU. Em produção o Apache comprimia o CSS (`DEFLATE`), o que o servidor de teste não faz;
+**correção de 22/10/2026:** o JavaScript **não** era comprimido, porque o Apache o serve como `text/javascript` e a
+diretiva só listava `application/javascript` (medido na produção pela auditoria de 22/10). Corrigido e testado no
+contêiner local em [2026-10-22-landing-atualizada.md](2026-10-22-landing-atualizada.md#compressão).
 
 ## Não executado aqui
 

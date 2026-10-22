@@ -1,6 +1,6 @@
 {
   "landing/src/cena3d.js": {
-    "file": "cena3d-DKyggR9V.js",
+    "file": "cena3d-DNsL0XS0.js",
     "name": "cena3d",
     "src": "landing/src/cena3d.js",
     "isDynamicEntry": true,
@@ -9,7 +9,7 @@
     ]
   },
   "landing/src/landing.css": {
-    "file": "landing-CddF9ret.css",
+    "file": "landing-DjYD9PlQ.css",
     "name": "landing",
     "names": [
       "landing.css"
@@ -22,7 +22,7 @@
     ]
   },
   "landing/src/pagina.js": {
-    "file": "pagina-QuskLDQB.js",
+    "file": "pagina-DR8XDeby.js",
     "name": "pagina",
     "src": "landing/src/pagina.js",
     "isEntry": true,
