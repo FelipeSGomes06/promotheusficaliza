@@ -9,8 +9,9 @@
   agency_id: 'Órgão responsável', maint_interval_days: 'Preventiva a cada', street: 'Logradouro', address_ref: 'Número ou referência', cep: 'CEP', region_id: 'Bairro',
   location_kind: 'Este ponto é', lat: 'Latitude', lng: 'Longitude', installed_on: 'Data de instalação', notes: 'Observações'} %}
 {% for t in types|filter(t => t.code == (v.type_code ?? '')) %}{% for f in t.fields %}{% set labels = labels|merge({('specs.' ~ f.name): f.label}) %}{% endfor %}{% endfor %}
-{% set agencyNames = {} %}{% for a in agencies %}{% set agencyNames = agencyNames|merge({(a.id ~ ''): a.name}) %}{% endfor %}
-{% set regionNames = {} %}{% for r in regions %}{% set regionNames = regionNames|merge({(r.id ~ ''): r.name}) %}{% endfor %}
+{# column, não merge: array_merge renumera chaves numéricas e o mapa perderia os IDs #}
+{% set agencyNames = agencies|column('name', 'id') %}
+{% set regionNames = regions|column('name', 'id') %}
 <div class="page page--narrow">
   <p class="crumbs"><a href="{{ url('/equipamentos') }}">Equipamentos</a>{% if existing %} · <a href="{{ url('/equipamentos/' ~ existing.id) }}">{{ existing.code }}</a>{% endif %}</p>
   <h1>{{ existing ? 'Editar ' ~ existing.code : 'Cadastrar equipamento' }}</h1>
