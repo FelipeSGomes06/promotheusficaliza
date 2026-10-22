@@ -455,7 +455,7 @@ export function criarCena({ host, reduzido, celular, duracao, ponteiro, nome, so
     const { cenaObj, camObj, grupos } = objetos;
     const g = grupos[o.tipo];
     g.visible = true;
-    g.rotation.set(MathUtils.lerp(0.32, 0.1, o.t), o.lado * MathUtils.lerp(-1.05, -0.42, o.t), 0);
+    g.rotation.set(MathUtils.lerp(0.32, 0.1, o.t), o.lado * MathUtils.lerp(-1.05, -0.42, o.t) + o.giro, 0);
     g.position.y = MathUtils.lerp(-1.8, 0, o.t);
     camObj.aspect = w / h;
     camObj.updateProjectionMatrix();
@@ -514,7 +514,7 @@ export function criarCena({ host, reduzido, celular, duracao, ponteiro, nome, so
       const tela = document.createElement('canvas');
       tela.setAttribute('aria-hidden', 'true');
       contenedor.append(tela);
-      const o = { tipo, lado, t: 1, canvas: tela, ctx: tela.getContext('2d'), perto: false };
+      const o = { tipo, lado, t: 1, giro: 0, canvas: tela, ctx: tela.getContext('2d'), perto: false };
       new ResizeObserver(() => {
         const { width, height } = contenedor.getBoundingClientRect();
         const pr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -529,6 +529,11 @@ export function criarCena({ host, reduzido, celular, duracao, ponteiro, nome, so
       return {
         pose(t) {
           o.t = t;
+          if (o.perto) desenharObjeto(o);
+        },
+        /** Balanço contínuo em torno do eixo vertical (radianos), somado à pose. */
+        girar(v) {
+          o.giro = v;
           if (o.perto) desenharObjeto(o);
         },
       };
