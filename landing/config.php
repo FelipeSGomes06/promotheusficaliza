@@ -8,6 +8,10 @@ return [
     // Endereço da aplicação. A landing só aponta para ele; quem decide login e acesso é a própria aplicação.
     'sistema_url' => '/promotheusfiscaliza/',
 
+    // Endereço público canônico da landing (canonical, og:url e a imagem de compartilhamento, que precisa de URL
+    // absoluta). Termina com "/".
+    'url_publica' => 'https://fiscaliza.devfelipegomes.com.br/',
+
     'autor' => [
         'nome' => 'Felipe Gomes',
         'url' => 'https://devfelipegomes.com.br/',

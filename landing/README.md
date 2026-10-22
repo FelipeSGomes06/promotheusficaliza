@@ -3,14 +3,16 @@
 Página de entrada servida em `/` de `https://fiscaliza.devfelipegomes.com.br/`, no lugar do antigo "Portal simulado".
 Apresenta o sistema, monta a marca em 3D na hero e leva ao acesso existente em `/promotheusfiscaliza/` — quem decide
 login e conta continua sendo a aplicação ([ADR-0014](../docs/adr/0014-acesso-somente-com-conta-cadastrada.md)).
-Decisões de composição, materiais, coreografia e arquitetura: [ADR-0015](../docs/adr/0015-landing-publica-e-marca-3d.md).
-Verificação e capturas: [evidência de 20/10/2026](../docs/evidencias/2026-10-20-landing-publica.md).
+Decisões de composição, materiais, coreografia e arquitetura: [ADR-0015](../docs/adr/0015-landing-publica-e-marca-3d.md);
+seis pilares, foto de Marília, ponteiro e 3D sob demanda: [ADR-0018](../docs/adr/0018-landing-seis-pilares-e-foto-de-marilia.md).
+Verificação e capturas: [evidência de 20/10/2026](../docs/evidencias/2026-10-20-landing-publica.md) e
+[atualização de 22/10/2026](../docs/evidencias/2026-10-22-landing-atualizada.md).
 
 ## Estrutura
 
 ```
 landing/
-  config.php          único ponto de ajuste: URL do sistema, vídeo do avaliador, ajustes da hero
+  config.php          único ponto de ajuste: URL do sistema, URL pública, vídeo do avaliador, ajustes da hero
   pagina.php          template (HTML semântico, todo o texto da página)
   public/             document root de "/" (só isto é servido)
     index.php         cabeçalhos (CSP própria), escape, versão dos arquivos e renderização
@@ -18,9 +20,11 @@ landing/
     landing-assets/promotheus/
       boot.js         script clássico mínimo, antes da pintura (classe .js e preferência de movimento)
       build/          CSS, JS e fontes gerados pelo Vite (versionados; produção não precisa de Node)
-      img/            capturas reais do sistema (WebP) e favicon
+      img/            capturas reais do sistema (WebP, com recorte de celular), foto de Marília (CC BY-SA 3.0),
+                      imagem de compartilhamento e favicon
       video/          onde entra o vídeo do avaliador
-  src/                fontes do CSS e do JS (pagina.js, palco.js, cena3d.js, rolagem.js, navegacao.js, movimento.js)
+  src/                fontes do CSS e do JS (pagina.js, palco.js, cena3d.js, rolagem.js, navegacao.js, movimento.js,
+                      ampliar.js)
   vite.config.js      build da landing, separado do build do sistema
 ```
 
@@ -54,13 +58,14 @@ O PHP encontra os nomes com hash pelo `build/manifest.json`; não é preciso mex
 | Chave | Padrão | Efeito |
 |---|---|---|
 | `sistema_url` | `/promotheusfiscaliza/` | destino dos três botões "Acessar sistema" |
+| `url_publica` | `https://fiscaliza.devfelipegomes.com.br/` | `canonical`, `og:url` e endereço absoluto da imagem de compartilhamento |
 | `video.src` | `null` | vídeo da seção "Para o avaliador"; `null` mostra "Vídeo de apresentação em breve." |
 | `video.tipo` | `video/mp4` | tipo do arquivo (`video/webm` para WebM) |
 | `video.legendas` | `null` | arquivo WebVTT em português (faixa `captions`, ligada por padrão) |
 | `video.capa` | `null` | imagem 16:9 mostrada antes do play |
 | `hero.montagem` | `true` | `false` mostra a marca 3D já pronta, sem a sequência |
 | `hero.duracao` | `4.0` | duração total da montagem, em segundos (as etapas mantêm a proporção) |
-| `hero.ponteiro` | `true` | depois de montada, a marca acompanha o mouse (nunca no toque) |
+| `hero.ponteiro` | `true` | depois de montada, a marca gira um pouco e a foto de Marília se desloca até ±12 × ±8 px com o mouse (nunca no toque nem com movimento reduzido) |
 
 Todo valor que vai para o HTML passa por `htmlspecialchars`.
 
@@ -147,6 +152,8 @@ Esperado: `200`, `Content-Security-Policy: default-src 'none'; script-src 'self'
 
 - `curl -sI https://fiscaliza.devfelipegomes.com.br/promotheusfiscaliza/` → `302` para `/promotheusfiscaliza/entrar?voltar=…` (como antes);
 - `curl -sI https://fiscaliza.devfelipegomes.com.br/landing-assets/promotheus/boot.js` → `200`;
+- `curl -s -o /dev/null -D - -H "Accept-Encoding: gzip"` num dos `build/*.js` (nome no `manifest.json`) →
+  `Content-Type: text/javascript`, `Content-Encoding: gzip` e `Vary: Accept-Encoding`;
 - no navegador: a marca se monta, "Acessar sistema" abre o login e o console não mostra erros.
 
 ### Voltar à página anterior
@@ -165,7 +172,8 @@ A pasta `landing/` pode ficar no servidor: com o `DocumentRoot` antigo ela não 
 
 Qualquer Apache com PHP 8.1+ serve: aponte o document root do (sub)domínio para `landing/public` e mantenha
 `config.php` e `pagina.php` um nível acima, fora do alcance da web. No cPanel isso é o "Document Root" do
-subdomínio — confira-o no painel em vez de supor `public_html`. Ative compressão (gzip/brotli) para CSS e JS.
+subdomínio — confira-o no painel em vez de supor `public_html`. Ative compressão (gzip/brotli) para CSS e JS —
+incluindo o tipo `text/javascript`, que é como o Apache serve `.js` (o contêiner já faz isso em `apache-site.conf`).
 
 ## Verificação rápida
 

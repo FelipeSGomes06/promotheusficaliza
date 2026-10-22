@@ -138,8 +138,10 @@ a { color: inherit; }
 }
 .menu-btn[aria-expanded="true"] { background: var(--grafite-800); }
 
-@media (min-width: 900px) { .menu-btn { display: none !important; } }
-@media (max-width: 899.98px) {
+/* A barra completa (marca, três links, "Reduzir movimento" e "Acessar sistema") precisa de ~1020 px sem quebrar
+   linha; abaixo de 1080 px vira o menu compacto. Só a navegação usa este limite (cenas e chamada seguem em 900). */
+@media (min-width: 1080px) { .menu-btn { display: none !important; } }
+@media (max-width: 1079.98px) {
   .topo__barra { flex-wrap: wrap; }
   /* Sem JavaScript, os links ficam numa faixa abaixo da marca; com JavaScript, viram o painel do botão Menu. */
   .nav { margin-left: 0; width: 100%; flex-wrap: wrap; padding-bottom: 10px; }
@@ -148,6 +150,8 @@ a { color: inherit; }
     display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: stretch;
     gap: 14px; padding: 12px var(--margem) 22px; background: var(--grafite-950);
     border-bottom: 1px solid rgb(237 241 247 / 0.1); box-shadow: 0 24px 40px -20px rgb(0 0 0 / 0.7);
+    /* Em janelas baixas (ou texto ampliado) o painel rola sozinho: o cabeçalho fixo não deixaria a página alcançá-lo. */
+    max-height: calc(100dvh - 100%); overflow-y: auto; overscroll-behavior: contain;
   }
   .js .topo.is-aberto .nav { display: flex; }
   .js .nav__links { flex-direction: column; }
@@ -176,7 +180,7 @@ a { color: inherit; }
 .hero__via {
   /* Pista em perspectiva centrada sob o palco: as linhas fogem para o horizonte atrás da marca, longe do texto. */
   position: absolute; z-index: -1; left: 68%; bottom: 0; width: max(1100px, 86vw); height: 50%;
-  translate: -50% 0; perspective: 520px; perspective-origin: 50% 0%; pointer-events: none;
+  translate: -50% 0; perspective: 520px; perspective-origin: 50% 0%; pointer-events: none; opacity: 0.75;
   -webkit-mask-image: linear-gradient(to top, #000 25%, transparent 96%); mask-image: linear-gradient(to top, #000 25%, transparent 96%);
 }
 .hero__pista {
@@ -207,6 +211,10 @@ a { color: inherit; }
 .hero__ctas { display: flex; flex-wrap: wrap; gap: 12px; }
 .hero__acesso { display: flex; align-items: center; gap: 8px; margin-top: 18px; font-size: 0.93rem; color: var(--grafite-300); }
 .hero__acesso .icone { color: var(--turquesa); }
+.hero__nota { align-items: flex-start; margin-top: 10px; max-width: 34em; line-height: 1.45; }
+.hero__nota .icone { margin-top: 0.1em; }
+.hero__nota a { color: var(--grafite-100); text-underline-offset: 3px; }
+.hero__nota a:hover { color: #fff; }
 
 /* Entrada curta do texto (CSS, uma vez): só deslocamento, sem opacidade — título e chamadas aparecem já na primeira
    pintura (uma entrada com opacidade 0 atrasaria o LCP). */
@@ -216,9 +224,21 @@ a { color: inherit; }
 .js .hero__texto > :nth-child(3) { animation-delay: 140ms; }
 .js .hero__texto > :nth-child(4) { animation-delay: 200ms; }
 .js .hero__texto > :nth-child(5) { animation-delay: 250ms; }
+.js .hero__texto > :nth-child(6) { animation-delay: 290ms; }
 @media (prefers-reduced-motion: reduce) { html:not([data-motion="full"]) .hero__texto > * { animation: none; } }
 
 .palco { position: relative; width: 100%; max-width: 640px; aspect-ratio: 1 / 1; justify-self: center; }
+/* Foto de Marília atrás da marca: céu atrás das ondas, linha de prédios embaixo. Escurecimento já vem no arquivo; a
+   máscara (estática) funde as bordas no asfalto. A imagem tem 6% de sobra: o deslocamento pelo mouse (±12 × ±8 px,
+   palco.js) nunca mostra a borda. Sem a foto, fica o fundo da hero. */
+.palco__foto {
+  position: absolute; inset: 0 -14% 9% -4%; overflow: hidden; pointer-events: none;
+  --borda-x: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent);
+  --borda-y: linear-gradient(to bottom, transparent, #000 24%, #000 78%, transparent);
+  -webkit-mask-image: var(--borda-x), var(--borda-y); -webkit-mask-composite: source-in;
+  mask-image: var(--borda-x), var(--borda-y); mask-composite: intersect;
+}
+.palco__foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 100%; scale: 1.06; }
 .palco__cena { position: absolute; inset: 0 0 13%; }
 .palco__cena canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .palco__estatico { position: absolute; inset: 0; display: grid; place-items: center; }
@@ -248,6 +268,7 @@ a { color: inherit; }
   .hero { padding-top: 28px; }
   .hero__grade { grid-template-columns: minmax(0, 1fr); min-height: 0; }
   .palco { max-width: 440px; margin-top: 8px; }
+  .palco__foto { inset: 0 -12% 9%; }
   .hero__via { left: 50%; width: max(760px, 160vw); height: 30%; }
 }
 
@@ -269,16 +290,30 @@ a { color: inherit; }
   box-shadow: 0 0 0 1px rgb(15 26 43 / 0.08), 0 50px 90px -50px rgb(15 26 43 / 0.55), 0 18px 36px -24px rgb(15 26 43 / 0.35);
 }
 .vitrine__quadro img { width: 100%; height: auto; border-radius: 14px; }
+
+/* Captura ampliável: o link abre a versão maior (diálogo com JavaScript; o arquivo, sem). O rótulo "Ampliar" fica
+   abaixo da imagem, sem cobrir conteúdo nem o crédito do mapa. */
+.captura { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; border-radius: 12px; color: var(--tinta); text-decoration: none; }
+.captura picture { display: block; align-self: stretch; }
+.captura__ampliar {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 12px; border-radius: 8px;
+  background: #fff; box-shadow: inset 0 0 0 1px rgb(15 26 43 / 0.18); color: var(--marca-800); font-weight: 700; font-size: 0.85rem;
+  transition: box-shadow 150ms ease;
+}
+.captura:hover .captura__ampliar { box-shadow: inset 0 0 0 2px var(--marca); }
+.vitrine__quadro .captura__ampliar { position: absolute; top: calc(100% + 14px); right: 0; }
 .vitrine__ponto {
   position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; display: grid; place-items: center;
   background: var(--marca); color: #fff; font: 800 0.85rem/1 var(--fonte);
   box-shadow: 0 0 0 3px #fff, 0 8px 18px -6px rgb(15 26 43 / 0.6);
 }
-.vitrine__ponto--1 { left: 14%; top: 15.5%; }
-.vitrine__ponto--2 { left: 36.4%; top: 13%; }
-.vitrine__ponto--3 { left: 46%; top: 66%; }
-.vitrine__ponto--4 { left: 73.6%; top: 22%; }
-.vitrine figcaption { margin-top: 30px; }
+/* Posições sobre a captura desktop (1440 × 900): resumos, filtros, mapa e ficha aberta. */
+.vitrine__ponto { pointer-events: none; }
+.vitrine__ponto--1 { left: 39.2%; top: 16.4%; }
+.vitrine__ponto--2 { left: 62.5%; top: 6.9%; }
+.vitrine__ponto--3 { left: 45.8%; top: 71%; }
+.vitrine__ponto--4 { left: 72.6%; top: 16.7%; }
+.vitrine figcaption { margin-top: 70px; }
 .vitrine__legenda { counter-reset: ponto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px 28px; margin: 0; padding: 0; list-style: none; }
 .vitrine__legenda li { counter-increment: ponto; position: relative; padding-left: 40px; font-size: 0.97rem; color: var(--apagado); }
 .vitrine__legenda li::before {
@@ -289,13 +324,29 @@ a { color: inherit; }
 .vitrine__fonte { margin-top: 24px; font-size: 0.85rem; color: var(--apagado); }
 @media (max-width: 999.98px) { .vitrine__legenda { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 719.98px) {
-  .vitrine__ponto { display: none; }
+  /* Captura do celular (390 × 650): resumos, filtros, mapa e o indicador "Ao vivo" das consultas a cada 5 s. */
+  .vitrine { max-width: 440px; }
+  .vitrine__ponto { width: 26px; height: 26px; margin: -13px 0 0 -13px; font-size: 0.78rem; }
+  .vitrine__ponto--1 { left: 27%; top: 20.5%; }
+  .vitrine__ponto--2 { left: 30.3%; top: 38.8%; }
+  .vitrine__ponto--3 { left: 53.8%; top: 69.2%; }
+  .vitrine__ponto--4 { left: 69.2%; top: 11.1%; }
   .vitrine__legenda { grid-template-columns: minmax(0, 1fr); }
   .vitrine__quadro, .vitrine__quadro img { border-radius: 10px; }
 }
 
-/* ---------- Recursos: três cenas ligadas por uma via ---------- */
+/* ---------- Recursos: quatro cenas ligadas por uma via ---------- */
 .recursos { padding-top: clamp(24px, 3vw, 40px); padding-bottom: clamp(96px, 11vw, 150px); }
+.indice ol { display: flex; flex-wrap: wrap; gap: 8px 10px; margin: 28px 0 0; padding: 0; list-style: none; counter-reset: indice; }
+.indice li { counter-increment: indice; }
+.indice a {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 14px; border-radius: 10px;
+  background: #fff; box-shadow: inset 0 0 0 1px rgb(15 26 43 / 0.14); color: var(--tinta); font-weight: 700; font-size: 0.95rem; text-decoration: none;
+  transition: box-shadow 150ms ease, color 150ms ease;
+}
+.indice a::before { content: counter(indice, decimal-leading-zero); color: var(--marca-700); font-size: 0.8rem; letter-spacing: 0.06em; }
+.indice li:last-child a::before { content: "→"; }
+.indice a:hover { box-shadow: inset 0 0 0 2px var(--marca); color: var(--marca-800); }
 .via { position: relative; max-width: var(--largura); margin: 0 auto; display: grid; gap: clamp(80px, 11vw, 150px); }
 .via__pista {
   position: absolute; top: -48px; bottom: -48px; left: 50%; width: 46px; translate: -50% 0; border-radius: 23px;
@@ -328,12 +379,34 @@ a { color: inherit; }
   content: ""; position: absolute; left: 0; top: 0.58em; width: 20px; height: 4px; border-radius: 2px;
   background: repeating-linear-gradient(90deg, var(--marca) 0 8px, transparent 8px 12px);
 }
-.cena__visual { position: relative; }
+.cena__visual { position: relative; margin: 0; }
 .cena__tela { width: 100%; height: auto; border-radius: 12px; background: #fff; box-shadow: 0 0 0 1px rgb(15 26 43 / 0.08), 0 34px 64px -36px rgb(15 26 43 / 0.55); }
-/* Objeto 3D na beira da via, entre a pista e a captura, encostando no canto de baixo da tela. */
-.cena__objeto { position: absolute; z-index: 2; width: clamp(130px, 13vw, 190px); aspect-ratio: 1; left: -21%; bottom: -12%; pointer-events: none; }
-.cena--inversa .cena__objeto { left: auto; right: -21%; }
+/* Segunda captura (ficha do agente): abaixo da principal, sem cobrir nada dela. */
+.cena__visual .captura + .captura { width: 56%; margin: 18px 0 0 auto; }
+.cena__fonte { margin-top: 14px; font-size: 0.85rem; color: var(--apagado); }
+/* Objeto 3D na beira da via, no vão entre a pista e a captura: encosta só na margem da tela, sem cobrir conteúdo. */
+.cena__objeto { position: absolute; z-index: 2; width: clamp(120px, 11vw, 164px); aspect-ratio: 1; left: -32%; bottom: 4%; pointer-events: none; }
+.cena--inversa .cena__objeto { left: auto; right: -32%; }
 .cena__objeto canvas { width: 100%; height: 100%; }
+/* Selo, nota de limites e detalhamento opcional dentro das cenas. */
+.selo {
+  display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px 10px; padding: 5px 10px 3px; border-radius: 6px;
+  background: #fff4d6; box-shadow: inset 0 0 0 1px #e0a100; color: #6b4300; font-weight: 800; font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.nota { display: flex; gap: 10px; margin-top: 20px; padding: 12px 14px; border-radius: 10px; background: #fff; box-shadow: inset 3px 0 0 var(--marca); font-size: 0.95rem; line-height: 1.5; color: var(--tinta); }
+.nota .icone { margin-top: 0.15em; color: var(--marca); }
+.detalhe { margin-top: 18px; border-top: 1px solid rgb(15 26 43 / 0.14); }
+.detalhe summary {
+  display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 0; list-style: none; cursor: pointer;
+  font-weight: 700; color: var(--marca-800);
+}
+.detalhe summary::-webkit-details-marker { display: none; }
+.detalhe summary::before {
+  content: "+"; display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 6px;
+  box-shadow: inset 0 0 0 1.5px currentColor; font-weight: 800; line-height: 1;
+}
+.detalhe[open] summary::before { content: "−"; }
+.detalhe p { margin: 4px 0 12px; color: var(--apagado); font-size: 0.97rem; }
 
 @media (max-width: 899.98px) {
   .via { gap: 72px; }
@@ -342,8 +415,55 @@ a { color: inherit; }
   .via__no { left: 22px; top: 8px; width: 18px; height: 18px; }
   .cena { grid-template-columns: minmax(0, 1fr); row-gap: 28px; padding-left: 48px; }
   .cena--inversa .cena__texto { order: 0; }
-  .cena__objeto, .cena--inversa .cena__objeto { width: 112px; left: auto; right: -8px; bottom: -40px; }
+  /* No celular a captura ocupa toda a largura: o objeto 3D cobriria a imagem e fica de fora (nem pede o 3D). */
+  .cena__objeto { display: none; }
 }
+@media (max-width: 719.98px) {
+  .cena__visual .captura + .captura { width: 84%; }
+}
+
+/* ---------- Planejar reforço: destaque em grafite, com o mapa de calor ---------- */
+.planejar { background: var(--grafite-900); color: #fff; padding: clamp(72px, 9vw, 128px) var(--margem); --foco: var(--turquesa); }
+.planejar__conteudo {
+  max-width: var(--largura); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: clamp(28px, 4vw, 56px) clamp(32px, 4vw, 64px); align-items: start;
+}
+.planejar__cabeca { grid-column: 1 / -1; }
+.planejar h2 { max-width: 17em; margin-bottom: 18px; font-size: clamp(1.95rem, 1.15rem + 2.7vw, 3.15rem); line-height: 1.07; letter-spacing: -0.022em; }
+.planejar__lead { max-width: 44em; font-size: clamp(1.05rem, 1rem + 0.25vw, 1.18rem); color: var(--grafite-100); }
+.rotulo--claro { color: var(--turquesa); }
+.rotulo--claro::before { background: repeating-linear-gradient(90deg, var(--turquesa) 0 10px, transparent 10px 16px); }
+.planejar__mapa, .planejar__passo2 { margin: 0; }
+.planejar__tela { width: 100%; height: auto; border-radius: 12px; background: #fff; box-shadow: 0 0 0 1px rgb(237 241 247 / 0.12), 0 40px 70px -40px #000; }
+.planejar__cor { margin-top: 18px; padding: 12px 14px; border-radius: 10px; background: var(--grafite-800); box-shadow: inset 3px 0 0 var(--ambar); color: var(--grafite-100); font-size: 0.95rem; line-height: 1.5; }
+.planejar__cor strong { color: #fff; }
+.planejar__fonte { margin-top: 12px; font-size: 0.85rem; color: var(--grafite-300); }
+.passos { counter-reset: passo; display: grid; gap: 18px; margin: 0 0 26px; padding: 0; list-style: none; }
+.passos li { counter-increment: passo; position: relative; padding-left: 50px; color: var(--grafite-100); }
+.passos li::before {
+  content: counter(passo); position: absolute; left: 0; top: -2px; width: 34px; height: 34px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--marca); color: #fff; font-weight: 800;
+}
+.passos strong { display: block; color: #fff; font-size: 1.08rem; }
+.planejar__fatos { display: grid; gap: 8px; margin: 26px 0 0; padding: 0; list-style: none; }
+.planejar__fatos li { position: relative; padding-left: 30px; font-weight: 600; font-size: 0.97rem; color: var(--grafite-100); }
+.planejar__fatos li::before {
+  content: ""; position: absolute; left: 0; top: 0.62em; width: 18px; height: 4px; border-radius: 2px;
+  background: repeating-linear-gradient(90deg, var(--turquesa) 0 7px, transparent 7px 11px);
+}
+.detalhe--escuro { border-top-color: rgb(237 241 247 / 0.16); }
+.detalhe--escuro summary { color: var(--turquesa); }
+.detalhe--escuro p { color: var(--grafite-100); }
+@media (max-width: 1099.98px) { .planejar__conteudo { grid-template-columns: minmax(0, 1fr); } .planejar__mapa { max-width: 860px; } }
+@media (max-width: 719.98px) { .planejar__mapa { max-width: 440px; } .planejar__passo2 { display: none; } }
+
+/* ---------- Dados e acesso ---------- */
+.dados { padding-bottom: clamp(40px, 5vw, 64px); }
+.dados__conteudo { max-width: var(--largura); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px clamp(32px, 5vw, 80px); align-items: start; }
+.perguntas .detalhe { margin-top: 0; }
+.perguntas .detalhe summary { color: var(--tinta); font-size: 1.05rem; min-height: 56px; }
+.perguntas .detalhe:last-child { border-bottom: 1px solid rgb(15 26 43 / 0.14); }
+@media (max-width: 899.98px) { .dados__conteudo { grid-template-columns: minmax(0, 1fr); } }
 
 /* ---------- Chamada final: placa de indicação ---------- */
 .chamada { position: relative; background: var(--papel); padding: clamp(24px, 4vw, 48px) var(--margem) 0; isolation: isolate; }
@@ -402,3 +522,23 @@ a { color: inherit; }
 .rodape__marca .icone { width: 22px; height: 22px; }
 .rodape a { color: #fff; font-weight: 600; }
 .rodape__aviso { flex-basis: 100%; }
+
+/* ---------- Captura ampliada (diálogo modal; Esc fecha e o foco volta ao link) ---------- */
+.ampliacao {
+  width: min(1440px, calc(100vw - 24px)); max-width: none; max-height: calc(100dvh - 24px); padding: 0; border: 0; border-radius: 14px;
+  background: var(--grafite-950); color: #fff; box-shadow: 0 40px 90px -30px #000; --foco: var(--turquesa);
+}
+.ampliacao[open] { display: flex; flex-direction: column; }
+.ampliacao::backdrop { background: rgb(5 8 13 / 0.82); }
+.ampliacao__barra { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 12px 10px 20px; }
+.ampliacao__titulo { font-weight: 700; }
+.ampliacao__fechar {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 14px; border: 1px solid var(--grafite-700);
+  border-radius: 10px; background: transparent; color: #fff; font: 700 0.92rem/1 var(--fonte); cursor: pointer;
+}
+.ampliacao__fechar:hover { background: var(--grafite-800); }
+.ampliacao__area { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; background: #fff; }
+.ampliacao__area img { width: 100%; height: auto; max-width: none; }
+.ampliacao__legenda { padding: 12px 20px 16px; font-size: 0.9rem; color: var(--grafite-300); }
+/* No celular a imagem fica larga e rola dentro do diálogo; a descrição (a mesma do alt) daria pouco espaço à imagem. */
+@media (max-width: 719.98px) { .ampliacao__area img { width: 1000px; } .ampliacao__legenda { display: none; } }
