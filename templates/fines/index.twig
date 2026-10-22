@@ -19,9 +19,9 @@
   <ul class="kpi-strip fine-kpis section" aria-label="Resumo do filtro atual">
     <li class="kpi"><span class="kpi__n">{{ result.total }}</span><span class="kpi__label">registros no filtro</span></li>
     <li class="kpi"><span class="kpi__n kpi__n--warn">{{ result.attention }}</span><span class="kpi__label">a conferir</span></li>
-    <li class="kpi"><span class="kpi__n">{{ result.paid }}</span><span class="kpi__label">pagamento informado</span></li>
+    <li class="kpi"><span class="kpi__n">{{ result.paid }}</span><span class="kpi__label">pagas</span></li>
   </ul>
-  <p class="hint">Os três números contam o mesmo conjunto da lista, antes da paginação. "Pagamento informado" é o que foi lançado manualmente, não arrecadação confirmada.</p>
+  <p class="hint">Os três números contam as multas da lista abaixo, com os mesmos filtros. "Pagas" são as que alguém anotou como pagas aqui.</p>
 
   {% if f.errors is not empty %}
     <div class="flash flash--error section" role="alert">{% for msg in f.errors %}{{ msg }} {% endfor %}O restante do filtro foi aplicado.</div>
@@ -85,7 +85,7 @@
             <span class="tag">{{ stages[r.process_stage] }}</span>
             {{ fine.doc(r.occ_doc_status, r.occ_doc_review_on, today) }}
             {% if r.attention is not empty %}<span class="tag tag--warn">A conferir: {{ r.attention|length }}</span>{% endif %}
-            {% if r.payment_status == 'PAGAMENTO_INFORMADO' %}<span class="tag">Pagamento informado</span>{% endif %}</span>
+            {% if r.payment_status == 'PAGAMENTO_INFORMADO' %}<span class="tag">Paga</span>{% endif %}</span>
         </a></li>
       {% endfor %}
     </ul>

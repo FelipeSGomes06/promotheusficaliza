@@ -152,7 +152,7 @@ final class FinesHttpTest extends FirebirdTestCase
         self::assertSame(303, $this->request('POST', "/multas/{$id}/registrar", ['_csrf' => $this->session->csrfToken(), 'version' => $version, 'command_uid' => $uid])->getStatusCode());
 
         $show = (string) $this->request('GET', "/multas/{$id}")->getBody();
-        self::assertStringContainsString('Registrar conferência documental', $show);
+        self::assertStringContainsString('Conferir os documentos do carro', $show);
         [$version, $uid] = self::formKeys($show, self::BASE . "/multas/{$id}/conferencias");
         $check = $this->request('POST', "/multas/{$id}/conferencias", ['_csrf' => $this->session->csrfToken(), 'version' => $version, 'command_uid' => $uid, 'scope' => 'OCORRENCIA',
             'checked_at' => '2026-10-18T10:00', 'document_status' => 'PENDENCIA_INFORMADA', 'source_type' => 'CRLV_APRESENTADO', 'source_reference' => 'CRLV fictício', 'pending_items' => '']);
@@ -170,7 +170,7 @@ final class FinesHttpTest extends FirebirdTestCase
         self::assertSame(303, $progress->getStatusCode());
 
         $show = (string) $this->request('GET', "/multas/{$id}")->getBody();
-        self::assertStringContainsString('Pendência informada', $show);
+        self::assertStringContainsString('Documentos com pendência', $show);
         self::assertStringContainsString('R$ 130,16', $show);
         [$version, $uid] = self::formKeys($show, self::BASE . "/multas/{$id}/cancelar");
         self::assertSame(303, $this->request('POST', "/multas/{$id}/cancelar", ['_csrf' => $this->session->csrfToken(), 'version' => $version, 'command_uid' => $uid, 'reason' => 'Duplicado'])->getStatusCode());
