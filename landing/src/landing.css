@@ -281,7 +281,7 @@ a { color: inherit; }
 }
 .rotulo::before { content: ""; width: 30px; height: 4px; border-radius: 2px; background: repeating-linear-gradient(90deg, var(--marca) 0 10px, transparent 10px 16px); }
 
-/* Vitrine: captura real, com quatro pontos numerados e a legenda correspondente. */
+/* Vitrine: captura real, e a legenda com o que ela mostra. */
 .vitrine { max-width: 1180px; margin: 0 auto; perspective: 1800px; }
 .vitrine__quadro {
   position: relative; border-radius: 14px; background: #fff; transform-origin: 50% 0;
@@ -300,35 +300,14 @@ a { color: inherit; }
 }
 .captura:hover .captura__ampliar { box-shadow: inset 0 0 0 2px var(--marca); }
 .vitrine__quadro .captura__ampliar { position: absolute; top: calc(100% + 14px); right: 0; }
-.vitrine__ponto {
-  position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; display: grid; place-items: center;
-  background: var(--marca); color: #fff; font: 800 0.85rem/1 var(--fonte);
-  box-shadow: 0 0 0 3px #fff, 0 8px 18px -6px rgb(15 26 43 / 0.6);
-}
-/* Posições sobre a captura desktop (1440 × 900): resumos, busca e filtros, radar no mapa e o indicador de atualização. */
-.vitrine__ponto { pointer-events: none; }
-.vitrine__ponto--1 { left: 41.8%; top: 15.4%; }
-.vitrine__ponto--2 { left: 39%; top: 7.6%; }
-.vitrine__ponto--3 { left: 54.9%; top: 52.9%; }
-.vitrine__ponto--4 { left: 63.4%; top: 3%; }
 .vitrine figcaption { margin-top: 70px; }
-.vitrine__legenda { counter-reset: ponto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px 28px; margin: 0; padding: 0; list-style: none; }
-.vitrine__legenda li { counter-increment: ponto; position: relative; padding-left: 40px; font-size: 0.97rem; color: var(--apagado); }
-.vitrine__legenda li::before {
-  content: counter(ponto); position: absolute; left: 0; top: -1px; width: 28px; height: 28px; border-radius: 50%;
-  display: grid; place-items: center; background: var(--tinta); color: #fff; font-weight: 800; font-size: 0.82rem;
-}
+.vitrine__legenda { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px 28px; margin: 0; padding: 0; list-style: none; }
+.vitrine__legenda li { position: relative; font-size: 0.97rem; color: var(--apagado); }
 .vitrine__legenda strong { color: var(--tinta); }
 .vitrine__fonte { margin-top: 24px; font-size: 0.85rem; color: var(--apagado); }
 @media (max-width: 999.98px) { .vitrine__legenda { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 719.98px) {
-  /* Captura do celular (390 × 650): resumos, filtros, mapa e o indicador "Ao vivo" das consultas a cada 5 s. */
   .vitrine { max-width: 440px; }
-  .vitrine__ponto { width: 26px; height: 26px; margin: -13px 0 0 -13px; font-size: 0.78rem; }
-  .vitrine__ponto--1 { left: 27%; top: 20.5%; }
-  .vitrine__ponto--2 { left: 30.3%; top: 38.8%; }
-  .vitrine__ponto--3 { left: 53.8%; top: 69.2%; }
-  .vitrine__ponto--4 { left: 69.2%; top: 11.1%; }
   .vitrine__legenda { grid-template-columns: minmax(0, 1fr); }
   .vitrine__quadro, .vitrine__quadro img { border-radius: 10px; }
 }
