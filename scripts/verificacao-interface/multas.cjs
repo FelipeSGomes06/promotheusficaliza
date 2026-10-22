@@ -39,7 +39,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   // Desktop: lista com filtro, cadastros, erros, fichas.
   let ids = {};
   { const { ctx, p } = await page(D);
-    ids = { completo: await fineId(p, 'DEMO-AIT-26-000101'), pagamento: await fineId(p, 'DEMO-AIT-26-000108'), retificado: await fineId(p, 'DEMO-AIT-26-000112'), posterior: await fineId(p, 'DEMO-AIT-26-000107') };
+    ids = { completo: await fineId(p, 'DEMO-AIT-26-000101'), pagamento: await fineId(p, 'DEMO-AIT-26-000108'), retificado: await fineId(p, 'DEMO-AIT-26-000112'), posterior: await fineId(p, 'DEMO-AIT-26-000107'), semAndamento: await fineId(p, 'DEMO-AIT-26-000103') };
     await p.goto(`${BASE}/multas?origem=RADAR`, { waitUntil: 'networkidle' });
     const kpis = await p.locator('.fine-kpis .kpi__n').allTextContents();
     const listed = await p.locator('a.fine-row').count();
@@ -62,6 +62,25 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     // Digitar no bloco de radar, ir para agente e voltar: a digitação continua.
     await p.fill('#f-speed_limit_kmh', '50'); await p.check('input[name="source_kind"][value="AGENTE"]'); await p.check('input[name="source_kind"][value="RADAR"]');
     check('valores_preservados_ao_alternar', (await p.inputValue('#f-speed_limit_kmh')) === '50');
+    // Campos que só valem numa situação: fora da vista até ela; a descrição vem sugerida e não troca o que foi escrito.
+    { const n = await ctx.newPage(); await n.route(/tile\.openstreetmap\.org/, (r) => r.abort()); await n.goto(`${BASE}/multas/novo`, { waitUntil: 'networkidle' });
+      const hidden = async (sel) => !(await n.isVisible(sel));
+      check('cadastro_novo_recolhe_opcionais', await hidden('#f-ait_missing_reason') && await hidden('#f-renavam_missing_reason') && await hidden('#f-vehicle_color')
+        && await hidden('#f-infraction_code') && await hidden('#f-source_note') && await n.isVisible('summary:has-text("Não tem o número do AIT?")'));
+      await n.fill('#f-external_ait', 'DEMO-AIT-TESTE');
+      check('ait_digitado_esconde_alternativa', await hidden('details:has(#f-ait_missing_reason)'));
+      await n.selectOption('#f-infraction_kind', 'AVANCO_SEMAFORO'); await n.fill('#f-street', 'Avenida Sampaio Vidal');
+      check('descricao_sugerida_tipo_e_local', (await n.inputValue('#f-description')) === 'Avanço de sinal vermelho na Avenida Sampaio Vidal', await n.inputValue('#f-description'));
+      await n.fill('#f-description', 'Descrição escrita à mão'); await n.selectOption('#f-infraction_kind', 'OUTRA');
+      check('descricao_escrita_nao_e_trocada', (await n.inputValue('#f-description')) === 'Descrição escrita à mão');
+      await n.check('input[name="source_kind"][value="RADAR"]'); await n.selectOption('#f-equipment_id', { index: 1 });
+      const radarAgency = await n.locator('#f-equipment_id option:checked').getAttribute('data-agency');
+      const otherAgency = await n.locator(`#f-agency_id option:not([value=""]):not([value="${radarAgency}"])`).first().getAttribute('value');
+      await n.selectOption('#f-agency_id', radarAgency); await sleep(300); const same = await hidden('#f-source_note');
+      await n.selectOption('#f-agency_id', otherAgency); await sleep(300);
+      check('observacao_da_origem_so_com_orgaos_diferentes', same && await n.isVisible('#f-source_note'), { radarAgency, otherAgency });
+      await n.locator('[data-source-note]').scrollIntoViewIfNeeded(); await shot(n, '03b-cadastro-observacao-da-origem');
+      await n.close(); }
     // 422: placa malformada, digitação mantida, foco no resumo, link leva ao campo.
     await p.fill('#f-description', 'Teste de erro de placa'); await p.fill('#f-vehicle_plate', 'XX-9'); await p.fill('#f-vehicle_renavam', '123');
     await Promise.all([p.waitForNavigation(), p.click('.form-actions button[type=submit]')]);
@@ -81,6 +100,17 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await shot(p, '05-conflito-409');
     await p.goto(`${BASE}/multas/${ids.completo}`, { waitUntil: 'networkidle' }); await shot(p, '06-ficha-completa', true);
     await p.goto(`${BASE}/multas/${ids.pagamento}#andamento-sec`, { waitUntil: 'networkidle' }); await p.locator('#andamento-sec').scrollIntoViewIfNeeded(); await shot(p, '07-pagamento-e-recurso');
+    await p.click('#andamento > summary');
+    check('situacao_gravada_continua_a_vista', (await p.isVisible('#f-paid_on')) && (await p.inputValue('#f-paid_on')) !== '');
+    // Situação sem nada informado: só as três perguntas; "Paga" traz os campos que o servidor passa a exigir.
+    await p.goto(`${BASE}/multas/${ids.semAndamento}`, { waitUntil: 'networkidle' }); await p.click('#andamento > summary');
+    const shown = async (...sels) => Promise.all(sels.map((s) => p.isVisible(s)));
+    check('situacao_so_tres_perguntas', (await shown('#f-process_stage', '#f-payment_status', '#f-contest_status')).every(Boolean)
+      && !(await shown('#f-nominal_amount', '#f-autuation_issued_on', '#f-paid_on', '#f-contest_kind', '#f-closed_on', '#f-progress_reason')).some(Boolean));
+    await p.selectOption('#f-payment_status', 'PAGAMENTO_INFORMADO'); await p.selectOption('#f-contest_status', 'DEFERIDA');
+    check('situacao_paga_e_aceito_mostram_o_exigido', (await shown('#f-paid_on', '#f-paid_amount', '#f-payment_reference', '#f-contest_kind', '#f-contest_decided_on', '#f-contest_result_note', '#f-payment_due_on')).every(Boolean)
+      && !(await shown('#f-closed_on', '#f-penalty_issued_on')).some(Boolean));
+    await p.locator('#andamento').scrollIntoViewIfNeeded(); await shot(p, '07b-situacao-so-o-que-se-aplica');
     await p.goto(`${BASE}/multas/${ids.retificado}`, { waitUntil: 'networkidle' });
     await p.click('#documentacao-sec summary:has-text("Ver todas as conferências")'); await p.locator('#documentacao-sec').scrollIntoViewIfNeeded();
     check('retificacao_conferencia_antiga_so_no_historico', (await p.locator('.fine-checks li.is-stale').count()) === 1 && (await p.locator('.fine-head .st--DOC_NAO_VERIFICADA').count()) === 1);
@@ -92,10 +122,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     if (!(await p.locator('#conferir').evaluate((d) => d.open))) await p.click('#conferir > summary');
     const rev = p.locator('[data-check-review]');
     check('lembrete_oculto_antes_do_resultado', !(await rev.isVisible()));
+    check('conferencia_fonte_so_depois_do_resultado', !(await p.isVisible('#f-source_type')) && !(await p.isVisible('#f-pending_items')) && !(await p.isVisible('#f-checked_at')));
     await p.selectOption('#f-document_status', 'REGULARIDADE_INFORMADA');
     check('lembrete_em_dia_recolhido_nao_precisa', (await rev.isVisible()) && !(await rev.evaluate((d) => d.open)) && (await p.isChecked('input[name="review_choice"][value="NAO"]')));
+    check('conferencia_em_dia_mostra_fonte_sem_pendencia', (await p.isVisible('#f-source_type')) && (await p.isVisible('#f-source_reference')) && !(await p.isVisible('#f-pending_items')));
     await rev.scrollIntoViewIfNeeded(); await shot(p, '10b-lembrete-em-dia');
     await p.selectOption('#f-document_status', 'PENDENCIA_INFORMADA');
+    check('conferencia_pendencia_mostra_o_que_estava_errado', await p.isVisible('#f-pending_items'));
     check('lembrete_pendencia_em_destaque', (await rev.evaluate((d) => d.open)) && !(await p.locator('input[name="review_choice"]:checked').count()) && !(await p.isVisible('#f-review_on')));
     await p.check('input[name="review_choice"][value="DATA"]');
     check('lembrete_escolher_data_mostra_campo', await p.isVisible('#f-review_on'));
@@ -156,6 +189,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     if (!(await p.locator('#conferir').evaluate((d) => d.open))) await p.click('#conferir > summary');
     check('sem_js_lembrete_completo', await p.isVisible('input[name="review_choice"][value="30"]') && await p.isVisible('#f-review_on') && await p.isVisible('[data-review-nojs]'));
     await p.locator('[data-check-review]').scrollIntoViewIfNeeded(); await shot(p, '16-sem-javascript-lembrete');
+    await p.click('#andamento > summary');
+    check('sem_js_campos_condicionais_alcancaveis', await p.isVisible('#f-source_type') && await p.isVisible('#f-pending_items') && await p.isVisible('#f-check_reason')
+      && await p.isVisible('#f-closed_on') && await p.isVisible('#f-contest_decided_on') && await p.isVisible('#f-progress_reason'));
+    await p.goto(`${BASE}/multas/novo`); await p.click('summary:has-text("Não tem o número do AIT?")');
+    check('sem_js_alternativa_do_ait_abre', await p.isVisible('#f-ait_missing_reason') && await p.isVisible('#f-source_note'));
     await ctx.close(); }
 
   await browser.close();

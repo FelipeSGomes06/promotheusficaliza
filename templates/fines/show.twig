@@ -157,12 +157,19 @@
                 {{ ui.select('scope', 'A conferência se refere a', doc_scopes, cv.scope ?? 'OCORRENCIA', ce, {required: true, dataAttr: 'check-scope'}) }}
                 <div data-check-effective>{{ ui.input('effective_on', 'Data a que se refere (conferência posterior)', cv, ce, {type: 'date', help: 'Entre a data da ocorrência e hoje.'}) }}</div>
                 {{ ui.select('document_status', 'Resultado', doc_labels, cv.document_status ?? '', ce, {required: true, empty: 'Escolha…'}) }}
-                {{ ui.input('checked_at', 'Conferido em', cv|merge({checked_at: cv.checked_at ?? now_local}), ce, {type: 'datetime-local', required: true}) }}
-                {{ ui.select('source_type', 'Fonte', doc_sources, cv.source_type ?? 'NAO_INFORMADA', ce, {required: true}) }}
-                {{ ui.input('source_reference', 'Referência da fonte', cv, ce, {max: 240, help: 'Ex.: "CRLV-e exibido no local, exercício 2026" (sem dado pessoal).'}) }}
-                {{ ui.input('crlv_exercise', 'Exercício do CRLV', cv, ce, {type: 'number', inputmode: 'numeric'}) }}
-                {{ ui.input('pending_items', 'O que estava errado', cv, ce, {type: 'textarea', max: 500, class: 'span-2', help: 'Obrigatório quando o resultado for "Com pendência".'}) }}
-                {{ ui.input('check_reason', 'Motivo / observação', cv, ce, {type: 'textarea', max: 300, class: 'span-2', help: 'Obrigatório para registrar "Não verificada" (por exemplo, retirar uma conclusão anterior).'}) }}
+                {# Já vem com "agora": recolhido, abre com erro. #}
+                <details class="advanced span-2" {{ ce.checked_at is defined ? 'open' }}>
+                  <summary>{{ ce.checked_at is defined ? 'Conferido em: corrija a data e a hora' : 'Conferido em ' ~ (cv.checked_at ?? now_local)|date('d/m/Y') ~ ', às ' ~ (cv.checked_at ?? now_local)|date('H:i') ~ ' · mudar' }}</summary>
+                  {{ ui.input('checked_at', 'Conferido em', cv|merge({checked_at: cv.checked_at ?? now_local}), ce, {type: 'datetime-local', required: true}) }}
+                </details>
+                {# Divulgação progressiva (multas.js): cada bloco aparece com o resultado que o servidor exige dele (FineService::addCheck). #}
+                <div class="form-grid span-2" data-show-if="document_status=REGULARIDADE_INFORMADA PENDENCIA_INFORMADA">
+                  {{ ui.select('source_type', 'Fonte', doc_sources, cv.source_type ?? 'NAO_INFORMADA', ce, {required: true}) }}
+                  {{ ui.input('source_reference', 'Referência da fonte', cv, ce, {max: 240, help: 'Ex.: "CRLV-e exibido no local, exercício 2026" (sem dado pessoal).'}) }}
+                  <div data-show-if="source_type=CRLV_APRESENTADO CONSULTA_OFICIAL_INFORMADA">{{ ui.input('crlv_exercise', 'Exercício do CRLV', cv, ce, {type: 'number', inputmode: 'numeric'}) }}</div>
+                </div>
+                <div class="span-2" data-show-if="document_status=PENDENCIA_INFORMADA">{{ ui.input('pending_items', 'O que estava errado', cv, ce, {type: 'textarea', max: 500, help: 'Obrigatório quando o resultado for "Com pendência".'}) }}</div>
+                <div class="span-2" data-show-if="document_status=NAO_VERIFICADA">{{ ui.input('check_reason', 'Motivo / observação', cv, ce, {type: 'textarea', max: 300, help: 'Obrigatório para registrar "Não verificada" (por exemplo, retirar uma conclusão anterior).'}) }}</div>
                 {# Pergunta feita depois do resultado: com JavaScript ela só aparece quando o resultado é escolhido (multas.js). #}
                 <details class="advanced span-2" data-check-review open>
                   <summary id="lbl-review_choice">Quer ser lembrado de conferir de novo?<span data-review-answer></span></summary>
@@ -212,31 +219,47 @@
             <form method="post" action="{{ url('/multas/' ~ f.id ~ '/andamento') }}" class="panel stack" novalidate>{{ ui.csrf(app.csrf) }}
               <input type="hidden" name="version" value="{{ form.name == 'andamento' ? formVersion : f.version_no }}"><input type="hidden" name="command_uid" value="{{ form.name == 'andamento' ? formUid : uid }}">
               <p class="hint">Copie as datas e valores dos avisos recebidos. O sistema não calcula prazos nem descontos e não gera boleto.</p>
+              {# Três perguntas abrem o resto (multas.js): cada bloco aparece na situação em que se aplica e sempre que já tem
+                 valor ou erro; escondido, continua sendo enviado. Os exigidos seguem FineService::updateProgress e os CHECK de FINE. #}
+              {% set later = ['AUTUACAO', 'PENALIDADE_NOTIFICADA', 'ENCERRAMENTO_INFORMADO'] %}
               <div class="form-grid">
                 {{ ui.select('process_stage', 'Fase', stages, pv.process_stage ?? 'NAO_INFORMADA', pe, {required: true}) }}
-                {{ ui.input('nominal_amount', 'Valor da multa (R$)', pv, pe, {max: 20, inputmode: 'decimal', placeholder: '293,47'}) }}
-                {{ ui.input('autuation_issued_on', labels.autuation_issued_on, pv, pe, {type: 'date'}) }}
-                {{ ui.input('autuation_received_on', labels.autuation_received_on, pv, pe, {type: 'date'}) }}
-                {{ ui.input('penalty_issued_on', labels.penalty_issued_on, pv, pe, {type: 'date'}) }}
-                {{ ui.input('penalty_received_on', labels.penalty_received_on, pv, pe, {type: 'date'}) }}
-                {{ ui.input('payment_due_on', labels.payment_due_on, pv, pe, {type: 'date'}) }}
-                {{ ui.input('defense_due_on', labels.defense_due_on, pv, pe, {type: 'date'}) }}
-                {{ ui.input('appeal_due_on', labels.appeal_due_on, pv, pe, {type: 'date'}) }}
-                <div></div>
+                <div data-show-if="process_stage={{ later|join(' ') }};payment_status=EM_ABERTO PAGAMENTO_INFORMADO">{{ ui.input('nominal_amount', 'Valor da multa (R$)', pv, pe, {max: 20, inputmode: 'decimal', placeholder: '293,47'}) }}</div>
+                <div class="form-grid span-2" data-show-if="process_stage={{ later|join(' ') }}">
+                  {{ ui.input('autuation_issued_on', labels.autuation_issued_on, pv, pe, {type: 'date'}) }}
+                  {{ ui.input('autuation_received_on', labels.autuation_received_on, pv, pe, {type: 'date'}) }}
+                  {{ ui.input('defense_due_on', labels.defense_due_on, pv, pe, {type: 'date'}) }}
+                </div>
+                <div class="form-grid span-2" data-show-if="process_stage=PENALIDADE_NOTIFICADA ENCERRAMENTO_INFORMADO">
+                  {{ ui.input('penalty_issued_on', labels.penalty_issued_on, pv, pe, {type: 'date'}) }}
+                  {{ ui.input('penalty_received_on', labels.penalty_received_on, pv, pe, {type: 'date'}) }}
+                  {{ ui.input('appeal_due_on', labels.appeal_due_on, pv, pe, {type: 'date'}) }}
+                </div>
+                <div class="form-grid span-2" data-show-if="process_stage=ENCERRAMENTO_INFORMADO">
+                  {{ ui.input('closed_on', labels.closed_on, pv, pe, {type: 'date'}) }}
+                  {{ ui.input('closure_reference', labels.closure_reference, pv, pe, {max: 240}) }}
+                  {{ ui.input('closure_note', labels.closure_note, pv, pe, {type: 'textarea', max: 500, class: 'span-2'}) }}
+                </div>
                 {{ ui.select('payment_status', 'Pagamento', payments, pv.payment_status ?? 'NAO_INFORMADO', pe, {required: true}) }}
-                {{ ui.input('paid_on', labels.paid_on, pv, pe, {type: 'date'}) }}
-                {{ ui.input('paid_amount', 'Valor pago (R$)', pv, pe, {max: 20, inputmode: 'decimal'}) }}
-                {{ ui.input('payment_reference', labels.payment_reference, pv, pe, {max: 240}) }}
+                <div data-show-if="payment_status=EM_ABERTO PAGAMENTO_INFORMADO">{{ ui.input('payment_due_on', labels.payment_due_on, pv, pe, {type: 'date'}) }}</div>
+                <div class="form-grid span-2" data-show-if="payment_status=PAGAMENTO_INFORMADO">
+                  {{ ui.input('paid_on', labels.paid_on, pv, pe, {type: 'date'}) }}
+                  {{ ui.input('paid_amount', 'Valor pago (R$)', pv, pe, {max: 20, inputmode: 'decimal'}) }}
+                  {{ ui.input('payment_reference', labels.payment_reference, pv, pe, {max: 240, class: 'span-2'}) }}
+                </div>
                 {{ ui.select('contest_status', 'Defesa ou recurso', contests, pv.contest_status ?? 'NAO_INFORMADA', pe, {required: true}) }}
-                {{ ui.select('contest_kind', 'Tipo', contest_kinds, pv.contest_kind ?? '', pe, {empty: 'Não se aplica'}) }}
-                {{ ui.input('contest_submitted_on', labels.contest_submitted_on, pv, pe, {type: 'date'}) }}
-                {{ ui.input('contest_reference', labels.contest_reference, pv, pe, {max: 240}) }}
-                {{ ui.input('contest_decided_on', labels.contest_decided_on, pv, pe, {type: 'date'}) }}
-                {{ ui.input('contest_result_note', labels.contest_result_note, pv, pe, {type: 'textarea', max: 500}) }}
-                {{ ui.input('closed_on', labels.closed_on, pv, pe, {type: 'date'}) }}
-                {{ ui.input('closure_reference', labels.closure_reference, pv, pe, {max: 240}) }}
-                {{ ui.input('closure_note', labels.closure_note, pv, pe, {type: 'textarea', max: 500, class: 'span-2'}) }}
-                {{ ui.input('progress_reason', 'Motivo da correção', pv, pe, {type: 'textarea', max: 300, class: 'span-2', help: 'Obrigatório ao corrigir pagamento, resultado ou encerramento já informados; o anterior fica no histórico.'}) }}
+                <div class="form-grid span-2" data-show-if="contest_status=EM_ANALISE DEFERIDA INDEFERIDA">
+                  {{ ui.select('contest_kind', 'Tipo', contest_kinds, pv.contest_kind ?? '', pe, {empty: 'Não se aplica'}) }}
+                  {{ ui.input('contest_submitted_on', labels.contest_submitted_on, pv, pe, {type: 'date'}) }}
+                  {{ ui.input('contest_reference', labels.contest_reference, pv, pe, {max: 240}) }}
+                </div>
+                <div class="form-grid span-2" data-show-if="contest_status=DEFERIDA INDEFERIDA">
+                  {{ ui.input('contest_decided_on', labels.contest_decided_on, pv, pe, {type: 'date'}) }}
+                  {{ ui.input('contest_result_note', labels.contest_result_note, pv, pe, {type: 'textarea', max: 500}) }}
+                </div>
+                {# Exigido só ao corrigir algo já informado: sem nada a corrigir, aparece só se tiver valor ou erro. #}
+                {% set correctable = [f.paid_on, f.paid_amount_cents, f.payment_reference, f.contest_decided_on, f.contest_result_note, f.closed_on, f.closure_reference, f.closure_note]|filter(x => x is not null) is not empty %}
+                <div class="span-2" {% if not correctable %}data-show-if=""{% endif %}>{{ ui.input('progress_reason', 'Motivo da correção', pv, pe, {type: 'textarea', max: 300, help: 'Obrigatório ao corrigir pagamento, resultado ou encerramento já informados; o anterior fica no histórico.'}) }}</div>
               </div>
               <div><button class="btn btn--primary" type="submit">Salvar situação</button></div>
             </form>
