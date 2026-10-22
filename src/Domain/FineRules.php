@@ -25,28 +25,28 @@ final class FineRules
     public const SOURCES = ['RADAR' => 'Radar', 'AGENTE' => 'Agente de trânsito'];
 
     public const STAGES = [
-        'NAO_INFORMADA' => 'Etapa não informada',
-        'AUTUACAO' => 'Autuação',
-        'PENALIDADE_NOTIFICADA' => 'Penalidade notificada',
-        'ENCERRAMENTO_INFORMADO' => 'Encerramento informado',
+        'NAO_INFORMADA' => 'Fase ainda não informada',
+        'AUTUACAO' => 'Aviso de infração enviado (autuação)',
+        'PENALIDADE_NOTIFICADA' => 'Multa aplicada (penalidade)',
+        'ENCERRAMENTO_INFORMADO' => 'Encerrada',
     ];
 
     public const PAYMENTS = [
-        'NAO_INFORMADO' => 'Pagamento não informado',
-        'SEM_COBRANCA_INFORMADA' => 'Sem cobrança informada',
-        'EM_ABERTO' => 'Em aberto (informado)',
-        'PAGAMENTO_INFORMADO' => 'Pagamento informado',
+        'NAO_INFORMADO' => 'Ainda não informado',
+        'SEM_COBRANCA_INFORMADA' => 'Não há valor a pagar',
+        'EM_ABERTO' => 'A pagar',
+        'PAGAMENTO_INFORMADO' => 'Paga',
     ];
 
     public const CONTESTS = [
-        'NAO_INFORMADA' => 'Contestação não informada',
-        'NAO_APRESENTADA' => 'Nenhuma contestação apresentada',
-        'EM_ANALISE' => 'Contestação em análise',
-        'DEFERIDA' => 'Contestação deferida (informado)',
-        'INDEFERIDA' => 'Contestação indeferida (informado)',
+        'NAO_INFORMADA' => 'Ainda não informado',
+        'NAO_APRESENTADA' => 'Motorista não recorreu',
+        'EM_ANALISE' => 'Em análise',
+        'DEFERIDA' => 'Aceito (multa cancelada pelo órgão)',
+        'INDEFERIDA' => 'Negado',
     ];
 
-    public const CONTEST_KINDS = ['DEFESA_PREVIA' => 'Defesa prévia', 'RECURSO_1' => 'Recurso em 1ª instância', 'RECURSO_2' => 'Recurso em 2ª instância'];
+    public const CONTEST_KINDS = ['DEFESA_PREVIA' => 'Defesa prévia', 'RECURSO_1' => 'Recurso à JARI (1ª instância)', 'RECURSO_2' => 'Recurso ao conselho estadual (2ª instância)'];
 
     public const UFS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
 
@@ -202,9 +202,9 @@ final class FineRules
         }
         $doc = $f['occ_doc_status'] ?? FineDocumentStatus::NOT_CHECKED;
         if ($doc === FineDocumentStatus::NOT_CHECKED) {
-            $reasons[] = 'Documentação na data da ocorrência: não verificada.';
+            $reasons[] = 'Documentos do carro no dia da multa ainda não conferidos.';
         } elseif ($doc === FineDocumentStatus::PENDING) {
-            $reasons[] = 'Pendência documental informada na data da ocorrência.';
+            $reasons[] = 'Documentos do carro com pendência no dia da multa.';
         }
         $review = $f['occ_doc_review_on'] ?? null;
         if ($today !== null && is_string($review) && $review !== '' && $review < $today) {

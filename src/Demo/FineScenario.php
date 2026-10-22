@@ -154,7 +154,7 @@ final class FineScenario
                 'speed_limit_kmh' => '50', 'speed_measured_kmh' => '71', 'speed_considered_kmh' => '64']
             + $vehicle('DMO1A23', '01234567890', 'Movix', 'Urbano 1.0', 'Passageiro', 'Prata', 2021));
         $register('c01', $id);
-        $check('c01', $id, $regular(5, '10:00', 'CONSULTA_OFICIAL_INFORMADA', 'Consulta feita fora do sistema e informada à mão (fictícia): DEMO-CONS-0001'));
+        $check('c01', $id, $regular(5, '10:00', 'CONSULTA_OFICIAL_INFORMADA', 'consulta nº DEMO-CONS-0001'));
         $progress('c01', $id, ['process_stage' => 'AUTUACAO', 'nominal_amount' => '130,16', 'autuation_issued_on' => $day(3)]);
         $count++;
 
@@ -172,7 +172,7 @@ final class FineScenario
                 'evidence_reference' => 'DEMO-IMG-0303 (sequência fictícia de imagens)']
             + $vehicle('DMO3C45', '04561237890', 'Cidália', 'Hatch 1.3', 'Passageiro', 'Vermelha', 2022));
         $register('c03', $id);
-        $check('c03', $id, $regular(7, '11:30', 'CONSULTA_OFICIAL_INFORMADA', 'Consulta feita fora do sistema e informada à mão (fictícia): DEMO-CONS-0003'));
+        $check('c03', $id, $regular(7, '11:30', 'CONSULTA_OFICIAL_INFORMADA', 'consulta nº DEMO-CONS-0003'));
         $count++;
 
         // 4. Agente, placa no formato antigo e RENAVAM com zeros à esquerda.
@@ -180,7 +180,7 @@ final class FineScenario
             + ['description' => 'Parada sobre a faixa de pedestres no calçadão', 'occurred_at' => $at(3, '12:05'), 'external_ait' => 'DEMO-AIT-26-000104']
             + $vehicle('DMO1234', '00012345678', 'Trilha Motors', 'Sedã 2.0', 'Passageiro', 'Preta', 2012));
         $register('c04', $id);
-        $check('c04', $id, $regular(3, '12:10', 'CRLV_APRESENTADO', 'CRLV-e exibido no local (fictício)'));
+        $check('c04', $id, $regular(3, '12:10', 'CRLV_APRESENTADO', 'CRLV digital no celular'));
         $count++;
 
         // 5. Agente, RENAVAM desconhecido com justificativa, documentação não verificada.
@@ -196,7 +196,7 @@ final class FineScenario
             + $vehicle('DMO6E78', '07418529630', 'Rodafort', 'Picape 1.6', 'Misto', 'Cinza', 2016));
         $register('c06', $id);
         $check('c06', $id, ['scope' => 'OCORRENCIA', 'checked_at' => $at(30, '08:20'), 'document_status' => 'PENDENCIA_INFORMADA', 'source_type' => 'CRLV_APRESENTADO',
-            'source_reference' => 'CRLV de exercício anterior exibido no local (fictício)', 'crlv_exercise' => (string) ($year - 1),
+            'source_reference' => 'CRLV do ano anterior', 'crlv_exercise' => (string) ($year - 1),
             'pending_items' => 'Licenciamento do exercício não comprovado no local (informado).', 'review_on' => $day(10)]);
         $count++;
 
@@ -206,9 +206,9 @@ final class FineScenario
             + $vehicle('DMO7F89', '03692581470', 'Cidália', 'Hatch 1.3', 'Passageiro', 'Branca', 2018));
         $register('c07', $id);
         $check('c07', $id, ['scope' => 'OCORRENCIA', 'checked_at' => $at(25, '17:55'), 'document_status' => 'PENDENCIA_INFORMADA', 'source_type' => 'RELATO_MANUAL',
-            'source_reference' => 'Relato do agente no local (fictício)', 'pending_items' => 'CRLV do exercício não apresentado.']);
+            'source_reference' => 'relato do agente no local', 'pending_items' => 'CRLV do exercício não apresentado.']);
         $check('c07', $id, ['scope' => 'POSTERIOR', 'effective_on' => $day(2), 'checked_at' => $at(2, '14:00'), 'document_status' => 'REGULARIDADE_INFORMADA',
-            'source_type' => 'CRLV_APRESENTADO', 'source_reference' => 'CRLV-e do exercício apresentado na base (fictício)', 'crlv_exercise' => (string) $year]);
+            'source_type' => 'CRLV_APRESENTADO', 'source_reference' => 'CRLV do ano em curso, mostrado na base', 'crlv_exercise' => (string) $year]);
         $count++;
 
         // 8. Penalidade notificada, pagamento informado e recurso em análise ao mesmo tempo.
@@ -217,11 +217,11 @@ final class FineScenario
                 'speed_limit_kmh' => '40', 'speed_measured_kmh' => '62', 'speed_considered_kmh' => '55']
             + $vehicle('DMO8G90', '05544332211', 'Trilha Motors', 'SUV 1.5', 'Passageiro', 'Verde', 2023));
         $register('c08', $id);
-        $check('c08', $id, $regular(58, '09:00', 'CONSULTA_OFICIAL_INFORMADA', 'Consulta feita fora do sistema e informada à mão (fictícia): DEMO-CONS-0008'));
+        $check('c08', $id, $regular(58, '09:00', 'CONSULTA_OFICIAL_INFORMADA', 'consulta nº DEMO-CONS-0008'));
         $progress('c08', $id, ['process_stage' => 'PENALIDADE_NOTIFICADA', 'nominal_amount' => '195,23', 'autuation_issued_on' => $day(50), 'autuation_received_on' => $day(45),
             'penalty_issued_on' => $day(15), 'penalty_received_on' => $day(10), 'appeal_due_on' => $day(-10),
-            'payment_status' => 'PAGAMENTO_INFORMADO', 'paid_on' => $day(5), 'paid_amount' => '195,23', 'payment_reference' => 'DEMO-PAG-0008 (comprovante fictício)',
-            'contest_status' => 'EM_ANALISE', 'contest_kind' => 'RECURSO_1', 'contest_submitted_on' => $day(6), 'contest_reference' => 'DEMO-PROT-0008 (protocolo fictício)']);
+            'payment_status' => 'PAGAMENTO_INFORMADO', 'paid_on' => $day(5), 'paid_amount' => '195,23', 'payment_reference' => 'DEMO-PAG-0008',
+            'contest_status' => 'EM_ANALISE', 'contest_kind' => 'RECURSO_1', 'contest_submitted_on' => $day(6), 'contest_reference' => 'DEMO-PROT-0008']);
         $count++;
 
         // 9. Rascunho incompleto, com o caminho para completar na ficha.
@@ -253,7 +253,7 @@ final class FineScenario
             + $vehicle('DMO4E21', '08877665544', 'Cidália', 'Sedã 1.6', 'Passageiro', 'Bege', 2014);
         $id = $create('c12', $base);
         $register('c12', $id);
-        $check('c12', $id, $regular(12, '15:30', 'CRLV_APRESENTADO', 'CRLV-e exibido no local (fictício)'));
+        $check('c12', $id, $regular(12, '15:30', 'CRLV_APRESENTADO', 'CRLV digital no celular'));
         $fines->update($id, ['vehicle_plate' => 'DMO4E27', 'reason' => 'Placa transcrita com erro no lançamento; corrigida conforme o auto (fictício).',
             'version' => (string) $version($id), 'command_uid' => $uid('c12:retificar')] + $base, null, 'SEMENTE');
         $count++;
@@ -273,11 +273,11 @@ final class FineScenario
                     'external_ait' => sprintf('DEMO-AIT-26-%06d', 200 + $i), 'notes' => self::volumeRelato($i, $i % 2 === 0, $data['infraction_kind'])] + $vehicle($plate, sprintf('%011d', $i * 104729), 'Movix', 'Urbano 1.0', 'Passageiro', 'Prata', 2010 + $i % 14));
                 $register($key, $id);
                 if ($i % 3 === 0) {
-                    $check($key, $id, $regular(2 + $i * 3, '10:00', 'CONSULTA_OFICIAL_INFORMADA', sprintf('Consulta feita fora do sistema e informada à mão (fictícia): DEMO-CONS-%04d', 100 + $i)));
+                    $check($key, $id, $regular(2 + $i * 3, '10:00', 'CONSULTA_OFICIAL_INFORMADA', sprintf('consulta nº DEMO-CONS-%04d', 100 + $i)));
                 }
                 if ($i % 4 === 0) {
                     $progress($key, $id, ['process_stage' => 'PENALIDADE_NOTIFICADA', 'nominal_amount' => '130,16', 'payment_status' => 'PAGAMENTO_INFORMADO',
-                        'paid_on' => $day(1 + $i), 'paid_amount' => '130,16', 'payment_reference' => sprintf('DEMO-PAG-%04d (fictício)', 100 + $i)]);
+                        'paid_on' => $day(1 + $i), 'paid_amount' => '130,16', 'payment_reference' => sprintf('DEMO-PAG-%04d', 100 + $i)]);
                 }
                 $count++;
             }
