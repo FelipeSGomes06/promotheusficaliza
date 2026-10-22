@@ -149,8 +149,12 @@ protocolado ([ADR-0017](adr/0017-aba-multas.md)). Use só dados fictícios.
   (lançado à mão; não é arrecadação). Busca por código interno (`DEMO-MUL-000023`), AIT, placa ou RENAVAM; origem e
   etapa à mão; em **Mais filtros**, período da ocorrência, órgão autuador, radar, agente (da constatação ou operador do
   radar), documentação, pagamento, rascunhos/cancelados e ordem. A URL guarda os filtros, e a ficha volta para eles.
-- **Cadastrar multa:** um formulário em cinco etapas (ocorrência, como foi constatada, veículo, documentação, revisão).
-  Salvar cria um **rascunho**: só a descrição é obrigatória, mas o que for preenchido precisa estar bem formado. Escolha
+- **Cadastrar multa:** um formulário em três etapas (ocorrência, como foi constatada, veículo). Salvar cria um
+  **rascunho**: só a descrição é obrigatória (com JavaScript ela vem sugerida a partir do tipo e do logradouro, e você
+  pode mudá-la), mas o que for preenchido precisa estar bem formado. Campos opcionais ou alternativos ficam recolhidos
+  e abrem com um clique: código da infração, "Não tem o número do AIT?", "Não tem o RENAVAM?", operador associado ao
+  radar, cor e ano. A observação sobre a origem só aparece quando o órgão autuador difere do órgão do radar ou do
+  agente (é quando ela é exigida). Escolha
   **Radar** (do inventário; pode indicar o agente operador do medidor) ou **Agente de trânsito**; com JavaScript, o bloco
   da outra origem some e não é enviado, e o que foi digitado nele volta se você trocar de ideia. Sem JavaScript, os dois
   blocos aparecem: preencha só o da origem escolhida. Velocidades (regulamentada, medida, considerada) só em excesso de
@@ -164,12 +168,17 @@ protocolado ([ADR-0017](adr/0017-aba-multas.md)). Use só dados fictícios.
   acrescenta uma constatação com resultado, fonte (CRLV apresentado, consulta feita fora do sistema, relato) e data de
   referência — na data da ocorrência ou posterior. Uma regularidade posterior aparece separada e não corrige a
   ocorrência. Corrigir placa, UF, RENAVAM, marca, modelo, espécie ou data/hora pede nova conferência; as anteriores
-  ficam em "Todas as conferências", marcadas como anteriores à retificação. Depois de escolher o resultado aparece
+  ficam em "Todas as conferências", marcadas como anteriores à retificação. No formulário, cada resultado traz só o
+  que pede: "Em dia" e "Com pendência", a fonte e a referência; "Com pendência", o que estava errado; "Não
+  conferidos", o motivo. "Conferido em" já vem com a hora atual (clique para mudar). Depois de escolher o resultado aparece
   **Quer ser lembrado de conferir de novo?** (Não precisa, Em 30 dias, Em 90 dias ou Escolher data); com resultado
   "Em dia" ela vem recolhida, já em "Não precisa". Passada a data, a multa mostra **Documentos: precisam ser conferidos
   de novo** — um lembrete seu, não um prazo legal. Sem JavaScript, as opções e a data aparecem juntas: use só uma.
 - **Andamento:** etapa administrativa, pagamento e contestação são independentes (pagamento informado e recurso em
   análise podem coexistir). Valores em reais (`1.234,56`). O sistema não calcula prazos, descontos nem decide nada.
+  O formulário começa com as três perguntas (fase, pagamento, defesa ou recurso); cada resposta abre os campos dela
+  (por exemplo, "Paga" abre data, valor e comprovante). O que já foi informado continua à vista. Sem JavaScript,
+  todos os campos aparecem.
 - **O que aconteceu:** uma frase com o fato (quem constatou, veículo, local, data), as três velocidades quando é excesso
   de velocidade e o relato escrito; os dados técnicos ficam em "Detalhes do registro".
 - **Perguntas frequentes:** no fim da lista e da ficha, os termos explicados (AIT, RENAVAM, velocidade considerada,
