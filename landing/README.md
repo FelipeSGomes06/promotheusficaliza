@@ -20,7 +20,7 @@ landing/
     landing-assets/promotheus/
       boot.js         script clássico mínimo, antes da pintura (classe .js e preferência de movimento)
       build/          CSS, JS e fontes gerados pelo Vite (versionados; produção não precisa de Node)
-      img/            capturas reais do sistema (WebP, com recorte de celular), foto de Marília (CC BY-SA 3.0),
+      img/            capturas reais do sistema (WebP, com recorte de celular), foto de Marília (Pedro Monteiro),
                       imagem de compartilhamento e favicon
       video/          onde entra o vídeo do avaliador
   src/                fontes do CSS e do JS (pagina.js, palco.js, cena3d.js, rolagem.js, navegacao.js, movimento.js,

@@ -95,3 +95,11 @@ A foto do Commons foi trocada, a pedido do autor, por uma foto aérea do termina
 Monteiro** (@pvictormonteiro), com crédito no rodapé e em [licenças e fontes](../licencas-e-fontes.md). Recorte
 1280 × 640 sem a marca d'água, mesmo tratamento (dessaturação, escurecimento em gradiente), 77 KB no desktop e 28 KB no
 celular. O comportamento do palco não mudou.
+
+## Atualização (22/10/2026, ajustes visuais)
+A pedido do autor: a foto da hero volta às **cores originais** (só o recorte sem a marca d'água, 101 KB no desktop e
+38 KB no celular), com uma máscara elíptica no lugar das duas faixas retas, para o terminal aparecer de fato atrás da
+marca. A ficha do agente, na cena de inventário, passa a ter a mesma largura da captura principal (antes ficava estreita
+e alinhada à direita). Os objetos 3D saem da via, onde encostavam no texto, e vão para o **canto da página**, do lado da
+captura, no vão vertical depois de cada cena: não cobrem texto, captura nem a via em nenhuma largura de desktop; no
+celular continuam fora (nem pedem o 3D).

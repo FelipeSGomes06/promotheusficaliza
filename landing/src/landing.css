@@ -228,15 +228,13 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) { html:not([data-motion="full"]) .hero__texto > * { animation: none; } }
 
 .palco { position: relative; width: 100%; max-width: 640px; aspect-ratio: 1 / 1; justify-self: center; }
-/* Foto de Marília atrás da marca: céu atrás das ondas, linha de prédios embaixo. Escurecimento já vem no arquivo; a
-   máscara (estática) funde as bordas no asfalto. A imagem tem 6% de sobra: o deslocamento pelo mouse (±12 × ±8 px,
+/* Foto do terminal rodoviário de Marília atrás da marca, com as cores originais: o cone sai por trás da marca e a
+   cobertura fica embaixo. A máscara elíptica (estática) funde as bordas no asfalto. A imagem tem 6% de sobra: o deslocamento pelo mouse (±12 × ±8 px,
    palco.js) nunca mostra a borda. Sem a foto, fica o fundo da hero. */
 .palco__foto {
   position: absolute; inset: 0 -14% 9% -4%; overflow: hidden; pointer-events: none;
-  --borda-x: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent);
-  --borda-y: linear-gradient(to bottom, transparent, #000 24%, #000 78%, transparent);
-  -webkit-mask-image: var(--borda-x), var(--borda-y); -webkit-mask-composite: source-in;
-  mask-image: var(--borda-x), var(--borda-y); mask-composite: intersect;
+  --borda: radial-gradient(farthest-side at 50% 52%, #000 56%, rgb(0 0 0 / 0.55) 80%, transparent);
+  -webkit-mask-image: var(--borda); mask-image: var(--borda);
 }
 .palco__foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 100%; scale: 1.06; }
 .palco__cena { position: absolute; inset: 0 0 13%; }
@@ -347,7 +345,7 @@ a { color: inherit; }
 .indice a::before { content: counter(indice, decimal-leading-zero); color: var(--marca-700); font-size: 0.8rem; letter-spacing: 0.06em; }
 .indice li:last-child a::before { content: "→"; }
 .indice a:hover { box-shadow: inset 0 0 0 2px var(--marca); color: var(--marca-800); }
-.via { position: relative; max-width: var(--largura); margin: 0 auto; display: grid; gap: clamp(80px, 11vw, 150px); }
+.via { --vao: clamp(80px, 11vw, 150px); position: relative; max-width: var(--largura); margin: 0 auto; display: grid; gap: var(--vao); }
 .via__pista {
   position: absolute; top: -48px; bottom: -48px; left: 50%; width: 46px; translate: -50% 0; border-radius: 23px;
   background:
@@ -381,12 +379,17 @@ a { color: inherit; }
 }
 .cena__visual { position: relative; margin: 0; }
 .cena__tela { width: 100%; height: auto; border-radius: 12px; background: #fff; box-shadow: 0 0 0 1px rgb(15 26 43 / 0.08), 0 34px 64px -36px rgb(15 26 43 / 0.55); }
-/* Segunda captura (ficha do agente): abaixo da principal, sem cobrir nada dela. */
-.cena__visual .captura + .captura { width: 56%; margin: 18px 0 0 auto; }
+/* Segunda captura (ficha do agente): abaixo da principal, na mesma largura, sem cobrir nada dela. */
+.cena__visual .captura + .captura { margin-top: 18px; }
 .cena__fonte { margin-top: 14px; font-size: 0.85rem; color: var(--apagado); }
-/* Objeto 3D na beira da via, no vão entre a pista e a captura: encosta só na margem da tela, sem cobrir conteúdo. */
-.cena__objeto { position: absolute; z-index: 2; width: clamp(120px, 11vw, 164px); aspect-ratio: 1; left: -32%; bottom: 4%; pointer-events: none; }
-.cena--inversa .cena__objeto { left: auto; right: -32%; }
+/* Objeto 3D no canto da página, do lado da captura, no vão vertical depois da cena (a última usa o respiro da seção):
+   fica longe da via e não cobre texto nem captura em nenhuma largura. Metade dele avança sobre a margem da tela. */
+.cena__objeto {
+  --obj: clamp(92px, 8.4vw, 132px);
+  position: absolute; z-index: 2; width: var(--obj); aspect-ratio: 1; top: calc(100% + (var(--vao) - var(--obj)) / 2);
+  right: calc(-0.45 * var(--obj)); pointer-events: none;
+}
+.cena--inversa .cena__objeto { right: auto; left: calc(-0.45 * var(--obj)); }
 .cena__objeto canvas { width: 100%; height: 100%; }
 /* Selo, nota de limites e detalhamento opcional dentro das cenas. */
 .selo {
@@ -417,9 +420,6 @@ a { color: inherit; }
   .cena--inversa .cena__texto { order: 0; }
   /* No celular a captura ocupa toda a largura: o objeto 3D cobriria a imagem e fica de fora (nem pede o 3D). */
   .cena__objeto { display: none; }
-}
-@media (max-width: 719.98px) {
-  .cena__visual .captura + .captura { width: 84%; }
 }
 
 /* ---------- Planejar reforço: destaque em grafite, com o mapa de calor ---------- */
