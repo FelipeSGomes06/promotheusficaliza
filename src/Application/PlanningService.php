@@ -34,6 +34,8 @@ final class PlanningService
     /** Quadrados prioritários que a tela pode mostrar (1 a 4). */
     public const MAX_CELLS = 4;
     private const POINT = [0 => 'posição atual', 1 => 'posição atrasada', 2 => 'base de trabalho (sem posição recente)'];
+    /** @var list<array<string, mixed>>|null bairros de referência, lidos uma vez (a grade pede 64 quadrados) */
+    private ?array $regions = null;
 
     public function __construct(
         private readonly Database $db,
@@ -63,6 +65,8 @@ final class PlanningService
             'sectors' => self::ordered($this->urban->sectors($run['id']), $method),
             // Quadrados de 2 km pela média simples (independem do método dos setores); vazio se a grade não foi importada.
             'cells' => array_map(fn(array $c): array => $c + ['places' => $this->places($c)], $this->urban->topCells($run['id'], self::MAX_CELLS)),
+            // Grade inteira para o mapa de calor (a lista fica só com os prioritários de 'cells').
+            'grid' => array_map(fn(array $c): array => $c + ['places' => $this->places($c)], $this->urban->allCells($run['id'])),
             'period' => self::period($run, Time::localDate($this->clock->now())),
         ];
     }
@@ -225,7 +229,7 @@ final class PlanningService
         return array_map(function (array $m) use ($logs, &$cells): array {
             $cell = null;
             if ($m['cell_no'] !== null) {
-                $cells[$m['run_id']] ??= $this->urban->topCells((int) $m['run_id'], 64);
+                $cells[$m['run_id']] ??= $this->urban->allCells((int) $m['run_id']);
                 $cell = array_values(array_filter($cells[$m['run_id']], static fn(array $c): bool => $c['cell_no'] === $m['cell_no']))[0] ?? null;
             }
 
@@ -433,7 +437,7 @@ final class PlanningService
     {
         $lat = ($cell['south'] + $cell['north']) / 2;
         $lng = ($cell['west'] + $cell['east']) / 2;
-        $regions = $this->references->regions();
+        $regions = $this->regions ??= $this->references->regions();
         usort($regions, static fn(array $a, array $b): int => hypot((float) $a['center_lat'] - $lat, (float) $a['center_lng'] - $lng)
             <=> hypot((float) $b['center_lat'] - $lat, (float) $b['center_lng'] - $lng));
         $inside = array_filter($regions, static fn(array $r): bool => (float) $r['center_lat'] >= $cell['south'] && (float) $r['center_lat'] < $cell['north']
