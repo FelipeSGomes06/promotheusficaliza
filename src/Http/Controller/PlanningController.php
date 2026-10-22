@@ -22,7 +22,15 @@ final class PlanningController extends Controller
      */
     public function page(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $query = $request->getQueryParams();
+        return $this->show($request, $response, $request->getQueryParams());
+    }
+
+    /**
+     * @param array<string, mixed> $query
+     * @param array{values: array<string, mixed>, errors: array<string, string>} $form o que foi enviado e recusado no passo 3
+     */
+    private function show(ServerRequestInterface $request, ResponseInterface $response, array $query, array $form = ['values' => [], 'errors' => []], int $status = 200): ResponseInterface
+    {
         $planning = $this->services->planning();
         // Só a média simples na tela (o Poisson experimental fica nos dados e no treino, não na interface).
         $week = $planning->week('baseline');
@@ -61,8 +69,8 @@ final class PlanningController extends Controller
 
         return $this->render($request, $response, 'planning/index.twig', [
             'week' => $week, 'selected' => $selected, 'cell' => $cell, 'assigned' => $assigned, 'candidates' => $candidates, 'map' => $map,
-            'cell_count' => $cellCount, 'missions' => $missions, 'states' => PlanningService::STATES,
-        ]);
+            'cell_count' => $cellCount, 'missions' => $missions, 'states' => PlanningService::STATES, 'form' => $form,
+        ], $status);
     }
 
     public function replay(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -78,13 +86,15 @@ final class PlanningController extends Controller
     public function confirm(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $body = $this->body($request);
-        $back = '/planejar?' . http_build_query(['quadrado' => self::scalar($body, 'cell_rank'), 'quadrados' => self::scalar($body, 'cell_count')]) . '#agente';
+        $query = ['quadrado' => self::scalar($body, 'cell_rank'), 'quadrados' => self::scalar($body, 'cell_count')];
+        $back = '/planejar?' . http_build_query($query) . '#agente';
         try {
             $id = $this->services->planning()->confirm($body, $this->userId($request));
             $this->session($request)->flash('success', "Missão fictícia #{$id} confirmada. Nenhuma mensagem foi enviada: é uma demonstração.");
             $back = '/planejar#missoes';
         } catch (ValidationFailed $e) {
-            $this->session($request)->flash('error', implode(' ', $e->errors));
+            // A tela volta com o erro junto do campo, a escolha e o que foi digitado (o formulário aponta para #passo-3).
+            return $this->show($request, $response, $query, ['values' => array_filter($body, is_scalar(...)), 'errors' => $e->errors], 422);
         } catch (RuleViolation|ConcurrencyConflict|NotFound $e) {
             $this->session($request)->flash('error', $e->getMessage());
         }

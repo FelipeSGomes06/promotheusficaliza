@@ -39,7 +39,8 @@
 {% set id = 'f-' ~ name|replace({'.': '-', '[': '-', ']': ''}) %}
 {% set described = (errors[name] is defined ? 'err-' ~ name|replace({'.': '-'}) : '') ~ (opts.help is defined ? ' ' ~ id ~ '-help' : '') %}
 <div class="field {{ opts.class ?? '' }} {{ errors[name] is defined ? 'has-error' }}">
-  <label for="{{ id }}">{{ label }}{% if opts.required ?? false %} <span class="req" aria-hidden="true">*</span>{% else %} <span class="optional">(opcional)</span>{% endif %}</label>
+  {# opts.mark: obrigatório só em certas escolhas (diz quais em opts.help); mostra o marcador sem o atributo required. #}
+  <label for="{{ id }}">{{ label }}{% if (opts.required ?? false) or (opts.mark ?? false) %} <span class="req" aria-hidden="true">*</span>{% else %} <span class="optional">(opcional)</span>{% endif %}</label>
   {% if opts.help is defined %}<span class="hint" id="{{ id }}-help">{{ opts.help }}</span>{% endif %}
   {% if opts.type ?? 'text' == 'textarea' %}
     <textarea id="{{ id }}" name="{{ opts.fieldName ?? name }}" maxlength="{{ opts.max ?? 500 }}" {% if opts.required ?? false %}required{% endif %} {% if errors[name] is defined %}aria-invalid="true"{% endif %} {% if described|trim %}aria-describedby="{{ described|trim }}"{% endif %}>{{ values[name] ?? '' }}</textarea>
