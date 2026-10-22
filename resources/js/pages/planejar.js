@@ -4,6 +4,7 @@
  * Texto do servidor entra por textContent, nunca por innerHTML.
  */
 import { motion } from '../lib/motion.js';
+import { reveal } from '../lib/reveal.js';
 
 const text = (value) => {
   const span = document.createElement('span');
@@ -42,7 +43,24 @@ function cellsMap(box, data) {
   map.fitBounds([[g.south, g.west], [g.north, g.east]], { padding: [4, 4], animate: false });
 }
 
+// Passo 3: a justificativa só aparece (e só é obrigatória) quando o agente escolhido não é o sugerido pela tela.
+function missionForm(form) {
+  const field = form.querySelector('.js-justification');
+  const box = field?.querySelector('textarea');
+  const suggested = form.querySelector('input[name="suggested_agent_id"]')?.value;
+  if (!box || !suggested) return;
+  const update = (animate = true) => {
+    const on = (form.querySelector('input[name="agent_id"]:checked')?.value ?? suggested) !== suggested;
+    reveal(field, on, animate);
+    box.disabled = !on;
+    box.required = on;
+  };
+  form.querySelectorAll('input[name="agent_id"]').forEach((r) => r.addEventListener('change', () => update()));
+  update(false);
+}
+
 export function init() {
+  document.querySelectorAll('[data-mission-form]').forEach(missionForm);
   const source = document.getElementById('plan-data');
   if (!source || !window.L) return;
   const data = JSON.parse(source.textContent);

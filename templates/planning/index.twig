@@ -124,9 +124,14 @@
       <div class="empty section">A semana desta previsão já terminou; aguarde a próxima atualização para confirmar missões.</div>
     {% else %}
       <p class="hint">Sugerimos primeiro quem está mais perto e com posição recente. Só entram agentes de trânsito em atividade e sem outra missão (guarda e polícia não). A distância é em linha reta, não é tempo de chegada.</p>
-      <form class="stack mission-form" method="post" action="{{ url('/planejar/missoes') }}">
+      {% set v = form.values %}
+      {% set suggested = candidates.eligible|first %}
+      {% set chosen = candidates.eligible|filter(c => (c.id ~ '') == (v.agent_id ?? ''))|first ?: suggested %}
+      <form class="stack mission-form" method="post" action="{{ url('/planejar/missoes') }}#passo-3" data-mission-form>
         {{ ui.csrf(app.csrf) }}
         <input type="hidden" name="run_id" value="{{ run.id }}">
+        {# O sugerido que a pessoa viu; autocomplete=off para o navegador não restaurar um valor antigo ao recarregar. #}
+        <input type="hidden" name="suggested_agent_id" value="{{ suggested.id }}" autocomplete="off">
         <input type="hidden" name="sector_id" value="{{ s.sector_id }}">
         <input type="hidden" name="method" value="baseline">
         {% if cell %}
@@ -134,11 +139,11 @@
           <input type="hidden" name="cell_rank" value="{{ cell.rank_no }}">
           <input type="hidden" name="cell_count" value="{{ cell_count }}">
         {% endif %}
-        <fieldset class="candidates">
+        <fieldset class="candidates" id="f-agent_id">
           <legend class="visually-hidden">Agente da missão</legend>
           {% for c in candidates.eligible %}
             <label class="candidate">
-              <input type="radio" name="agent_id" value="{{ c.id }}" {% if loop.first %}checked{% endif %} required>
+              <input type="radio" name="agent_id" value="{{ c.id }}" {% if c.id == chosen.id %}checked{% endif %} required>
               <span class="candidate__main">
                 <span class="candidate__title">{{ c.call_sign }} <span class="code-tag">{{ c.code }}</span>{% if loop.first %} <span class="tag">Sugerido</span>{% endif %}</span>
                 <span class="candidate__sub">{{ c.distance_label|capitalize }}{% if c.tier == 1 %} · posição recebida às {{ c.observed_at|local_dt('H:i') }}{% endif %}</span>
@@ -155,15 +160,17 @@
         {% endif %}
 
         <h2 class="step__title section" id="passo-3"><span class="step__n" aria-hidden="true">3</span>Confirmar a missão</h2>
-        {{ ui.input('justification', 'Escolheu outro agente que não o sugerido? Diga por quê', {}, {}, {type: 'textarea', max: 300, help: 'Só é obrigatório nesse caso.'}) }}
-        <details class="more-actions">
+        {{ ui.error_summary(form.errors, {agent_id: 'Agente', justification: 'Por que este agente', support_point: 'Ponto de apoio', note: 'Observação', confirm: 'Confirmação'}) }}
+        {# Sem JavaScript o campo fica sempre visível; com JavaScript, só aparece (e é obrigatório) se outro agente for escolhido. #}
+        {{ ui.input('justification', 'Por que escolheu este agente e não o sugerido?', v, form.errors, {type: 'textarea', max: 300, mark: true, class: 'js-justification', help: 'Obrigatório só se você escolher outro agente.'}) }}
+        <details class="more-actions" {% if (v.support_point ?? '') or (v.note ?? '') or form.errors.support_point is defined or form.errors.note is defined %}open{% endif %}>
           <summary>Adicionar ponto de apoio ou observação (opcional)</summary>
           <div class="form-grid section">
-            {{ ui.input('support_point', 'Ponto de apoio', {}, {}, {max: 160, help: 'Onde o agente deve ficar. O centro do quadrado no mapa não é um local seguro de parada.'}) }}
-            {{ ui.input('note', 'Observação', {}, {}, {type: 'textarea', max: 300}) }}
+            {{ ui.input('support_point', 'Ponto de apoio', v, form.errors, {max: 160, help: 'Onde o agente deve ficar. O centro do quadrado no mapa não é um local seguro de parada.'}) }}
+            {{ ui.input('note', 'Observação', v, form.errors, {type: 'textarea', max: 300}) }}
           </div>
         </details>
-        <label class="check-confirm"><input type="checkbox" name="confirm" value="1" required><span>Entendo que é uma <strong>missão fictícia de demonstração</strong> ({{ target }}, {{ run.as_of|br_date }} a {{ run.last_day|br_date }}): nenhuma mensagem é enviada e nenhum agente real é acionado.</span></label>
+        <label class="check-confirm"><input type="checkbox" name="confirm" value="1" id="f-confirm" required {% if v.confirm ?? false %}checked{% endif %}><span>Entendo que é uma <strong>missão fictícia de demonstração</strong> ({{ target }}, {{ run.as_of|br_date }} a {{ run.last_day|br_date }}): nenhuma mensagem é enviada e nenhum agente real é acionado.</span></label>
         <div class="btn-row"><button class="btn btn--primary" type="submit">{{ ui.icon('i-check') }}Confirmar missão</button></div>
       </form>
     {% endif %}

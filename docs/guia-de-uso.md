@@ -222,8 +222,11 @@ Planejamento preventivo semanal ([método e resultados](planejamento-por-setores
 - **2. Quem enviar:** agentes de trânsito em atividade e sem missão, o sugerido primeiro (posição atual antes de
   posição atrasada, e esta antes de só a base; depois, o mais perto em linha reta **do quadrado**). Guarda e polícia
   não entram; **Por que outros agentes não aparecem?** diz o motivo de cada um.
-- **3. Confirmar a missão:** se trocou o sugerido, diga por quê; ponto de apoio e observação são opcionais; marque que
-  é uma missão fictícia e **Confirmar missão**. A missão guarda o quadrado e o setor.
+- **3. Confirmar a missão:** com o **Sugerido** marcado, não há o que justificar; se escolher outro agente, aparece
+  **Por que escolheu este agente e não o sugerido?**, obrigatório. Vale o sugerido que a tela mostrou, mesmo que a
+  ordem mude enquanto você preenche. Ponto de apoio e observação são opcionais; marque que é uma missão fictícia e
+  **Confirmar missão**. Se faltar algo, a tela volta no passo 3 com o aviso junto do campo e o que você digitou. A
+  missão guarda o quadrado e o setor.
 - **Missões:** "agente → quadrado", situação, quem confirmou; **Concluir** ("como foi?") ou **Cancelar** ("por quê?")
   liberam o agente. **Detalhes e histórico** mostra o motivo registrado e as transições. Se duas pessoas confirmarem o
   mesmo agente ao mesmo tempo, só uma vale.

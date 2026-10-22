@@ -110,6 +110,40 @@ final class PlanningHttpTest extends FirebirdTestCase
         self::assertSame('CONCLUIDA', rtrim((string) $this->services->database()->value('SELECT STATE FROM URBAN_MISSION WHERE ID = ?', [$id])));
     }
 
+    public function testAManualChoiceWithoutJustificationShowsTheErrorAtTheFieldAndKeepsWhatWasTyped(): void
+    {
+        $runId = $this->import();
+        $at = Time::toDb($this->clock->now());
+        $near = $this->createAgent(['call_sign' => 'Hermes 10']);
+        $this->services->agentRepository()->movePosition($near, '-22.250000', '-49.980000', $at, $at);
+        $far = $this->createAgent(['call_sign' => 'Hermes 11']);
+        $this->services->agentRepository()->movePosition($far, '-22.150000', '-49.870000', $at, $at);
+        $this->loginAs('OPERADOR');
+
+        $page = (string) $this->request('GET', '/planejar')->getBody();
+        self::assertStringContainsString('name="suggested_agent_id" value="' . $near . '"', $page, 'a tela envia o sugerido que mostrou');
+        self::assertStringContainsString('Por que escolheu este agente e não o sugerido?', $page);
+        self::assertStringContainsString('Obrigatório só se você escolher outro agente.', $page);
+        self::assertStringNotContainsString('Só é obrigatório nesse caso', $page, 'o texto não se contradiz');
+        self::assertDoesNotMatchRegularExpression('#não o sugerido\?\s*<span class="optional">#', $page);
+
+        $form = ['_csrf' => $this->session->csrfToken(), 'run_id' => (string) $runId, 'sector_id' => 'SO', 'method' => 'baseline', 'suggested_agent_id' => (string) $near,
+            'agent_id' => (string) $far, 'justification' => '', 'support_point' => 'Posto da Av. Sampaio Vidal', 'note' => 'saída da escola', 'confirm' => '1'];
+        $refused = $this->request('POST', '/planejar/missoes', $form);
+        $html = (string) $refused->getBody();
+        self::assertSame(422, $refused->getStatusCode());
+        self::assertStringContainsString('<span class="error" id="err-justification">Explique por que escolheu um agente diferente do sugerido.</span>', $html, 'erro junto do campo');
+        self::assertStringContainsString('data-error-summary', $html);
+        self::assertStringContainsString('value="Posto da Av. Sampaio Vidal"', $html, 'o que foi digitado volta');
+        self::assertStringContainsString('>saída da escola</textarea>', $html);
+        self::assertMatchesRegularExpression('#value="' . $far . '" checked#', $html, 'a escolha do agente volta marcada');
+        self::assertSame(0, (int) $this->services->database()->value('SELECT COUNT(*) FROM URBAN_MISSION'));
+
+        $ok = $this->request('POST', '/planejar/missoes', ['justification' => 'conhece o trecho'] + $form);
+        self::assertSame(self::BASE . '/planejar#missoes', $ok->getHeaderLine('Location'));
+        self::assertSame('MANUAL', rtrim((string) $this->services->database()->value('SELECT SELECTION FROM URBAN_MISSION')));
+    }
+
     public function testReplayKeepsObservedCountsHiddenUntilRevealed(): void
     {
         $this->import();

@@ -170,6 +170,26 @@ final class PlanningTest extends FirebirdTestCase
         $this->assertRefused(fn() => $this->confirm($runId, $suggested), 'já está reservado');
     }
 
+    public function testTheAgentSuggestedOnScreenNeedsNoJustificationEvenIfTheOrderChangedBeforeSending(): void
+    {
+        $runId = $this->import()['id'];
+        // O rádio de Hermes 10 transmitiu há 4 min (posição atual); Hermes 11, longe, acabou de transmitir.
+        $near = $this->agentAt('Hermes 10', '-22.250000', '-49.980000', '-4 minutes');
+        $far = $this->agentAt('Hermes 11', '-22.150000', '-49.870000');
+        $sector = $this->services->urbanRepository()->sectors($runId)['SO'];
+        $seen = $this->services->planning()->candidates($sector)['eligible'][0]['id'];
+        self::assertSame($near, $seen, 'na abertura da tela, o sugerido é o que está dentro do setor');
+
+        // Dois minutos depois, a posição de Hermes 10 ficou atrasada e Hermes 11 passou à frente.
+        $later = $this->services->withClock(new Clock($this->clock->now()->modify('+2 minutes')));
+        self::assertSame($far, $later->planning()->candidates($sector)['eligible'][0]['id']);
+        $id = $later->planning()->confirm(['run_id' => (string) $runId, 'sector_id' => 'SO', 'method' => 'baseline', 'agent_id' => (string) $seen,
+            'suggested_agent_id' => (string) $seen, 'justification' => '', 'confirm' => '1'], $this->userId());
+
+        $mission = $this->services->missionRepository()->find($id);
+        self::assertSame(['SUGERIDO', null], [$mission['selection'], $mission['justification']], 'a pessoa decidiu sobre o que viu');
+    }
+
     public function testMissionForASquareMeasuresDistanceToItAndKeepsTheSquare(): void
     {
         $runId = $this->services->urbanImporter()->import(
