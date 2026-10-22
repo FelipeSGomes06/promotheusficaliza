@@ -263,6 +263,12 @@ final class FineService
         if ($status !== FineDocumentStatus::PENDING) {
             $c['pending_items'] = null;
         }
+        $choice = $input->choice('review_choice', array_map('strval', array_keys(FineDocumentStatus::REVIEW_CHOICES)), false);
+        try {
+            $c['review_on'] = FineDocumentStatus::reviewOn($choice, $c['review_on'], Time::localDate($this->clock->now()));
+        } catch (ValidationFailed $e) {
+            $input->merge($e->errors);
+        }
         $input->assertValid();
         $hash = self::fingerprint('CONFERENCIA', $id, $version, $actor, $c);
 
@@ -280,7 +286,7 @@ final class FineService
                 $errors['checked_at'] = 'A conferência não pode ser anterior à data a que ela se refere (' . self::br($effective) . ').';
             }
             if ($c['review_on'] !== null && $c['review_on'] < $effective) {
-                $errors['review_on'] = 'A revisão deve ser no mesmo dia ou depois de ' . self::br($effective) . '.';
+                $errors['review_on'] = 'O lembrete deve ser no mesmo dia ou depois de ' . self::br($effective) . '.';
             }
             if ($errors !== []) {
                 throw new ValidationFailed($errors);
