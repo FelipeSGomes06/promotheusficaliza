@@ -27,7 +27,8 @@ const busyLabel = (btn) => {
 export function initForms() {
   document.addEventListener('submit', (e) => {
     const form = e.target;
-    if (!(form instanceof HTMLFormElement) || form.method.toLowerCase() !== 'post' || form.hasAttribute('data-no-guard')) return;
+    // Atributo, não form.method: um campo chamado "method" (como no Planejar) encobre a propriedade.
+    if (!(form instanceof HTMLFormElement) || (form.getAttribute('method') || '').toLowerCase() !== 'post' || form.hasAttribute('data-no-guard')) return;
     if (form.dataset.sending === '1') {
       e.preventDefault();
       return;
