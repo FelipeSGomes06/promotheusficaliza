@@ -218,6 +218,28 @@ final class FinesTest extends FirebirdTestCase
         self::assertSame([2, 'REGULARIDADE_INFORMADA'], [(int) $this->services->fineRepository()->find($id)['subject_version'], $this->services->fineRepository()->find($id)['occ_doc_status']]);
     }
 
+    public function testReviewReminderAnswerIsStoredAsADateAndCannotPrecedeTheCheckedDay(): void
+    {
+        $fines = $this->services->fines();
+        $id = $fines->create($this->radarFine(), $this->user);
+        $fines->register($id, $this->cmd($id), $this->user);
+        $base = ['scope' => 'OCORRENCIA', 'checked_at' => '2026-10-18T10:00', 'document_status' => 'REGULARIDADE_INFORMADA', 'source_type' => 'CRLV_APRESENTADO', 'source_reference' => 'CRLV-e fictício'];
+        // Hoje é 18/10/2026 no relógio dos testes; as respostas relativas contam a partir de hoje.
+        foreach (['30' => '2026-11-17', '90' => '2027-01-16', 'NAO' => null] as $choice => $expected) {
+            $fines->addCheck($id, $this->cmd($id, ['review_choice' => (string) $choice] + $base), $this->user);
+            self::assertSame($expected, $this->services->fineRepository()->find($id)['occ_doc_review_on'], "resposta {$choice}");
+        }
+        $fines->addCheck($id, $this->cmd($id, ['review_choice' => 'DATA', 'review_on' => '2026-12-01'] + $base), $this->user);
+        self::assertSame('2026-12-01', $this->services->fineRepository()->find($id)['occ_doc_review_on']);
+        try {
+            $fines->addCheck($id, $this->cmd($id, ['review_choice' => 'DATA', 'review_on' => '2026-10-17'] + $base), $this->user);
+            self::fail('lembrete antes do dia a que a conferência se refere');
+        } catch (ValidationFailed $e) {
+            self::assertSame(['review_on'], array_keys($e->errors));
+        }
+        self::assertSame(4, $this->rows('FINE_DOCUMENT_CHECK', $id));
+    }
+
     public function testProgressDimensionsAreIndependentAndCorrectionsNeedAReason(): void
     {
         $fines = $this->services->fines();

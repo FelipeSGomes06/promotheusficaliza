@@ -208,7 +208,7 @@ final class FineRules
         }
         $review = $f['occ_doc_review_on'] ?? null;
         if ($today !== null && is_string($review) && $review !== '' && $review < $today) {
-            $reasons[] = 'A data marcada para revisar a conferência (' . self::brDate($review) . ') já passou.';
+            $reasons[] = 'Documentos: precisam ser conferidos de novo (lembrete marcado para ' . self::brDate($review) . ').';
         }
         if (($f['infraction_kind'] ?? null) === 'VELOCIDADE' && ($f['source_kind'] ?? null) === 'RADAR') {
             $radar = is_array($f['radar_details'] ?? null) ? $f['radar_details'] : [];

@@ -48,6 +48,43 @@ function checkForm(form) {
   scope.addEventListener('change', update);
   effective.hidden = scope.value !== 'POSTERIOR';
   effective.querySelectorAll('input').forEach((i) => { i.disabled = effective.hidden; });
+  reviewQuestion(form);
+}
+
+/* Lembrete: a pergunta só faz sentido depois do resultado. A data só vai junto com "Escolher data" (o servidor recusa as duas). */
+function reviewQuestion(form) {
+  const status = form.querySelector('[name="document_status"]');
+  const box = form.querySelector('[data-check-review]');
+  if (!status || !box) return;
+  const radios = Array.from(box.querySelectorAll('[data-review-choice]'));
+  const dateBlock = box.querySelector('[data-review-date]');
+  const answer = box.querySelector('[data-review-answer]');
+  box.querySelectorAll('[data-review-nojs]').forEach((n) => { n.hidden = true; });
+  let auto = null; // "Não precisa" marcado pelo sistema, não pela pessoa
+  const sync = (animate = true) => {
+    const picked = radios.find((r) => r.checked);
+    const custom = picked?.value === 'DATA';
+    reveal(dateBlock, custom, animate);
+    dateBlock.querySelectorAll('input').forEach((i) => { i.disabled = !custom; });
+    answer.textContent = picked ? ` · ${picked.parentElement.textContent.trim()}` : '';
+  };
+  const onStatus = (animate = true) => {
+    reveal(box, status.value !== '', animate);
+    // Em dia: quase nunca precisa de lembrete, então vem recolhida com "Não precisa"; pendência ou não conferida: em destaque.
+    const regular = status.value === 'REGULARIDADE_INFORMADA';
+    if (regular && !radios.some((r) => r.checked)) {
+      auto = radios.find((r) => r.value === 'NAO');
+      if (auto) auto.checked = true;
+    } else if (!regular && auto?.checked) {
+      auto.checked = false;
+      auto = null;
+    }
+    if (!box.querySelector('[aria-invalid]')) box.open = !regular;
+    sync(animate);
+  };
+  radios.forEach((r) => r.addEventListener('change', () => { auto = null; sync(); }));
+  status.addEventListener('change', () => onStatus());
+  onStatus(false);
 }
 
 export function init() {

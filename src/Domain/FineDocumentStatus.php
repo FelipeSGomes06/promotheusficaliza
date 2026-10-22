@@ -26,6 +26,30 @@ final class FineDocumentStatus
         'NAO_INFORMADA' => 'Não informado como se soube',
     ];
 
+    /** Respostas a "Quer ser lembrado de conferir de novo?"; as relativas contam dias a partir de hoje (o PHP guarda "30" e "90" como int). */
+    public const REVIEW_CHOICES = ['NAO' => 'Não precisa', '30' => 'Em 30 dias', '90' => 'Em 90 dias', 'DATA' => 'Escolher data'];
+
+    /**
+     * Data do lembrete (REVIEW_ON) a partir da resposta. Sem resposta vale a data digitada (formulário sem JavaScript
+     * ou chamadas antigas); com resposta, a data só vale em "Escolher data", para nada ser descartado em silêncio.
+     *
+     * @throws ValidationFailed
+     */
+    public static function reviewOn(?string $choice, ?string $date, string $today): ?string
+    {
+        if ($choice === null) {
+            return $date;
+        }
+        if ($choice === 'DATA') {
+            return $date ?? throw new ValidationFailed(['review_on' => 'Informe a data do lembrete.']);
+        }
+        if ($date !== null) {
+            throw new ValidationFailed(['review_on' => 'Use só uma resposta: para usar esta data, marque "Escolher data".']);
+        }
+
+        return $choice === 'NAO' ? null : (new \DateTimeImmutable($today))->modify("+{$choice} days")->format('Y-m-d');
+    }
+
     /**
      * Constatação que vale para o escopo: a mais recente pelo instante da conferência (CHECKED_AT, depois ID), entre as
      * da versão atual do sujeito. Um lançamento atrasado não substitui uma conferência mais recente só por ter chegado

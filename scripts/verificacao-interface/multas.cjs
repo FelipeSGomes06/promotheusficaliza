@@ -87,6 +87,22 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await shot(p, '08-documentacao-apos-retificacao');
     await p.locator('#historico').scrollIntoViewIfNeeded(); await p.click('#historico details summary >> nth=0'); await shot(p, '09-historico-antes-depois');
     await p.goto(`${BASE}/multas/${ids.posterior}#documentacao-sec`, { waitUntil: 'networkidle' }); await p.locator('#documentacao-sec').scrollIntoViewIfNeeded(); await shot(p, '10-ocorrencia-x-posterior');
+    // Conferência: a pergunta do lembrete só aparece depois do resultado; "Em dia" vem recolhida com "Não precisa".
+    await p.goto(`${BASE}/multas/${ids.pagamento}`, { waitUntil: 'networkidle' });
+    if (!(await p.locator('#conferir').evaluate((d) => d.open))) await p.click('#conferir > summary');
+    const rev = p.locator('[data-check-review]');
+    check('lembrete_oculto_antes_do_resultado', !(await rev.isVisible()));
+    await p.selectOption('#f-document_status', 'REGULARIDADE_INFORMADA');
+    check('lembrete_em_dia_recolhido_nao_precisa', (await rev.isVisible()) && !(await rev.evaluate((d) => d.open)) && (await p.isChecked('input[name="review_choice"][value="NAO"]')));
+    await rev.scrollIntoViewIfNeeded(); await shot(p, '10b-lembrete-em-dia');
+    await p.selectOption('#f-document_status', 'PENDENCIA_INFORMADA');
+    check('lembrete_pendencia_em_destaque', (await rev.evaluate((d) => d.open)) && !(await p.locator('input[name="review_choice"]:checked').count()) && !(await p.isVisible('#f-review_on')));
+    await p.check('input[name="review_choice"][value="DATA"]');
+    check('lembrete_escolher_data_mostra_campo', await p.isVisible('#f-review_on'));
+    await shot(p, '10c-lembrete-pendencia-escolher-data');
+    // Lembrete vencido na lista e na ficha, com a frase nova.
+    await p.goto(`${BASE}/multas?q=DEMO-AIT-26-000106`, { waitUntil: 'networkidle' });
+    check('lembrete_vencido_frase_nova', (await p.locator('text=Documentos: precisam ser conferidos de novo').count()) > 0);
     // Zoom de 200% em 1440 px equivale a uma janela de 720 px CSS.
     await p.setViewportSize({ width: 720, height: 450 });
     for (const path of ['/multas', `/multas/${ids.pagamento}`, '/multas/novo']) { await p.goto(`${BASE}${path}`); check(`zoom_200_sem_rolagem_horizontal ${path}`, await noHScroll(p)); }
@@ -136,6 +152,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await Promise.all([p.waitForNavigation(), p.click('.form-actions button[type=submit]')]);
     check('sem_js_rascunho_salvo', /\/multas\/\d+$/.test(p.url()) && (await p.locator('text=Rascunho salvo').count()) > 0, p.url());
     await shot(p, '15-sem-javascript-rascunho');
+    await p.goto(`${BASE}/multas/${ids.pagamento}`);
+    if (!(await p.locator('#conferir').evaluate((d) => d.open))) await p.click('#conferir > summary');
+    check('sem_js_lembrete_completo', await p.isVisible('input[name="review_choice"][value="30"]') && await p.isVisible('#f-review_on') && await p.isVisible('[data-review-nojs]'));
+    await p.locator('[data-check-review]').scrollIntoViewIfNeeded(); await shot(p, '16-sem-javascript-lembrete');
     await ctx.close(); }
 
   await browser.close();

@@ -8,6 +8,7 @@ use Fiscaliza\Application\FineFilters;
 use Fiscaliza\Application\Input;
 use Fiscaliza\Domain\FineDocumentStatus;
 use Fiscaliza\Domain\FineRules;
+use Fiscaliza\Domain\ValidationFailed;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -165,9 +166,28 @@ final class FineRulesTest extends TestCase
 
         $review = self::complete(['record_state' => 'REGISTRADO', 'occ_doc_review_on' => '2026-10-10']);
         self::assertSame([], FineRules::attention($review), 'sem a data de hoje, a revisão vencida não conta');
-        self::assertCount(1, FineRules::attention($review, '2026-10-21'), 'revisão manual vencida');
+        self::assertSame(['Documentos: precisam ser conferidos de novo (lembrete marcado para 10/10/2026).'], FineRules::attention($review, '2026-10-21'), 'lembrete vencido');
+        self::assertSame([], FineRules::attention($review, '2026-10-10'), 'no próprio dia do lembrete ainda não conta');
         $later = FineRules::attention(self::complete(['record_state' => 'REGISTRADO', 'radar_details' => ['inmetro_record' => 'I', 'certificate' => 'C', 'verified_on' => '2026-10-25']]));
         self::assertStringContainsString('posterior à ocorrência', $later[0]);
+    }
+
+    public function testReviewReminderAnswerBecomesADateCountedFromToday(): void
+    {
+        self::assertSame('2026-11-17', FineDocumentStatus::reviewOn('30', null, '2026-10-18'));
+        self::assertSame('2027-01-16', FineDocumentStatus::reviewOn('90', null, '2026-10-18'));
+        self::assertSame('2026-11-01', FineDocumentStatus::reviewOn('DATA', '2026-11-01', '2026-10-18'));
+        self::assertNull(FineDocumentStatus::reviewOn('NAO', null, '2026-10-18'), 'não precisa: sem lembrete');
+        self::assertSame('2026-11-01', FineDocumentStatus::reviewOn(null, '2026-11-01', '2026-10-18'), 'sem resposta (sem JavaScript) vale a data digitada');
+        self::assertNull(FineDocumentStatus::reviewOn(null, null, '2026-10-18'));
+        foreach ([['DATA', null], ['NAO', '2026-11-01'], ['30', '2026-11-01']] as [$choice, $date]) {
+            try {
+                FineDocumentStatus::reviewOn($choice, $date, '2026-10-18');
+                self::fail("{$choice} com data " . var_export($date, true));
+            } catch (ValidationFailed $e) {
+                self::assertSame(['review_on'], array_keys($e->errors));
+            }
+        }
     }
 
     public function testUnusualSequencesAreOnlyWarnings(): void

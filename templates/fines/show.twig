@@ -161,9 +161,23 @@
                 {{ ui.select('source_type', 'Fonte', doc_sources, cv.source_type ?? 'NAO_INFORMADA', ce, {required: true}) }}
                 {{ ui.input('source_reference', 'Referência da fonte', cv, ce, {max: 240, help: 'Ex.: "CRLV-e exibido no local, exercício 2026" (sem dado pessoal).'}) }}
                 {{ ui.input('crlv_exercise', 'Exercício do CRLV', cv, ce, {type: 'number', inputmode: 'numeric'}) }}
-                {{ ui.input('review_on', 'Revisar em', cv, ce, {type: 'date', help: 'Lembrete escolhido por você; não é prazo legal.'}) }}
                 {{ ui.input('pending_items', 'O que estava errado', cv, ce, {type: 'textarea', max: 500, class: 'span-2', help: 'Obrigatório quando o resultado for "Com pendência".'}) }}
                 {{ ui.input('check_reason', 'Motivo / observação', cv, ce, {type: 'textarea', max: 300, class: 'span-2', help: 'Obrigatório para registrar "Não verificada" (por exemplo, retirar uma conclusão anterior).'}) }}
+                {# Pergunta feita depois do resultado: com JavaScript ela só aparece quando o resultado é escolhido (multas.js). #}
+                <details class="advanced span-2" data-check-review open>
+                  <summary id="lbl-review_choice">Quer ser lembrado de conferir de novo?<span data-review-answer></span></summary>
+                  <div class="stack">
+                    <p class="hint">Na data escolhida, a multa passa a mostrar "Documentos: precisam ser conferidos de novo". É um lembrete seu, não é prazo legal.</p>
+                    <div class="field {{ ce.review_choice is defined ? 'has-error' }}">
+                      <div class="checks checks--inline" role="radiogroup" aria-labelledby="lbl-review_choice" {% if ce.review_choice is defined %}aria-describedby="err-review_choice"{% endif %}>
+                        {% for value, text in review_choices %}<label><input type="radio" {{ loop.first ? 'id=f-review_choice' }} name="review_choice" value="{{ value }}" data-review-choice {{ (cv.review_choice ?? '') == value ? 'checked' }}> {{ text }}</label>{% endfor %}
+                      </div>
+                      {{ ui.field_error(ce, 'review_choice') }}
+                    </div>
+                    <p class="hint" data-review-nojs>Use só uma resposta: marque uma opção ou, em "Escolher data", preencha a data abaixo.</p>
+                    <div data-review-date>{{ ui.input('review_on', 'Lembrar de conferir de novo em', cv, ce, {type: 'date', mark: true, help: 'Obrigatória com "Escolher data".'}) }}</div>
+                  </div>
+                </details>
               </div>
               <div><button class="btn btn--primary" type="submit">Salvar conferência</button></div>
             </form>
