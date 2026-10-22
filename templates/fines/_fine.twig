@@ -9,9 +9,9 @@
 
 {% macro doc(code, review_on = null, today = null) %}
 {% import '_ui.twig' as ui %}
-{% if review_on and today and review_on < today %}{{ ui.status('DOC_REVISAR', 'Revisar conferência', '↻') }}
+{% if review_on and today and review_on < today %}{{ ui.status('DOC_REVISAR', 'Documentos: rever', '↻') }}
 {% else %}
-{% set labels = {NAO_VERIFICADA: ['Documentação não verificada', '?'], REGULARIDADE_INFORMADA: ['Regularidade informada', '✓'], PENDENCIA_INFORMADA: ['Pendência informada', '!']} %}
+{% set labels = {NAO_VERIFICADA: ['Documentos não conferidos', '?'], REGULARIDADE_INFORMADA: ['Documentos em dia', '✓'], PENDENCIA_INFORMADA: ['Documentos com pendência', '!']} %}
 {{ ui.status('DOC_' ~ code, labels[code][0] ?? code, labels[code][1] ?? '•') }}
 {% endif %}
 {%- endmacro %}

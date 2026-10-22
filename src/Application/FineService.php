@@ -36,15 +36,15 @@ final class FineService
         'paid_amount_cents', 'payment_reference', 'contest_submitted_on', 'contest_reference', 'contest_decided_on', 'contest_result_note', 'closed_on',
         'closure_reference', 'closure_note'];
 
-    public const PROGRESS_LABELS = ['process_stage' => 'Etapa administrativa', 'payment_status' => 'Pagamento', 'contest_status' => 'Contestação',
-        'contest_kind' => 'Espécie da contestação', 'nominal_amount_cents' => 'Valor nominal', 'nominal_amount' => 'Valor nominal',
-        'autuation_issued_on' => 'Expedição da notificação da autuação', 'autuation_received_on' => 'Recebimento da notificação da autuação',
-        'penalty_issued_on' => 'Expedição da notificação da penalidade', 'penalty_received_on' => 'Recebimento da notificação da penalidade',
-        'payment_due_on' => 'Vencimento informado', 'defense_due_on' => 'Prazo de defesa informado', 'appeal_due_on' => 'Prazo de recurso informado',
-        'paid_on' => 'Data do pagamento', 'paid_amount_cents' => 'Valor pago informado', 'paid_amount' => 'Valor pago informado',
-        'payment_reference' => 'Referência do pagamento', 'contest_submitted_on' => 'Data do protocolo', 'contest_reference' => 'Referência do protocolo',
-        'contest_decided_on' => 'Data do resultado', 'contest_result_note' => 'Resultado informado', 'closed_on' => 'Data do encerramento',
-        'closure_reference' => 'Referência do encerramento', 'closure_note' => 'Conclusão informada', 'progress_reason' => 'Motivo da correção', 'check_reason' => 'Motivo'];
+    public const PROGRESS_LABELS = ['process_stage' => 'Fase', 'payment_status' => 'Pagamento', 'contest_status' => 'Defesa ou recurso',
+        'contest_kind' => 'Tipo de defesa ou recurso', 'nominal_amount_cents' => 'Valor da multa', 'nominal_amount' => 'Valor da multa',
+        'autuation_issued_on' => 'Aviso de infração enviado em', 'autuation_received_on' => 'Aviso de infração recebido em',
+        'penalty_issued_on' => 'Aviso da multa enviado em', 'penalty_received_on' => 'Aviso da multa recebido em',
+        'payment_due_on' => 'Vencimento', 'defense_due_on' => 'Prazo para defesa', 'appeal_due_on' => 'Prazo para recurso',
+        'paid_on' => 'Pago em', 'paid_amount_cents' => 'Valor pago', 'paid_amount' => 'Valor pago',
+        'payment_reference' => 'Comprovante do pagamento', 'contest_submitted_on' => 'Defesa ou recurso entregue em', 'contest_reference' => 'Número do protocolo',
+        'contest_decided_on' => 'Resposta em', 'contest_result_note' => 'O que o órgão respondeu', 'closed_on' => 'Encerrada em',
+        'closure_reference' => 'Documento do encerramento', 'closure_note' => 'Como terminou', 'progress_reason' => 'Motivo da correção', 'check_reason' => 'Motivo'];
 
     /** Datas de fatos já ocorridos (não podem estar no futuro nem antes da ocorrência). Prazos e vencimentos podem. */
     private const FACT_DATES = ['autuation_issued_on', 'autuation_received_on', 'penalty_issued_on', 'penalty_received_on', 'paid_on', 'contest_submitted_on', 'contest_decided_on', 'closed_on'];

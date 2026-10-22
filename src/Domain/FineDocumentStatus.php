@@ -14,16 +14,16 @@ final class FineDocumentStatus
     public const REGULAR = 'REGULARIDADE_INFORMADA';
     public const PENDING = 'PENDENCIA_INFORMADA';
 
-    public const LABELS = [self::NOT_CHECKED => 'Não verificada', self::REGULAR => 'Regularidade informada', self::PENDING => 'Pendência informada'];
+    public const LABELS = [self::NOT_CHECKED => 'Não conferidos', self::REGULAR => 'Em dia', self::PENDING => 'Com pendência'];
 
-    public const SCOPES = ['OCORRENCIA' => 'Na data da ocorrência', 'POSTERIOR' => 'Conferência posterior'];
+    public const SCOPES = ['OCORRENCIA' => 'No dia da multa', 'POSTERIOR' => 'Depois da multa'];
 
     /** Fonte da evidência apresentada. Nenhuma faz consulta externa: é o que a pessoa informou ter visto. */
     public const SOURCE_TYPES = [
-        'CRLV_APRESENTADO' => 'CRLV apresentado',
-        'CONSULTA_OFICIAL_INFORMADA' => 'Consulta oficial feita fora do sistema',
-        'RELATO_MANUAL' => 'Relato manual',
-        'NAO_INFORMADA' => 'Fonte não informada',
+        'CRLV_APRESENTADO' => 'O motorista mostrou o documento',
+        'CONSULTA_OFICIAL_INFORMADA' => 'Consultado no site oficial (fora deste sistema)',
+        'RELATO_MANUAL' => 'Contado por quem estava no local',
+        'NAO_INFORMADA' => 'Não informado como se soube',
     ];
 
     /**

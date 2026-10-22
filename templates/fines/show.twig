@@ -64,9 +64,9 @@
         </section>
       {% elseif f.occ_doc_status == 'NAO_VERIFICADA' %}
         <section class="next-action" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
-          <p class="next-action__what">Registrar conferência documental</p>
+          <p class="next-action__what">Conferir os documentos do carro</p>
           <p class="muted">Nenhuma conferência vale para a data da ocorrência{{ f.subject_version > 1 ? ' desde a última correção da identidade do veículo ou da data' }}.</p>
-          <a class="btn btn--primary" href="#conferir">Registrar conferência</a>
+          <a class="btn btn--primary" href="#conferir">Conferir documentos</a>
         </section>
       {% elseif attention is not empty %}
         <section class="next-action" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
@@ -76,7 +76,7 @@
       {% else %}
         <section class="next-action next-action--calm" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
           <p class="next-action__what">Acompanhar o andamento informado</p>
-          <p class="muted">Nada pendente de cadastro ou conferência. <a href="#andamento">Atualizar andamento</a> quando chegar nova informação.</p>
+          <p class="muted">Nada pendente de cadastro ou conferência. <a href="#andamento">Atualizar situação</a> quando chegar nova informação.</p>
         </section>
       {% endif %}
       {% if active and attention is not empty and f.record_state == 'RASCUNHO' %}
@@ -118,29 +118,29 @@
       </section>
 
       <section class="panel" aria-labelledby="documentacao" id="documentacao-sec">
-        <h2 id="documentacao">{{ ui.icon('i-check-circle') }} Documentação na data da ocorrência</h2>
+        <h2 id="documentacao">{{ ui.icon('i-check-circle') }} Documentos do carro no dia da multa</h2>
         {% set oc = occurrence_check %}
         <p>{{ fine.doc(f.occ_doc_status, f.occ_doc_review_on, today) }}</p>
         {% if oc %}
-          <p class="hint">Informado manualmente: conferido em {{ oc.checked_at|local_dt }}, com referência a {{ oc.effective_on|br_date }}, {{ oc.actor_name ? 'por ' ~ oc.actor_name : 'pela carga da demonstração' }}. Fonte: {{ doc_sources[oc.source_type] }}{{ oc.source_reference ? ' — ' ~ oc.source_reference }}.</p>
-          {% if oc.pending_items %}<p>Pendência apontada: {{ oc.pending_items }}</p>{% endif %}
-          {% if oc.crlv_exercise %}<p class="hint">Exercício do CRLV informado: {{ oc.crlv_exercise }} (o ano sozinho não prova a regularidade).</p>{% endif %}
-          {% if oc.review_on %}<p class="hint">Revisar em {{ oc.review_on|br_date }}{{ oc.review_on < today ? ' — data já passou: o resultado anterior continua valendo como informado, sem virar "irregular"' }}.</p>{% endif %}
+          <p>{{ doc_sources[oc.source_type] }}{{ oc.source_reference ? ': ' ~ oc.source_reference }}.</p>
+          {% if oc.pending_items %}<p><strong>O que estava errado:</strong> {{ oc.pending_items }}</p>{% endif %}
+          <p class="hint">Conferido em {{ oc.checked_at|local_dt('d/m/Y') }}, às {{ oc.checked_at|local_dt('H:i') }}, {{ oc.actor_name ? 'por ' ~ oc.actor_name : 'pela carga de exemplo do sistema' }}.{% if oc.crlv_exercise %} Licenciamento do ano {{ oc.crlv_exercise }}.{% endif %}</p>
+          {% if oc.review_on %}<p class="hint">Lembrete para conferir de novo em {{ oc.review_on|br_date }}{{ oc.review_on < today ? ' (essa data já passou)' }}.</p>{% endif %}
         {% else %}
-          <p class="hint">Nenhuma conferência documental registrada para esta referência{{ f.subject_version > 1 ? ' e para a identidade atual do veículo' }}. "Não verificada" não equivale a regular.</p>
+          <p class="hint">Ninguém anotou ainda se os documentos estavam em dia no dia da multa{{ f.subject_version > 1 ? ' (a placa ou a data foram corrigidas, então é preciso conferir de novo)' }}. Isso não quer dizer que estavam em dia nem atrasados.</p>
         {% endif %}
         {% if later_check %}
-          <h3 class="form-sub">Última conferência posterior</h3>
-          <p>{{ fine.doc(later_check.document_status) }} <span class="hint">referente a {{ later_check.effective_on|br_date }}, conferida em {{ later_check.checked_at|local_dt }} ({{ doc_sources[later_check.source_type] }}{{ later_check.source_reference ? ' — ' ~ later_check.source_reference }})</span></p>
-          <p class="hint">Uma situação posterior não corrige a condição informada para a data da ocorrência.</p>
+          <h3 class="form-sub">Depois da multa</h3>
+          <p>{{ fine.doc(later_check.document_status) }} <span class="hint">conferido em {{ later_check.checked_at|local_dt('d/m/Y') }} · {{ doc_sources[later_check.source_type]|lower }}</span></p>
+          <p class="hint">Se o motorista regularizou depois, isso não muda como estava no dia da multa.</p>
         {% endif %}
         {% set stale = checks|filter(c => c.subject_version != f.subject_version) %}
         {% if checks is not empty %}
-          <details class="more-actions"><summary>Todas as conferências registradas ({{ checks|length }})</summary>
+          <details class="more-actions"><summary>Ver todas as conferências ({{ checks|length }})</summary>
             <ul class="fine-checks">{% for c in checks %}
-              <li class="{{ c.subject_version != f.subject_version ? 'is-stale' }}"><strong>{{ doc_labels[c.document_status] }}</strong> · {{ doc_scopes[c.scope]|lower }} ({{ c.effective_on|br_date }}) · conferida {{ c.checked_at|local_dt }}, lançada {{ c.created_at|local_dt }} {{ c.actor_name ? 'por ' ~ c.actor_name : '(carga da demonstração)' }}
-                <br><span class="hint">{{ doc_sources[c.source_type] }}{{ c.source_reference ? ' — ' ~ c.source_reference }}{{ c.reason ? ' · motivo: ' ~ c.reason }}</span>
-                {% if c.subject_version != f.subject_version %}<br><span class="tag tag--warn">Conferência anterior à retificação</span> <span class="hint">feita para a identidade anterior do veículo ou da data; não vale para a atual.</span>{% endif %}</li>
+              <li class="{{ c.subject_version != f.subject_version ? 'is-stale' }}"><strong>{{ doc_labels[c.document_status] }}</strong> · {{ doc_scopes[c.scope]|lower }} · conferido em {{ c.checked_at|local_dt('d/m/Y H:i') }} {{ c.actor_name ? 'por ' ~ c.actor_name : '(exemplo do sistema)' }}
+                <br><span class="hint">{{ doc_sources[c.source_type] }}{{ c.source_reference ? ': ' ~ c.source_reference }}{{ c.reason ? ' · motivo: ' ~ c.reason }}</span>
+                {% if c.subject_version != f.subject_version %}<br><span class="tag tag--warn">Antes da correção</span> <span class="hint">feita antes de corrigirem a placa ou a data; não vale mais.</span>{% endif %}</li>
             {% endfor %}</ul>
           </details>
         {% endif %}
@@ -148,11 +148,11 @@
           {% set cv = form.name == 'conferencia' ? fv : {} %}
           {% set ce = form.name == 'conferencia' ? fe : {} %}
           <details class="more-actions" id="conferir" {{ form.name == 'conferencia' or (f.record_state == 'REGISTRADO' and f.occ_doc_status == 'NAO_VERIFICADA') ? 'open' }}>
-            <summary>Registrar conferência documental</summary>
+            <summary>Anotar conferência dos documentos</summary>
             {{ ui.error_summary(ce, labels) }}
             <form method="post" action="{{ url('/multas/' ~ f.id ~ '/conferencias') }}" class="panel stack" novalidate data-fine-check>{{ ui.csrf(app.csrf) }}
               <input type="hidden" name="version" value="{{ form.name == 'conferencia' ? formVersion : f.version_no }}"><input type="hidden" name="command_uid" value="{{ form.name == 'conferencia' ? formUid : uid }}">
-              <p class="hint">Informação manual sobre o que foi visto. Nada é consultado em Detran ou Senatran; para conferir, use os serviços oficiais fora do sistema.</p>
+              <p class="hint">Anote o que foi visto. Este sistema não consulta o Detran: se precisar, consulte no site oficial e registre aqui o resultado.</p>
               <div class="form-grid">
                 {{ ui.select('scope', 'A conferência se refere a', doc_scopes, cv.scope ?? 'OCORRENCIA', ce, {required: true, dataAttr: 'check-scope'}) }}
                 <div data-check-effective>{{ ui.input('effective_on', 'Data a que se refere (conferência posterior)', cv, ce, {type: 'date', help: 'Entre a data da ocorrência e hoje.'}) }}</div>
@@ -162,25 +162,25 @@
                 {{ ui.input('source_reference', 'Referência da fonte', cv, ce, {max: 240, help: 'Ex.: "CRLV-e exibido no local, exercício 2026" (sem dado pessoal).'}) }}
                 {{ ui.input('crlv_exercise', 'Exercício do CRLV', cv, ce, {type: 'number', inputmode: 'numeric'}) }}
                 {{ ui.input('review_on', 'Revisar em', cv, ce, {type: 'date', help: 'Lembrete escolhido por você; não é prazo legal.'}) }}
-                {{ ui.input('pending_items', 'Pendência apontada', cv, ce, {type: 'textarea', max: 500, class: 'span-2', help: 'Obrigatória para "Pendência informada". Não declara apreensão nem invalidade.'}) }}
+                {{ ui.input('pending_items', 'O que estava errado', cv, ce, {type: 'textarea', max: 500, class: 'span-2', help: 'Obrigatório quando o resultado for "Com pendência".'}) }}
                 {{ ui.input('check_reason', 'Motivo / observação', cv, ce, {type: 'textarea', max: 300, class: 'span-2', help: 'Obrigatório para registrar "Não verificada" (por exemplo, retirar uma conclusão anterior).'}) }}
               </div>
-              <div><button class="btn btn--primary" type="submit">Registrar conferência</button></div>
+              <div><button class="btn btn--primary" type="submit">Salvar conferência</button></div>
             </form>
           </details>
         {% endif %}
       </section>
 
       <section class="panel" aria-labelledby="andamento-titulo" id="andamento-sec">
-        <h2 id="andamento-titulo">{{ ui.icon('i-clock') }} Andamento informado</h2>
-        <p class="hint">Três informações independentes, lançadas à mão: pagamento não encerra o processo e contestação não cancela o registro.</p>
+        <h2 id="andamento-titulo">{{ ui.icon('i-clock') }} Situação da multa</h2>
+        <p class="hint">Fase, pagamento e recurso andam separados: dá para pagar e recorrer ao mesmo tempo.</p>
         <dl class="facts">
-          <dt>Etapa administrativa</dt><dd>{{ stages[f.process_stage] }}{% if f.process_stage == 'ENCERRAMENTO_INFORMADO' %} em {{ f.closed_on|br_date }}: {{ f.closure_note }} ({{ f.closure_reference }}){% endif %}</dd>
-          <dt>Pagamento</dt><dd>{{ payments[f.payment_status] }}{% if f.paid_on %} · em {{ f.paid_on|br_date }}, {{ fine.money(f.paid_amount_cents) }} ({{ f.payment_reference }}){% endif %}</dd>
-          <dt>Última contestação</dt><dd>{{ contests[f.contest_status] }}{% if f.contest_kind %} · {{ contest_kinds[f.contest_kind] }}{% endif %}{% if f.contest_submitted_on %}, protocolo em {{ f.contest_submitted_on|br_date }} ({{ f.contest_reference }}){% endif %}{% if f.contest_decided_on %}; resultado em {{ f.contest_decided_on|br_date }}: {{ f.contest_result_note }}{% endif %}</dd>
-          <dt>Valor nominal</dt><dd>{{ fine.money(f.nominal_amount_cents) }}{{ f.nominal_amount_cents is not null ? ' (informado; não é tabela de penalidades)' }}</dd>
+          <dt>Fase</dt><dd>{{ stages[f.process_stage] }}{% if f.process_stage == 'ENCERRAMENTO_INFORMADO' %} em {{ f.closed_on|br_date }}: {{ f.closure_note }} · documento: {{ f.closure_reference }}{% endif %}</dd>
+          <dt>Pagamento</dt><dd>{{ payments[f.payment_status] }}{% if f.paid_on %} em {{ f.paid_on|br_date }} · {{ fine.money(f.paid_amount_cents) }} · comprovante: {{ f.payment_reference }}{% endif %}</dd>
+          <dt>Defesa ou recurso</dt><dd>{{ contests[f.contest_status] }}{% if f.contest_kind %} · {{ contest_kinds[f.contest_kind] }}{% endif %}{% if f.contest_submitted_on %} · entregue em {{ f.contest_submitted_on|br_date }} · protocolo: {{ f.contest_reference }}{% endif %}{% if f.contest_decided_on %} · resposta em {{ f.contest_decided_on|br_date }}: {{ f.contest_result_note }}{% endif %}</dd>
+          <dt>Valor da multa</dt><dd>{{ fine.money(f.nominal_amount_cents) }}</dd>
           {% for d in ['autuation_issued_on', 'autuation_received_on', 'penalty_issued_on', 'penalty_received_on', 'payment_due_on', 'defense_due_on', 'appeal_due_on'] %}
-            {% if attribute(f, d) %}<dt>{{ labels[d] }}</dt><dd>{{ attribute(f, d)|br_date }}{{ d ends with '_due_on' and attribute(f, d) < today ? ' — data informada já passou' }}</dd>{% endif %}
+            {% if attribute(f, d) %}<dt>{{ labels[d] }}</dt><dd>{{ attribute(f, d)|br_date }}{{ d ends with '_due_on' and attribute(f, d) < today ? ' (já passou)' }}</dd>{% endif %}
           {% endfor %}
         </dl>
         {% if active %}
@@ -193,14 +193,14 @@
             contest_decided_on: f.contest_decided_on, contest_result_note: f.contest_result_note, closed_on: f.closed_on, closure_reference: f.closure_reference, closure_note: f.closure_note} %}
           {% set pe = form.name == 'andamento' ? fe : {} %}
           <details class="more-actions" id="andamento" {{ form.name == 'andamento' ? 'open' }}>
-            <summary>Atualizar andamento</summary>
+            <summary>Atualizar situação da multa</summary>
             {{ ui.error_summary(pe, labels) }}
             <form method="post" action="{{ url('/multas/' ~ f.id ~ '/andamento') }}" class="panel stack" novalidate>{{ ui.csrf(app.csrf) }}
               <input type="hidden" name="version" value="{{ form.name == 'andamento' ? formVersion : f.version_no }}"><input type="hidden" name="command_uid" value="{{ form.name == 'andamento' ? formUid : uid }}">
-              <p class="hint">Datas e valores conforme o documento apresentado. O sistema não calcula prazos, descontos, pontos nem decide procedência; não emite boleto nem protocolo.</p>
+              <p class="hint">Copie as datas e valores dos avisos recebidos. O sistema não calcula prazos nem descontos e não gera boleto.</p>
               <div class="form-grid">
-                {{ ui.select('process_stage', 'Etapa administrativa', stages, pv.process_stage ?? 'NAO_INFORMADA', pe, {required: true}) }}
-                {{ ui.input('nominal_amount', 'Valor nominal (R$)', pv, pe, {max: 20, inputmode: 'decimal', placeholder: '293,47'}) }}
+                {{ ui.select('process_stage', 'Fase', stages, pv.process_stage ?? 'NAO_INFORMADA', pe, {required: true}) }}
+                {{ ui.input('nominal_amount', 'Valor da multa (R$)', pv, pe, {max: 20, inputmode: 'decimal', placeholder: '293,47'}) }}
                 {{ ui.input('autuation_issued_on', labels.autuation_issued_on, pv, pe, {type: 'date'}) }}
                 {{ ui.input('autuation_received_on', labels.autuation_received_on, pv, pe, {type: 'date'}) }}
                 {{ ui.input('penalty_issued_on', labels.penalty_issued_on, pv, pe, {type: 'date'}) }}
@@ -211,10 +211,10 @@
                 <div></div>
                 {{ ui.select('payment_status', 'Pagamento', payments, pv.payment_status ?? 'NAO_INFORMADO', pe, {required: true}) }}
                 {{ ui.input('paid_on', labels.paid_on, pv, pe, {type: 'date'}) }}
-                {{ ui.input('paid_amount', 'Valor pago informado (R$)', pv, pe, {max: 20, inputmode: 'decimal'}) }}
+                {{ ui.input('paid_amount', 'Valor pago (R$)', pv, pe, {max: 20, inputmode: 'decimal'}) }}
                 {{ ui.input('payment_reference', labels.payment_reference, pv, pe, {max: 240}) }}
-                {{ ui.select('contest_status', 'Contestação', contests, pv.contest_status ?? 'NAO_INFORMADA', pe, {required: true}) }}
-                {{ ui.select('contest_kind', 'Espécie', contest_kinds, pv.contest_kind ?? '', pe, {empty: 'Não se aplica'}) }}
+                {{ ui.select('contest_status', 'Defesa ou recurso', contests, pv.contest_status ?? 'NAO_INFORMADA', pe, {required: true}) }}
+                {{ ui.select('contest_kind', 'Tipo', contest_kinds, pv.contest_kind ?? '', pe, {empty: 'Não se aplica'}) }}
                 {{ ui.input('contest_submitted_on', labels.contest_submitted_on, pv, pe, {type: 'date'}) }}
                 {{ ui.input('contest_reference', labels.contest_reference, pv, pe, {max: 240}) }}
                 {{ ui.input('contest_decided_on', labels.contest_decided_on, pv, pe, {type: 'date'}) }}
@@ -224,7 +224,7 @@
                 {{ ui.input('closure_note', labels.closure_note, pv, pe, {type: 'textarea', max: 500, class: 'span-2'}) }}
                 {{ ui.input('progress_reason', 'Motivo da correção', pv, pe, {type: 'textarea', max: 300, class: 'span-2', help: 'Obrigatório ao corrigir pagamento, resultado ou encerramento já informados; o anterior fica no histórico.'}) }}
               </div>
-              <div><button class="btn btn--primary" type="submit">Salvar andamento</button></div>
+              <div><button class="btn btn--primary" type="submit">Salvar situação</button></div>
             </form>
           </details>
         {% endif %}

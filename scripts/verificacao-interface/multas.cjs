@@ -82,7 +82,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await p.goto(`${BASE}/multas/${ids.completo}`, { waitUntil: 'networkidle' }); await shot(p, '06-ficha-completa', true);
     await p.goto(`${BASE}/multas/${ids.pagamento}#andamento-sec`, { waitUntil: 'networkidle' }); await p.locator('#andamento-sec').scrollIntoViewIfNeeded(); await shot(p, '07-pagamento-e-recurso');
     await p.goto(`${BASE}/multas/${ids.retificado}`, { waitUntil: 'networkidle' });
-    await p.click('#documentacao-sec summary:has-text("Todas as conferências")'); await p.locator('#documentacao-sec').scrollIntoViewIfNeeded();
+    await p.click('#documentacao-sec summary:has-text("Ver todas as conferências")'); await p.locator('#documentacao-sec').scrollIntoViewIfNeeded();
     check('retificacao_conferencia_antiga_so_no_historico', (await p.locator('.fine-checks li.is-stale').count()) === 1 && (await p.locator('.fine-head .st--DOC_NAO_VERIFICADA').count()) === 1);
     await shot(p, '08-documentacao-apos-retificacao');
     await p.locator('#historico').scrollIntoViewIfNeeded(); await p.click('#historico details summary >> nth=0'); await shot(p, '09-historico-antes-depois');
