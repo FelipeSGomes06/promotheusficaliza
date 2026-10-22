@@ -124,7 +124,7 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
 
       <div class="palco" data-palco data-montagem="<?= $hero['montagem'] ? '1' : '0' ?>" data-duracao="<?= e((float) $hero['duracao']) ?>" data-ponteiro="<?= $hero['ponteiro'] ? '1' : '0' ?>">
         <div class="palco__foto" aria-hidden="true">
-          <!-- Terminal rodoviário de Marília/SP: foto de Pedro Monteiro (@pvictormonteiro), recorte e tratamento de cor. -->
+          <!-- Terminal rodoviário de Marília/SP: foto de Pedro Monteiro (@pvictormonteiro), só recortada, com as cores originais. -->
           <picture data-palco-foto>
             <source media="(max-width: 959.98px)" srcset="<?= $img('marilia-720.webp') ?>" width="720" height="360">
             <img src="<?= $img('marilia-1280.webp') ?>" width="1280" height="640" alt="" decoding="async" fetchpriority="high">
@@ -208,12 +208,12 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
           <?= $captura('inventario', [720, 1200], [1200, 673], $tamanhoCena,
               'Tela Equipamentos: busca, filtros por tipo e situação e a lista de 16 equipamentos — balança, câmeras, cancela e patinetes com código, bairro, marca e modelo, cada um com sua situação, como operacional, furtado ou sem sinal recente.',
               [780, 1400]) ?>
-          <?= $captura('agente', [480, 800], [800, 676], '(min-width: 960px) 300px, calc(100vw - 96px)',
+          <?= $captura('agente', [480, 800], [800, 676], $tamanhoCena,
               'Ficha do agente de trânsito Hermes 01, fictício: órgão, situação em atividade, base de trabalho com endereço fixo e, separada dela, a última posição recebida pelo rádio simulado.',
               [780, 1200], 'cena__tela cena__tela--detalhe') ?>
           <figcaption class="cena__fonte"><?= e($dataCaptura) ?></figcaption>
-          <div class="cena__objeto" data-objeto="radar" aria-hidden="true"></div>
         </figure>
+        <div class="cena__objeto" data-objeto="radar" aria-hidden="true"></div>
       </article>
 
       <article class="cena cena--inversa" id="manutencao" aria-labelledby="manutencao-titulo" data-cena>
@@ -237,8 +237,8 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
               'Tela Manutenção: ordens abertas da mais urgente para a mais distante, com abas Em andamento, Urgentes, Próximos 7 dias e Programadas depois; um veículo em execução com o botão para concluir a intervenção e dois radares urgentes com o motivo e o botão Iniciar intervenção.',
               [780, 1200]) ?>
           <figcaption class="cena__fonte"><?= e($dataCaptura) ?></figcaption>
-          <div class="cena__objeto" data-objeto="via" aria-hidden="true"></div>
         </figure>
+        <div class="cena__objeto" data-objeto="via" aria-hidden="true"></div>
       </article>
 
       <article class="cena" id="multas" aria-labelledby="multas-titulo" data-cena>
@@ -287,8 +287,8 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
               'Tela Revisões recomendadas para os próximos 7 dias: aviso de como ler a prioridade, que não é a chance de falhar, e os equipamentos a revisar primeiro — uma cancela com prioridade 32 de 100 e um patinete com 27 de 100 —, cada um com os motivos e o que fazer.',
               [780, 785]) ?>
           <figcaption class="cena__fonte"><?= e($dataCaptura) ?></figcaption>
-          <div class="cena__objeto" data-objeto="placa" aria-hidden="true"></div>
         </figure>
+        <div class="cena__objeto" data-objeto="placa" aria-hidden="true"></div>
       </article>
     </div>
   </section>
@@ -405,7 +405,7 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
     <p class="rodape__marca"><svg class="icone" aria-hidden="true" focusable="false"><use href="#marca"></use></svg>Promotheus Fiscaliza · DSIN Coder Challenge 2026, etapa F.O.G.O.</p>
     <p>Desenvolvido por <a href="<?= e($config['autor']['url']) ?>" rel="author"><?= e($config['autor']['nome']) ?></a>.</p>
     <p class="rodape__aviso">Projeto demonstrativo: equipamentos, agentes, posições, missões e multas são fictícios. O planejamento usa contagens reais agregadas de sinistros. Fonte: Infosiga-SP / Detran-SP, CC BY 4.0. Sem integração com órgãos ou equipamentos reais.</p>
-    <p class="rodape__aviso">Foto de Marília na abertura: Pedro Monteiro (@pvictormonteiro); recorte e tratamento de cor. Mapas das capturas © colaboradores do OpenStreetMap.</p>
+    <p class="rodape__aviso">Foto de Marília na abertura: Pedro Monteiro (@pvictormonteiro); recortada. Mapas das capturas © colaboradores do OpenStreetMap.</p>
   </div>
 </footer>
 
