@@ -61,7 +61,15 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
     check('instrucao_do_mapa', await p.isVisible('text=Clique no mapa para marcar ou mudar a base.') && !(await p.isVisible('[data-without-map]')));
     check('estado_inicial_do_mapa', (await p.locator('#picker-status').innerText()) === 'Clique no mapa para marcar a base.', await p.locator('#picker-status').innerText());
     check('lat_lng_visiveis_sem_recolher', await p.isVisible('#f-base_lat') && await p.isVisible('#f-base_lng') && (await p.locator('details.advanced').count()) === 0);
-    check('sem_logradouro_referencia_bairro', (await p.locator('[name="base_ref"], [name="region_id"]').count()) === 0 && !(await p.isVisible('text=Logradouro')));
+    check('sem_logradouro_nem_bairro_com_numero', (await p.locator('[name="region_id"]').count()) === 0 && !(await p.isVisible('text=Logradouro')) && await p.isVisible('#f-base_ref'));
+    // Envio sem ponto: erro no ponto; ao marcar no mapa, o erro some (não fica "Marque a base…" com o ponto marcado).
+    await p.fill('#f-call_sign', 'Hermes Erro'); await p.selectOption('#f-agency_id', { index: 1 }); await p.fill('#f-base_name', 'Base erro');
+    await Promise.all([p.waitForNavigation(), p.click('button[type=submit]:has-text("Cadastrar agente")')]);
+    const hadError = await p.isVisible('#err-base_lat');
+    const pb = await p.locator('#picker').boundingBox(); await p.locator('#picker').scrollIntoViewIfNeeded();
+    const pb2 = await p.locator('#picker').boundingBox(); await p.mouse.click(pb2.x + pb2.width / 2, pb2.y + pb2.height / 2); await sleep(200);
+    check('erro_do_ponto_some_ao_marcar', pb !== null && hadError && !(await p.isVisible('#err-base_lat')) && (await p.inputValue('#f-base_lat')) !== '');
+    await p.goto(`${BASE}/agentes/novo`, { waitUntil: 'networkidle' });
     check('rua_oculta_ate_o_cep', !(await p.isVisible('#f-base_street')));
     await p.locator('.picker').scrollIntoViewIfNeeded(); await shot(p, '01-novo-agente');
 
@@ -157,7 +165,7 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
     await p.goto(`${BASE}/agentes?ordem=codigo`, { waitUntil: 'networkidle' });
     const href = await p.locator('a[href*="/agentes/"]:not([href$="/novo"])').first().getAttribute('href');
     await p.goto(new URL(href, BASE).href.replace(/\/?$/, '') + '/editar', { waitUntil: 'networkidle' });
-    check('antigo_abre_com_rua_e_referencia', /^Rua: \S/.test(await status(p)) && await p.isVisible('text=Número ou referência gravado antes'), await status(p));
+    check('antigo_abre_com_rua_e_referencia', /^Rua: \S/.test(await status(p)) && (await p.inputValue('#f-base_ref')) === 'Endereço de base ilustrativo', await status(p));
     await Promise.all([p.waitForNavigation(), p.click('button[type=submit]:has-text("Salvar alterações")')]);
     check('antigo_salva_sem_erro', /\/agentes\/\d+$/.test(p.url()) && /Endereço de base ilustrativo/.test(await p.locator('#onde + .facts').innerText()), p.url());
     await ctx.close();

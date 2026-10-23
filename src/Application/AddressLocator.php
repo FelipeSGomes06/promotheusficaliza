@@ -13,7 +13,7 @@ final class AddressLocator
 {
     /** Mensagem de cada situação, pronta para a tela. */
     public const MESSAGES = [
-        'ENCONTRADO' => 'Base posta no endereço (ponto aproximado, no meio da rua). Confira no mapa; para ajustar, clique no ponto certo.',
+        'ENCONTRADO' => 'Base posta no endereço (ponto aproximado). Confira no mapa; para ajustar, clique no ponto certo.',
         'SEM_RUA' => 'Para localizar pelo endereço, informe a rua: este CEP não indica a rua.',
         'NAO_ENCONTRADO' => 'Não achamos esta rua em Marília. Confira a rua e o CEP ou marque a base no mapa.',
         'INDISPONIVEL' => 'A localização pelo endereço não respondeu agora. Tente de novo em instantes ou marque a base no mapa.',
@@ -24,9 +24,10 @@ final class AddressLocator
     /**
      * @param string|null $street rua já validada (pode vir vazia)
      * @param string|null $cep CEP já validado (00000-000) ou null
+     * @param string|null $number número da base; só os dígitos iniciais ajudam ("1200", "1200 fundos")
      * @return array{situacao: 'ENCONTRADO', lat: string, lng: string, rua: string}|array{situacao: 'SEM_RUA'|'NAO_ENCONTRADO'|'INDISPONIVEL'}
      */
-    public function locate(?string $street, ?string $cep): array
+    public function locate(?string $street, ?string $cep, ?string $number = null): array
     {
         $street = trim((string) $street);
         try {
@@ -37,7 +38,9 @@ final class AddressLocator
             if ($street === '') {
                 return ['situacao' => 'SEM_RUA'];
             }
-            $point = $this->geocoder->locate($street);
+            // Com número, tenta primeiro a casa; o mapa nem sempre tem números, então cai para a rua.
+            $house = preg_match('/^\d{1,6}/', trim((string) $number), $m) === 1 ? $m[0] : null;
+            $point = ($house === null ? null : $this->geocoder->locate("{$house} {$street}")) ?? $this->geocoder->locate($street);
         } catch (ProviderUnavailable $e) {
             // Log privado (sem a rua nem o CEP): ajuda a ver se o servidor publicado consegue sair para a internet.
             error_log('[fiscaliza] localização pelo endereço indisponível: ' . $e->getMessage());

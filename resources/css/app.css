@@ -403,8 +403,7 @@
   .base-point-notes { display: grid; gap: 2px; margin-top: 8px; }
   .base-point-notes .hint { margin: 0; }
   .base-address { margin-top: 18px; }
-  .base-address__city { min-height: 44px; display: flex; align-items: center; }
-  @media (min-width: 681px) { .base-address__city { margin-top: auto; } .base-address > .field:first-of-type { align-content: space-between; } }
+  .base-address__city { padding-top: 2px; }
   .base-address__intro { margin: 0; }
   .cep-street__locate { display: grid; gap: 8px; justify-items: start; }
   .cep-street__locate-status { margin: 0; overflow-wrap: anywhere; }

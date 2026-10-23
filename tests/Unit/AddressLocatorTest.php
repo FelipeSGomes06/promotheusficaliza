@@ -81,7 +81,8 @@ final class AddressLocatorTest extends TestCase
         self::assertSame(['situacao' => 'SEM_RUA'], $locator->locate(null, '01001-000'), 'rua de outra cidade não serve');
         self::assertSame(['situacao' => 'SEM_RUA'], $locator->locate(null, '99999-999'));
         self::assertSame(['situacao' => 'NAO_ENCONTRADO'], $locator->locate('Rua Que Não Existe', null));
-        self::assertSame(['Avenida Sampaio Vidal', 'Rua Paraíba', 'Rua Que Não Existe'], $geo->calls);
+        self::assertSame('-22.213900', $locator->locate('Avenida Sampaio Vidal', null, '1200 fundos')['lat'] ?? null, 'casa não achada: cai para a rua');
+        self::assertSame(['Avenida Sampaio Vidal', 'Rua Paraíba', 'Rua Que Não Existe', '1200 Avenida Sampaio Vidal', 'Avenida Sampaio Vidal'], $geo->calls);
 
         $geo->down = true;
         self::assertSame(['situacao' => 'INDISPONIVEL'], $locator->locate('Avenida Sampaio Vidal', null));

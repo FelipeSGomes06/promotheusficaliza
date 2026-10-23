@@ -9,7 +9,7 @@ digitando latitude e longitude". Decisões em [ADR-0021](../adr/0021-base-do-age
 
 | Antes | Depois |
 |---|---|
-| Mapa + 6 campos (nome da base, logradouro, número ou referência, CEP, bairro, cidade) | Nome da base; mapa com "Clique no mapa para marcar ou mudar a base"; CEP; rua; cidade como texto fixo |
+| Mapa + 6 campos (nome da base, logradouro, número ou referência, CEP, bairro, cidade) | Nome da base; mapa com "Clique no mapa para marcar ou mudar a base"; CEP; rua; número (opcional, ajuda a localizar); cidade como texto fixo |
 | Latitude e longitude recolhidas em "Coordenadas da base", digitáveis | Logo abaixo do mapa, sempre somente leitura; mudam pelo clique, por Enter no mapa (teclado) ou pelo endereço |
 | "Nenhum local marcado ainda." | "Clique no mapa para marcar a base." / "Base marcada em … Para mudar, clique em outro ponto." |
 | Logradouro digitado | CEP → "Rua: Avenida Sampaio Vidal"; sem rua na resposta, campo "Rua" com o motivo |
