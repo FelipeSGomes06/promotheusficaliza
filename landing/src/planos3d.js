@@ -1093,6 +1093,9 @@ export function criarMundo({ celular }) {
 
   // ---------- Quadro ----------
   let arranjado = null;
+  // Sem pós-processamento: desenho direto no canvas (tone mapping do renderer, sem bloom nem filme). Usado quando a
+  // placa de vídeo devolve a imagem intermediária (ponto flutuante, antisserrilhado) preta.
+  let direto = false;
   function quadro(nome, { p, t, parado }) {
     if (arranjado !== nome) {
       arranjar(nome);
@@ -1199,7 +1202,8 @@ export function criarMundo({ celular }) {
     }
 
     filme.uniforms.tempo.value = parado ? 0 : t;
-    composer.render();
+    if (direto) renderer.render(cena, camera);
+    else composer.render();
     return info;
   }
 
@@ -1230,5 +1234,8 @@ export function criarMundo({ celular }) {
       filme.uniforms.aspecto.value = aspecto;
     },
     quadro,
+    simplificar() {
+      direto = true;
+    },
   };
 }
