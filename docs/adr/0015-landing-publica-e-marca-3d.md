@@ -1,7 +1,9 @@
 # ADR-0015 — Landing pública na raiz e marca montada em 3D
 
 Data: 20/10/2026 · Situação: aceita, atualizada pelo [ADR-0018](0018-landing-seis-pilares-e-foto-de-marilia.md)
-(seis pilares, foto de Marília, ponteiro único, 3D sob demanda, menu compacto abaixo de 1080 px) · Relacionadas: [ADR-0012](0012-identidade-motion-e-build-de-assets.md) (identidade,
+(seis pilares, foto de Marília, ponteiro único, 3D sob demanda, menu compacto abaixo de 1080 px) e pelo
+[ADR-0019](0019-landing-planos-3d-cinematograficos.md) (planos 3D no lugar dos objetos das cenas, com renderer
+próprio) · Relacionadas: [ADR-0012](0012-identidade-motion-e-build-de-assets.md) (identidade,
 tokens, Overpass), [ADR-0014](0014-acesso-somente-com-conta-cadastrada.md) (acesso só com conta)
 
 ## Contexto

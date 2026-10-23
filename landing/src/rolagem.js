@@ -5,11 +5,11 @@ import { movimento } from './movimento.js';
 /*
  * Animações ligadas à rolagem (GSAP + ScrollTrigger), refeitas por gsap.matchMedia() quando muda a largura, a
  * preferência do sistema ou a escolha do botão "Reduzir movimento". Com movimento reduzido nada se desloca: só o nó
- * ativo da via muda de cor (CSS) e os objetos 3D ficam assentados. A rolagem continua nativa (sem pin nem smooth).
+ * ativo da via muda de cor (CSS). A rolagem continua nativa (sem pin nem smooth). A câmera dos planos 3D, também
+ * ligada à rolagem, fica em planos.js.
  */
-export function animarRolagem(palco) {
+export function animarRolagem() {
   let mm = null;
-  let objetos = [];
 
   const montar = () => {
     mm?.revert();
@@ -19,10 +19,7 @@ export function animarRolagem(palco) {
       const cenas = gsap.utils.toArray('[data-cena]');
       cenas.forEach((cena) => ScrollTrigger.create({ trigger: cena, start: 'top 65%', end: 'bottom 35%', toggleClass: 'is-ativa' }));
 
-      if (movimento.reduzido()) {
-        objetos.forEach((o) => { o.girar(0); o.pose(1); });
-        return undefined;
-      }
+      if (movimento.reduzido()) return undefined;
 
       // Captura principal: entra inclinada em perspectiva e assenta para a leitura.
       gsap.fromTo('[data-vitrine-quadro]',
@@ -40,32 +37,19 @@ export function animarRolagem(palco) {
         gsap.from(cena.querySelector('.cena__tela'), { y: 50, rotation: inversa ? -1.2 : 1.2, opacity: 0, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: cena, start: 'top 80%', once: true } });
       });
 
-      // Objetos 3D: no desktop, giram até a pose de leitura conforme a cena chega; no celular, ficam assentados.
-      objetos.forEach((o) => {
-        if (!largo) return o.pose(1);
-        const estado = { t: 0 };
-        gsap.fromTo(estado, { t: 0 }, { t: 1, ease: 'none', onUpdate: () => o.pose(estado.t), scrollTrigger: { trigger: o.el, start: 'top 100%', end: 'center 45%', scrub: 0.8 } });
-        // Depois de assentado, balança devagar de um lado para o outro.
-        const giro = { v: -0.35 };
-        return gsap.to(giro, { v: 0.35, duration: 2.6, ease: 'sine.inOut', repeat: -1, yoyo: true, onUpdate: () => o.girar(giro.v) });
+      // Planos 3D: as tarjas de cinema se recolhem enquanto o plano chega ao meio da tela.
+      gsap.utils.toArray('[data-plano]').forEach((plano) => {
+        gsap.fromTo(plano.querySelectorAll('.plano__tarja'), { scaleY: 1 }, { scaleY: 0, ease: 'none', scrollTrigger: { trigger: plano, start: 'top 92%', end: 'center 55%', scrub: 0.6 } });
       });
 
       // Placa final: sobe do poste e endireita.
       gsap.fromTo('.placa-final__face', { rotationX: 9, y: 46, transformPerspective: 1400 },
         { rotationX: 0, y: 0, ease: 'none', scrollTrigger: { trigger: '[data-placa]', start: 'top 95%', end: 'top 45%', scrub: 0.6 } });
 
-      return () => objetos.forEach((o) => { o.girar(0); o.pose(1); });
+      return undefined;
     });
   };
 
-  palco.quandoPronto((controle) => {
-    objetos = gsap.utils.toArray('[data-objeto]').map((el) => ({
-      el,
-      cena: el.closest('[data-cena]'),
-      ...controle.objeto(el, el.dataset.objeto, el.closest('.cena--inversa') ? -1 : 1),
-    }));
-    montar();
-  });
   montar();
   movimento.aoMudar(montar);
   document.fonts?.ready.then(() => ScrollTrigger.refresh());

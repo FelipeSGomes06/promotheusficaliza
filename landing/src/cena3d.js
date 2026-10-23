@@ -1,15 +1,14 @@
 /*
- * Marca 3D da hero e objetos das cenas de recursos. O Three.js desenha (geometria, materiais, luz e câmera); o GSAP
- * coreografa (uma timeline com etapas nomeadas). Há um único WebGLRenderer: o canvas dele fica na hero, e os objetos
- * das cenas são desenhados por ele sob demanda e copiados para canvas 2D — sem um segundo contexto WebGL.
+ * Marca 3D da hero. O Three.js desenha (geometria, materiais, luz e câmera); o GSAP coreografa (uma timeline com
+ * etapas nomeadas). Os planos das cenas de recursos têm módulo e renderer próprios (planos3d.js).
  *
  * Coordenadas: as formas vêm do SVG oficial (32×32, y para baixo) e são convertidas para a cena (centro na origem,
  * y para cima, 1 unidade = 1 unidade do SVG). A frente da base azul fica em z = 0; as vias sobem a partir dela.
  */
 import {
-  BoxGeometry, ConeGeometry, CylinderGeometry, DirectionalLight, ExtrudeGeometry, Group, HemisphereLight, LatheGeometry,
-  MathUtils, Mesh, MeshStandardMaterial, NeutralToneMapping, PCFShadowMap, PerspectiveCamera, Plane, PMREMGenerator,
-  PointLight, Scene, Shape, SphereGeometry, TorusGeometry, Vector2, Vector3, WebGLRenderer,
+  BoxGeometry, DirectionalLight, ExtrudeGeometry, Group, HemisphereLight, LatheGeometry, MathUtils, Mesh,
+  MeshStandardMaterial, NeutralToneMapping, PCFShadowMap, PerspectiveCamera, Plane, PMREMGenerator, PointLight, Scene,
+  Shape, Vector2, Vector3, WebGLRenderer,
 } from 'three';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -88,22 +87,6 @@ function arco(raio, meio, espessura) {
   return s;
 }
 
-function retanguloArredondado(w, h, r) {
-  const s = new Shape();
-  const x = -w / 2;
-  const y = -h / 2;
-  s.moveTo(x + r, y);
-  s.lineTo(x + w - r, y);
-  s.absarc(x + w - r, y + r, r, -Math.PI / 2, 0, false);
-  s.lineTo(x + w, y + h - r);
-  s.absarc(x + w - r, y + h - r, r, 0, Math.PI / 2, false);
-  s.lineTo(x + r, y + h);
-  s.absarc(x + r, y + h - r, r, Math.PI / 2, Math.PI, false);
-  s.lineTo(x, y + r);
-  s.absarc(x + r, y + r, r, Math.PI, Math.PI * 1.5, false);
-  return s;
-}
-
 function materiais() {
   return {
     azul: new MeshStandardMaterial({ color: COR.azul, roughness: 0.46, metalness: 0.04, envMapIntensity: 0.12 }),
@@ -111,27 +94,21 @@ function materiais() {
     pintura: new MeshStandardMaterial({ color: COR.azul, roughness: 0.6 }),
     ambar: new MeshStandardMaterial({ color: COR.ambar, emissive: COR.ambar, emissiveIntensity: 0.9, roughness: 0.35 }),
     turquesa: new MeshStandardMaterial({ color: COR.turquesa, emissive: COR.turquesa, emissiveIntensity: 0.35, roughness: 0.4 }),
-    grafite: new MeshStandardMaterial({ color: '#22344d', roughness: 0.7, metalness: 0.15 }),
-    asfalto: new MeshStandardMaterial({ color: '#2a374b', roughness: 0.95 }),
-    metal: new MeshStandardMaterial({ color: '#b9c5d6', roughness: 0.32, metalness: 0.7 }),
-    vidro: new MeshStandardMaterial({ color: '#0a1322', roughness: 0.15, metalness: 0.4 }),
   };
 }
 
-function luzes(cena, comSombra, celular) {
+function luzes(cena, celular) {
   cena.add(new HemisphereLight('#dce6ff', '#0a1322', 0.1));
   const chave = new DirectionalLight('#ffffff', 2.3);
   chave.position.set(-34, 40, 56);
   const recorte = new DirectionalLight('#a9d8ff', 0.9);
   recorte.position.set(40, 8, -18);
   cena.add(chave, recorte);
-  if (comSombra) {
-    chave.castShadow = true;
-    chave.shadow.mapSize.set(celular ? 512 : 1024, celular ? 512 : 1024);
-    Object.assign(chave.shadow.camera, { left: -24, right: 24, top: 24, bottom: -24, near: 30, far: 160 });
-    chave.shadow.bias = -0.0004;
-    chave.shadow.normalBias = 0.03;
-  }
+  chave.castShadow = true;
+  chave.shadow.mapSize.set(celular ? 512 : 1024, celular ? 512 : 1024);
+  Object.assign(chave.shadow.camera, { left: -24, right: 24, top: 24, bottom: -24, near: 30, far: 160 });
+  chave.shadow.bias = -0.0004;
+  chave.shadow.normalBias = 0.03;
   return { chave, recorte };
 }
 
@@ -165,7 +142,7 @@ export function criarCena({ host, reduzido, celular, duracao, ponteiro, nome, so
   const m = materiais();
   const cena = new Scene();
   cena.environment = ambiente;
-  const { chave, recorte } = luzes(cena, true, celular);
+  const { chave, recorte } = luzes(cena, celular);
   const camera = new PerspectiveCamera(24, 1, 10, 400);
   const alvo = new Vector3(0, 0, 0);
 
@@ -428,52 +405,6 @@ export function criarCena({ host, reduzido, celular, duracao, ponteiro, nome, so
     giroX(0);
   };
 
-  // ---------- Objetos das cenas de recursos (mesmo renderer, mesmos materiais e luzes) ----------
-  let objetos = null;
-  function prepararObjetos() {
-    const cenaObj = new Scene();
-    cenaObj.environment = ambiente;
-    luzes(cenaObj, false, celular);
-    const camObj = new PerspectiveCamera(30, 1, 1, 200);
-    camObj.position.set(0, 2.5, 38);
-    camObj.lookAt(0, 0.6, 0);
-    const grupos = { radar: radar(m), via: trechoDeVia(m), placa: placa(m) };
-    for (const g of Object.values(grupos)) {
-      g.visible = false;
-      cenaObj.add(g);
-    }
-    return { cenaObj, camObj, grupos };
-  }
-
-  function desenharObjeto(o) {
-    const W = canvas.width;
-    const H = canvas.height;
-    const w = Math.min(o.canvas.width, W);
-    const h = Math.min(o.canvas.height, H);
-    if (!w || !h) return;
-    objetos ??= prepararObjetos();
-    const { cenaObj, camObj, grupos } = objetos;
-    const g = grupos[o.tipo];
-    g.visible = true;
-    g.rotation.set(MathUtils.lerp(0.32, 0.1, o.t), o.lado * MathUtils.lerp(-1.05, -0.42, o.t) + o.giro, 0);
-    g.position.y = MathUtils.lerp(-1.8, 0, o.t);
-    camObj.aspect = w / h;
-    camObj.updateProjectionMatrix();
-    const pr = renderer.getPixelRatio();
-    renderer.setScissorTest(true);
-    renderer.setViewport(0, 0, w / pr, h / pr);
-    renderer.setScissor(0, 0, w / pr, h / pr);
-    renderer.render(cenaObj, camObj);
-    o.ctx.clearRect(0, 0, o.canvas.width, o.canvas.height);
-    o.ctx.drawImage(canvas, 0, H - h, w, h, 0, 0, o.canvas.width, o.canvas.height);
-    g.visible = false;
-    renderer.setScissorTest(false);
-    renderer.setViewport(0, 0, W / pr, H / pr);
-    // O canto do canvas da hero ficou com o objeto: redesenha já, se ela estiver na tela, ou quando voltar.
-    sujo = true;
-    if (visivel) tique();
-  }
-
   // ---------- Controle exposto ao palco ----------
   tl = criarTimeline();
   redimensionar();
@@ -509,126 +440,5 @@ export function criarCena({ host, reduzido, celular, duracao, ponteiro, nome, so
       giroX(y * 0.06);
     },
     repousar,
-    /** Liga um objeto 3D a um contêiner; pose(t) com t de 0 (entrando) a 1 (assentado). */
-    objeto(contenedor, tipo, lado) {
-      const tela = document.createElement('canvas');
-      tela.setAttribute('aria-hidden', 'true');
-      contenedor.append(tela);
-      const o = { tipo, lado, t: 1, giro: 0, canvas: tela, ctx: tela.getContext('2d'), perto: false };
-      new ResizeObserver(() => {
-        const { width, height } = contenedor.getBoundingClientRect();
-        const pr = Math.min(window.devicePixelRatio || 1, 1.5);
-        tela.width = Math.round(width * pr);
-        tela.height = Math.round(height * pr);
-        if (o.perto) desenharObjeto(o);
-      }).observe(contenedor);
-      new IntersectionObserver(([entrada]) => {
-        o.perto = entrada.isIntersecting;
-        if (o.perto) desenharObjeto(o);
-      }, { rootMargin: '200px' }).observe(contenedor);
-      return {
-        pose(t) {
-          o.t = t;
-          if (o.perto) desenharObjeto(o);
-        },
-        /** Balanço contínuo em torno do eixo vertical (radianos), somado à pose. */
-        girar(v) {
-          o.giro = v;
-          if (o.perto) desenharObjeto(o);
-        },
-      };
-    },
   };
-}
-
-// ---------- Objetos das cenas (com os materiais da marca) ----------
-function radar(m) {
-  const g = new Group();
-  const poste = new Mesh(new CylinderGeometry(0.32, 0.38, 10, 20), m.metal);
-  poste.position.y = -2.4;
-  const pe = new Mesh(new CylinderGeometry(1.5, 1.7, 0.45, 28), m.grafite);
-  pe.position.y = -7.3;
-  const caixaGeo = extrudar(retanguloArredondado(6.4, 4.2, 0.95), 2.4, 0.35, 3);
-  caixaGeo.center();
-  const caixa = new Mesh(caixaGeo, m.branco);
-  caixa.position.set(0.5, 4.2, 0);
-  const lente = new Mesh(new CylinderGeometry(1.2, 1.2, 0.5, 32), m.vidro);
-  lente.rotation.x = Math.PI / 2;
-  lente.position.set(-0.7, 4.2, 1.55);
-  const aro = new Mesh(new TorusGeometry(1.25, 0.16, 10, 32), m.grafite);
-  aro.position.set(-0.7, 4.2, 1.75);
-  const sinal = new Mesh(new SphereGeometry(0.42, 18, 12), m.ambar);
-  sinal.position.set(1.9, 5.25, 1.5);
-  const ondas = [1.7, 3.1].map((r) => {
-    const onda = new Mesh(extrudar(arco(r, 0.78, 0.6), 0.45, 0.1, 2), m.turquesa);
-    onda.position.set(4.6, 4.2, 0.2);
-    return onda;
-  });
-  g.add(poste, pe, caixa, lente, aro, sinal, ...ondas);
-  g.position.x = -0.8;
-  const raiz = new Group();
-  raiz.add(g);
-  return raiz;
-}
-
-function trechoDeVia(m) {
-  const g = new Group();
-  const pista = new Mesh(new BoxGeometry(12.5, 0.8, 8.4), m.asfalto);
-  const marcas = [];
-  for (const z of [-3.6, 3.6]) {
-    const borda = new Mesh(new BoxGeometry(12.5, 0.06, 0.28), m.branco);
-    borda.position.set(0, 0.42, z);
-    marcas.push(borda);
-  }
-  for (const x of [-4.6, -1.5, 1.6, 4.7]) {
-    const traco = new Mesh(new BoxGeometry(1.9, 0.06, 0.26), m.branco);
-    traco.position.set(x, 0.42, 0);
-    marcas.push(traco);
-  }
-  const pino = new Group();
-  const cabeca = new Mesh(new SphereGeometry(1.45, 32, 20), m.azul);
-  cabeca.position.y = 4.7;
-  const ponta = new Mesh(new ConeGeometry(1.26, 3.1, 32), m.azul);
-  ponta.rotation.x = Math.PI;
-  ponta.position.y = 2.75;
-  const miolo = new Mesh(new SphereGeometry(0.62, 20, 14), m.branco);
-  miolo.position.set(0, 4.75, 1.05);
-  const anel = new Mesh(new TorusGeometry(1.8, 0.13, 10, 48), m.turquesa);
-  anel.rotation.x = Math.PI / 2;
-  anel.position.y = 0.5;
-  pino.add(cabeca, ponta, miolo, anel);
-  pino.position.set(1.4, 0.4, 0.6);
-  g.add(pista, ...marcas, pino);
-  g.rotation.x = 0.5;
-  g.position.y = -1.6;
-  const raiz = new Group();
-  raiz.add(g);
-  return raiz;
-}
-
-function placa(m) {
-  const g = new Group();
-  const poste = new Mesh(new CylinderGeometry(0.3, 0.34, 11, 20), m.metal);
-  poste.position.set(0, -2.6, -0.4);
-  const faceGeo = extrudar(retanguloArredondado(9.4, 5.8, 0.9), 0.5, 0.16, 2);
-  const face = new Mesh(faceGeo, m.azul);
-  face.position.y = 4.2;
-  const borda = retanguloArredondado(8.5, 4.9, 0.6);
-  borda.holes.push(retanguloArredondado(7.9, 4.3, 0.36));
-  const contorno = new Mesh(new ExtrudeGeometry(borda, { depth: 0.08, bevelEnabled: false, curveSegments: 8 }), m.branco);
-  contorno.position.set(0, 4.2, 0.82);
-  const seta = new Shape();
-  seta.moveTo(-2.4, -0.42);
-  seta.lineTo(0.7, -0.42);
-  seta.lineTo(0.7, -1.35);
-  seta.lineTo(2.5, 0);
-  seta.lineTo(0.7, 1.35);
-  seta.lineTo(0.7, 0.42);
-  seta.lineTo(-2.4, 0.42);
-  const flecha = new Mesh(new ExtrudeGeometry(seta, { depth: 0.12, bevelEnabled: false }), m.branco);
-  flecha.position.set(0, 4.2, 0.82);
-  g.add(poste, face, contorno, flecha);
-  const raiz = new Group();
-  raiz.add(g);
-  return raiz;
 }

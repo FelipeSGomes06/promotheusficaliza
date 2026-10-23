@@ -103,3 +103,8 @@ marca. A ficha do agente, na cena de inventário, passa a ter a mesma largura da
 e alinhada à direita). Os objetos 3D saem da via, onde encostavam no texto, e vão para o **canto da página**, do lado da
 captura, no vão vertical depois de cada cena: não cobrem texto, captura nem a via em nenhuma largura de desktop; no
 celular continuam fora (nem pedem o 3D).
+
+## Atualização (23/10/2026)
+Os objetos 3D das cenas foram substituídos por planos cinematográficos no fluxo da página, com renderer próprio; a hero
+não mudou e deixou de ser baixada por causa das cenas. Diagnóstico e decisões no
+[ADR-0019](0019-landing-planos-3d-cinematograficos.md).
