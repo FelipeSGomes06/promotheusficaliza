@@ -16,7 +16,7 @@ final class FakeGeocoder implements Geocoder
     /** @param array<string, array{lat: string, lng: string}> $points por rua; rua ausente = não achada */
     public function __construct(private readonly array $points = [], public bool $down = false) {}
 
-    public function locate(string $street): ?array
+    public function locate(string $street, string $city = 'Marília'): ?array
     {
         $this->calls[] = $street;
         if ($this->down) {

@@ -78,7 +78,7 @@ final class AgentsHttpTest extends FirebirdTestCase
         foreach (['1750100', '175010000', 'abcdefgh', '17501-00', '17.501-000', '%20'] as $bad) {
             $response = $this->request('GET', '/api/cep/' . $bad);
             self::assertSame(422, $response->getStatusCode(), $bad);
-            self::assertSame(['cep' => '', 'situacao' => 'INVALIDO', 'rua' => '', 'bairro' => '', 'mensagem' => 'Digite os 8 números do CEP, como 17500-000.'], self::json($response), $bad);
+            self::assertSame(['cep' => '', 'situacao' => 'INVALIDO', 'rua' => '', 'bairro' => '', 'cidade' => '', 'mensagem' => 'Digite os 8 números do CEP, como 17500-000.'], self::json($response), $bad);
         }
         self::assertSame([], $this->cep->calls, 'nenhuma chamada externa com CEP inválido');
     }
@@ -89,7 +89,7 @@ final class AgentsHttpTest extends FirebirdTestCase
 
         $found = $this->request('GET', '/api/cep/17501000');
         self::assertSame(200, $found->getStatusCode());
-        self::assertSame(['cep' => '17501-000', 'situacao' => 'ENCONTRADO', 'rua' => 'Avenida Sampaio Vidal', 'bairro' => 'Centro', 'mensagem' => 'Rua encontrada pelo CEP.'], self::json($found));
+        self::assertSame(['cep' => '17501-000', 'situacao' => 'ENCONTRADO', 'rua' => 'Avenida Sampaio Vidal', 'bairro' => 'Centro', 'cidade' => 'Marília', 'mensagem' => 'Rua encontrada pelo CEP.'], self::json($found));
         self::assertSame('no-store', $found->getHeaderLine('Cache-Control'));
 
         $general = self::json($this->request('GET', '/api/cep/17500-000'));
@@ -167,24 +167,24 @@ final class AgentsHttpTest extends FirebirdTestCase
 
         self::assertStringContainsString('Clique no mapa para marcar ou mudar a base.', $html);
         self::assertStringContainsString('data-empty="Clique no mapa para marcar a base."', $html);
-        foreach (['base_name', 'base_lat', 'base_lng', 'base_cep', 'base_street'] as $field) {
+        foreach (['base_name', 'base_lat', 'base_lng', 'base_cep', 'base_city', 'base_street', 'base_ref'] as $field) {
             self::assertStringContainsString('name="' . $field . '"', $html, $field);
         }
         self::assertStringContainsString('name="base_ref"', $html, 'número da base, opcional');
         self::assertStringNotContainsString('name="region_id"', $html, 'bairro não é escolhido');
         self::assertStringNotContainsString('class="advanced"', $html, 'latitude e longitude não ficam recolhidas');
         self::assertStringNotContainsString('Logradouro', $html);
-        self::assertMatchesRegularExpression('#<label for="f-base_lat">Latitude <span class="req"#', $html);
-        self::assertMatchesRegularExpression('#name="base_lat"[^>]*readonly#', $html, 'latitude e longitude nunca são digitadas, nem sem JavaScript');
-        self::assertMatchesRegularExpression('#name="base_lng"[^>]*readonly#', $html);
+        self::assertStringContainsString('<input type="hidden" id="f-base_lat" name="base_lat"', $html, 'latitude e longitude nunca são digitadas, nem sem JavaScript');
+        self::assertStringContainsString('<input type="hidden" id="f-base_lng" name="base_lng"', $html);
+        self::assertStringNotContainsString('Latitude', $html, 'sem rótulos de coordenadas: o ponto aparece só no texto abaixo do mapa');
         self::assertStringContainsString('data-mark-center', $html, 'pelo teclado, Enter marca o centro do mapa');
         self::assertStringContainsString('data-locate-url="' . self::BASE . '/api/localizar"', $html);
-        self::assertStringContainsString('Não achou o lugar no mapa? Use o CEP e a rua logo abaixo.', $html);
+        self::assertStringContainsString('Não achou o lugar? Use o endereço logo abaixo.', $html);
         self::assertMatchesRegularExpression('#<div class="picker" id="picker" hidden data-picker#', $html, 'sem JavaScript não há mapa: a caixa vazia não aparece');
         self::assertStringContainsString('<p class="hint" data-without-map="picker">Sem o mapa (JavaScript desligado', $html);
         self::assertStringContainsString('data-url="' . self::BASE . '/api/cep/"', $html);
-        self::assertStringContainsString('Marília / SP', $html);
-        self::assertDoesNotMatchRegularExpression('#data-cep-manual[^>]*hidden#', $html, 'sem JavaScript, o campo Rua fica visível');
+        self::assertStringContainsString('name="base_city" type="text" value="Marília"', $html, 'cidade editável, Marília por padrão');
+        self::assertDoesNotMatchRegularExpression('#name="base_street"[^>]*(hidden|readonly)#', $html, 'rua sempre digitável');
     }
 
     public function testRegisteringThroughTheFormNeedsOnlyNameAndPoint(): void

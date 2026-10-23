@@ -97,7 +97,8 @@ redireciona à ficha com aviso.
 | `base_name` | obrigatório, até 80. |
 | `base_lat`, `base_lng` | graus decimais (vírgula aceita) dentro da área de Marília. Na tela, nunca digitados (somente leitura): vêm do mapa. **Sem eles**, o servidor localiza a base pela `base_street` ou, sem ela, pela rua do `base_cep` (só com o resto válido); sem ponto e sem endereço → 422 em `base_lat`; rua não achada ou CEP sem rua → 422 em `base_street`; provedor fora do ar → 422 em `base_lat`, com o que foi digitado mantido. |
 | `base_cep` | opcional; `00000-000` (aceita sem hífen). |
-| `base_street` | opcional, até 120: a rua que a consulta do CEP preencheu ou a digitada quando ela não trouxe rua. |
+| `base_street` | opcional, até 120: a rua que a consulta do CEP preencheu (editável) ou a digitada. |
+| `base_city` | opcional, até 80; vazio ou "Marília" = Marília (gravado vazio). |
 | `version` | só na edição. |
 
 `base_ref` (número, opcional, até 160) também ajuda a localizar pelo endereço. `region_id` enviado é ignorado
@@ -161,7 +162,7 @@ Nada consulta órgão, emite auto, cobra ou protocola.
 
 `{cep}` com 8 dígitos (com ou sem hífen), validado **antes** de qualquer chamada ao provedor
 ([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)). Toda resposta é JSON com as mesmas chaves —
-`cep` (normalizado, `00000-000`), `situacao`, `rua`, `bairro`, `mensagem` (pronta para a tela) — e
+`cep` (normalizado, `00000-000`), `situacao`, `rua`, `bairro`, `cidade`, `mensagem` (pronta para a tela) — e
 `Cache-Control: no-store`. Detalhes do provedor nunca aparecem; o motivo de uma falha vai só para o log privado.
 
 | `situacao` | HTTP | `rua` | Quando |
