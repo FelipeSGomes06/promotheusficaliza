@@ -45,7 +45,7 @@ final class AgentBaseTest extends FirebirdTestCase
         self::assertSame(-22.225, $agent['base_lat']);
         self::assertNull($agent['base_street'], 'rua opcional');
         self::assertNull($agent['base_cep']);
-        self::assertNull($agent['base_ref'], 'número ou referência não é mais digitado');
+        self::assertNull($agent['base_ref'], 'número opcional');
         self::assertSame($this->fragata, (int) $agent['region_id'], 'bairro do centro mais próximo do ponto');
         self::assertSame('Fragata', $agent['region_name']);
     }
@@ -71,7 +71,7 @@ final class AgentBaseTest extends FirebirdTestCase
         self::assertSame('17501-000', $agent['base_cep'] ?? null);
         self::assertSame('Avenida Sampaio Vidal', $agent['base_street'] ?? null);
         self::assertSame($this->fragata, (int) ($agent['region_id'] ?? 0), 'o bairro vem do ponto, não do que o cliente enviou');
-        self::assertNull($agent['base_ref'] ?? null);
+        self::assertSame('nº 10', $agent['base_ref'] ?? null, 'número informado é gravado');
 
         $this->expectException(ValidationFailed::class);
         $this->services->agents()->create($this->minimal(['base_cep' => '1750-100']), null);
@@ -116,8 +116,8 @@ final class AgentBaseTest extends FirebirdTestCase
         }
     }
 
-    /** Cadastro antigo (bairro escolhido à mão, logradouro e referência digitados): abre, salva sem mudar e só muda o que mudou. */
-    public function testLegacyAgentKeepsChosenRegionAndReferenceUntilPointOrStreetChange(): void
+    /** Cadastro antigo (bairro escolhido à mão, logradouro e número digitados): abre, salva sem mudar e só muda o que mudou. */
+    public function testLegacyAgentKeepsChosenRegionUntilThePointChanges(): void
     {
         $now = Time::toDb($this->clock->now());
         $id = $this->services->agentRepository()->insert([
@@ -127,7 +127,7 @@ final class AgentBaseTest extends FirebirdTestCase
         ]);
         $actor = $this->userId();
         $form = fn(array $override = []): array => $override + ['call_sign' => 'Hermes 90', 'role' => 'TRANSITO', 'agency_id' => (string) $this->agencyId,
-            'base_name' => 'Base antiga', 'base_street' => 'Rua Antiga', 'base_cep' => '17500-000', 'base_lat' => '-22.2250', 'base_lng' => '-49.9330',
+            'base_name' => 'Base antiga', 'base_street' => 'Rua Antiga', 'base_ref' => 'nº 10', 'base_cep' => '17500-000', 'base_lat' => '-22.2250', 'base_lng' => '-49.9330',
             'version' => (string) $this->services->agentRepository()->find($id)['version_no']];
         $changes = fn(): array => array_values(array_filter($this->services->eventRepository()->forResource('AGENTE', $id), static fn(array $e): bool => $e['event_type'] === 'ALTERACAO'));
 
@@ -139,9 +139,9 @@ final class AgentBaseTest extends FirebirdTestCase
 
         $this->services->agents()->update($id, $form(['base_street' => 'Rua Nova']), $actor);
         $agent = $this->services->agentRepository()->find($id);
-        self::assertNull($agent['base_ref'], 'a referência era do endereço antigo');
+        self::assertSame('nº 10', $agent['base_ref'], 'o número fica enquanto a pessoa não o muda');
         self::assertSame($this->palmital, (int) $agent['region_id']);
-        self::assertSame('Cadastro alterado: rua, número ou referência.', $changes()[0]['summary']);
+        self::assertSame('Cadastro alterado: rua.', $changes()[0]['summary']);
 
         $this->services->agents()->update($id, $form(['base_street' => 'Rua Nova', 'base_lat' => '-22.2010', 'base_lng' => '-49.9690']), $actor);
         self::assertSame($this->palmital, (int) $this->services->agentRepository()->find($id)['region_id'], 'novo ponto perto do Palmital');

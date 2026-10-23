@@ -72,6 +72,8 @@ export function initCep() {
       const giveUp = window.setTimeout(() => mine.abort(), GIVE_UP_MS);
       const query = new URLSearchParams({ rua: street.value.trim() });
       if (digitsOf().length === 8) query.set('cep', digitsOf());
+      const number = document.getElementById(box.dataset.number)?.value.trim();
+      if (number) query.set('numero', number);
       setBusy(locateButton, true, 'Localizando…');
       say(locateStatus, 'Procurando o endereço no mapa…', 'loading');
       const data = await getJson(`${box.dataset.locateUrl}?${query}`, mine.signal);

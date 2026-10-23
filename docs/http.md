@@ -100,9 +100,9 @@ redireciona à ficha com aviso.
 | `base_street` | opcional, até 120: a rua que a consulta do CEP preencheu ou a digitada quando ela não trouxe rua. |
 | `version` | só na edição. |
 
-`region_id` e `base_ref` enviados são ignorados ([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)): o
-bairro é o de centro mais próximo do ponto (na edição, só é recalculado se o ponto mudar ou se não houver bairro) e o
-antigo "número ou referência" sai quando o ponto ou a rua mudam. Respostas como no equipamento (303, 422, 409).
+`base_ref` (número, opcional, até 160) também ajuda a localizar pelo endereço. `region_id` enviado é ignorado
+([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)): o bairro é o de centro mais próximo do ponto (na
+edição, só é recalculado se o ponto mudar ou se não houver bairro). Respostas como no equipamento (303, 422, 409).
 
 ### Situação, arquivamento e simulação
 
@@ -178,7 +178,7 @@ depende desta rota.
 
 ## Ponto pelo endereço (`GET /api/localizar`)
 
-Query: `rua` (até 120) e/ou `cep` (8 dígitos). Sem nenhum dos dois, ou com algum inválido → 422 `INVALIDO`, sem
+Query: `rua` (até 120) e/ou `cep` (8 dígitos); `numero` opcional (com dígitos iniciais, tenta a casa antes da rua). Sem nenhum dos dois, ou com algum inválido → 422 `INVALIDO`, sem
 chamada externa. Usa a rua informada ou, sem ela, a rua do CEP (ViaCEP); depois o Nominatim, preso ao retângulo de
 Marília ([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)). Resposta JSON com `situacao`, `lat`, `lng`
 (texto com 6 casas, ou `null`), `rua` e `mensagem`; `Cache-Control: no-store`.

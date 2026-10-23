@@ -170,7 +170,7 @@ final class AgentsHttpTest extends FirebirdTestCase
         foreach (['base_name', 'base_lat', 'base_lng', 'base_cep', 'base_street'] as $field) {
             self::assertStringContainsString('name="' . $field . '"', $html, $field);
         }
-        self::assertStringNotContainsString('name="base_ref"', $html, 'número ou referência saiu');
+        self::assertStringContainsString('name="base_ref"', $html, 'número da base, opcional');
         self::assertStringNotContainsString('name="region_id"', $html, 'bairro não é escolhido');
         self::assertStringNotContainsString('class="advanced"', $html, 'latitude e longitude não ficam recolhidas');
         self::assertStringNotContainsString('Logradouro', $html);
@@ -227,15 +227,15 @@ final class AgentsHttpTest extends FirebirdTestCase
         self::assertStringContainsString('name="base_street" type="text" value="Rua Antiga"', $html, 'a edição traz a rua gravada');
         self::assertStringContainsString('value="17501-000"', $html);
         self::assertStringContainsString('Bairro: <strong>Centro</strong>', $html);
-        self::assertStringContainsString('Número ou referência gravado antes: Endereço de base ilustrativo.', $html);
+        self::assertStringContainsString('name="base_ref" type="text" value="Endereço de base ilustrativo"', $html, 'texto antigo aparece no campo Número');
         preg_match('/name="version" value="(\d+)"/', $html, $v);
 
         $saved = $this->request('POST', "/agentes/{$id}", ['_csrf' => $this->session->csrfToken(), 'version' => $v[1] ?? '', 'call_sign' => 'Hermes 91', 'role' => 'TRANSITO',
-            'agency_id' => (string) $this->agencyId, 'base_name' => 'Base antiga', 'base_cep' => '17501-000', 'base_street' => 'Avenida Sampaio Vidal',
+            'agency_id' => (string) $this->agencyId, 'base_name' => 'Base antiga', 'base_cep' => '17501-000', 'base_street' => 'Avenida Sampaio Vidal', 'base_ref' => '1200',
             'base_lat' => '-22.214000', 'base_lng' => '-49.950500']);
         self::assertSame(303, $saved->getStatusCode());
         $show = (string) $this->request('GET', "/agentes/{$id}")->getBody();
-        self::assertStringContainsString('Rua: Avenida Sampaio Vidal · Bairro: Centro', $show, 'rua nova; a referência antiga saiu com ela');
-        self::assertStringContainsString('Cadastro alterado: rua, número ou referência.', $show);
+        self::assertStringContainsString('Rua: Avenida Sampaio Vidal, 1200 · Bairro: Centro', $show);
+        self::assertStringContainsString('Cadastro alterado: rua, número.', $show);
     }
 }

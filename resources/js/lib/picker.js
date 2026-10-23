@@ -26,6 +26,10 @@ export function initPicker() {
     const pin = L.circleMarker(start, { radius: 10, color: '#0f1a2b', weight: 3, fillColor: '#2152e8', fillOpacity: 0.95 });
     const marked = box.dataset.marked || 'Local marcado: {ponto}.';
     const say = () => {
+      // Erro do servidor sobre o ponto ("Marque a base…") deixa de valer quando há ponto.
+      if ('markCenter' in box.dataset && lat.value && lng.value) {
+        [lat, lng].forEach((i) => { const f = i.closest('.field'); f?.classList.remove('has-error'); f?.querySelector('.error')?.remove(); i.removeAttribute('aria-invalid'); });
+      }
       if (status) status.textContent = lat.value && lng.value ? marked.replace('{ponto}', `${lat.value}, ${lng.value}`) : (box.dataset.empty || 'Nenhum local marcado ainda.');
     };
     if (lat.value && lng.value) pin.addTo(map);

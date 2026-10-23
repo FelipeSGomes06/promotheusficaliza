@@ -16,7 +16,8 @@ primeiras chamadas a serviços externos feitas durante uma requisição web.
 
 - **Formulário**: nome da base; mapa com "Clique no mapa para marcar ou mudar a base"; latitude e longitude visíveis
   logo abaixo e **somente leitura** (também sem JavaScript); cidade fixa (Marília/SP); CEP opcional; rua. Saem como
-  campo digitado: logradouro, número ou referência, bairro. O formulário de equipamentos não mudou.
+  campo digitado: logradouro e bairro. O número da base (`BASE_REF`, opcional) voltou a pedido do autor e ajuda a
+  localizar pelo endereço (tenta "número rua"; sem resultado, só a rua). O formulário de equipamentos não mudou.
 - **Ponto pelo mapa**: clique marca ou muda; pelo teclado, Enter ou espaço no mapa marca o centro (que ganha uma mira
   enquanto o mapa tem foco). Sem JavaScript, ou se o Leaflet não carregar, mapa e instrução não aparecem e uma linha
   explica o caminho pelo endereço.
@@ -48,8 +49,7 @@ primeiras chamadas a serviços externos feitas durante uma requisição web.
   valendo. Na edição, é recalculado quando o ponto muda (ou se não havia bairro); fora isso, fica o gravado, inclusive
   o escolhido à mão em cadastros antigos.
 - **Dados antigos**: logradouro, referência e bairro gravados continuam na ficha e na edição (a rua aparece como
-  "Rua: …"). O antigo "número ou referência" descrevia o endereço digitado: sai quando o ponto ou a rua mudam. Nenhuma
-  coluna mudou; sem migração. O histórico passa a listar rótulos ("Cadastro alterado: rua, ponto no mapa."), e a ficha
+  "Rua: …"; o "número ou referência" antigo aparece no campo Número). Nenhuma coluna mudou; sem migração. O histórico passa a listar rótulos ("Cadastro alterado: rua, ponto no mapa."), e a ficha
   mostra assim também as alterações antigas, que guardavam o nome técnico dos campos.
 
 ## Saída para a internet no contêiner publicado

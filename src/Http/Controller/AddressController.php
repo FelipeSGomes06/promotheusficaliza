@@ -41,16 +41,17 @@ final class AddressController extends Controller
         };
     }
 
-    /** Ponto da base pela rua (ou pela rua do CEP), para quem não consegue marcar no mapa. Query: rua, cep. */
+    /** Ponto da base pela rua (ou pela rua do CEP), para quem não consegue marcar no mapa. Query: rua, cep, numero. */
     public function locate(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $input = new Input($request->getQueryParams());
         $street = $input->text('rua', 120, false);
         $cep = $input->cep('cep');
+        $number = $input->text('numero', 20, false);
         if ($input->errors() !== [] || ($street === null && $cep === null)) {
             return $this->json($response, ['situacao' => 'INVALIDO', 'lat' => null, 'lng' => null, 'rua' => '', 'mensagem' => 'Informe a rua ou um CEP com 8 números.'], 422);
         }
-        $found = $this->services->addressLocator()->locate($street, $cep);
+        $found = $this->services->addressLocator()->locate($street, $cep, $number);
         $status = ['ENCONTRADO' => 200, 'SEM_RUA' => 200, 'NAO_ENCONTRADO' => 404, 'INDISPONIVEL' => 503][$found['situacao']];
 
         return $this->json($response, [
