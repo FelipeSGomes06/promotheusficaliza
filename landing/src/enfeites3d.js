@@ -11,7 +11,7 @@
  * janela, −1 em cima a 1 embaixo), x e y (ponteiro relativo ao enfeite, −1 a 1) e parado (movimento reduzido).
  */
 import {
-  CanvasTexture, Color, CylinderGeometry, DirectionalLight, ExtrudeGeometry, Group, HemisphereLight, InstancedMesh,
+  CanvasTexture, Color, CylinderGeometry, DoubleSide, DirectionalLight, ExtrudeGeometry, Group, HemisphereLight, InstancedMesh,
   LatheGeometry, MathUtils, Mesh, MeshBasicMaterial, MeshStandardMaterial, NeutralToneMapping, Object3D,
   PerspectiveCamera, PlaneGeometry, PMREMGenerator, Scene, Shape, SphereGeometry, Sprite, SpriteMaterial,
   SRGBColorSpace, TorusGeometry, Vector2, Vector3, WebGLRenderer,
@@ -271,7 +271,9 @@ function cone() {
     const r = (y) => 0.075 + ((1.32 - y) / 1.12) * 0.3;
     return new Mesh(new CylinderGeometry(r(y0), r(y1), y0 - y1, 40, 1, true).translate(0, (y0 + y1) / 2, 0), refletivo);
   };
-  const casco = new Mesh(new LatheGeometry(perfil, 40), laranja);
+  // Dos dois lados: no pé quase horizontal as faces ficam viradas para baixo e sumiriam (parecia faltar um pedaço).
+  const casco = new Mesh(new LatheGeometry(perfil, 40), laranja.clone());
+  casco.material.side = DoubleSide;
   const chanfrado = new Shape();
   [[-0.46, -0.33], [-0.33, -0.46], [0.33, -0.46], [0.46, -0.33], [0.46, 0.33], [0.33, 0.46], [-0.33, 0.46], [-0.46, 0.33]].forEach(([a, b], i) => (i ? chanfrado.lineTo(a, b) : chanfrado.moveTo(a, b)));
   const sapata = new Mesh(chapa(chanfrado, 0.06, 0.015).rotateX(-Math.PI / 2), laranja);
