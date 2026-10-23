@@ -454,8 +454,9 @@ export function criarMundo({ celular }) {
   const chave = new SpotLight('#ffd6a3', 0, 40, 0.75, 0.55, 1.6);
   chave.castShadow = !celular;
   chave.shadow.mapSize.set(1024, 1024);
-  chave.shadow.bias = -0.0006;
-  chave.shadow.normalBias = 0.04;
+  // normalBias pequeno: um valor alto descola a sombra do pé das peças, e elas parecem flutuar.
+  chave.shadow.bias = -0.0004;
+  chave.shadow.normalBias = 0.012;
   chave.shadow.camera.near = 1;
   chave.shadow.camera.far = 40;
   const giro = new SpotLight(COR.ambar, 0, 26, 0.42, 0.7, 1.4);
@@ -769,6 +770,13 @@ export function criarMundo({ celular }) {
     ]), new MeshStandardMaterial({ vertexColors: true, roughness: 0.45, metalness: 0.6 }));
     corpo.castShadow = true;
     corpo.receiveShadow = true;
+    // Sapata de concreto e sombra de contato: o encontro com a calçada escurece, e a peça assenta.
+    const sapata = new Mesh(caixa(1.2, 0.06, 0.85, 0, 0.03, 0), new MeshStandardMaterial({ color: '#4a515c', roughness: 0.9 }));
+    sapata.receiveShadow = true;
+    const contato = new Mesh(new PlaneGeometry(1.9, 1.5).rotateX(-Math.PI / 2),
+      new MeshBasicMaterial({ color: '#000000', alphaMap: tex.mancha, transparent: true, opacity: 0.85, depthWrite: false }));
+    contato.position.y = 0.065;
+    g.add(sapata, contato);
     // Painel de LED: textura redesenhada só quando o número muda.
     const telaPainel = document.createElement('canvas');
     telaPainel.width = 256;
