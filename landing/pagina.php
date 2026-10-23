@@ -39,19 +39,16 @@ $captura = static function (string $nome, array $larguras, array $maior, string 
 $tamanhoCena = '(min-width: 960px) 560px, calc(100vw - 96px)';
 
 /**
- * Plano 3D entre as cenas de recursos (planos.js e planos3d.js). Sem JavaScript ou sem WebGL fica o cartaz em CSS; o
- * canvas entra por cima dele. A legenda é texto de verdade; rótulo, tarjas e situação são decoração.
+ * Plano 3D entre as cenas de recursos (planos.js e planos3d.js). Sem JavaScript ou sem WebGL fica o cartaz em SVG; o
+ * canvas entra por cima dele. A legenda é texto de verdade; rótulo e tarjas são decoração.
  */
 $plano = static function (string $nome, string $marco, string $rotulo, string $legenda): string {
-    $estado = $nome === 'manutencao' ? '<p class="plano__estado" aria-hidden="true" data-plano-estado></p>' : '';
-
     return '<figure class="plano plano--' . e($nome) . '" data-plano="' . e($nome) . '">'
         . '<div class="plano__tela" data-plano-tela>'
         . '<svg class="plano__cartaz" aria-hidden="true" focusable="false"><use href="#plano-cartaz"></use></svg>'
         . '<span class="plano__tarja plano__tarja--cima" aria-hidden="true"></span>'
         . '<span class="plano__tarja plano__tarja--baixo" aria-hidden="true"></span>'
         . '<p class="plano__rotulo" aria-hidden="true"><span>' . e($marco) . '</span>' . e($rotulo) . '</p>'
-        . $estado
         . '</div>'
         . '<figcaption class="plano__legenda">' . e($legenda) . '</figcaption>'
         . '</figure>';
@@ -185,6 +182,7 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
       <p class="secao__lead">A visão geral reúne equipamentos e agentes no mapa de Marília. Mapa, lista e resumos respondem aos mesmos filtros; a ficha mostra a situação do recurso e a próxima ação sem sair da tela.</p>
     </div>
     <figure class="vitrine" data-vitrine>
+      <div class="enfeite enfeite--mapa" data-enfeite="mapa" aria-hidden="true"></div>
       <div class="vitrine__quadro" data-vitrine-quadro>
         <?= $captura('sistema-visao-geral', [800, 1280, 1920], [1920, 1200], '(min-width: 1260px) 1180px, calc(100vw - 32px)',
             'Tela Visão geral de Marília no Promotheus Fiscaliza: menu com Visão geral, Equipamentos, Agentes, Multas, Manutenção, Revisões recomendadas e Planejar reforço; resumos (9 de 14 equipamentos em serviço funcionando, 9 recursos que precisam de atenção, 3 manutenções urgentes), filtros, a lista de recursos, o mapa do centro de Marília e a ficha aberta de um radar na Avenida Rio Branco com manutenção vencida.',
@@ -238,6 +236,7 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
           </details>
         </div>
         <figure class="cena__visual">
+          <div class="enfeite enfeite--quina" data-enfeite="camera" aria-hidden="true"></div>
           <?= $captura('inventario', [720, 1200], [1200, 673], $tamanhoCena,
               'Tela Equipamentos: busca, filtros por tipo e situação e a lista de 16 equipamentos — balança, câmeras, cancela e patinetes com código, bairro, marca e modelo, cada um com sua situação, como operacional, furtado ou sem sinal recente.',
               [780, 1400]) ?>
@@ -267,14 +266,13 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
           </details>
         </div>
         <figure class="cena__visual">
+          <div class="enfeite enfeite--quina" data-enfeite="cone" aria-hidden="true"></div>
           <?= $captura('manutencao', [720, 1200], [1200, 827], $tamanhoCena,
               'Tela Manutenção: ordens abertas da mais urgente para a mais distante, com abas Em andamento, Urgentes, Próximos 7 dias e Programadas depois; um veículo em execução com o botão para concluir a intervenção e dois radares urgentes com o motivo e o botão Iniciar intervenção.',
               [780, 1200]) ?>
           <figcaption class="cena__fonte"><?= e($dataCaptura) ?></figcaption>
         </figure>
       </article>
-
-      <?= $plano('manutencao', '02', 'Intervenção', 'Ilustração 3D: uma intervenção em campo, da falha registrada à conclusão, com o equipamento de volta à operação.') ?>
 
       <article class="cena" id="multas" aria-labelledby="multas-titulo" data-cena>
         <span class="via__no" aria-hidden="true"></span>
@@ -297,6 +295,7 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
           </details>
         </div>
         <figure class="cena__visual">
+          <div class="enfeite enfeite--quina" data-enfeite="placa" aria-hidden="true"></div>
           <?= $captura('multa', [720, 1200], [1200, 745], $tamanhoCena,
               'Ficha de uma multa fictícia de conversão proibida: código interno separado do AIT, situação registrado, fase ainda não informada e documentos não conferidos; a próxima ação, conferir os documentos do carro; a origem da constatação por um agente de trânsito, gravada no registro; e o veículo autuado com placa, modelo e RENAVAM não disponível.',
               [780, 1040]) ?>
@@ -318,20 +317,20 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
           <p class="nota"><svg class="icone" aria-hidden="true" focusable="false"><use href="#i-info"></use></svg><span>A pontuação é uma prioridade heurística sobre o histórico da demonstração. Não é probabilidade de falha nem garantia de previsão.</span></p>
         </div>
         <figure class="cena__visual">
+          <div class="enfeite enfeite--quina" data-enfeite="semaforo" aria-hidden="true"></div>
           <?= $captura('revisoes', [720, 1200], [1200, 827], $tamanhoCena,
               'Tela Revisões recomendadas para os próximos 7 dias: aviso de como ler a prioridade, que não é a chance de falhar, e os equipamentos a revisar primeiro — uma cancela com prioridade 32 de 100 e um patinete com 27 de 100 —, cada um com os motivos e o que fazer.',
               [780, 785]) ?>
           <figcaption class="cena__fonte"><?= e($dataCaptura) ?></figcaption>
         </figure>
       </article>
-
-      <?= $plano('revisoes', '04', 'Prioridade', 'Ilustração 3D: equipamentos lado a lado, cada um com a sua prioridade de revisão; a mais alta vem primeiro.') ?>
     </div>
   </section>
 
   <section class="planejar" id="planejamento" aria-labelledby="planejamento-titulo">
     <div class="planejar__conteudo">
       <div class="planejar__cabeca">
+        <div class="enfeite enfeite--calor" data-enfeite="calor" aria-hidden="true"></div>
         <p class="rotulo rotulo--claro">Planejamento · dados reais agregados</p>
         <h2 id="planejamento-titulo">Veja onde concentrar o reforço da semana.</h2>
         <p class="planejar__lead">O planejamento usa o histórico agregado de sinistros registrados em Marília para comparar prioridades na área de estudo. O mapa de calor mostra as estimativas por quadrado de cerca de 2 × 2 km e ajuda a escolher de um a quatro lugares para concentrar a presença da equipe.</p>

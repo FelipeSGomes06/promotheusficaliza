@@ -1,15 +1,17 @@
 # Landing pública do Promotheus Fiscaliza
 
 Página de entrada servida em `/` de `https://fiscaliza.devfelipegomes.com.br/`, no lugar do antigo "Portal simulado".
-Apresenta o sistema, monta a marca em 3D na hero, mostra três planos 3D noturnos entre as cenas de recursos e leva ao
-acesso existente em `/promotheusfiscaliza/` — quem decide login e conta continua sendo a aplicação
+Apresenta o sistema, monta a marca em 3D na hero, mostra um plano 3D noturno depois do inventário e objetos 3D junto das
+capturas, e leva ao acesso existente em `/promotheusfiscaliza/` — quem decide login e conta continua sendo a aplicação
 ([ADR-0014](../docs/adr/0014-acesso-somente-com-conta-cadastrada.md)).
 Decisões de composição, materiais, coreografia e arquitetura: [ADR-0015](../docs/adr/0015-landing-publica-e-marca-3d.md);
 seis pilares, foto de Marília, ponteiro e 3D sob demanda: [ADR-0018](../docs/adr/0018-landing-seis-pilares-e-foto-de-marilia.md);
-planos 3D das cenas (e o diagnóstico dos objetos que eles substituem): [ADR-0019](../docs/adr/0019-landing-planos-3d-cinematograficos.md).
+planos 3D das cenas (e o diagnóstico dos objetos que eles substituem): [ADR-0019](../docs/adr/0019-landing-planos-3d-cinematograficos.md);
+enfeites 3D junto das capturas: [ADR-0020](../docs/adr/0020-landing-enfeites-3d-junto-das-capturas.md).
 Verificação e capturas: [evidência de 20/10/2026](../docs/evidencias/2026-10-20-landing-publica.md),
 [atualização de 22/10/2026](../docs/evidencias/2026-10-22-landing-atualizada.md) e
-[planos 3D, 23/10/2026](../docs/evidencias/2026-10-23-planos-3d.md).
+[planos 3D, 23/10/2026](../docs/evidencias/2026-10-23-planos-3d.md) e
+[enfeites 3D, 23/10/2026](../docs/evidencias/2026-10-23-enfeites-3d.md).
 
 ## Estrutura
 
@@ -27,8 +29,9 @@ landing/
                       imagem de compartilhamento e favicon
       video/          onde entra o vídeo do avaliador
   src/                fontes do CSS e do JS: pagina.js (entrada), palco.js + cena3d.js (marca 3D da hero),
-                      planos.js + planos3d.js (planos 3D das cenas, renderer próprio), rolagem.js, navegacao.js,
-                      movimento.js, ampliar.js
+                      planos.js + planos3d.js (plano 3D noturno, renderer próprio), enfeites.js + enfeites3d.js
+                      (objetos 3D junto das capturas, renderer próprio), rolagem.js, navegacao.js, movimento.js,
+                      ampliar.js
   vite.config.js      build da landing, separado do build do sistema
 ```
 
@@ -186,5 +189,5 @@ php -l landing/public/index.php
 ```
 
 Com o servidor local no ar: título e botões aparecem sem JavaScript; a marca em SVG e os cartazes dos planos ficam no
-lugar quando não há WebGL; "Reduzir movimento" mostra a marca pronta, um quadro parado em cada plano e desliga as
-entradas; nada de erro no console.
+lugar quando não há WebGL (os enfeites somem); "Reduzir movimento" mostra a marca pronta, um quadro parado no plano e
+nos enfeites e desliga as entradas; nada de erro no console.

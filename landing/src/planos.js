@@ -3,8 +3,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { movimento } from './movimento.js';
 
 /*
- * Planos 3D entre as cenas de recursos (o desenho fica em planos3d.js). Este módulo decide quando o 3D é baixado, qual
- * plano está em cena e quanto do caminho de câmera ele já percorreu.
+ * Plano 3D entre as cenas de recursos (o desenho fica em planos3d.js). Este módulo decide quando o 3D é baixado, qual
+ * plano está em cena e quanto do caminho de câmera ele já percorreu. Hoje há um plano; o código serve a vários.
  *
  * - Cada plano tem lugar próprio no fluxo da página (não cobre texto nem captura e não muda o layout ao carregar) e um
  *   cartaz em CSS que vale sem JavaScript, sem WebGL ou enquanto o 3D não chega.
@@ -15,19 +15,15 @@ import { movimento } from './movimento.js';
  * - A rolagem conduz a câmera (com um pouco de inércia); o tempo move o trânsito. Com movimento reduzido, cada plano
  *   mostra um quadro parado na pose de repouso e nada se mexe.
  */
-const FASES = { falha: 'Falha registrada', execucao: 'Intervenção em execução', concluida: 'Concluída · em operação' };
-
 export function iniciarPlanos() {
   const planos = gsap.utils.toArray('[data-plano]').map((el) => ({
     el,
     nome: el.dataset.plano,
     tela: el.querySelector('[data-plano-tela]'),
-    estado: el.querySelector('[data-plano-estado]'),
     quadro: null, // canvas 2D com o último quadro, quando o plano sai de cena
     alvo: 0.5,
     p: 0.5,
     visivel: 0,
-    fase: null,
   }));
   if (!planos.length || !('WebGLRenderingContext' in window)) return;
 
@@ -77,13 +73,7 @@ export function iniciarPlanos() {
   }
 
   function desenhar(plano) {
-    const parado = movimento.reduzido();
-    const info = mundo.quadro(plano.nome, { p: plano.p, t: tempo, parado });
-    if (plano.estado && info?.fase && info.fase !== plano.fase) {
-      plano.fase = info.fase;
-      plano.estado.textContent = FASES[info.fase];
-      plano.estado.dataset.fase = info.fase;
-    }
+    mundo.quadro(plano.nome, { p: plano.p, t: tempo, parado: movimento.reduzido() });
   }
 
   /** Guarda o quadro atual do plano num canvas 2D (uma cópia, logo depois de desenhar, na mesma tarefa). */

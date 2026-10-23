@@ -1,6 +1,7 @@
 # ADR-0019 — Landing: planos 3D cinematográficos no lugar dos objetos das cenas
 
-Data: 23/10/2026 · Situação: aceita · Atualiza: [ADR-0015](0015-landing-publica-e-marca-3d.md) e
+Data: 23/10/2026 · Situação: aceita; os planos Intervenção e Prioridade saíram no mesmo dia
+([ADR-0020](0020-landing-enfeites-3d-junto-das-capturas.md)) · Atualiza: [ADR-0015](0015-landing-publica-e-marca-3d.md) e
 [ADR-0018](0018-landing-seis-pilares-e-foto-de-marilia.md) (só a parte dos objetos 3D das cenas; a marca da hero não
 muda) · Evidência: [23/10/2026](../evidencias/2026-10-23-planos-3d.md)
 
