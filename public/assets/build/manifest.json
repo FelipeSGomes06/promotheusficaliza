@@ -26,7 +26,7 @@
     "src": "node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "styles-CZnKnzJY.css",
+    "file": "styles-DjpkdnOS.css",
     "name": "styles",
     "names": [
       "styles.css"
@@ -39,7 +39,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "app-Cx2UCI1X.js",
+    "file": "app-DyE0AU-X.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,

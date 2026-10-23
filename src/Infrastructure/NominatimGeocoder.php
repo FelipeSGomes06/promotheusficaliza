@@ -10,7 +10,7 @@ use Fiscaliza\Application\ProviderUnavailable;
 
 /**
  * Ponto de uma rua pelo Nominatim, o buscador do OpenStreetMap (a mesma base do mapa; ADR-0021). Busca estruturada
- * (rua + Marília/SP), restrita ao retângulo da demonstração, um resultado, só https, tempo limite curto. Política do
+ * (rua + cidade, padrão Marília/SP), restrita ao retângulo da demonstração, um resultado, só https, tempo limite curto. Política do
  * serviço: uso eventual, no máximo 1 requisição por segundo (o transporte padrão espaça as do servidor), User-Agent
  * que identifique a aplicação e nada de autocompletar: aqui só há consulta quando a pessoa pede ou ao salvar.
  */
@@ -32,11 +32,11 @@ final class NominatimGeocoder implements Geocoder
         $this->transport = $transport ?? self::curl(...);
     }
 
-    public function locate(string $street): ?array
+    public function locate(string $street, string $city = 'Marília'): ?array
     {
         $area = Input::AREA;
         $url = $this->baseUrl . '/search?' . http_build_query([
-            'street' => $street, 'city' => 'Marília', 'state' => 'São Paulo', 'country' => 'Brasil', 'countrycodes' => 'br',
+            'street' => $street, 'city' => $city, 'state' => 'São Paulo', 'country' => 'Brasil', 'countrycodes' => 'br',
             'viewbox' => "{$area['lng_min']},{$area['lat_max']},{$area['lng_max']},{$area['lat_min']}", 'bounded' => 1,
             'format' => 'jsonv2', 'limit' => 1, 'accept-language' => 'pt-BR',
         ], '', '&', PHP_QUERY_RFC3986);

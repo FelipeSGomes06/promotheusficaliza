@@ -24,10 +24,10 @@ use Fiscaliza\Infrastructure\Repository\ReferenceRepository;
  */
 final class AgentService
 {
-    private const TRACKED = ['call_sign', 'role', 'agency_id', 'base_name', 'base_street', 'base_ref', 'base_cep', 'region_id', 'base_lat', 'base_lng'];
+    private const TRACKED = ['call_sign', 'role', 'agency_id', 'base_name', 'base_street', 'base_ref', 'base_city', 'base_cep', 'region_id', 'base_lat', 'base_lng'];
     /** Rótulos do histórico ("Cadastro alterado: …"), como a pessoa vê no formulário e na ficha. */
     private const LABELS = ['call_sign' => 'nome de exibição', 'role' => 'função', 'agency_id' => 'órgão', 'base_name' => 'nome da base',
-        'base_street' => 'rua', 'base_ref' => 'número', 'base_cep' => 'CEP', 'region_id' => 'bairro',
+        'base_street' => 'rua', 'base_ref' => 'número', 'base_city' => 'cidade', 'base_cep' => 'CEP', 'region_id' => 'bairro',
         'base_lat' => 'ponto no mapa', 'base_lng' => 'ponto no mapa'];
     private const PREFIX = ['TRANSITO' => 'AGT', 'GUARDA' => 'GCM', 'POLICIA' => 'POL'];
 
@@ -145,7 +145,7 @@ final class AgentService
     /**
      * O que o formulário traz: nome, função, órgão, nome da base e o ponto (obrigatórios), CEP e rua (opcionais). O
      * ponto vem do mapa ou, sem ele, do endereço (resolvePoint); a rua chega preenchida pela consulta do CEP ou digitada
-     * quando a consulta não a dá; número opcional (`BASE_REF`); o bairro é derivado do ponto.
+     * quando a consulta não a dá; número opcional (`BASE_REF`); cidade digitada (padrão Marília); o bairro é derivado do ponto.
      * Campos não lidos são ignorados.
      *
      * @return array<string, mixed>
@@ -159,6 +159,7 @@ final class AgentService
             'base_name' => $input->text('base_name', 80),
             'base_street' => $input->text('base_street', 120, false),
             'base_ref' => $input->text('base_ref', 160, false),
+            'base_city' => self::city($input->text('base_city', 80, false)),
             'base_cep' => $input->cep('base_cep'),
             'base_lat' => $input->coordinate('base_lat', 'lat', false),
             'base_lng' => $input->coordinate('base_lng', 'lng', false),
@@ -193,7 +194,7 @@ final class AgentService
         if ($errors !== []) {
             return;
         }
-        $found = ($this->locator)()->locate($values['base_street'], $values['base_cep'], $values['base_ref']);
+        $found = ($this->locator)()->locate($values['base_street'], $values['base_cep'], $values['base_ref'], $values['base_city']);
         if ($found['situacao'] !== 'ENCONTRADO') {
             $input->fail($found['situacao'] === 'INDISPONIVEL' ? 'base_lat' : 'base_street', AddressLocator::MESSAGES[$found['situacao']]);
 
@@ -222,6 +223,12 @@ final class AgentService
         }
 
         return $derived;
+    }
+
+    /** Cidade da base: Marília é o padrão e fica vazia no banco (cadastros antigos não mudam ao salvar). */
+    private static function city(?string $city): ?string
+    {
+        return $city === null || in_array(mb_strtolower($city), ['marília', 'marilia', 'marília/sp', 'marília / sp', 'marilia/sp'], true) ? null : $city;
     }
 
     /** Bairro de referência de centro mais próximo do ponto, a mesma régua do Planejar (ADR-0021). */

@@ -14,8 +14,10 @@ primeiras chamadas a serviços externos feitas durante uma requisição web.
 
 ## Decisões
 
-- **Formulário**: nome da base; mapa com "Clique no mapa para marcar ou mudar a base"; latitude e longitude visíveis
-  logo abaixo e **somente leitura** (também sem JavaScript); cidade fixa (Marília/SP); CEP opcional; rua. Saem como
+- **Formulário**: nome da base; mapa com "Clique no mapa para marcar ou mudar a base"; o ponto aparece só no texto
+  abaixo do mapa (latitude e longitude são campos ocultos: nunca digitados, nem sem JavaScript); endereço em duas
+  colunas iguais, **CEP | Cidade** e **Rua | Número**, todos editáveis. O CEP preenche rua e cidade sem trocar o que a
+  pessoa digitou. Cidade em `BASE_CITY` (migração 0008, coluna anulável): "Marília", o padrão, fica vazia no banco. Saem como
   campo digitado: logradouro e bairro. O número da base (`BASE_REF`, opcional) voltou a pedido do autor e ajuda a
   localizar pelo endereço (tenta "número rua"; sem resultado, só a rua). O formulário de equipamentos não mudou.
 - **Ponto pelo mapa**: clique marca ou muda; pelo teclado, Enter ou espaço no mapa marca o centro (que ganha uma mira

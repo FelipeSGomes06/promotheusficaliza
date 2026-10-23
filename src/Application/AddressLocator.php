@@ -25,9 +25,10 @@ final class AddressLocator
      * @param string|null $street rua já validada (pode vir vazia)
      * @param string|null $cep CEP já validado (00000-000) ou null
      * @param string|null $number número da base; só os dígitos iniciais ajudam ("1200", "1200 fundos")
+     * @param string|null $city cidade digitada (padrão Marília); a busca continua presa à área atendida
      * @return array{situacao: 'ENCONTRADO', lat: string, lng: string, rua: string}|array{situacao: 'SEM_RUA'|'NAO_ENCONTRADO'|'INDISPONIVEL'}
      */
-    public function locate(?string $street, ?string $cep, ?string $number = null): array
+    public function locate(?string $street, ?string $cep, ?string $number = null, ?string $city = null): array
     {
         $street = trim((string) $street);
         try {
@@ -40,7 +41,8 @@ final class AddressLocator
             }
             // Com número, tenta primeiro a casa; o mapa nem sempre tem números, então cai para a rua.
             $house = preg_match('/^\d{1,6}/', trim((string) $number), $m) === 1 ? $m[0] : null;
-            $point = ($house === null ? null : $this->geocoder->locate("{$house} {$street}")) ?? $this->geocoder->locate($street);
+            $city = trim((string) $city) ?: 'Marília';
+            $point = ($house === null ? null : $this->geocoder->locate("{$house} {$street}", $city)) ?? $this->geocoder->locate($street, $city);
         } catch (ProviderUnavailable $e) {
             // Log privado (sem a rua nem o CEP): ajuda a ver se o servidor publicado consegue sair para a internet.
             error_log('[fiscaliza] localização pelo endereço indisponível: ' . $e->getMessage());

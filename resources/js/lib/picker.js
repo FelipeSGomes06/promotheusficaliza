@@ -27,9 +27,7 @@ export function initPicker() {
     const marked = box.dataset.marked || 'Local marcado: {ponto}.';
     const say = () => {
       // Erro do servidor sobre o ponto ("Marque a base…") deixa de valer quando há ponto.
-      if ('markCenter' in box.dataset && lat.value && lng.value) {
-        [lat, lng].forEach((i) => { const f = i.closest('.field'); f?.classList.remove('has-error'); f?.querySelector('.error')?.remove(); i.removeAttribute('aria-invalid'); });
-      }
+      if ('markCenter' in box.dataset && lat.value && lng.value) document.getElementById(`err-${lat.name}`)?.remove();
       if (status) status.textContent = lat.value && lng.value ? marked.replace('{ponto}', `${lat.value}, ${lng.value}`) : (box.dataset.empty || 'Nenhum local marcado ainda.');
     };
     if (lat.value && lng.value) pin.addTo(map);

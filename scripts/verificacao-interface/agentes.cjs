@@ -13,6 +13,8 @@ const ANSWERS = {
   17500000: { status: 200, body: { cep: '17500-000', situacao: 'SEM_RUA', rua: '', bairro: '', mensagem: 'Este é um CEP geral de Marília/SP, sem rua. Se souber, digite a rua abaixo.' } },
   17509000: { status: 200, body: { cep: '17509-000', situacao: 'ENCONTRADO', rua: 'Rua Paraíba', bairro: 'Fragata', mensagem: 'Rua encontrada pelo CEP.' } },
 };
+const waitStreet = (pg, v) => pg.waitForFunction((x) => document.getElementById('f-base_street').value === x, v, { timeout: 5000 });
+const waitStatus = (pg, re) => pg.waitForFunction((src) => new RegExp(src).test(document.querySelector('[data-cep-status]').textContent), re, { timeout: 5000 });
 const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800' }, 'Rua Paraíba': { lat: '-22.226000', lng: '-49.930000' } };
 
 (async () => {
@@ -60,7 +62,7 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
     await p.goto(`${BASE}/agentes/novo`, { waitUntil: 'networkidle' });
     check('instrucao_do_mapa', await p.isVisible('text=Clique no mapa para marcar ou mudar a base.') && !(await p.isVisible('[data-without-map]')));
     check('estado_inicial_do_mapa', (await p.locator('#picker-status').innerText()) === 'Clique no mapa para marcar a base.', await p.locator('#picker-status').innerText());
-    check('lat_lng_visiveis_sem_recolher', await p.isVisible('#f-base_lat') && await p.isVisible('#f-base_lng') && (await p.locator('details.advanced').count()) === 0);
+    check('coordenadas_sem_campos', (await p.locator('#f-base_lat').getAttribute('type')) === 'hidden' && (await p.locator('#f-base_lng').getAttribute('type')) === 'hidden' && !(await p.isVisible('text=Latitude')) && (await p.locator('details.advanced').count()) === 0);
     check('sem_logradouro_nem_bairro_com_numero', (await p.locator('[name="region_id"]').count()) === 0 && !(await p.isVisible('text=Logradouro')) && await p.isVisible('#f-base_ref'));
     // Envio sem ponto: erro no ponto; ao marcar no mapa, o erro some (não fica "Marque a base…" com o ponto marcado).
     await p.fill('#f-call_sign', 'Hermes Erro'); await p.selectOption('#f-agency_id', { index: 1 }); await p.fill('#f-base_name', 'Base erro');
@@ -70,7 +72,9 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
     const pb2 = await p.locator('#picker').boundingBox(); await p.mouse.click(pb2.x + pb2.width / 2, pb2.y + pb2.height / 2); await sleep(200);
     check('erro_do_ponto_some_ao_marcar', pb !== null && hadError && !(await p.isVisible('#err-base_lat')) && (await p.inputValue('#f-base_lat')) !== '');
     await p.goto(`${BASE}/agentes/novo`, { waitUntil: 'networkidle' });
-    check('rua_oculta_ate_o_cep', !(await p.isVisible('#f-base_street')));
+    check('rua_e_cidade_editaveis', await p.isEditable('#f-base_street') && await p.isEditable('#f-base_city') && (await p.inputValue('#f-base_city')) === 'Marília');
+    const cols = await p.evaluate(() => ['f-base_cep', 'f-base_city', 'f-base_street', 'f-base_ref'].map((id) => { const r = document.getElementById(id).getBoundingClientRect(); return [Math.round(r.left), Math.round(r.width), Math.round(r.top)]; }));
+    check('endereco_em_duas_colunas_iguais', cols[0][0] === cols[2][0] && cols[1][0] === cols[3][0] && cols[0][1] === cols[1][1] && cols[2][1] === cols[3][1] && cols[0][2] === cols[1][2] && cols[2][2] === cols[3][2], cols);
     await p.locator('.picker').scrollIntoViewIfNeeded(); await shot(p, '01-novo-agente');
 
     // Sem marcar no mapa: o CEP traz a rua e a base vai para o endereço sozinha (respostas simuladas).
@@ -80,13 +84,13 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
       const picker = await n.locator('#picker-status').innerText();
       check('endereco_poe_a_base_sem_clicar', (await n.inputValue('#f-base_lat')) === '-22.213900' && (await n.inputValue('#f-base_lng')) === '-49.945800'
         && picker.startsWith('Base marcada em -22.213900, -49.945800') && /Base posta no endereço/.test(await n.locator('[data-locate-status]').innerText()), picker);
-      await n.locator('.cep-street').evaluate((e) => e.scrollIntoView({ block: 'center' })); await shot(n, '01b-base-pelo-endereco');
+      await n.locator('.base-address').evaluate((e) => e.scrollIntoView({ block: 'center' })); await shot(n, '01b-base-pelo-endereco');
       const box = await n.locator('#picker').boundingBox(); await n.locator('#picker').scrollIntoViewIfNeeded();
       const b2 = await n.locator('#picker').boundingBox(); await n.mouse.click(b2.x + b2.width * 0.3, b2.y + b2.height * 0.6); await sleep(200);
       const clicked = await n.inputValue('#f-base_lat');
       await n.click('[data-locate]'); await n.waitForFunction(() => document.getElementById('f-base_lat').value === '-22.213900', null, { timeout: 5000 }).catch(() => {});
       check('clique_ajusta_e_botao_volta_ao_endereco', box !== null && clicked !== '-22.213900' && (await n.inputValue('#f-base_lat')) === '-22.213900', { clicked });
-      await n.fill('#f-base_cep', ''); await n.locator('#f-base_cep').pressSequentially('17500000', { delay: 20 }); await n.waitForSelector('#f-base_street', { state: 'visible' });
+      await n.fill('#f-base_cep', ''); await n.locator('#f-base_cep').pressSequentially('17500000', { delay: 20 }); await waitStatus(n, 'CEP geral');
       await n.fill('#f-base_street', 'Rua Inexistente'); await n.click('[data-locate]'); await n.waitForSelector('[data-locate-status].is-note', { timeout: 5000 }).catch(() => {});
       check('rua_nao_achada_explica', /Não achamos esta rua/.test(await n.locator('[data-locate-status]').innerText()) && (await n.inputValue('#f-base_lat')) === '-22.213900');
       await n.close(); }
@@ -100,9 +104,6 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
     check('clique_marca_e_muda_o_ponto', first[0] !== '' && second[0] !== '' && (first[0] !== second[0] || first[1] !== second[1]), { first, second });
     check('estado_do_mapa_depois_do_clique', (await p.locator('#picker-status').innerText()).startsWith(`Base marcada em ${second[0]}, ${second[1]}.`));
     // Latitude e longitude só pelo mapa: travadas, digitar não muda; pelo teclado, Enter no mapa marca o centro.
-    await p.locator('#f-base_lat').click(); await p.keyboard.type('123'); await p.keyboard.press('Backspace');
-    check('coordenadas_nunca_digitadas', await p.locator('#f-base_lat').evaluate((i) => i.readOnly) && !(await p.isEditable('#f-base_lng'))
-      && (await p.inputValue('#f-base_lat')) === second[0], await p.inputValue('#f-base_lat'));
     await p.locator('#picker').focus(); await p.keyboard.press('ArrowUp'); await sleep(400); await p.keyboard.press('Enter'); await sleep(200);
     const keyed = [await p.inputValue('#f-base_lat'), await p.inputValue('#f-base_lng')];
     check('teclado_enter_marca_o_centro', keyed[0] !== second[0] && keyed[0] !== '', { keyed });
@@ -110,15 +111,15 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
     // CEP com rua (simulada): "Rua: …", campo oculto mas preenchido; apagar um dígito tira a rua.
     await typeCep(p, '17501-000'); await sleep(350);
     const loading = await status(p);
-    await p.waitForSelector('[data-cep-status] strong');
+    await waitStreet(p, 'Avenida Sampaio Vidal');
     check('carregando_com_texto', /Procurando a rua do CEP 17501-000/.test(loading), loading);
-    check('cep_com_rua_mostra_rua', (await status(p)) === 'Rua: Avenida Sampaio Vidal' && !(await p.isVisible('#f-base_street')) && (await p.inputValue('#f-base_street')) === 'Avenida Sampaio Vidal', await status(p));
-    await p.locator('.cep-street').evaluate((e) => e.scrollIntoView({ block: 'center' })); await shot(p, '02-cep-com-rua');
+    check('cep_preenche_a_rua_editavel', /Rua preenchida pelo CEP/.test(await status(p)) && await p.isEditable('#f-base_street') && (await p.inputValue('#f-base_street')) === 'Avenida Sampaio Vidal', await status(p));
+    await p.locator('.base-address').evaluate((e) => e.scrollIntoView({ block: 'center' })); await shot(p, '02-cep-com-rua');
     await p.press('#f-base_cep', 'Backspace'); await sleep(100);
-    check('cep_incompleto_tira_a_rua', (await p.inputValue('#f-base_street')) === '' && !(await p.isVisible('#f-base_street')));
+    check('cep_incompleto_tira_a_rua', (await p.inputValue('#f-base_street')) === '');
 
     // CEP geral e CEP inexistente (simulados): campo "Rua" à vista, com o motivo.
-    await typeCep(p, '17500-000'); await p.waitForSelector('#f-base_street', { state: 'visible' });
+    await typeCep(p, '17500-000'); await waitStatus(p, 'CEP geral');
     check('cep_geral_pede_a_rua', /CEP geral de Marília/.test(await status(p)), await status(p));
     await p.fill('#f-base_street', 'Rua digitada');
     await typeCep(p, '99999-999'); await sleep(800);
@@ -126,7 +127,7 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
     await shot(p, '03-cep-sem-rua');
 
     // Envio com CEP encontrado: ficha com a rua, o bairro derivado e "Marília/SP".
-    await typeCep(p, '17501000'); await p.waitForSelector('[data-cep-status] strong');
+    await p.fill('#f-base_street', ''); await typeCep(p, '17501000'); await waitStreet(p, 'Avenida Sampaio Vidal');
     await p.fill('#f-call_sign', 'Hermes Teste CEP'); await p.selectOption('#f-agency_id', { index: 1 }); await p.fill('#f-base_name', 'Base de teste (fictícia)');
     await Promise.all([p.waitForNavigation(), p.click('button[type=submit]:has-text("Cadastrar agente")')]);
     created = (p.url().match(/\/agentes\/(\d+)/) || [])[1] || null;
@@ -137,8 +138,8 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
     // Edição: mostra a rua gravada sem consultar de novo; mudar o CEP refaz a consulta.
     const before = report.consultas.length;
     await p.goto(`${BASE}/agentes/${created}/editar`, { waitUntil: 'networkidle' });
-    check('edicao_mostra_rua_gravada_sem_consultar', (await status(p)) === 'Rua: Avenida Sampaio Vidal' && report.consultas.length === before, { status: await status(p), consultas: report.consultas.slice(before) });
-    await typeCep(p, '17509-000'); await p.waitForSelector('[data-cep-status] strong:has-text("Rua Paraíba")');
+    check('edicao_mostra_rua_gravada_sem_consultar', (await p.inputValue('#f-base_street')) === 'Avenida Sampaio Vidal' && report.consultas.length === before, { status: await status(p), consultas: report.consultas.slice(before) });
+    await typeCep(p, '17509-000'); await waitStreet(p, 'Rua Paraíba');
     check('edicao_mudar_cep_refaz_consulta', report.consultas.slice(before).includes('17509000') && (await p.inputValue('#f-base_street')) === 'Rua Paraíba');
     await Promise.all([p.waitForNavigation(), p.click('button[type=submit]:has-text("Salvar alterações")')]);
     const history = await p.locator('.timeline').innerText();
@@ -154,9 +155,8 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
     await typeCep(p, '17501-000');
     const res = await answer; const body = await res.json().catch(() => null);
     await sleep(300);
-    const visible = await p.isVisible('#f-base_street');
-    check('consulta_real_nunca_trava_o_formulario', body !== null && (body.situacao === 'ENCONTRADO' ? !visible : visible), { http: res.status(), situacao: body?.situacao, status: await status(p) });
-    await p.locator('.cep-street').evaluate((e) => e.scrollIntoView({ block: 'center' })); await shot(p, '05-consulta-real');
+    check('consulta_real_nunca_trava_o_formulario', body !== null && await p.isEditable('#f-base_street'), { http: res.status(), situacao: body?.situacao, status: await status(p) });
+    await p.locator('.base-address').evaluate((e) => e.scrollIntoView({ block: 'center' })); await shot(p, '05-consulta-real');
     await ctx.close();
   }
 
@@ -165,7 +165,7 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
     await p.goto(`${BASE}/agentes?ordem=codigo`, { waitUntil: 'networkidle' });
     const href = await p.locator('a[href*="/agentes/"]:not([href$="/novo"])').first().getAttribute('href');
     await p.goto(new URL(href, BASE).href.replace(/\/?$/, '') + '/editar', { waitUntil: 'networkidle' });
-    check('antigo_abre_com_rua_e_referencia', /^Rua: \S/.test(await status(p)) && (await p.inputValue('#f-base_ref')) === 'Endereço de base ilustrativo', await status(p));
+    check('antigo_abre_com_rua_e_referencia', (await p.inputValue('#f-base_street')) !== '' && (await p.inputValue('#f-base_ref')) === 'Endereço de base ilustrativo', await status(p));
     await Promise.all([p.waitForNavigation(), p.click('button[type=submit]:has-text("Salvar alterações")')]);
     check('antigo_salva_sem_erro', /\/agentes\/\d+$/.test(p.url()) && /Endereço de base ilustrativo/.test(await p.locator('#onde + .facts').innerText()), p.url());
     await ctx.close();
@@ -175,7 +175,7 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
   { const { ctx, p } = await page(D, { js: false });
     await p.goto(`${BASE}/agentes/novo`);
     check('sem_js_rua_visivel', await p.isVisible('#f-base_street') && await p.isEditable('#f-base_street'));
-    check('sem_js_coordenadas_travadas', !(await p.isEditable('#f-base_lat')) && !(await p.isEditable('#f-base_lng')));
+    check('sem_js_coordenadas_sem_campos', (await p.locator('#f-base_lat').getAttribute('type')) === 'hidden' && await p.isEditable('#f-base_city'));
     check('sem_js_sem_mapa_vazio', !(await p.isVisible('#picker')) && !(await p.isVisible('#picker-howto')) && await p.isVisible('[data-without-map]'));
     await p.fill('#f-call_sign', 'Hermes Sem JS'); await p.selectOption('#f-agency_id', { index: 1 }); await p.fill('#f-base_name', 'Base sem JS (fictícia)');
     await p.fill('#f-base_cep', '17501-000'); await p.fill('#f-base_street', 'Avenida Sampaio Vidal');
@@ -191,10 +191,10 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
   // Movimento reduzido: o campo "Rua" aparece sem animação e o indicador de carregamento não gira.
   { const { ctx, p } = await page(D, { reduced: true });
     await p.goto(`${BASE}/agentes/novo`, { waitUntil: 'networkidle' });
-    await typeCep(p, '17500-000'); await sleep(320);
+    await typeCep(p, '17501-000'); await sleep(320);
     const spin = await p.locator('[data-cep-status] .spinner').evaluate((s) => getComputedStyle(s).animationName).catch(() => 'sem indicador');
-    await p.waitForSelector('#f-base_street', { state: 'visible' }); await sleep(30);
-    const op = await p.locator('[data-cep-manual]').evaluate((m) => getComputedStyle(m).opacity);
+    await p.waitForSelector('[data-locate-box]', { state: 'visible' }); await sleep(30);
+    const op = await p.locator('[data-locate-box]').evaluate((m) => getComputedStyle(m).opacity);
     check('movimento_reduzido', spin === 'none' && op === '1', { spin, op });
     await ctx.close();
   }
@@ -203,9 +203,9 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
   for (const [size, name] of [[{ width: 390, height: 844 }, '06-celular-390'], [{ width: 360, height: 780 }, '07-celular-360']]) {
     const { ctx, p } = await page(size);
     await p.goto(`${BASE}/agentes/novo`, { waitUntil: 'networkidle' });
-    await typeCep(p, '17501-000'); await p.waitForSelector('[data-cep-status] strong');
+    await typeCep(p, '17501-000'); await waitStreet(p, 'Avenida Sampaio Vidal');
     check(`sem_rolagem_lateral_${size.width}`, await noHScroll(p));
-    await p.locator('.cep-street').evaluate((e) => e.scrollIntoView({ block: 'center' })); await shot(p, name);
+    await p.locator('.base-address').evaluate((e) => e.scrollIntoView({ block: 'center' })); await shot(p, name);
     await ctx.close();
   }
   { const { ctx, p } = await page(D);

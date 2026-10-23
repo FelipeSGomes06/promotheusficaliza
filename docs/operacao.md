@@ -66,6 +66,11 @@ rodar `urban:import` de novo grava os quadrados na execução existente. A migra
 coluna anulável `CELL_NO` em `URBAN_MISSION`. Depois, `urban:update` uma vez e o serviço `atualizador`. `demo:seed --reset` apaga as missões fictícias junto com os agentes, mas mantém as execuções
 importadas (dados reais).
 
+### Atualizar um banco existente para a migração 0008 (cidade da base do agente)
+
+`migrate` aplica `0008_cidade_da_base.sql`: só acrescenta a coluna anulável `AGENT.BASE_CITY`. Agentes existentes
+ficam sem cidade gravada e a tela mostra Marília. Backup antes, como sempre.
+
 ### Atualizar um banco existente para a migração 0007 (multas)
 
 `migrate` aplica `0007_multas.sql` (somente `CREATE` de `FINE`, `FINE_DOCUMENT_CHECK` e `FINE_EVENT`; nada muda em
