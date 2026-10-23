@@ -3,6 +3,18 @@
 Ambiente: Windows 11 + Docker Desktop 29.7.2; contêineres `php:8.5.11-apache-trixie` (PDO_FIREBIRD, fbclient 4.0.5)
 e `firebirdsql/firebird:5.0.4-trixie`. Data: 18/10/2026. Só está listado aqui o que de fato rodou.
 
+## Cadastrar agente: base pelo mapa ou pelo endereço, rua pelo CEP (23/10/2026)
+
+Contêiner de nuvem do Claude Code, Docker local (PHP 8.5.11, Firebird 5.0.4) sobre `main` em `730e303`.
+[Evidência](evidencias/2026-10-23-agente-base-pelo-mapa-e-cep.md).
+
+| Verificação | Resultado |
+|---|---|
+| `vendor/bin/phpunit` | 242 testes; falham só os 4 do `UrbanUpdaterTest` que exigem a extensão `zip`, ausente na imagem local (iguais em `main`) |
+| `php-cs-fixer --dry-run` · PHPStan 2.3.1 nível 6 · `npm run build` | 0 de 126 · sem erros · sem erros |
+| `scripts/verificacao-interface/agentes.cjs` | 32 verificações OK, 0 erros de console e de CSP |
+| Chamadas reais ao ViaCEP e ao Nominatim | **não verificadas** (rede do ambiente bloqueada) |
+
 ## Aba Multas (21/10/2026)
 
 Projeto Compose isolado `pf-multas` (PHP 8.5.11, Firebird 5.0.4) sobre `main` em `3ef2904`.

@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace Fiscaliza;
 
+use Fiscaliza\Application\AddressLocator;
 use Fiscaliza\Application\AgentService;
 use Fiscaliza\Application\AlertService;
 use Fiscaliza\Application\AnalysisService;
 use Fiscaliza\Application\AuthService;
+use Fiscaliza\Application\CepLookup;
 use Fiscaliza\Application\CentralQuery;
 use Fiscaliza\Application\EquipmentService;
 use Fiscaliza\Application\EventIngestor;
 use Fiscaliza\Application\FineQuery;
 use Fiscaliza\Application\FineService;
+use Fiscaliza\Application\Geocoder;
 use Fiscaliza\Application\History;
 use Fiscaliza\Application\MaintenanceService;
 use Fiscaliza\Application\PlanningService;
@@ -24,6 +27,7 @@ use Fiscaliza\Demo\Simulator;
 use Fiscaliza\Domain\Clock;
 use Fiscaliza\Infrastructure\Database;
 use Fiscaliza\Infrastructure\Migrator;
+use Fiscaliza\Infrastructure\NominatimGeocoder;
 use Fiscaliza\Infrastructure\Repository\AgentRepository;
 use Fiscaliza\Infrastructure\Repository\AlertRepository;
 use Fiscaliza\Infrastructure\Repository\AnalysisRepository;
@@ -36,6 +40,7 @@ use Fiscaliza\Infrastructure\Repository\MissionRepository;
 use Fiscaliza\Infrastructure\Repository\ReferenceRepository;
 use Fiscaliza\Infrastructure\Repository\UrbanRepository;
 use Fiscaliza\Infrastructure\Repository\UserRepository;
+use Fiscaliza\Infrastructure\ViaCepClient;
 
 /**
  * Raiz de composição: cria cada objeto uma vez, sob demanda, com as dependências explícitas.
@@ -51,17 +56,48 @@ final class Services
         public readonly string $root,
         private ?Database $database = null,
         private ?Clock $clock = null,
+        private ?CepLookup $cepLookup = null,
+        private ?Geocoder $geocoder = null,
     ) {}
 
     /** Mesmos serviços, mas conectados como dono do esquema (migrações, carga e reinício da demonstração). */
     public function asMigrationIdentity(): self
     {
-        return new self($this->config, $this->root, $this->migrationDatabase(), $this->clock);
+        return new self($this->config, $this->root, $this->migrationDatabase(), $this->clock, $this->cepLookup, $this->geocoder);
     }
 
     public function withClock(Clock $clock): self
     {
-        return new self($this->config, $this->root, $this->database, $clock);
+        return new self($this->config, $this->root, $this->database, $clock, $this->cepLookup, $this->geocoder);
+    }
+
+    /** Mesmos serviços com outra consulta de CEP (os testes usam um falso; nunca a rede). */
+    public function withCepLookup(CepLookup $lookup): self
+    {
+        return new self($this->config, $this->root, $this->database, $this->clock, $lookup, $this->geocoder);
+    }
+
+    /** Mesmos serviços com outro provedor de localização (os testes usam um falso; nunca a rede). */
+    public function withGeocoder(Geocoder $geocoder): self
+    {
+        return new self($this->config, $this->root, $this->database, $this->clock, $this->cepLookup, $geocoder);
+    }
+
+    /** Provedor de CEP (ADR-0021), criado só quando algo consulta um CEP. */
+    public function cepLookup(): CepLookup
+    {
+        return $this->cepLookup ??= new ViaCepClient($this->config->cepLookupUrl());
+    }
+
+    /** Provedor de localização pelo endereço (ADR-0021), criado só quando algo localiza uma rua. */
+    public function geocoder(): Geocoder
+    {
+        return $this->geocoder ??= new NominatimGeocoder($this->config->geocoderUrl());
+    }
+
+    public function addressLocator(): AddressLocator
+    {
+        return $this->shared(__FUNCTION__, fn() => new AddressLocator($this->cepLookup(), $this->geocoder()));
     }
 
     public function clock(): Clock
@@ -216,6 +252,7 @@ final class Services
             $this->history(),
             $this->alerts(),
             $this->clock(),
+            $this->addressLocator(...),
         ));
     }
 

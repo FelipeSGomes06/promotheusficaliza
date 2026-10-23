@@ -19,6 +19,8 @@ Valores reais ficam só no ambiente; o repositório traz [`.env.example`](../.en
 | `DB_STATEMENT_TIMEOUT_SECONDS` | Limite de espera por lock/instrução (padrão 5). |
 | `FIREBIRD_ROOT_PASSWORD` | SYSDBA do contêiner Firebird, usado pela imagem na criação do banco. Nenhum processo da aplicação o usa. |
 | `MAP_TILE_URL`, `MAP_TILE_ATTRIBUTION` | Provedor de tiles e atribuição obrigatória; a origem entra na CSP `img-src`. |
+| `CEP_LOOKUP_URL` | Provedor da consulta de CEP do cadastro de agente (padrão `https://viacep.com.br/ws`; só `https`). Exige saída HTTPS do contêiner `app`; fora do ar, a tela pede a rua ([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)). |
+| `GEOCODER_URL` | Provedor do ponto pela rua, para quem não consegue marcar a base no mapa (padrão `https://nominatim.openstreetmap.org`; só `https`; no máximo 1 consulta/s, espaçadas pelo servidor). Exige saída HTTPS do contêiner `app`; fora do ar, o caminho sem mapa para e a tela explica. |
 | `DEMO_ALLOW_RESET` | `true` só em ambientes de demonstração descartáveis. |
 | `DEMO_PROFILE` | `compacto` (padrão: 16 equipamentos e 7 agentes) ou `completo` (48 e 21). Vale para `demo:seed` e `scripts/avaliar-sementes.php` ([ADR-0013](adr/0013-perfil-compacto-de-demonstracao.md)). |
 | `SIM_SEED`, `SIM_INTERVAL_SECONDS`, `POLL_INTERVAL_SECONDS` | Semente do cenário, intervalo do simulador e intervalo de consulta da visão geral (independentes). |
@@ -250,4 +252,6 @@ do backup do passo 1 ([Backup e restauração](#backup-e-restauração)).
 `APP_ENV=production`, `DEMO_ALLOW_RESET=false` depois da carga, senhas novas e exclusivas, `.env` do servidor web só
 com as credenciais da aplicação, Firebird sem porta pública, backups agendados, `user:create` executado no servidor,
 simulador por serviço ou cron (com a trava), conferência dos cabeçalhos efetivos (`curl -sI`) e da CSP do portal
-(não alterada).
+(não alterada), saída HTTPS do contêiner `app` para o ViaCEP e o Nominatim (comandos de conferência na
+[ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md#saída-para-a-internet-no-contêiner-publicado); sem ela,
+o cadastro de agente funciona só pelo mapa).

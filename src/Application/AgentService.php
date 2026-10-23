@@ -7,6 +7,7 @@ namespace Fiscaliza\Application;
 use Fiscaliza\Domain\AgentRole;
 use Fiscaliza\Domain\AgentStatus;
 use Fiscaliza\Domain\Clock;
+use Fiscaliza\Domain\NearestRegion;
 use Fiscaliza\Domain\RuleViolation;
 use Fiscaliza\Domain\Time;
 use Fiscaliza\Domain\ValidationFailed;
@@ -17,14 +18,20 @@ use Fiscaliza\Infrastructure\Repository\AgentRepository;
 use Fiscaliza\Infrastructure\Repository\ReferenceRepository;
 
 /**
- * Casos de uso dos agentes (trânsito, guarda, polícia). A base é o endereço de trabalho; a última posição
- * vem das observações e é guardada à parte.
+ * Casos de uso dos agentes (trânsito, guarda, polícia). A base é um ponto fixo marcado no mapa ou, sem ele, posto no
+ * endereço; a rua vem da consulta do CEP (ou é digitada quando a consulta não a dá) e o bairro é derivado do ponto. A
+ * última posição vem das observações e é guardada à parte.
  */
 final class AgentService
 {
     private const TRACKED = ['call_sign', 'role', 'agency_id', 'base_name', 'base_street', 'base_ref', 'base_cep', 'region_id', 'base_lat', 'base_lng'];
+    /** Rótulos do histórico ("Cadastro alterado: …"), como a pessoa vê no formulário e na ficha. */
+    private const LABELS = ['call_sign' => 'nome de exibição', 'role' => 'função', 'agency_id' => 'órgão', 'base_name' => 'nome da base',
+        'base_street' => 'rua', 'base_ref' => 'número ou referência', 'base_cep' => 'CEP', 'region_id' => 'bairro',
+        'base_lat' => 'ponto no mapa', 'base_lng' => 'ponto no mapa'];
     private const PREFIX = ['TRANSITO' => 'AGT', 'GUARDA' => 'GCM', 'POLICIA' => 'POL'];
 
+    /** @param \Closure(): AddressLocator $locator criado só quando um cadastro chega sem o ponto do mapa */
     public function __construct(
         private readonly Database $db,
         private readonly AgentRepository $agents,
@@ -32,6 +39,7 @@ final class AgentService
         private readonly History $history,
         private readonly AlertService $alerts,
         private readonly Clock $clock,
+        private readonly \Closure $locator,
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -40,6 +48,7 @@ final class AgentService
         $input = new Input($data);
         $status = AgentStatus::tryFrom((string) $input->choice('status', array_map(static fn($s) => $s->value, AgentStatus::cases())));
         $values = $this->validate($input);
+        $values['region_id'] = $this->regionAt((float) $values['base_lat'], (float) $values['base_lng']);
         $now = Time::toDb($this->clock->now());
 
         return $this->db->transaction(function () use ($values, $status, $now, $actorId, $source): int {
@@ -72,13 +81,14 @@ final class AgentService
         if ($current['archived_at'] !== null) {
             throw new RuleViolation('Agente arquivado não pode ser editado.');
         }
+        $values += $this->derivedOnUpdate($current, $values);
         $this->db->transaction(function () use ($id, $version, $values, $current, $actorId): void {
             if (!$this->agents->updateVersioned($id, (int) $version, $values + ['updated_at' => Time::toDb($this->clock->now())])) {
                 throw new ConcurrencyConflict('Outra pessoa alterou este agente depois que você abriu o formulário. Recarregue para ver a versão atual.');
             }
             $changes = History::diff(array_intersect_key($current, array_flip(self::TRACKED)), $values);
             if ($changes !== []) {
-                $this->history->record('AGENTE', $id, 'ALTERACAO', $actorId, 'Cadastro alterado: ' . implode(', ', array_keys($changes)) . '.', ['alteracoes' => $changes]);
+                $this->history->record('AGENTE', $id, 'ALTERACAO', $actorId, self::changeSummary(array_keys($changes)), ['alteracoes' => $changes]);
             }
         });
     }
@@ -121,7 +131,25 @@ final class AgentService
         });
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * "Cadastro alterado: rua, CEP, ponto no mapa." Também refaz o texto de alterações antigas, gravadas com o nome
+     * técnico dos campos ("base_street, region_id"), a partir das chaves guardadas no evento.
+     *
+     * @param list<string> $fields
+     */
+    public static function changeSummary(array $fields): string
+    {
+        return 'Cadastro alterado: ' . implode(', ', array_unique(array_map(static fn(string $f): string => self::LABELS[$f] ?? $f, $fields))) . '.';
+    }
+
+    /**
+     * O que o formulário traz: nome, função, órgão, nome da base e o ponto (obrigatórios), CEP e rua (opcionais). O
+     * ponto vem do mapa ou, sem ele, do endereço (resolvePoint); a rua chega preenchida pela consulta do CEP ou digitada
+     * quando a consulta não a dá; o bairro é derivado do ponto e o antigo "número ou referência" não é mais digitado.
+     * Campos não lidos são ignorados.
+     *
+     * @return array<string, mixed>
+     */
     private function validate(Input $input): array
     {
         $values = [
@@ -130,20 +158,80 @@ final class AgentService
             'agency_id' => $input->int('agency_id', 1, PHP_INT_MAX),
             'base_name' => $input->text('base_name', 80),
             'base_street' => $input->text('base_street', 120, false),
-            'base_ref' => $input->text('base_ref', 160, false),
             'base_cep' => $input->cep('base_cep'),
-            'region_id' => $input->int('region_id', 1, PHP_INT_MAX, false),
-            'base_lat' => $input->coordinate('base_lat', 'lat'),
-            'base_lng' => $input->coordinate('base_lng', 'lng'),
+            'base_lat' => $input->coordinate('base_lat', 'lat', false),
+            'base_lng' => $input->coordinate('base_lng', 'lng', false),
         ];
         if ($values['agency_id'] !== null && !$this->references->agencyExists($values['agency_id'])) {
             $input->fail('agency_id', 'Órgão inexistente.');
         }
-        if ($values['region_id'] !== null && !$this->references->regionExists($values['region_id'])) {
-            $input->fail('region_id', 'Bairro inexistente.');
-        }
+        $this->resolvePoint($input, $values);
         $input->assertValid();
 
         return $values;
+    }
+
+    /**
+     * Ponto da base: o do mapa (latitude e longitude vêm da tela, nunca digitadas) ou, sem mapa, o do endereço: a rua
+     * informada ou a do CEP, localizada pelo provedor (ADR-0021). A consulta externa só acontece com o resto do
+     * formulário válido e fora da transação; a rua achada pelo CEP passa a ser a rua gravada.
+     *
+     * @param array<string, mixed> $values
+     */
+    private function resolvePoint(Input $input, array &$values): void
+    {
+        $errors = $input->errors();
+        if (isset($errors['base_lat']) || isset($errors['base_lng']) || ($values['base_lat'] !== null && $values['base_lng'] !== null)) {
+            return;
+        }
+        if ($values['base_lat'] !== null || $values['base_lng'] !== null || ($values['base_street'] === null && $values['base_cep'] === null)) {
+            $input->fail('base_lat', 'Marque a base no mapa ou, sem o mapa, informe o CEP e a rua.');
+
+            return;
+        }
+        if ($errors !== []) {
+            return;
+        }
+        $found = ($this->locator)()->locate($values['base_street'], $values['base_cep']);
+        if ($found['situacao'] !== 'ENCONTRADO') {
+            $input->fail($found['situacao'] === 'INDISPONIVEL' ? 'base_lat' : 'base_street', AddressLocator::MESSAGES[$found['situacao']]);
+
+            return;
+        }
+        $values['base_lat'] = $found['lat'];
+        $values['base_lng'] = $found['lng'];
+        $values['base_street'] = $found['rua'];
+    }
+
+    /**
+     * Na edição, o bairro acompanha o ponto: é recalculado quando o ponto muda (ou se ainda não havia bairro); fora
+     * isso, fica o gravado, inclusive o escolhido à mão em cadastros antigos. O antigo "número ou referência"
+     * descrevia o endereço digitado: continua na ficha até o ponto ou a rua mudarem.
+     *
+     * @param array<string, mixed> $current
+     * @param array<string, mixed> $values
+     * @return array<string, mixed>
+     */
+    private function derivedOnUpdate(array $current, array $values): array
+    {
+        $moved = number_format((float) $current['base_lat'], 6, '.', '') !== $values['base_lat']
+            || number_format((float) $current['base_lng'], 6, '.', '') !== $values['base_lng'];
+        $derived = [];
+        if ($moved || $current['region_id'] === null) {
+            $derived['region_id'] = $this->regionAt((float) $values['base_lat'], (float) $values['base_lng']);
+        }
+        if ($current['base_ref'] !== null && ($moved || (string) $current['base_street'] !== (string) $values['base_street'])) {
+            $derived['base_ref'] = null;
+        }
+
+        return $derived;
+    }
+
+    /** Bairro de referência de centro mais próximo do ponto, a mesma régua do Planejar (ADR-0021). */
+    private function regionAt(float $lat, float $lng): ?int
+    {
+        $region = NearestRegion::of($lat, $lng, $this->references->regions());
+
+        return $region === null ? null : (int) $region['id'];
     }
 }

@@ -11,6 +11,7 @@ import { adoptServerFlashes } from './lib/toasts.js';
 import { initForms } from './lib/forms.js';
 import { initPopovers } from './lib/popovers.js';
 import { initPicker } from './lib/picker.js';
+import { initCep } from './lib/cep.js';
 import { nav } from './lib/shell.js';
 
 gsap.registerPlugin(Flip);
@@ -35,5 +36,6 @@ if (page === 'central') {
 initForms();
 initPopovers();
 initPicker();
+initCep();
 Alpine.start();
 adoptServerFlashes();

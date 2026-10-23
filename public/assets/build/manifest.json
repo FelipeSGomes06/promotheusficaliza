@@ -26,7 +26,7 @@
     "src": "node_modules/@fontsource-variable/overpass/files/overpass-latin-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "styles-BDIIbNlu.css",
+    "file": "styles-CNj3rGDz.css",
     "name": "styles",
     "names": [
       "styles.css"
@@ -39,13 +39,14 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "app-BQR4hUF2.js",
+    "file": "app-CzMVEiiW.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
       "_motion-C-xOv77E.js",
-      "_toasts-D4gM5MFY.js"
+      "_toasts-D4gM5MFY.js",
+      "_reveal-WmjY3iN_.js"
     ],
     "dynamicImports": [
       "resources/js/pages/central.js",

@@ -10,12 +10,28 @@ use Fiscaliza\Domain\EquipmentStatus;
 use Fiscaliza\Domain\Freshness;
 use Fiscaliza\Domain\Indicators;
 use Fiscaliza\Domain\MaintenanceUrgency;
+use Fiscaliza\Domain\NearestRegion;
 use Fiscaliza\Domain\Time;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class DomainRulesTest extends TestCase
 {
+    /** Mesma régua do "perto de …" do Planejar: centro mais próximo; sem bairro cadastrado, nenhum. */
+    public function testNearestRegionIsTheClosestCenter(): void
+    {
+        $regions = [
+            ['id' => 1, 'name' => 'Centro', 'center_lat' => '-22.214000', 'center_lng' => '-49.950500'],
+            ['id' => 2, 'name' => 'Fragata', 'center_lat' => '-22.226000', 'center_lng' => '-49.930000'],
+            ['id' => 3, 'name' => 'Palmital', 'center_lat' => '-22.200000', 'center_lng' => '-49.970000'],
+        ];
+
+        self::assertSame('Fragata', NearestRegion::of(-22.2250, -49.9330, $regions)['name'] ?? null);
+        self::assertSame('Centro', NearestRegion::of(-22.2139, -49.9458, $regions)['name'] ?? null);
+        self::assertSame(['Palmital', 'Centro', 'Fragata'], array_column(NearestRegion::sorted(-22.2010, -49.9690, $regions), 'name'));
+        self::assertNull(NearestRegion::of(-22.2139, -49.9458, []));
+    }
+
     public function testAvailabilityExcludesNotInstalledAndDeactivatedFromDenominator(): void
     {
         $rows = [

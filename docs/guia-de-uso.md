@@ -131,7 +131,13 @@ e decidir caso a caso.
 
 Agentes são equipes fictícias mostradas no mapa — **não** são contas de acesso.
 
-- **Base de trabalho:** endereço fixo cadastrado (obrigatório, com coordenadas). Não indica onde o agente está agora.
+- **Base de trabalho:** ponto fixo (obrigatório). **Clique no mapa para marcar ou mudar a base** (pelo teclado: setas
+  para mover o mapa e Enter para marcar o centro). Latitude e longitude aparecem logo abaixo e nunca são digitadas.
+  Não achou o lugar no mapa? Digite o CEP: a rua aparece sozinha ("Rua: …") e, se ainda não houver ponto, a base vai
+  para o endereço (ponto aproximado, no meio da rua; um clique no mapa ajusta). "Levar a base até este endereço" faz o
+  mesmo a qualquer momento. Se o CEP não trouxer a rua (CEP não encontrado, geral da cidade ou consulta fora do ar),
+  aparece o campo "Rua" para digitar. Sem o mapa (JavaScript desligado), informe o CEP e a rua: a base vai para o
+  endereço ao salvar. O bairro vem do ponto. A base não indica onde o agente está agora.
 - **Última posição recebida:** vem do rádio simulado, com data e hora; só é mostrada no mapa enquanto o agente está
   em turno. Sem posição recente, o mapa mostra a base com "B".
 - Situação muda na ficha (**Mudar situação**). Cadastro em duas etapas: quem é e base de trabalho.

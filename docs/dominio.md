@@ -111,7 +111,8 @@ Calculados em [`Indicators`](../src/Domain/Indicators.php) sobre o conjunto filt
 
 **Escopo dos filtros.** Equipamentos entram se o filtro de tipo (quando houver) tiver algum tipo de equipamento e o
 de situação (quando houver) alguma situação de equipamento; o mesmo vale para agentes. Ex.: filtrar "Radar" exclui
-agentes, e "Agentes ativos" mostra 0 com aviso. Bairro do agente = bairro da base. Disponibilidade **histórica** não é
+agentes, e "Agentes ativos" mostra 0 com aviso. Bairro do agente = bairro da base, derivado do ponto marcado (centro de bairro mais próximo;
+[ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)). Disponibilidade **histórica** não é
 oferecida: exigiria durações de estado com tratamento de lacunas, fora do escopo.
 
 ## Dados de demonstração
