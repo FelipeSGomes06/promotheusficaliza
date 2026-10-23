@@ -41,7 +41,7 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
         const found = POINTS[rua];
         await sleep(300);
         await r.fulfill({ status: found ? 200 : 404, contentType: 'application/json; charset=utf-8', body: JSON.stringify(found
-          ? { situacao: 'ENCONTRADO', ...found, rua, mensagem: 'Base posta no endereço (ponto aproximado, no meio da rua). Confira no mapa; para ajustar, clique no ponto certo.' }
+          ? { situacao: 'ENCONTRADO', ...found, rua, caixa: [Number(found.lat) - 0.0015, Number(found.lat) + 0.0015, Number(found.lng) - 0.0015, Number(found.lng) + 0.0015], mensagem: 'Base posta no endereço (ponto aproximado, no meio da rua). Confira no mapa; para ajustar, clique no ponto certo.' }
           : { situacao: 'NAO_ENCONTRADO', lat: null, lng: null, rua: '', mensagem: 'Não achamos esta rua em Marília. Confira a rua e o CEP ou marque a base no mapa.' }) });
       });
     }
@@ -90,9 +90,17 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
       const clicked = await n.inputValue('#f-base_lat');
       await n.click('[data-locate]'); await n.waitForFunction(() => document.getElementById('f-base_lat').value === '-22.213900', null, { timeout: 5000 }).catch(() => {});
       check('clique_ajusta_e_botao_volta_ao_endereco', box !== null && clicked !== '-22.213900' && (await n.inputValue('#f-base_lat')) === '-22.213900', { clicked });
+      // Ponto marcado longe e depois o endereço: a base vai para o endereço; mexer no número com o ponto já dentro, fica.
+      await n.mouse.click(b2.x + b2.width * 0.9, b2.y + b2.height * 0.1); await sleep(200);
+      await n.fill('#f-base_cep', ''); await n.fill('#f-base_street', ''); await n.locator('#f-base_cep').pressSequentially('17509000', { delay: 20 });
+      await n.waitForFunction(() => document.getElementById('f-base_lat').value === '-22.226000', null, { timeout: 5000 }).catch(() => {});
+      check('ponto_fora_do_endereco_vai_para_o_endereco', (await n.inputValue('#f-base_lat')) === '-22.226000' && /estava fora deste endereço/.test(await n.locator('[data-locate-status]').innerText()), await n.locator('[data-locate-status]').innerText());
+      await n.fill('#f-base_ref', '45'); await n.locator('#f-base_ref').blur(); await n.waitForFunction(() => /já fica neste endereço/.test(document.querySelector('[data-locate-status]').textContent), null, { timeout: 5000 }).catch(() => {});
+      check('ponto_dentro_do_endereco_fica', (await n.inputValue('#f-base_lat')) === '-22.226000' && /já fica neste endereço/.test(await n.locator('[data-locate-status]').innerText()), await n.locator('[data-locate-status]').innerText());
+      await n.fill('#f-base_ref', '');
       await n.fill('#f-base_cep', ''); await n.locator('#f-base_cep').pressSequentially('17500000', { delay: 20 }); await waitStatus(n, 'CEP geral');
       await n.fill('#f-base_street', 'Rua Inexistente'); await n.click('[data-locate]'); await n.waitForSelector('[data-locate-status].is-note', { timeout: 5000 }).catch(() => {});
-      check('rua_nao_achada_explica', /Não achamos esta rua/.test(await n.locator('[data-locate-status]').innerText()) && (await n.inputValue('#f-base_lat')) === '-22.213900');
+      check('rua_nao_achada_explica', /Não achamos esta rua/.test(await n.locator('[data-locate-status]').innerText()) && (await n.inputValue('#f-base_lat')) === '-22.226000', 'o ponto anterior fica');
       await n.close(); }
 
     // Clique marca; outro clique muda o ponto (latitude e longitude acompanham).
@@ -143,7 +151,7 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
     check('edicao_mudar_cep_refaz_consulta', report.consultas.slice(before).includes('17509000') && (await p.inputValue('#f-base_street')) === 'Rua Paraíba');
     await Promise.all([p.waitForNavigation(), p.click('button[type=submit]:has-text("Salvar alterações")')]);
     const history = await p.locator('.timeline').innerText();
-    check('historico_com_rotulos', /Cadastro alterado: rua, CEP\./.test(history) && !/base_/.test(history), history.split('\n').slice(0, 4));
+    check('historico_com_rotulos', /Cadastro alterado: rua, CEP/.test(history) && !/base_/.test(history), history.split('\n').slice(0, 4));
     await ctx.close();
   }
 

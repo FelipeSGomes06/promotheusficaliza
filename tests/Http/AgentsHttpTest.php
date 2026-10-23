@@ -128,7 +128,8 @@ final class AgentsHttpTest extends FirebirdTestCase
 
         $byCep = $this->request('GET', '/api/localizar?cep=17501-000');
         self::assertSame(200, $byCep->getStatusCode());
-        self::assertSame(['situacao' => 'ENCONTRADO', 'lat' => '-22.213900', 'lng' => '-49.945800', 'rua' => 'Avenida Sampaio Vidal'], array_diff_key(self::json($byCep), ['mensagem' => 1]));
+        self::assertSame(['situacao' => 'ENCONTRADO', 'lat' => '-22.213900', 'lng' => '-49.945800', 'rua' => 'Avenida Sampaio Vidal'], array_diff_key(self::json($byCep), ['mensagem' => 1, 'caixa' => 1]));
+        self::assertCount(4, self::json($byCep)['caixa'], 'área do endereço: sul, norte, oeste, leste');
         self::assertSame('ENCONTRADO', self::json($this->request('GET', '/api/localizar?rua=Avenida%20Sampaio%20Vidal'))['situacao']);
         self::assertSame('SEM_RUA', self::json($this->request('GET', '/api/localizar?cep=17500000'))['situacao']);
         $missing = $this->request('GET', '/api/localizar?rua=Rua%20Inexistente');

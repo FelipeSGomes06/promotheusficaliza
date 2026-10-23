@@ -13,7 +13,7 @@ final class FakeGeocoder implements Geocoder
     /** @var list<string> ruas consultadas, na ordem */
     public array $calls = [];
 
-    /** @param array<string, array{lat: string, lng: string}> $points por rua; rua ausente = não achada */
+    /** @param array<string, array{lat: string, lng: string, box?: array{0: float, 1: float, 2: float, 3: float}}> $points por rua; rua ausente = não achada */
     public function __construct(private readonly array $points = [], public bool $down = false) {}
 
     public function locate(string $street): ?array

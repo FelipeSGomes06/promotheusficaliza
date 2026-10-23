@@ -134,7 +134,8 @@ Agentes são equipes fictícias mostradas no mapa — **não** são contas de ac
 - **Base de trabalho:** ponto fixo (obrigatório). **Clique no mapa para marcar ou mudar a base** (pelo teclado: setas
   para mover o mapa e Enter para marcar o centro). Latitude e longitude aparecem logo abaixo e nunca são digitadas.
   Não achou o lugar no mapa? Digite o CEP: a rua aparece sozinha ("Rua: …") e, se ainda não houver ponto, a base vai
-  para o endereço (ponto aproximado, no meio da rua; um clique no mapa ajusta). "Levar a base até este endereço" faz o
+  para o endereço (ponto aproximado; um clique no mapa ajusta). Se o ponto marcado estiver fora do endereço informado
+  (CEP, rua e número), ele vai para o endereço; se já estiver dentro, fica. "Levar a base até este endereço" faz o
   mesmo a qualquer momento. Se o CEP não trouxer a rua (CEP não encontrado, geral da cidade ou consulta fora do ar),
   aparece o campo "Rua" para digitar. Sem o mapa (JavaScript desligado), informe o CEP e a rua: a base vai para o
   endereço ao salvar. O bairro vem do ponto. A base não indica onde o agente está agora.

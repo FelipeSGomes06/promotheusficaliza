@@ -49,7 +49,7 @@ final class AddressController extends Controller
         $cep = $input->cep('cep');
         $number = $input->text('numero', 160, false);
         if ($input->errors() !== [] || ($street === null && $cep === null)) {
-            return $this->json($response, ['situacao' => 'INVALIDO', 'lat' => null, 'lng' => null, 'rua' => '', 'mensagem' => 'Informe a rua ou um CEP com 8 números.'], 422);
+            return $this->json($response, ['situacao' => 'INVALIDO', 'lat' => null, 'lng' => null, 'rua' => '', 'caixa' => null, 'mensagem' => 'Informe a rua ou um CEP com 8 números.'], 422);
         }
         $found = $this->services->addressLocator()->locate($street, $cep, $number);
         $status = ['ENCONTRADO' => 200, 'SEM_RUA' => 200, 'NAO_ENCONTRADO' => 404, 'INDISPONIVEL' => 503][$found['situacao']];
@@ -59,6 +59,7 @@ final class AddressController extends Controller
             'lat' => $found['lat'] ?? null,
             'lng' => $found['lng'] ?? null,
             'rua' => $found['rua'] ?? '',
+            'caixa' => $found['caixa'] ?? null,
             'mensagem' => AddressLocator::MESSAGES[$found['situacao']],
         ], $status);
     }
