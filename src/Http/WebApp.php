@@ -7,6 +7,7 @@ namespace Fiscaliza\Http;
 use Fiscaliza\Application\NotFound;
 use Fiscaliza\Domain\RuleViolation;
 use Fiscaliza\Domain\ValidationFailed;
+use Fiscaliza\Http\Controller\AddressController;
 use Fiscaliza\Http\Controller\AgentController;
 use Fiscaliza\Http\Controller\AuthController;
 use Fiscaliza\Http\Controller\CentralController;
@@ -56,6 +57,7 @@ final class WebApp
         $pages = new PageController($services, $view);
         $planning = new PlanningController($services, $view);
         $fines = new FineController($services, $view);
+        $address = new AddressController($services, $view);
         $operator = new RequireRole('OPERADOR', $base);
         $admin = new RequireRole('ADMIN', $base);
         $id = '{id:[0-9]+}';
@@ -67,9 +69,11 @@ final class WebApp
         $app->get('/saude', [$pages, 'health']);
 
         // Consulta: exige conta cadastrada pelo administrador (não há leitura pública nem cadastro aberto).
-        $app->group('', function (RouteCollectorProxy $g) use ($central, $equipment, $agents, $ops, $pages, $planning, $fines, $id): void {
+        $app->group('', function (RouteCollectorProxy $g) use ($central, $equipment, $agents, $ops, $pages, $planning, $fines, $address, $id): void {
             $g->get('/', [$central, 'page']);
             $g->get('/api/central', [$central, 'snapshot']);
+            $g->get('/api/cep/{cep}', [$address, 'cep']);
+            $g->get('/api/localizar', [$address, 'locate']);
             $g->get('/equipamentos', [$equipment, 'index']);
             $g->get("/equipamentos/{$id}", [$equipment, 'show']);
             $g->get('/agentes', [$agents, 'index']);

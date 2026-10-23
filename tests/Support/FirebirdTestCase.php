@@ -99,10 +99,10 @@ abstract class FirebirdTestCase extends TestCase
         return new Database($c->require('DB_TEST_DSN'), $c->require('DB_MIGRATION_USER'), $c->require('DB_MIGRATION_PASSWORD'), 10);
     }
 
-    /** Nova conexão com a identidade da aplicação (para simular duas sessões concorrentes). */
+    /** Nova conexão com a identidade da aplicação (para simular duas sessões concorrentes). CEP e localização falsos: nunca a rede. */
     protected function newServices(): Services
     {
-        return new Services(self::config(), self::ROOT, null, $this->clock);
+        return (new Services(self::config(), self::ROOT, null, $this->clock))->withCepLookup(new FakeCepLookup())->withGeocoder(new FakeGeocoder());
     }
 
     /** @param array<string, mixed> $override */
@@ -127,7 +127,7 @@ abstract class FirebirdTestCase extends TestCase
     {
         return $this->services->agents()->create($override + [
             'call_sign' => 'Hermes 99', 'role' => 'TRANSITO', 'agency_id' => (string) $this->agencyId, 'status' => 'EM_ATIVIDADE',
-            'base_name' => 'Base de teste', 'base_lat' => '-22.2165', 'base_lng' => '-49.9490', 'region_id' => (string) $this->regionId,
+            'base_name' => 'Base de teste', 'base_lat' => '-22.2165', 'base_lng' => '-49.9490',
         ], null);
     }
 

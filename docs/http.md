@@ -10,6 +10,8 @@ se presente, `Origin` igual a `APP_ORIGIN` (ou à origem da requisição).
 |---|---|---|---|
 | GET | `/` | conta | Visão geral (HTML renderizado no servidor + JSON inicial embutido). Query: os mesmos filtros da API, mais `visao=lista` e `selecionar=EQUIPAMENTO:<id>` ou `AGENTE:<id>` (abre a ficha resumida). |
 | GET | `/api/central` | conta | Instantâneo JSON (ver abaixo). `Cache-Control: no-store`. Sem conta: 401 `{"error", "reference"}`, sem dados. |
+| GET | `/api/cep/{cep}` | conta | Rua pelo CEP para o cadastro de agente ([contrato](#consulta-de-cep-get-apicepcep)). Sem conta: 401, sem chamada externa. |
+| GET | `/api/localizar?rua=&cep=` | conta | Ponto da base pela rua (ou pela rua do CEP), para quem não consegue marcar no mapa ([contrato](#ponto-pelo-endereço-get-apilocalizar)). Sem conta: 401. |
 | GET | `/equipamentos` | conta | Lista paginada (20). Query: `q`, `categoria[]`, `situacao[]`, `bairro[]`, `orgao[]`, `ordem` ∈ {codigo, tipo, situacao, bairro, atualizado}, `arquivados=1`, `pagina`. |
 | GET | `/equipamentos/{id}` | conta | Ficha: o que é, onde está, situação e atualidade, próxima ação, manutenção, alertas, revisão recomendada, histórico. |
 | GET | `/equipamentos/novo` · `/equipamentos/{id}/editar` | operador | Formulários. Visitante → `302 /entrar?voltar=…`. Arquivado → 409. |
@@ -84,6 +86,24 @@ a digitação, mostra "salvo agora" × "sua versão" por campo e passa a carrega
 própria versão). Posição, sinal e situação **não** causam conflito. Se o equipamento foi arquivado no meio da edição,
 redireciona à ficha com aviso.
 
+### Agente — `POST /agentes` e `POST /agentes/{id}`
+
+| Campo | Regra |
+|---|---|
+| `call_sign` | obrigatório, até 40 (fictício). |
+| `role` | obrigatório: `TRANSITO`, `GUARDA`, `POLICIA`. |
+| `agency_id` | obrigatório; órgão existente. |
+| `status` | só na criação (padrão `FORA_DE_SERVICO`). |
+| `base_name` | obrigatório, até 80. |
+| `base_lat`, `base_lng` | graus decimais (vírgula aceita) dentro da área de Marília. Na tela, nunca digitados (somente leitura): vêm do mapa. **Sem eles**, o servidor localiza a base pela `base_street` ou, sem ela, pela rua do `base_cep` (só com o resto válido); sem ponto e sem endereço → 422 em `base_lat`; rua não achada ou CEP sem rua → 422 em `base_street`; provedor fora do ar → 422 em `base_lat`, com o que foi digitado mantido. |
+| `base_cep` | opcional; `00000-000` (aceita sem hífen). |
+| `base_street` | opcional, até 120: a rua que a consulta do CEP preencheu ou a digitada quando ela não trouxe rua. |
+| `version` | só na edição. |
+
+`region_id` e `base_ref` enviados são ignorados ([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)): o
+bairro é o de centro mais próximo do ponto (na edição, só é recalculado se o ponto mudar ou se não houver bairro) e o
+antigo "número ou referência" sai quando o ponto ou a rua mudam. Respostas como no equipamento (303, 422, 409).
+
 ### Situação, arquivamento e simulação
 
 | Rota | Campos | Regras e efeito |
@@ -136,6 +156,40 @@ Nada consulta órgão, emite auto, cobra ou protocola.
 | `POST /multas/{id}/conferencias` | `scope` (`OCORRENCIA`/`POSTERIOR`), `effective_on` (posterior: entre a ocorrência e hoje), `checked_at` (não futuro, não antes da data de referência), `document_status`, `source_type`, `source_reference` (≤240; obrigatória se houver resultado), `crlv_exercise`, `pending_items` (≤500; obrigatória para pendência), `review_on`, `check_reason` (≤300; obrigatório para "Não verificada") | Acrescenta a constatação (imutável) e recalcula a situação na ocorrência. |
 | `POST /multas/{id}/andamento` | `process_stage`, `payment_status`, `contest_status`, `contest_kind`, `nominal_amount`/`paid_amount` (reais: `1.234,56`), datas de expedição/recebimento/vencimento/prazos, `paid_on`, `payment_reference`, `contest_submitted_on`, `contest_reference`, `contest_decided_on`, `contest_result_note`, `closed_on`, `closure_reference`, `closure_note`, `progress_reason` | Três dimensões independentes; condicionais (pagamento informado, contestação, encerramento) exigem data e referência; datas de fatos não futuras nem antes da ocorrência; recebimento antes da expedição ou resultado antes do protocolo → 422; corrigir pagamento/resultado/encerramento já informados exige `progress_reason`. Sequências incomuns → aviso. |
 | `POST /multas/{id}/cancelar` | `reason` (1–300) | Cancelamento interno: o registro fica somente leitura; não é anulação do auto. |
+
+## Consulta de CEP (`GET /api/cep/{cep}`)
+
+`{cep}` com 8 dígitos (com ou sem hífen), validado **antes** de qualquer chamada ao provedor
+([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)). Toda resposta é JSON com as mesmas chaves —
+`cep` (normalizado, `00000-000`), `situacao`, `rua`, `bairro`, `mensagem` (pronta para a tela) — e
+`Cache-Control: no-store`. Detalhes do provedor nunca aparecem; o motivo de uma falha vai só para o log privado.
+
+| `situacao` | HTTP | `rua` | Quando |
+|---|---|---|---|
+| `ENCONTRADO` | 200 | a rua | CEP de Marília/SP com logradouro. |
+| `SEM_RUA` | 200 | vazia | CEP geral da cidade (sem logradouro). |
+| `OUTRA_CIDADE` | 200 | vazia | CEP existe, mas não é de Marília/SP (a mensagem cita a cidade). |
+| `NAO_ENCONTRADO` | 404 | vazia | O provedor diz que o CEP não existe. |
+| `INVALIDO` | 422 | vazia | Formato inválido; nenhuma chamada externa. |
+| `INDISPONIVEL` | 503 | vazia | Provedor fora do ar, sem rede, tempo esgotado (3 s) ou resposta fora do formato. |
+
+Em tudo que não é `ENCONTRADO`, a tela mostra a mensagem e o campo "Rua" para digitar; o envio do formulário não
+depende desta rota.
+
+## Ponto pelo endereço (`GET /api/localizar`)
+
+Query: `rua` (até 120) e/ou `cep` (8 dígitos). Sem nenhum dos dois, ou com algum inválido → 422 `INVALIDO`, sem
+chamada externa. Usa a rua informada ou, sem ela, a rua do CEP (ViaCEP); depois o Nominatim, preso ao retângulo de
+Marília ([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)). Resposta JSON com `situacao`, `lat`, `lng`
+(texto com 6 casas, ou `null`), `rua` e `mensagem`; `Cache-Control: no-store`.
+
+| `situacao` | HTTP | Quando |
+|---|---|---|
+| `ENCONTRADO` | 200 | Ponto aproximado da rua (meio da rua). |
+| `SEM_RUA` | 200 | Só CEP, e ele não indica rua de Marília (geral, de outra cidade ou inexistente). |
+| `NAO_ENCONTRADO` | 404 | A rua não foi achada dentro da área atendida. |
+| `INVALIDO` | 422 | Nada informado ou formato inválido. |
+| `INDISPONIVEL` | 503 | Provedor fora do ar, sem rede, tempo esgotado (3 s) ou resposta fora do formato. |
 
 ## Contrato de `GET /api/central`
 

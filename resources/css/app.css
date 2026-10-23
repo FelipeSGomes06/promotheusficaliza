@@ -392,6 +392,30 @@
   .advanced > summary, .disclosure > summary { cursor: pointer; font-weight: 650; color: var(--color-brand-700); min-height: 36px; display: flex; align-items: center; gap: 6px; }
   .picker { height: 300px; border-radius: var(--radius-md); border: 1px solid var(--color-line-strong); overflow: hidden; }
   .picker-status { font-size: 0.9rem; color: var(--color-muted); margin-top: 8px; }
+  /* Base do agente: instrução do mapa, CEP → rua (cep.js) e campo "Rua" quando a consulta não dá a rua. */
+  .picker-howto { display: flex; align-items: flex-start; gap: 8px; margin: 18px 0 10px; }
+  .picker-howto .icon { flex: none; width: 20px; height: 20px; margin-top: 0.1em; color: var(--color-brand-600); }
+  .base-coords input[readonly] { background: var(--color-sunken); border-color: var(--color-line-strong); cursor: default; font-variant-numeric: tabular-nums; }
+  .base-coords input[readonly]:hover { border-color: var(--color-line-strong); }
+  /* Pelo teclado (Enter marca o centro do mapa): mira no centro enquanto o mapa tem foco. */
+  .picker[data-mark-center]:focus-visible::after { content: ""; position: absolute; left: 50%; top: 50%; z-index: 450; width: 22px; height: 22px; margin: -11px 0 0 -11px; border: 2px solid var(--color-brand-600); border-radius: 50%; box-shadow: 0 0 0 2px #fff; pointer-events: none; }
+  .form-step > [data-without-map] { margin: 10px 0 14px; }
+  .base-point-notes { display: grid; gap: 2px; margin-top: 8px; }
+  .base-point-notes .hint { margin: 0; }
+  .base-address { margin-top: 18px; }
+  .base-address__city { min-height: 44px; display: flex; align-items: center; }
+  @media (min-width: 681px) { .base-address__city { margin-top: auto; } .base-address > .field:first-of-type { align-content: space-between; } }
+  .base-address__intro { margin: 0; }
+  .cep-street__locate { display: grid; gap: 8px; justify-items: start; }
+  .cep-street__locate-status { margin: 0; overflow-wrap: anywhere; }
+  .cep-street__locate-status:empty { display: none; }
+  .cep-street__locate-status.is-note { padding: 10px 12px; border-radius: var(--radius-md); background: var(--color-warn-soft); border-left: 4px solid var(--color-warn); }
+  .cep-street__locate-status .spinner { display: inline-block; vertical-align: -0.15em; margin-right: 8px; color: var(--color-brand-600); }
+  .cep-street { display: grid; gap: 10px; }
+  .cep-street__status { margin: 0; overflow-wrap: anywhere; }
+  .cep-street__status:empty { display: none; }
+  .cep-street__status.is-note { padding: 10px 12px; border-radius: var(--radius-md); background: var(--color-warn-soft); border-left: 4px solid var(--color-warn); color: var(--color-ink); }
+  .cep-street__status .spinner { display: inline-block; vertical-align: -0.15em; margin-right: 8px; color: var(--color-brand-600); }
   .spec-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
   .error-summary { padding: 14px 16px; border-radius: var(--radius-lg); background: var(--color-fail-soft); border: 1px solid #f2b8b1; border-left: 5px solid var(--color-fail); margin-bottom: 16px; }
   .error-summary h2 { font-size: 1rem; margin-bottom: 6px; }

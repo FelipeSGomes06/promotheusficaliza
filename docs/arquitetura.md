@@ -57,6 +57,7 @@ estavam arquivados; ajusta o limiar numa janela, avalia em outra e grava a execu
 | `AlertRules.php` | Condições que mantêm alertas abertos (furto, falha, sem comunicação, manutenção imediata/vencida, agente sem posição). | `DomainRulesTest`, `OperationsTest` |
 | `AttentionModel.php` | Índice heurístico de atenção preventiva e métricas de avaliação. | `AttentionModelTest` |
 | `FineRules.php`, `FineDocumentStatus.php` | Multas: vocabulário, código interno × AIT, placa (formato), campos mínimos para registrar, coerência das velocidades, motivos de "A conferir", avisos de andamento; seleção da conferência que vale (escopo, versão do sujeito, instante). | `FineRulesTest`, `FinesTest` |
+| `NearestRegion.php` | Bairro de centro mais próximo de um ponto: "perto de …" do Planejar e bairro derivado da base do agente ([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)). | `DomainRulesTest`, `AgentBaseTest` |
 | `SectorForecast.php` | Setores e métodos do planejamento por setores, ordem com desempate, métricas do retrospecto (orçamento de 1 setor) e distância em linha reta ao retângulo. | `UrbanImportTest`, `PlanningTest` |
 | `Time.php`, `Clock.php` | Convenção UTC no banco / America/Sao_Paulo na tela; relógio injetável para testes e geração de histórico. | `DomainRulesTest` |
 | `ValidationFailed.php`, `RuleViolation.php` | Erros de campo (422) e de regra (409). | — |
@@ -68,7 +69,8 @@ estavam arquivados; ajusta o limiar numa janela, avalia em outra e grava a execu
 | `Input.php` | dados crus → valores normalizados + erros por campo | Lê só as chaves pedidas; CEP, coordenadas na área de Marília, datas, controle de tamanho. |
 | `Filters.php` | query string → filtros válidos | Descarta valores desconhecidos; decide se equipamentos/agentes entram no escopo. |
 | `EquipmentService.php` | formulário → id / alteração / transição / arquivamento | Traduz restrições do Firebird em erros de campo; histórico antes/depois; recusa mudar situação ou arquivar com intervenção em execução; cancela ordens agendadas no arquivamento só com confirmação; `pendingChanges` para a tela de conflito. |
-| `AgentService.php` | idem para agentes | Base ≠ posição observada. |
+| `AgentService.php` | idem para agentes | Base ≠ posição observada. Ponto do mapa ou, sem ele, do endereço; bairro derivado do ponto ([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)). |
+| `AddressLocator.php`, `CepLookup.php`, `Geocoder.php` | CEP → rua; rua (ou rua do CEP) → ponto | Interfaces pequenas para os provedores externos, injetadas em `Services`; falsos nos testes. |
 | `MaintenanceService.php` | abrir, iniciar, concluir, cancelar ordens | Uma intervenção em execução por equipamento (serviço + índice parcial); iniciar põe em manutenção; concluir exige situação resultante; preventiva periódica agenda a próxima. |
 | `EventIngestor.php` | observação (uid, instante) → APLICADO / HISTORICO / DUPLICADO | Duplicata por `EVENT_UID`; atrasado não regride; estado administrativo prevalece; posição só avança. |
 | `AlertService.php` | estado atual → alertas abertos/resolvidos | Idempotente; reconhecer ≠ resolver. |
@@ -82,12 +84,13 @@ estavam arquivados; ajusta o limiar numa janela, avalia em outra e grava a execu
 | `AuthService.php` | credenciais → conta | Argon2id; vaga de tentativa reservada antes do hashing (cota atômica por usuário/IP, [ADR-0011](adr/0011-cota-de-login-atomica.md)); contas só por CLI/admin. |
 | `History.php` | registro de eventos manuais/sistema | Também calcula diferença campo a campo. |
 
-### `src/Infrastructure` — Firebird
+### `src/Infrastructure` — Firebird e provedores externos
 
 | Arquivo | Finalidade |
 |---|---|
 | `Database.php` | Conexão PDO_FIREBIRD (UTF8, dialeto 3), `SET STATEMENT TIMEOUT`, transações (inclusive SNAPSHOT somente leitura), parâmetros posicionais, tradução de erros (`ConstraintViolation`, `ConcurrencyConflict`, `DatabaseUnavailable`) sem expor DSN/SQL. |
 | `Migrator.php` | Aplica `database/migrations/*.sql` uma vez (tabela `SCHEMA_MIGRATION`) com a identidade de migração e concede ao usuário da aplicação apenas DML (somente leitura+inserção nas tabelas de histórico). |
+| `ViaCepClient.php`, `NominatimGeocoder.php` | Únicas chamadas externas durante uma requisição web: curl só https, sem redirecionamento, 3 s; o Nominatim espaçado a 1 consulta/s ([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)). |
 | `Repository/*.php` | Todo o SQL: equipamentos, agentes, manutenção, eventos, alertas, contas, metadados, referência, análise, planejamento e multas (`FineRepository`: projeção, constatações e eventos). Colunas graváveis e ordenações vêm de listas fechadas. |
 
 ### `src/Http` — entrada web
@@ -100,7 +103,7 @@ estavam arquivados; ajusta o limiar numa janela, avalia em outra e grava a execu
 | `Middleware/CsrfGuard.php` | Token de sincronização em toda escrita + verificação de `Origin`. |
 | `Middleware/RequireRole.php` | Conta obrigatória em todas as rotas exceto login/logout/saúde ([ADR-0014](adr/0014-acesso-somente-com-conta-cadastrada.md)); OPERADOR/ADMIN no servidor; visitante vai ao login (GET) ou recebe 401; sessão com banco fora → 503. |
 | `Session.php`, `View.php`, `HttpError.php` | Sessão própria com Path restrito; Twig com escape automático e filtros de data/porcentagem. |
-| `Controller/*.php` | Central, equipamentos, agentes, operações (manutenção, alertas, análise), planejamento por setores, autenticação/contas, páginas. |
+| `Controller/*.php` | Central, equipamentos, agentes, endereço (`/api/cep`, `/api/localizar`), operações (manutenção, alertas, análise), planejamento por setores, autenticação/contas, páginas. |
 
 ### `src/Demo` e `src/Cli`
 

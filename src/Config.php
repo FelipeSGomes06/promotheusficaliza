@@ -110,4 +110,26 @@ final class Config
 
         return $path;
     }
+
+    /** Endereço base do provedor de CEP (ADR-0021), sem barra final; padrão: ViaCEP. Só https. */
+    public function cepLookupUrl(): string
+    {
+        return $this->httpsUrl('CEP_LOOKUP_URL', 'https://viacep.com.br/ws');
+    }
+
+    /** Endereço base do provedor de localização pelo endereço (ADR-0021), sem barra final; padrão: Nominatim. Só https. */
+    public function geocoderUrl(): string
+    {
+        return $this->httpsUrl('GEOCODER_URL', 'https://nominatim.openstreetmap.org');
+    }
+
+    private function httpsUrl(string $key, string $default): string
+    {
+        $url = rtrim($this->get($key) ?: $default, '/');
+        if (preg_match('#^https://[A-Za-z0-9.-]+(:\d{1,5})?(/[A-Za-z0-9._~-]+)*$#', $url) !== 1) {
+            throw new \RuntimeException("{$key} inválido (use https://servidor/caminho)");
+        }
+
+        return $url;
+    }
 }

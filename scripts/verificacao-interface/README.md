@@ -14,6 +14,7 @@ node scripts/verificacao-interface/record.cjs   /tmp/videos  # vídeos WebM das 
 node scripts/verificacao-interface/captures.cjs /tmp/fotos   # capturas JPEG 1440×900 e 390×844
 node scripts/verificacao-interface/fps.cjs                   # intervalos entre quadros durante as animações
 node scripts/verificacao-interface/multas.cjs  /tmp/multas  # aba Multas: capturas 1440/390/360 px + relatório (filtro, origem, 422, 409, sem JS, movimento reduzido)
+node scripts/verificacao-interface/agentes.cjs /tmp/agentes # cadastro de agente: base pelo mapa ou pelo endereço, rua pelo CEP (respostas simuladas + servidor real), sem JS, 390/360 px
 ```
 
 `verify.cjs` e `record.cjs` registram falhas simuladas e ciência de alertas: use só em banco de demonstração.

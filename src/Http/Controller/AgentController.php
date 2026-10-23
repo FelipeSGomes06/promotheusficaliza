@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fiscaliza\Http\Controller;
 
+use Fiscaliza\Application\AgentService;
 use Fiscaliza\Application\Filters;
 use Fiscaliza\Domain\AgentRole;
 use Fiscaliza\Domain\AgentStatus;
@@ -58,7 +59,7 @@ final class AgentController extends Controller
             'role' => AgentRole::from($agent['role']),
             'statuses' => AgentStatus::cases(),
             'freshness' => Freshness::of(Time::fromDb($agent['pos_observed_at']), $now, $status->isOnShift(), Freshness::POSITION_CURRENT, Freshness::POSITION_STALE),
-            'events' => $this->services->eventRepository()->forResource('AGENTE', $id),
+            'events' => array_map(self::readableChange(...), $this->services->eventRepository()->forResource('AGENTE', $id)),
             'alerts' => $this->services->alertRepository()->forResource('AGENTE', $id),
         ]);
     }
@@ -164,7 +165,24 @@ final class AgentController extends Controller
 
         return $this->render($request, $response, 'agents/form.twig', [
             'values' => $values, 'errors' => $errors, 'existing' => $existing, 'roles' => AgentRole::cases(), 'statuses' => AgentStatus::cases(),
-            'agencies' => $refs->agencies(), 'regions' => $refs->regions(),
+            'agencies' => $refs->agencies(),
         ], $status);
+    }
+
+    /**
+     * Alterações gravadas antes de 23/10/2026 listavam o nome técnico dos campos ("base_street, region_id"): a ficha
+     * mostra os rótulos, refeitos a partir das chaves guardadas no evento. O evento gravado não muda.
+     *
+     * @param array<string, mixed> $event
+     * @return array<string, mixed>
+     */
+    private static function readableChange(array $event): array
+    {
+        $changes = $event['payload']['alteracoes'] ?? null;
+        if ($event['event_type'] === 'ALTERACAO' && is_array($changes) && $changes !== [] && str_starts_with((string) $event['summary'], 'Cadastro alterado: ')) {
+            $event['summary'] = AgentService::changeSummary(array_map(strval(...), array_keys($changes)));
+        }
+
+        return $event;
     }
 }

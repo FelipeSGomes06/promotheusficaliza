@@ -21,6 +21,7 @@ medidas, console), **M** = conferência manual por comando. "Implementado" não 
 | INV-05 Manutenção imediata/periódica | Manutenção; ficha | T ciclo, preventiva periódica, uma intervenção por vez | — |
 | INV-06 Características por tipo | Etapa 3 do formulário; [ADR-0003](adr/0003-caracteristicas-por-tipo-em-json-validado.md) | T `InputAndSpecsTest`, `InventoryTest`; N erro de limite do radar | — |
 | INV-07 Agentes | Agentes; base × última posição | T `InventoryTest::testMobileResource…`, status do simulador sem conflito | — |
+| INV-07a Base do agente pelo mapa ou pelo endereço (coordenadas nunca digitadas); rua pelo CEP; bairro do ponto ([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)) | Cadastrar agente, etapa 2 | T `AgentBaseTest`, `CepLookupTest`, `AddressLocatorTest`; H `AgentsHttpTest` (entradas inválidas sem chamada externa, sem login, falha do provedor, cadastro sem mapa); N `agentes.cjs` | Chamadas reais ao ViaCEP e ao Nominatim não verificadas aqui (rede bloqueada) |
 | INV-08 Histórico e autoria | Histórico da ficha (tracejado explicado) | T eventos com autor; arquivamento preserva histórico | — |
 
 ## Parte 2 — central

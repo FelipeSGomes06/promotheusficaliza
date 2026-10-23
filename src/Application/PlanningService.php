@@ -9,6 +9,7 @@ use Fiscaliza\Domain\AgentRole;
 use Fiscaliza\Domain\AgentStatus;
 use Fiscaliza\Domain\Clock;
 use Fiscaliza\Domain\Freshness;
+use Fiscaliza\Domain\NearestRegion;
 use Fiscaliza\Domain\RuleViolation;
 use Fiscaliza\Domain\SectorForecast;
 use Fiscaliza\Domain\Time;
@@ -437,9 +438,7 @@ final class PlanningService
     {
         $lat = ($cell['south'] + $cell['north']) / 2;
         $lng = ($cell['west'] + $cell['east']) / 2;
-        $regions = $this->regions ??= $this->references->regions();
-        usort($regions, static fn(array $a, array $b): int => hypot((float) $a['center_lat'] - $lat, (float) $a['center_lng'] - $lng)
-            <=> hypot((float) $b['center_lat'] - $lat, (float) $b['center_lng'] - $lng));
+        $regions = NearestRegion::sorted($lat, $lng, $this->regions ??= $this->references->regions());
         $inside = array_filter($regions, static fn(array $r): bool => (float) $r['center_lat'] >= $cell['south'] && (float) $r['center_lat'] < $cell['north']
             && (float) $r['center_lng'] >= $cell['west'] && (float) $r['center_lng'] < $cell['east']);
 

@@ -47,7 +47,7 @@
   {% else %}
     <input id="{{ id }}" name="{{ opts.fieldName ?? name }}" type="{{ opts.type ?? 'text' }}" value="{{ values[name] ?? '' }}"
       {% if opts.max is defined %}maxlength="{{ opts.max }}"{% endif %} {% if opts.inputmode is defined %}inputmode="{{ opts.inputmode }}"{% endif %}
-      {% if opts.placeholder is defined %}placeholder="{{ opts.placeholder }}"{% endif %} {% if opts.required ?? false %}required{% endif %}
+      {% if opts.placeholder is defined %}placeholder="{{ opts.placeholder }}"{% endif %} {% if opts.required ?? false %}required{% endif %} {% if opts.readonly ?? false %}readonly{% endif %}
       {% if opts.autocomplete is defined %}autocomplete="{{ opts.autocomplete }}"{% endif %}
       {% if errors[name] is defined %}aria-invalid="true"{% endif %} {% if described|trim %}aria-describedby="{{ described|trim }}"{% endif %}>
   {% endif %}

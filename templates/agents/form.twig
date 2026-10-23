@@ -5,7 +5,7 @@
 {% block scripts %}<script src="{{ asset('vendor/leaflet/leaflet.js') }}" defer></script>{% endblock %}
 {% block content %}
 {% set v = values %}
-{% set labels = {call_sign: 'Nome de exibição', role: 'Função', agency_id: 'Órgão', status: 'Situação inicial', base_name: 'Nome da base', base_street: 'Logradouro', base_ref: 'Número ou referência', base_cep: 'CEP', region_id: 'Bairro', base_lat: 'Latitude da base', base_lng: 'Longitude da base'} %}
+{% set labels = {call_sign: 'Nome de exibição', role: 'Função', agency_id: 'Órgão', status: 'Situação inicial', base_name: 'Nome da base', base_lat: 'Ponto da base', base_lng: 'Ponto da base', base_cep: 'CEP', base_street: 'Rua'} %}
 <div class="page page--narrow">
   <p class="crumbs"><a href="{{ url('/agentes') }}">Agentes</a>{% if existing %} · <a href="{{ url('/agentes/' ~ existing.id) }}">{{ existing.call_sign }}</a>{% endif %}</p>
   <h1>{{ existing ? 'Editar ' ~ existing.call_sign : 'Cadastrar agente' }}</h1>
@@ -30,26 +30,37 @@
       </div>
     </fieldset>
     <fieldset class="form-step"><legend><span class="form-step__n" aria-hidden="true">2</span> Base de trabalho</legend>
-      <p class="hint">A base é o endereço fixo de trabalho. A posição atual não é digitada: vem das observações recebidas enquanto o agente está em turno.</p>
-      <div class="picker" id="picker" data-picker data-lat="f-base_lat" data-lng="f-base_lng" data-status="picker-status" data-tiles="{{ app.map.tiles }}" data-attribution="{{ app.map.attribution }}" role="application" aria-label="Mapa para marcar a base. Use também os campos de coordenadas em Opções avançadas."></div>
-      <p class="picker-status" id="picker-status" aria-live="polite"></p>
-      <div class="form-grid">
-        {{ ui.input('base_name', 'Nome da base', v, errors, {required: true, max: 80, placeholder: 'Ex.: Base Norte (fictícia)'}) }}
-        {{ ui.input('base_street', 'Logradouro', v, errors, {max: 120}) }}
-        {{ ui.input('base_ref', 'Número ou referência', v, errors, {max: 160}) }}
-        {{ ui.input('base_cep', 'CEP', v, errors, {max: 9, inputmode: 'numeric', placeholder: '17500-000'}) }}
-        <div class="field"><label for="f-region_id">Bairro <span class="optional">(opcional)</span></label>
-          <select id="f-region_id" name="region_id"><option value="">Sem bairro</option>{% for r in regions %}<option value="{{ r.id }}" {{ ((v.region_id ?? '') ~ '') == (r.id ~ '') ? 'selected' }}>{{ r.name }}</option>{% endfor %}</select>{{ ui.field_error(errors, 'region_id') }}</div>
-        <div class="field"><span class="label">Cidade</span><span>Marília / SP</span></div>
+      <p class="hint">A base é o ponto fixo de trabalho do agente. A posição atual não é digitada: vem das observações recebidas enquanto o agente está em turno.</p>
+      {{ ui.input('base_name', 'Nome da base', v, errors, {required: true, max: 80, placeholder: 'Ex.: Base Norte (fictícia)'}) }}
+      <p class="hint" data-without-map="picker">Sem o mapa (JavaScript desligado ou mapa que não carregou): informe o CEP e a rua abaixo e, ao salvar, a base vai para o endereço.</p>
+      <p class="picker-howto" id="picker-howto" hidden data-needs-map="picker">{{ ui.icon('i-pin') }}<span><strong>Clique no mapa para marcar ou mudar a base.</strong> Não achou o lugar no mapa? Use o CEP e a rua logo abaixo.</span></p>
+      <div class="picker" id="picker" hidden data-picker data-lat="f-base_lat" data-lng="f-base_lng" data-status="picker-status" data-empty="Clique no mapa para marcar a base." data-marked="Base marcada em {ponto}. Para mudar, clique em outro ponto." data-mark-center data-tiles="{{ app.map.tiles }}" data-attribution="{{ app.map.attribution }}" role="application" aria-label="Mapa para marcar a base: clique para marcar ou mudar o ponto. Pelo teclado, mova o mapa com as setas e tecle Enter para marcar o centro." aria-describedby="picker-howto"></div>
+      <p class="picker-status" id="picker-status" aria-live="polite" hidden data-needs-map="picker"></p>
+      <div class="form-grid base-coords">
+        {{ ui.input('base_lat', 'Latitude', v, errors, {required: true, readonly: true, max: 20}) }}
+        {{ ui.input('base_lng', 'Longitude', v, errors, {required: true, readonly: true, max: 20}) }}
       </div>
-      <details class="advanced" {{ errors.base_lat is defined or errors.base_lng is defined or not (v.base_lat ?? false) ? 'open' }}>
-        <summary>Coordenadas da base <span class="req" aria-hidden="true">*</span></summary>
-        <p class="hint">Obrigatórias para agentes: o mapa preenche estes campos (graus decimais, WGS84).</p>
-        <div class="form-grid">
-          {{ ui.input('base_lat', 'Latitude da base', v, errors, {required: true, max: 20, inputmode: 'decimal'}) }}
-          {{ ui.input('base_lng', 'Longitude da base', v, errors, {required: true, max: 20, inputmode: 'decimal'}) }}
+      <div class="base-point-notes">
+        <p class="hint">Não são digitadas: vêm do clique no mapa ou, sem o mapa, do CEP e da rua.</p>
+        <p class="hint">Bairro: {% if existing and existing.region_name %}<strong>{{ existing.region_name }}</strong> (muda sozinho se você mudar o ponto){% else %}definido pelo ponto, ao salvar{% endif %}.</p>
+      </div>
+      <div class="form-grid base-address">
+        <p class="hint span-2 base-address__intro">Se não marcar no mapa, a base vai para o endereço: informe o CEP e, se ele não trouxer a rua, a rua.</p>
+        <div class="field"><span class="label">Cidade</span><span class="base-address__city">Marília / SP</span></div>
+        {{ ui.input('base_cep', 'CEP', v, errors, {max: 9, inputmode: 'numeric', placeholder: '17500-000', autocomplete: 'off', help: 'Com o CEP, a rua é preenchida sozinha.'}) }}
+        <div class="cep-street span-2" data-cep-lookup data-cep="f-base_cep" data-street="f-base_street" data-url="{{ url('/api/cep/') }}"
+             data-locate-url="{{ url('/api/localizar') }}" data-lat="f-base_lat" data-lng="f-base_lng">
+          <p class="cep-street__status" data-cep-status aria-live="polite"></p>
+          <div data-cep-manual>
+            {{ ui.input('base_street', 'Rua', v, errors, {max: 120, placeholder: 'Ex.: Avenida Sampaio Vidal'}) }}
+          </div>
+          <div class="cep-street__locate" data-locate-box hidden>
+            <button type="button" class="btn btn--small" data-locate>{{ ui.icon('i-pin') }}Levar a base até este endereço</button>
+            <p class="cep-street__locate-status" data-locate-status aria-live="polite"></p>
+          </div>
         </div>
-      </details>
+      </div>
+      {% if existing and existing.base_ref %}<p class="hint">Número ou referência gravado antes: {{ existing.base_ref }}. Continua na ficha enquanto o ponto e a rua não mudarem.</p>{% endif %}
     </fieldset>
     <div class="form-actions">
       <a class="btn btn--quiet" href="{{ existing ? url('/agentes/' ~ existing.id) : url('/agentes') }}">Cancelar</a>
