@@ -4,7 +4,7 @@
     "name": "three.module"
   },
   "landing/src/cena3d.js": {
-    "file": "cena3d-QWzXLcr8.js",
+    "file": "cena3d-CiF40YDm.js",
     "name": "cena3d",
     "src": "landing/src/cena3d.js",
     "isDynamicEntry": true,
@@ -27,7 +27,7 @@
     ]
   },
   "landing/src/pagina.js": {
-    "file": "pagina-DfTJnI-5.js",
+    "file": "pagina-B7oNCl-l.js",
     "name": "pagina",
     "src": "landing/src/pagina.js",
     "isEntry": true,
@@ -37,7 +37,7 @@
     ]
   },
   "landing/src/planos3d.js": {
-    "file": "planos3d-B0jlw-3O.js",
+    "file": "planos3d-B-5z1bX7.js",
     "name": "planos3d",
     "src": "landing/src/planos3d.js",
     "isDynamicEntry": true,

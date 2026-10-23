@@ -36,7 +36,7 @@ const FAIXAS = [
 const CENARIO = { radar: 0, manutencao: -150, revisoes: -300 };
 const LIMITE = 40; // km/h da lombada
 // Pose de repouso de cada plano (movimento reduzido): o quadro mais legível do caminho.
-export const REPOUSO = { radar: 0.74, manutencao: 0.53, revisoes: 0.8 };
+export const REPOUSO = { radar: 0.74, manutencao: 0.53, revisoes: 0.3 };
 const PRIORIDADES = [
   { tipo: 'cancela', z: -289, valor: 32 }, { tipo: 'patinete', z: -296.5, valor: 27 },
   { tipo: 'lombada', z: -304, valor: 18 }, { tipo: 'camera', z: -311.5, valor: 9 },
@@ -928,6 +928,7 @@ export function criarMundo({ celular }) {
 
   // ---------- Cenário 3: equipamentos lado a lado, com a prioridade de revisão ----------
   const XR = VIA.borda + 2.0;
+  const LADO_COLUNA = -1.9;
   const pecasRevisao = [];
   for (const item of PRIORIDADES) {
     const g = new Group();
@@ -973,14 +974,14 @@ export function criarMundo({ celular }) {
     });
     g.position.set(XR, 0.16, item.z);
     cena.add(g);
-    // Coluna de prioridade atrás da peça (que fica em silhueta contra ela), base em anel e o número no topo.
+    // Coluna de prioridade atrás e ao lado da peça (as duas aparecem de frente), base em anel e o número no topo.
     const principal = item === PRIORIDADES[0];
     const cor = principal ? COR.ambar : COR.turquesa;
     const alturaColuna = 0.6 + item.valor * 0.1;
     const coluna = new Mesh(new CylinderGeometry(0.3, 0.3, alturaColuna, 32, 1, true).translate(0, alturaColuna / 2, 0), materialColuna(cor));
-    coluna.position.set(XR + 1.2, 0.16, item.z);
+    coluna.position.set(XR + 1.2, 0.16, item.z + LADO_COLUNA);
     const base = new Mesh(new TorusGeometry(0.42, 0.025, 6, 48).rotateX(Math.PI / 2), new MeshBasicMaterial({ color: linear(cor, 2.2), transparent: true, blending: AdditiveBlending, depthWrite: false }));
-    base.position.set(XR + 1.2, 0.19, item.z);
+    base.position.set(XR + 1.2, 0.19, item.z + LADO_COLUNA);
     const telaRotulo = document.createElement('canvas');
     telaRotulo.width = 256;
     telaRotulo.height = 128;
@@ -1006,7 +1007,7 @@ export function criarMundo({ celular }) {
     fontePronta.then(desenharRotulo);
     const rotulo = new Sprite(new SpriteMaterial({ map: texRotulo, color: linear(cor, principal ? 2.4 : 1.6), transparent: true, depthWrite: false, fog: true }));
     rotulo.scale.set(1.3, 0.65, 1);
-    rotulo.position.set(XR + 1.2, 0.16 + alturaColuna + 0.55, item.z);
+    rotulo.position.set(XR + 1.2, 0.16 + alturaColuna + 0.55, item.z + LADO_COLUNA);
     cena.add(coluna, base, rotulo);
     pecasRevisao.push({ item, coluna, base, rotulo, alturaColuna, principal });
   }
@@ -1031,8 +1032,10 @@ export function criarMundo({ celular }) {
       alvo: caminho([[-7.5, 2.5, Z2], [-8.3, 1.8, Z2], [-8.6, 1.5, Z2 - 0.1], [-8.7, 1.4, Z2 - 0.2], [-7.4, 3.6, Z2], [-5.3, 5.75, Z2]]),
     },
     revisoes: {
-      pos: caminho([[-1, 9, -262], [2.4, 5.6, -268], [4.5, 3.8, -273], [4.6, 3.3, -277]]),
-      alvo: caminho([[9, 1, -300], [9.8, 1.6, -297], [10.2, 2.2, -295], [10.3, 2.4, -294.5]]),
+      // De frente para a calçada, do canteiro e acima dos carros: um travelling que passa por cada equipamento, da maior
+      // prioridade para a menor.
+      pos: caminho([[0.6, 4.6, -282], [0.8, 4.2, -289.5], [0.8, 4.2, -297], [0.8, 4.2, -304.5], [0.8, 4.2, -312]]),
+      alvo: caminho([[10.8, 2.1, -288], [10.8, 2.3, -289.5], [10.8, 2.3, -297], [10.8, 2.3, -304.5], [10.8, 2.3, -312]]),
     },
   };
   const posCam = new Vector3();
@@ -1083,7 +1086,7 @@ export function criarMundo({ celular }) {
       chave.target.position.set(XR, 0, PRIORIDADES[1].z);
       chave.angle = 0.95;
       chave.distance = 30;
-      chave.intensity = 300;
+      chave.intensity = 220;
       ponto1.color.set(COR.ambar);
       ponto1.position.set(XR + 0.9, 2.2, PRIORIDADES[0].z);
       ponto2.position.set(XR + 0.9, 1.6, PRIORIDADES[2].z);
@@ -1183,13 +1186,13 @@ export function criarMundo({ celular }) {
       info = { fase };
     } else {
       // Revisões: a varredura passa pelas peças e as colunas sobem até a prioridade de cada uma.
-      const zv = MathUtils.lerp(PRIORIDADES[0].z + 6, PRIORIDADES[3].z - 3, suave(0.12, 0.62, e));
+      const zv = MathUtils.lerp(PRIORIDADES[0].z + 3, PRIORIDADES[3].z - 3, MathUtils.clamp((e - 0.08) / 0.6, 0, 1));
       varredura.position.z = zv;
       const fimVarredura = suave(0.58, 0.68, e);
       linha.material.opacity = 1 - fimVarredura;
       cortina.material.opacity = 1 - fimVarredura;
       for (const peca of pecasRevisao) {
-        const cresce = suave(peca.item.z + 1.5, peca.item.z - 1.5, zv);
+        const cresce = suave(peca.item.z + 1.5, peca.item.z - 1.5, zv - LADO_COLUNA);
         peca.coluna.material.uniforms.altura.value = Math.max(0.001, cresce);
         peca.coluna.material.uniforms.tempo.value = parado ? 0 : t;
         peca.coluna.material.uniforms.brilho.value = peca.principal ? 1 + suave(0.62, 0.8, e) * 0.8 : 0.85;
@@ -1199,6 +1202,10 @@ export function criarMundo({ celular }) {
       }
       ponto1.intensity = 6 * suave(0.55, 0.75, e);
       ponto2.intensity = 1.5;
+      // A luz-chave acompanha o travelling: cada equipamento fica iluminado quando passa na frente da câmera.
+      chave.position.set(XR - 4, 6.5, posCam.z + 1.5);
+      chave.target.position.set(XR, 0.5, posCam.z - 0.5);
+      chave.target.updateMatrixWorld();
     }
 
     filme.uniforms.tempo.value = parado ? 0 : t;
