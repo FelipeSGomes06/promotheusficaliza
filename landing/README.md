@@ -1,12 +1,15 @@
 # Landing pública do Promotheus Fiscaliza
 
 Página de entrada servida em `/` de `https://fiscaliza.devfelipegomes.com.br/`, no lugar do antigo "Portal simulado".
-Apresenta o sistema, monta a marca em 3D na hero e leva ao acesso existente em `/promotheusfiscaliza/` — quem decide
-login e conta continua sendo a aplicação ([ADR-0014](../docs/adr/0014-acesso-somente-com-conta-cadastrada.md)).
+Apresenta o sistema, monta a marca em 3D na hero, mostra três planos 3D noturnos entre as cenas de recursos e leva ao
+acesso existente em `/promotheusfiscaliza/` — quem decide login e conta continua sendo a aplicação
+([ADR-0014](../docs/adr/0014-acesso-somente-com-conta-cadastrada.md)).
 Decisões de composição, materiais, coreografia e arquitetura: [ADR-0015](../docs/adr/0015-landing-publica-e-marca-3d.md);
-seis pilares, foto de Marília, ponteiro e 3D sob demanda: [ADR-0018](../docs/adr/0018-landing-seis-pilares-e-foto-de-marilia.md).
-Verificação e capturas: [evidência de 20/10/2026](../docs/evidencias/2026-10-20-landing-publica.md) e
-[atualização de 22/10/2026](../docs/evidencias/2026-10-22-landing-atualizada.md).
+seis pilares, foto de Marília, ponteiro e 3D sob demanda: [ADR-0018](../docs/adr/0018-landing-seis-pilares-e-foto-de-marilia.md);
+planos 3D das cenas (e o diagnóstico dos objetos que eles substituem): [ADR-0019](../docs/adr/0019-landing-planos-3d-cinematograficos.md).
+Verificação e capturas: [evidência de 20/10/2026](../docs/evidencias/2026-10-20-landing-publica.md),
+[atualização de 22/10/2026](../docs/evidencias/2026-10-22-landing-atualizada.md) e
+[planos 3D, 23/10/2026](../docs/evidencias/2026-10-23-planos-3d.md).
 
 ## Estrutura
 
@@ -23,8 +26,9 @@ landing/
       img/            capturas reais do sistema (WebP, com recorte de celular), foto de Marília (Pedro Monteiro),
                       imagem de compartilhamento e favicon
       video/          onde entra o vídeo do avaliador
-  src/                fontes do CSS e do JS (pagina.js, palco.js, cena3d.js, rolagem.js, navegacao.js, movimento.js,
-                      ampliar.js)
+  src/                fontes do CSS e do JS: pagina.js (entrada), palco.js + cena3d.js (marca 3D da hero),
+                      planos.js + planos3d.js (planos 3D das cenas, renderer próprio), rolagem.js, navegacao.js,
+                      movimento.js, ampliar.js
   vite.config.js      build da landing, separado do build do sistema
 ```
 
@@ -181,5 +185,6 @@ incluindo o tipo `text/javascript`, que é como o Apache serve `.js` (o contêin
 php -l landing/public/index.php
 ```
 
-Com o servidor local no ar: título e botões aparecem sem JavaScript; a marca em SVG fica no lugar quando não há
-WebGL; "Reduzir movimento" mostra a marca pronta e desliga as entradas; nada de erro no console.
+Com o servidor local no ar: título e botões aparecem sem JavaScript; a marca em SVG e os cartazes dos planos ficam no
+lugar quando não há WebGL; "Reduzir movimento" mostra a marca pronta, um quadro parado em cada plano e desliga as
+entradas; nada de erro no console.

@@ -361,19 +361,33 @@ a { color: inherit; }
 /* Segunda captura (ficha do agente): abaixo da principal, na mesma largura, sem cobrir nada dela. */
 .cena__visual .captura + .captura { margin-top: 18px; }
 .cena__fonte { margin-top: 14px; font-size: 0.85rem; color: var(--apagado); }
-/* Objeto 3D no canto da página, do lado da captura, no vão vertical depois da cena (a última usa o respiro da seção):
-   fica longe da via e não cobre texto nem captura em nenhuma largura. Metade dele avança sobre a margem da tela. */
-.cena__objeto {
-  --obj: clamp(116px, 11.5vw, 176px);
-  position: absolute; z-index: 2; width: var(--obj); aspect-ratio: 1; top: calc(100% + (var(--vao) - var(--obj)) / 2);
-  right: calc(-0.45 * var(--obj)); pointer-events: none;
+/* Plano 3D entre as cenas: tela de cinema (2,39:1) no fluxo da página, na largura das cenas e por cima da via, que
+   entra e sai dela. Por baixo de tudo, um cartaz em SVG (a avenida à noite, #plano-cartaz) que vale sem JavaScript e
+   sem WebGL; por cima, o quadro congelado (canvas 2D) e o canvas 3D, quando o plano está em cena. */
+.plano { position: relative; z-index: 2; margin: calc(var(--vao) * -0.3) 0; }
+.plano__tela {
+  position: relative; aspect-ratio: 2.39 / 1; border-radius: 18px; overflow: hidden; isolation: isolate; background: #05080d;
+  box-shadow: 0 0 0 1px rgb(15 26 43 / 0.12), 0 60px 90px -54px rgb(10 19 34 / 0.85), 0 24px 40px -30px rgb(10 19 34 / 0.5);
 }
-.cena--inversa .cena__objeto { right: auto; left: calc(-0.45 * var(--obj)); }
-.cena__objeto canvas { width: 100%; height: 100%; }
-/* Flutua de leve, além do giro do 3D; parado com movimento reduzido. */
-@keyframes pf-flutua { 50% { transform: translateY(-10px); } }
-html:not([data-motion="reduced"]) .cena__objeto { animation: pf-flutua 3.2s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { html:not([data-motion="full"]) .cena__objeto { animation: none; } }
+.plano__cartaz { position: absolute; inset: 0; width: 100%; height: 100%; }
+.plano__quadro, .plano__canvas { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; }
+/* Tarjas de cinema que se recolhem com a rolagem (rolagem.js); sem JavaScript, ou com movimento reduzido, recolhidas. */
+.plano__tarja { position: absolute; left: 0; right: 0; z-index: 2; height: 11%; background: #000; transform: scaleY(0); pointer-events: none; }
+.plano__tarja--cima { top: 0; transform-origin: 50% 0; }
+.plano__tarja--baixo { bottom: 0; transform-origin: 50% 100%; }
+.plano__rotulo, .plano__estado {
+  position: absolute; z-index: 3; display: inline-flex; align-items: center; gap: 10px; margin: 0;
+  font-size: 0.74rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; line-height: 1;
+  color: rgb(237 241 247 / 0.86); text-shadow: 0 1px 8px rgb(0 0 0 / 0.6); pointer-events: none;
+}
+.plano__rotulo { top: clamp(14px, 2.2vw, 26px); left: clamp(14px, 2.4vw, 30px); }
+.plano__rotulo span { padding: 4px 7px 3px; border-radius: 5px; box-shadow: inset 0 0 0 1.5px rgb(124 245 225 / 0.75); color: var(--turquesa); letter-spacing: 0.08em; }
+.plano__estado { display: none; bottom: clamp(14px, 2.2vw, 26px); left: clamp(14px, 2.4vw, 30px); padding: 7px 11px 6px; border-radius: 6px; background: rgb(5 8 13 / 0.62); }
+.plano__estado::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--cor-fase, #ff3a24); box-shadow: 0 0 10px var(--cor-fase, #ff3a24); }
+.plano.is-3d .plano__estado:not(:empty) { display: inline-flex; }
+.plano__estado[data-fase="execucao"] { --cor-fase: var(--ambar); }
+.plano__estado[data-fase="concluida"] { --cor-fase: var(--turquesa); }
+.plano__legenda { max-width: min(46em, calc(50% - 48px)); margin-top: 14px; font-size: 0.9rem; color: var(--apagado); }
 /* Selo, nota de limites e detalhamento opcional dentro das cenas. */
 .selo {
   display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px 10px; padding: 5px 10px 3px; border-radius: 6px;
@@ -401,9 +415,11 @@ html:not([data-motion="reduced"]) .cena__objeto { animation: pf-flutua 3.2s ease
   .via__no { left: 22px; top: 8px; width: 18px; height: 18px; }
   .cena { grid-template-columns: minmax(0, 1fr); row-gap: 28px; padding-left: 48px; }
   .cena--inversa .cena__texto { order: 0; }
-  /* No celular a captura ocupa toda a largura: o objeto 3D cobriria a imagem e fica de fora (nem pede o 3D). */
-  .cena__objeto { display: none; }
+  .plano { margin: 0 0 0 48px; }
+  .plano__legenda { max-width: none; }
+  .plano__tela { aspect-ratio: 2 / 1; border-radius: 14px; }
 }
+@media (max-width: 559.98px) { .plano__tela { aspect-ratio: 16 / 11; } }
 
 /* ---------- Planejar reforço: destaque em grafite, com o mapa de calor ---------- */
 .planejar { background: var(--grafite-900); color: #fff; padding: clamp(72px, 9vw, 128px) var(--margem); --foco: var(--turquesa); }

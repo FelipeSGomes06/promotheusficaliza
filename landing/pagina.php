@@ -37,6 +37,25 @@ $captura = static function (string $nome, array $larguras, array $maior, string 
         . '</a>';
 };
 $tamanhoCena = '(min-width: 960px) 560px, calc(100vw - 96px)';
+
+/**
+ * Plano 3D entre as cenas de recursos (planos.js e planos3d.js). Sem JavaScript ou sem WebGL fica o cartaz em CSS; o
+ * canvas entra por cima dele. A legenda é texto de verdade; rótulo, tarjas e situação são decoração.
+ */
+$plano = static function (string $nome, string $marco, string $rotulo, string $legenda): string {
+    $estado = $nome === 'manutencao' ? '<p class="plano__estado" aria-hidden="true" data-plano-estado></p>' : '';
+
+    return '<figure class="plano plano--' . e($nome) . '" data-plano="' . e($nome) . '">'
+        . '<div class="plano__tela" data-plano-tela>'
+        . '<svg class="plano__cartaz" aria-hidden="true" focusable="false"><use href="#plano-cartaz"></use></svg>'
+        . '<span class="plano__tarja plano__tarja--cima" aria-hidden="true"></span>'
+        . '<span class="plano__tarja plano__tarja--baixo" aria-hidden="true"></span>'
+        . '<p class="plano__rotulo" aria-hidden="true"><span>' . e($marco) . '</span>' . e($rotulo) . '</p>'
+        . $estado
+        . '</div>'
+        . '<figcaption class="plano__legenda">' . e($legenda) . '</figcaption>'
+        . '</figure>';
+};
 $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictícia.';
 ?>
 <!doctype html>
@@ -75,6 +94,24 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
   <symbol id="i-ampliar" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5M10.5 8v5M8 10.5h5"/></g></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h10"/></symbol>
   <symbol id="i-fechar" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></symbol>
+  <!-- Cartaz dos planos 3D (sem JavaScript, sem WebGL ou enquanto a cena carrega): a avenida à noite, em 2,39:1. -->
+  <linearGradient id="cartaz-ceu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#02040a"/><stop offset="1" stop-color="#121c2c"/></linearGradient>
+  <linearGradient id="cartaz-pista" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121820"/><stop offset="1" stop-color="#05070a"/></linearGradient>
+  <linearGradient id="cartaz-facho" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd9a8" stop-opacity="0.32"/><stop offset="1" stop-color="#ffd9a8" stop-opacity="0"/></linearGradient>
+  <radialGradient id="cartaz-luz"><stop offset="0" stop-color="#ffe2bd"/><stop offset="0.25" stop-color="#ffc98a" stop-opacity="0.5"/><stop offset="1" stop-color="#ffc98a" stop-opacity="0"/></radialGradient>
+  <radialGradient id="cartaz-ambar"><stop offset="0" stop-color="#ffb21a" stop-opacity="0.7"/><stop offset="1" stop-color="#ffb21a" stop-opacity="0"/></radialGradient>
+  <symbol id="plano-cartaz" viewBox="0 0 239 100" preserveAspectRatio="xMidYMid slice">
+    <rect width="239" height="48" fill="url(#cartaz-ceu)"/>
+    <rect y="47" width="239" height="53" fill="#06080c"/>
+    <g fill="#080b11"><rect x="0" y="18" width="34" height="31"/><rect x="36" y="29" width="22" height="20"/><rect x="60" y="34" width="20" height="15"/><rect x="82" y="38" width="16" height="11"/><rect x="141" y="37" width="15" height="12"/><rect x="158" y="31" width="22" height="18"/><rect x="182" y="22" width="26" height="27"/><rect x="210" y="10" width="29" height="39"/></g>
+    <g fill="#ffc98a" opacity="0.55"><rect x="6" y="24" width="2" height="2"/><rect x="18" y="30" width="2" height="2"/><rect x="26" y="22" width="2" height="2"/><rect x="42" y="34" width="2" height="2"/><rect x="66" y="38" width="2" height="2"/><rect x="163" y="36" width="2" height="2"/><rect x="190" y="28" width="2" height="2"/><rect x="200" y="40" width="2" height="2"/><rect x="216" y="16" width="2" height="2"/><rect x="228" y="30" width="2" height="2"/></g>
+    <polygon points="113,48 126,48 239,100 0,100" fill="url(#cartaz-pista)"/>
+    <g stroke="#c9cfd8" stroke-width="0.6" fill="none" opacity="0.55"><path d="M114 48 6 100M125 48 233 100"/><path d="M117 48 76 100M122 48 163 100" stroke-dasharray="4 5"/></g>
+    <polygon points="150,46 156,46 176,74 130,74" fill="url(#cartaz-facho)"/><polygon points="85,46 90,46 110,70 66,70" fill="url(#cartaz-facho)"/>
+    <circle cx="153" cy="46" r="7" fill="url(#cartaz-luz)"/><circle cx="87.5" cy="46" r="6" fill="url(#cartaz-luz)"/><circle cx="133" cy="47" r="3" fill="url(#cartaz-luz)"/>
+    <circle cx="186" cy="58" r="12" fill="url(#cartaz-ambar)"/><rect x="182" y="55" width="8" height="4" rx="0.6" fill="#ffb21a" opacity="0.9"/><rect x="185.4" y="59" width="1.2" height="15" fill="#1f2733"/>
+    <path d="M192 55a4 4 0 0 1 0 5M194.5 53.5a6.5 6.5 0 0 1 0 8" fill="none" stroke="#7cf5e1" stroke-width="0.8" stroke-linecap="round" opacity="0.8"/>
+  </symbol>
   <symbol id="i-movimento" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 12h4l2-5 4 10 2-5h6"/></symbol>
 </svg>
 
@@ -209,8 +246,9 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
               [780, 1200], 'cena__tela cena__tela--detalhe') ?>
           <figcaption class="cena__fonte"><?= e($dataCaptura) ?></figcaption>
         </figure>
-        <div class="cena__objeto" data-objeto="radar" aria-hidden="true"></div>
       </article>
+
+      <?= $plano('radar', '01', 'Em campo', 'Ilustração 3D: uma lombada eletrônica em serviço numa avenida à noite, um dos tipos de equipamento que o inventário acompanha.') ?>
 
       <article class="cena cena--inversa" id="manutencao" aria-labelledby="manutencao-titulo" data-cena>
         <span class="via__no" aria-hidden="true"></span>
@@ -234,8 +272,9 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
               [780, 1200]) ?>
           <figcaption class="cena__fonte"><?= e($dataCaptura) ?></figcaption>
         </figure>
-        <div class="cena__objeto" data-objeto="via" aria-hidden="true"></div>
       </article>
+
+      <?= $plano('manutencao', '02', 'Intervenção', 'Ilustração 3D: uma intervenção em campo, da falha registrada à conclusão, com o equipamento de volta à operação.') ?>
 
       <article class="cena" id="multas" aria-labelledby="multas-titulo" data-cena>
         <span class="via__no" aria-hidden="true"></span>
@@ -284,8 +323,9 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
               [780, 785]) ?>
           <figcaption class="cena__fonte"><?= e($dataCaptura) ?></figcaption>
         </figure>
-        <div class="cena__objeto" data-objeto="placa" aria-hidden="true"></div>
       </article>
+
+      <?= $plano('revisoes', '04', 'Prioridade', 'Ilustração 3D: equipamentos lado a lado, cada um com a sua prioridade de revisão; a mais alta vem primeiro.') ?>
     </div>
   </section>
 

@@ -1,15 +1,20 @@
 {
+  "_three.module-BROWA2qQ.js": {
+    "file": "three.module-BROWA2qQ.js",
+    "name": "three.module"
+  },
   "landing/src/cena3d.js": {
-    "file": "cena3d-Dy10qHxe.js",
+    "file": "cena3d-C2C78GDY.js",
     "name": "cena3d",
     "src": "landing/src/cena3d.js",
     "isDynamicEntry": true,
     "imports": [
-      "landing/src/pagina.js"
+      "landing/src/pagina.js",
+      "_three.module-BROWA2qQ.js"
     ]
   },
   "landing/src/landing.css": {
-    "file": "landing-DPDWPsU1.css",
+    "file": "landing-dnbFtpPc.css",
     "name": "landing",
     "names": [
       "landing.css"
@@ -22,12 +27,22 @@
     ]
   },
   "landing/src/pagina.js": {
-    "file": "pagina-BBLOUIGz.js",
+    "file": "pagina-CIxTHJn2.js",
     "name": "pagina",
     "src": "landing/src/pagina.js",
     "isEntry": true,
     "dynamicImports": [
-      "landing/src/cena3d.js"
+      "landing/src/cena3d.js",
+      "landing/src/planos3d.js"
+    ]
+  },
+  "landing/src/planos3d.js": {
+    "file": "planos3d-D5GqVb8i.js",
+    "name": "planos3d",
+    "src": "landing/src/planos3d.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_three.module-BROWA2qQ.js"
     ]
   },
   "node_modules/@fontsource-variable/overpass/files/overpass-latin-ext-wght-normal.woff2": {
