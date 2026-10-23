@@ -11,9 +11,8 @@ namespace Fiscaliza\Application;
 interface Geocoder
 {
     /**
-     * @param string $city cidade informada; o provedor continua preso à área atendida (Marília e arredores)
      * @return array{lat: string, lng: string}|null graus decimais com 6 casas; null se a rua não for achada na área atendida
      * @throws ProviderUnavailable quando o provedor não responde a tempo, falha ou responde fora do formato esperado
      */
-    public function locate(string $street, string $city = 'Marília'): ?array;
+    public function locate(string $street): ?array;
 }

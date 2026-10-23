@@ -1,6 +1,6 @@
 /*
  * Endereço nos formulários ([data-cep-lookup]). Com 8 dígitos no CEP, pergunta ao próprio servidor (GET /api/cep/…; a
- * CSP só libera 'self') e preenche a rua e a cidade, que continuam editáveis: só é trocado o que está vazio ou o que o
+ * CSP só libera 'self') e preenche a rua, que continua editável: só é trocado o que está vazio ou o que o
  * CEP anterior preencheu. Sem rua na resposta (CEP não encontrado, geral da cidade, de outra cidade, consulta fora do
  * ar ou sem rede), uma linha diz o motivo. Com a rua, "Levar a base até este endereço" (GET /api/localizar) põe o
  * ponto no mapa; se ainda não há ponto, isso acontece sozinho. Nada aqui impede o envio; sem JavaScript, o servidor
@@ -31,7 +31,6 @@ export function initCep() {
     const street = byId('street');
     const status = box.querySelector('[data-cep-status]');
     if (!cep || !street || !status || !box.dataset.url) return;
-    const city = byId('city');
     const number = byId('number');
     const lat = byId('lat');
     const lng = byId('lng');
@@ -67,7 +66,6 @@ export function initCep() {
       const query = new URLSearchParams({ rua: street.value.trim() });
       if (digitsOf().length === 8) query.set('cep', digitsOf());
       if (number?.value.trim()) query.set('numero', number.value.trim());
-      if (city?.value.trim()) query.set('cidade', city.value.trim());
       setBusy(locateButton, true, 'Localizando…');
       say(locateStatus, 'Procurando o endereço no mapa…', 'loading');
       const data = await getJson(`${box.dataset.locateUrl}?${query}`, mine.signal);
@@ -98,7 +96,6 @@ export function initCep() {
       const typed = street.value.trim() !== '' && street.value !== filledStreet;
       if (data?.situacao === 'ENCONTRADO' && typeof data.rua === 'string' && data.rua) {
         if (!typed) { street.value = data.rua; filledStreet = data.rua; }
-        if (city && typeof data.cidade === 'string' && data.cidade && (!city.value.trim() || city.value.trim() === 'Marília')) city.value = data.cidade;
         say(status, typed ? `O CEP indica a rua ${data.rua}; a que você digitou foi mantida.` : 'Rua preenchida pelo CEP. Se precisar, corrija.');
         syncLocate();
         if (canLocate && !lat.value && !lng.value) locate(); // ainda sem ponto: a base vai para o endereço
