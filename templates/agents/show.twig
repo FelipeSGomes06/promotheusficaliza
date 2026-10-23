@@ -29,7 +29,7 @@
       <section class="panel" aria-labelledby="onde">
         <h2 id="onde">{{ ui.icon('i-pin') }} Onde está</h2>
         <dl class="facts">
-          <dt>Base de trabalho</dt><dd>{{ a.base_name }}<br><span class="hint">{{ a.base_street ? 'Rua: ' ~ a.base_street : 'Rua não informada' }}{{ a.base_ref ? ', ' ~ a.base_ref }} · Bairro: {{ a.region_name ?? 'não definido' }}{{ a.base_cep ? ' · CEP ' ~ a.base_cep }} · {{ a.base_city ?: 'Marília/SP' }}</span><br><span class="hint">Ponto fixo marcado no mapa. Não indica onde o agente está agora.</span></dd>
+          <dt>Base de trabalho</dt><dd>{{ a.base_name }}<br><span class="hint">{{ a.base_street ? 'Rua: ' ~ a.base_street : 'Rua não informada' }}{{ a.base_ref ? ', ' ~ a.base_ref }} · Bairro: {{ a.region_name ?? 'não definido' }}{{ a.base_cep ? ' · CEP ' ~ a.base_cep }} · Marília/SP</span><br><span class="hint">Ponto fixo marcado no mapa. Não indica onde o agente está agora.</span></dd>
           <dt>Última posição recebida</dt><dd>{% if a.pos_lat is null %}nenhuma recebida{% else %}{{ a.pos_observed_at|local_dt('d/m/Y H:i') }}<br><span class="hint">Recebida pelo rádio simulado às {{ a.pos_received_at|local_dt('H:i:s') }}. No mapa, aparece só enquanto o agente está em turno.</span>{% endif %}</dd>
           <dt>Situação desde</dt><dd>{{ a.status_changed_at|local_dt }}</dd>
         </dl>

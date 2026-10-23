@@ -72,7 +72,7 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
     const pb2 = await p.locator('#picker').boundingBox(); await p.mouse.click(pb2.x + pb2.width / 2, pb2.y + pb2.height / 2); await sleep(200);
     check('erro_do_ponto_some_ao_marcar', pb !== null && hadError && !(await p.isVisible('#err-base_lat')) && (await p.inputValue('#f-base_lat')) !== '');
     await p.goto(`${BASE}/agentes/novo`, { waitUntil: 'networkidle' });
-    check('rua_e_cidade_editaveis', await p.isEditable('#f-base_street') && await p.isEditable('#f-base_city') && (await p.inputValue('#f-base_city')) === 'Marília');
+    check('rua_editavel_cidade_fixa', await p.isEditable('#f-base_street') && !(await p.isEditable('#f-base_city')) && (await p.inputValue('#f-base_city')) === 'Marília / SP');
     const cols = await p.evaluate(() => ['f-base_cep', 'f-base_city', 'f-base_street', 'f-base_ref'].map((id) => { const r = document.getElementById(id).getBoundingClientRect(); return [Math.round(r.left), Math.round(r.width), Math.round(r.top)]; }));
     check('endereco_em_duas_colunas_iguais', cols[0][0] === cols[2][0] && cols[1][0] === cols[3][0] && cols[0][1] === cols[1][1] && cols[2][1] === cols[3][1] && cols[0][2] === cols[1][2] && cols[2][2] === cols[3][2], cols);
     await p.locator('.picker').scrollIntoViewIfNeeded(); await shot(p, '01-novo-agente');
@@ -175,7 +175,7 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
   { const { ctx, p } = await page(D, { js: false });
     await p.goto(`${BASE}/agentes/novo`);
     check('sem_js_rua_visivel', await p.isVisible('#f-base_street') && await p.isEditable('#f-base_street'));
-    check('sem_js_coordenadas_sem_campos', (await p.locator('#f-base_lat').getAttribute('type')) === 'hidden' && await p.isEditable('#f-base_city'));
+    check('sem_js_coordenadas_sem_campos', (await p.locator('#f-base_lat').getAttribute('type')) === 'hidden' && !(await p.isEditable('#f-base_city')));
     check('sem_js_sem_mapa_vazio', !(await p.isVisible('#picker')) && !(await p.isVisible('#picker-howto')) && await p.isVisible('[data-without-map]'));
     await p.fill('#f-call_sign', 'Hermes Sem JS'); await p.selectOption('#f-agency_id', { index: 1 }); await p.fill('#f-base_name', 'Base sem JS (fictícia)');
     await p.fill('#f-base_cep', '17501-000'); await p.fill('#f-base_street', 'Avenida Sampaio Vidal');

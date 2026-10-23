@@ -401,6 +401,8 @@
   .base-point-error { margin: 6px 0 0; }
   .base-region { margin: 4px 0 0; }
   .base-address__intro { margin: 18px 0 12px; }
+  /* Campo fixo (cidade): fundo mais escuro, sem cursor de texto; continua legível e focável. */
+  .field input.input-fixed, .field input.input-fixed:hover { background: var(--color-graphite-100); border-color: var(--color-line-strong); color: var(--color-off-ink); cursor: default; font-weight: 650; }
   .cep-street__locate { display: grid; gap: 8px; justify-items: start; }
   .cep-street__locate-status { margin: 0; overflow-wrap: anywhere; font-size: 0.9rem; color: var(--color-muted); }
   .cep-street__locate-status:empty { display: none; }

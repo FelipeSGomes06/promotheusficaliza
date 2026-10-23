@@ -5,7 +5,7 @@
 {% block scripts %}<script src="{{ asset('vendor/leaflet/leaflet.js') }}" defer></script>{% endblock %}
 {% block content %}
 {% set v = values %}
-{% set labels = {call_sign: 'Nome de exibição', role: 'Função', agency_id: 'Órgão', status: 'Situação inicial', base_name: 'Nome da base', base_lat: 'Ponto da base', base_lng: 'Ponto da base', base_city: 'Cidade', base_cep: 'CEP', base_street: 'Rua', base_ref: 'Número'} %}
+{% set labels = {call_sign: 'Nome de exibição', role: 'Função', agency_id: 'Órgão', status: 'Situação inicial', base_name: 'Nome da base', base_lat: 'Ponto da base', base_lng: 'Ponto da base', base_cep: 'CEP', base_street: 'Rua', base_ref: 'Número'} %}
 <div class="page page--narrow">
   <p class="crumbs"><a href="{{ url('/agentes') }}">Agentes</a>{% if existing %} · <a href="{{ url('/agentes/' ~ existing.id) }}">{{ existing.call_sign }}</a>{% endif %}</p>
   <h1>{{ existing ? 'Editar ' ~ existing.call_sign : 'Cadastrar agente' }}</h1>
@@ -42,11 +42,12 @@
       {% set pointError = errors.base_lat ?? errors.base_lng ?? null %}
       {% if pointError %}<p class="error base-point-error" id="err-base_lat" role="alert">{{ pointError }}</p>{% endif %}
       <p class="hint base-region">Bairro: {% if existing and existing.region_name %}<strong>{{ existing.region_name }}</strong> (muda sozinho se você mudar o ponto){% else %}definido pelo ponto, ao salvar{% endif %}.</p>
-      <p class="hint base-address__intro">Endereço: com o CEP, a rua e a cidade são preenchidas sozinhas e podem ser corrigidas. Se não marcar no mapa, a base vai para este endereço.</p>
-      <div class="form-grid base-address" data-cep-lookup data-cep="f-base_cep" data-street="f-base_street" data-city="f-base_city" data-number="f-base_ref"
+      <p class="hint base-address__intro">Endereço: com o CEP, a rua é preenchida sozinha e pode ser corrigida. Se não marcar no mapa, a base vai para este endereço.</p>
+      <div class="form-grid base-address" data-cep-lookup data-cep="f-base_cep" data-street="f-base_street" data-number="f-base_ref"
            data-url="{{ url('/api/cep/') }}" data-locate-url="{{ url('/api/localizar') }}" data-lat="f-base_lat" data-lng="f-base_lng">
         {{ ui.input('base_cep', 'CEP', v, errors, {max: 9, inputmode: 'numeric', placeholder: '17500-000', autocomplete: 'off'}) }}
-        {{ ui.input('base_city', 'Cidade', v|merge({base_city: v.base_city ?? existing.base_city ?? 'Marília'}), errors, {max: 80, placeholder: 'Marília'}) }}
+        {# Sistema de Marília: a cidade é fixa, mostrada como campo travado (não é enviada). #}
+        <div class="field"><label for="f-base_city">Cidade</label><input id="f-base_city" type="text" value="Marília / SP" readonly class="input-fixed"></div>
         {{ ui.input('base_street', 'Rua', v, errors, {max: 120, placeholder: 'Ex.: Avenida Sampaio Vidal'}) }}
         {{ ui.input('base_ref', 'Número', v, errors, {max: 160, placeholder: 'Ex.: 1200 ou s/n'}) }}
         <p class="cep-street__status span-2" data-cep-status aria-live="polite"></p>
