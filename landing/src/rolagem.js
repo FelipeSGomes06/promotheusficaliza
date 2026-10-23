@@ -25,7 +25,6 @@ export function animarRolagem() {
       gsap.fromTo('[data-vitrine-quadro]',
         { rotationX: largo ? 14 : 7, y: largo ? 70 : 30, scale: 0.95, opacity: 0.4 },
         { rotationX: 0, y: 0, scale: 1, opacity: 1, ease: 'none', scrollTrigger: { trigger: '[data-vitrine]', start: 'top 95%', end: 'top 35%', scrub: 0.6 } });
-      gsap.from('.vitrine__ponto', { scale: 0, duration: 0.45, ease: 'back.out(2.2)', stagger: 0.09, scrollTrigger: { trigger: '[data-vitrine]', start: 'top 40%', once: true } });
       gsap.from('[data-vitrine-legenda] li', { y: 16, opacity: 0, duration: 0.6, ease: 'power3.out', stagger: 0.07, scrollTrigger: { trigger: '[data-vitrine-legenda]', start: 'top 90%', once: true } });
 
       // A faixa central da via se desenha conforme a rolagem; cada cena entra quando chega a ela.
