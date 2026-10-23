@@ -76,8 +76,8 @@ final class AgentService
     {
         $input = new Input($data);
         $version = $input->int('version', 1, PHP_INT_MAX);
-        $values = $this->validate($input);
         $current = $this->agents->find($id) ?? throw new NotFound('Agente não encontrado.');
+        $values = $this->validate($input, $current);
         if ($current['archived_at'] !== null) {
             throw new RuleViolation('Agente arquivado não pode ser editado.');
         }
@@ -148,9 +148,10 @@ final class AgentService
      * quando a consulta não a dá; número opcional (`BASE_REF`); a cidade é sempre Marília; o bairro é derivado do ponto.
      * Campos não lidos são ignorados.
      *
+     * @param array<string, mixed>|null $current cadastro atual, na edição
      * @return array<string, mixed>
      */
-    private function validate(Input $input): array
+    private function validate(Input $input, ?array $current = null): array
     {
         $values = [
             'call_sign' => $input->text('call_sign', 40),
@@ -166,7 +167,7 @@ final class AgentService
         if ($values['agency_id'] !== null && !$this->references->agencyExists($values['agency_id'])) {
             $input->fail('agency_id', 'Órgão inexistente.');
         }
-        $this->resolvePoint($input, $values);
+        $this->resolvePoint($input, $values, $current);
         $input->assertValid();
 
         return $values;
@@ -177,12 +178,23 @@ final class AgentService
      * informada ou a do CEP, localizada pelo provedor (ADR-0021). A consulta externa só acontece com o resto do
      * formulário válido e fora da transação; a rua achada pelo CEP passa a ser a rua gravada.
      *
+     * Com ponto e endereço (novo ou alterado), o ponto precisa ficar no endereço: fora da área dele, vai para o endereço
+     * (a tela já faz isso; aqui vale também para quem envia direto). Provedor fora do ar: fica o ponto marcado.
+     *
      * @param array<string, mixed> $values
+     * @param array<string, mixed>|null $current
      */
-    private function resolvePoint(Input $input, array &$values): void
+    private function resolvePoint(Input $input, array &$values, ?array $current): void
     {
         $errors = $input->errors();
-        if (isset($errors['base_lat']) || isset($errors['base_lng']) || ($values['base_lat'] !== null && $values['base_lng'] !== null)) {
+        if (isset($errors['base_lat']) || isset($errors['base_lng'])) {
+            return;
+        }
+        if ($values['base_lat'] !== null && $values['base_lng'] !== null) {
+            if ($errors === [] && $values['base_street'] !== null && self::addressChanged($current, $values)) {
+                $this->keepInsideAddress($values);
+            }
+
             return;
         }
         if ($values['base_lat'] !== null || $values['base_lng'] !== null || ($values['base_street'] === null && $values['base_cep'] === null)) {
@@ -202,6 +214,36 @@ final class AgentService
         $values['base_lat'] = $found['lat'];
         $values['base_lng'] = $found['lng'];
         $values['base_street'] = $found['rua'];
+    }
+
+    /**
+     * @param array<string, mixed>|null $current
+     * @param array<string, mixed> $values
+     */
+    private static function addressChanged(?array $current, array $values): bool
+    {
+        foreach (['base_street', 'base_cep', 'base_ref'] as $key) {
+            if ($current === null || (string) ($current[$key] ?? '') !== (string) ($values[$key] ?? '')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** @param array<string, mixed> $values */
+    private function keepInsideAddress(array &$values): void
+    {
+        $found = ($this->locator)()->locate($values['base_street'], $values['base_cep'], $values['base_ref']);
+        if ($found['situacao'] !== 'ENCONTRADO') {
+            return;
+        }
+        [$south, $north, $west, $east] = $found['caixa'];
+        [$lat, $lng] = [(float) $values['base_lat'], (float) $values['base_lng']];
+        if ($lat < $south || $lat > $north || $lng < $west || $lng > $east) {
+            $values['base_lat'] = $found['lat'];
+            $values['base_lng'] = $found['lng'];
+        }
     }
 
     /**

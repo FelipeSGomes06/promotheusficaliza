@@ -100,7 +100,9 @@ redireciona à ficha com aviso.
 | `base_street` | opcional, até 120: a rua que a consulta do CEP preencheu (editável) ou a digitada. |
 | `version` | só na edição. |
 
-`base_ref` (número, opcional, até 160) também ajuda a localizar pelo endereço. `region_id` enviado é ignorado
+`base_ref` (número, opcional, até 160) também ajuda a localizar pelo endereço. Com ponto **e** endereço novo ou
+alterado, o servidor localiza o endereço e, se o ponto estiver fora da área dele, grava o ponto do endereço (provedor
+fora do ar: grava o ponto enviado). `region_id` enviado é ignorado
 ([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)): o bairro é o de centro mais próximo do ponto (na
 edição, só é recalculado se o ponto mudar ou se não houver bairro). Respostas como no equipamento (303, 422, 409).
 

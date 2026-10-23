@@ -238,6 +238,6 @@ final class AgentsHttpTest extends FirebirdTestCase
         self::assertSame(303, $saved->getStatusCode());
         $show = (string) $this->request('GET', "/agentes/{$id}")->getBody();
         self::assertStringContainsString('Rua: Avenida Sampaio Vidal, 1200 · Bairro: Centro', $show);
-        self::assertStringContainsString('Cadastro alterado: rua, número.', $show);
+        self::assertStringContainsString('Cadastro alterado: rua, número, ponto no mapa.', $show, 'o ponto antigo ficava fora do endereço novo: foi para o endereço');
     }
 }

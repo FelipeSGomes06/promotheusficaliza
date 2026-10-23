@@ -5,6 +5,7 @@
  * data-mark-center: pelo teclado, Enter ou espaço no mapa marca o centro (quem não usa mouse também marca o ponto).
  * data-needs-map="<id do mapa>": elemento que só faz sentido com o mapa; vem oculto no HTML e aparece aqui.
  * data-without-map="<id do mapa>": explicação para quando não há mapa; some aqui.
+ * Evento "picker:marked" no contêiner do mapa a cada ponto marcado pela pessoa (detail: lat, lng).
  */
 import { motion } from './motion.js';
 
@@ -36,6 +37,8 @@ export function initPicker() {
       lng.value = latlng.lng.toFixed(6);
       pin.setLatLng(latlng).addTo(map);
       say();
+      // Ponto marcado pela pessoa (clique ou Enter): o formulário pode conferi-lo com o endereço (cep.js).
+      box.dispatchEvent(new CustomEvent('picker:marked', { detail: { lat: latlng.lat, lng: latlng.lng } }));
     };
     map.on('click', (e) => mark(e.latlng));
     if ('markCenter' in box.dataset) {

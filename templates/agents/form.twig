@@ -44,7 +44,7 @@
       <p class="hint base-region">Bairro: {% if existing and existing.region_name %}<strong>{{ existing.region_name }}</strong> (muda sozinho se você mudar o ponto){% else %}definido pelo ponto, ao salvar{% endif %}.</p>
       <p class="hint base-address__intro">Endereço: com o CEP, a rua é preenchida sozinha e pode ser corrigida. Se não marcar no mapa, a base vai para este endereço.</p>
       <div class="form-grid base-address" data-cep-lookup data-cep="f-base_cep" data-street="f-base_street" data-number="f-base_ref"
-           data-url="{{ url('/api/cep/') }}" data-locate-url="{{ url('/api/localizar') }}" data-lat="f-base_lat" data-lng="f-base_lng">
+           data-url="{{ url('/api/cep/') }}" data-locate-url="{{ url('/api/localizar') }}" data-lat="f-base_lat" data-lng="f-base_lng" data-map="picker">
         {{ ui.input('base_cep', 'CEP', v, errors, {max: 9, inputmode: 'numeric', placeholder: '17500-000', autocomplete: 'off'}) }}
         {# Sistema de Marília: a cidade é fixa, mostrada como campo travado (não é enviada). #}
         <div class="field"><label for="f-base_city">Cidade</label><input id="f-base_city" type="text" value="Marília / SP" readonly class="input-fixed"></div>
