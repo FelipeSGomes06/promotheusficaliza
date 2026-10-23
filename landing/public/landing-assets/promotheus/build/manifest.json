@@ -11,7 +11,7 @@
     "name": "three.module"
   },
   "landing/src/cena3d.js": {
-    "file": "cena3d-skGrPrB7.js",
+    "file": "cena3d-DoivI6Ee.js",
     "name": "cena3d",
     "src": "landing/src/cena3d.js",
     "isDynamicEntry": true,
@@ -22,7 +22,7 @@
     ]
   },
   "landing/src/enfeites3d.js": {
-    "file": "enfeites3d-CJIgJJMn.js",
+    "file": "enfeites3d-DGZuoBcl.js",
     "name": "enfeites3d",
     "src": "landing/src/enfeites3d.js",
     "isDynamicEntry": true,
@@ -45,7 +45,7 @@
     ]
   },
   "landing/src/pagina.js": {
-    "file": "pagina-CK2IhoQH.js",
+    "file": "pagina-DUiBdNjs.js",
     "name": "pagina",
     "src": "landing/src/pagina.js",
     "isEntry": true,

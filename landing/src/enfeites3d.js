@@ -263,15 +263,18 @@ function camera() {
 function cone() {
   const grupo = new Group();
   const corpo = new Group();
-  const perfil = [[0.001, 1.32], [0.07, 1.32], [0.4, 0.14]].map(([a, b]) => new Vector2(a, b));
+  // Corpo com o pé que se abre em curva até a base, como os cones de PVC usados nas vias.
+  const perfil = [[0.001, 1.32], [0.07, 1.32], [0.37, 0.2], [0.39, 0.12], [0.415, 0.08], [0.44, 0.06]].map(([a, b]) => new Vector2(a, b));
   const laranja = new MeshStandardMaterial({ color: '#ff6414', roughness: 0.5, envMapIntensity: 0.6 });
   const refletivo = new MeshStandardMaterial({ color: '#f5f6f8', roughness: 0.25, emissive: '#ffffff', emissiveIntensity: 0.12 });
   const faixaCone = (y0, y1) => {
-    const r = (y) => 0.075 + ((1.32 - y) / 1.18) * 0.33;
+    const r = (y) => 0.075 + ((1.32 - y) / 1.12) * 0.3;
     return new Mesh(new CylinderGeometry(r(y0), r(y1), y0 - y1, 40, 1, true).translate(0, (y0 + y1) / 2, 0), refletivo);
   };
   const casco = new Mesh(new LatheGeometry(perfil, 40), laranja);
-  const sapata = new Mesh(chapa(retangulo(0.96, 0.96, 0.1), 0.14, 0.03).rotateX(-Math.PI / 2), fosco('#1d1f24', 0.7));
+  const chanfrado = new Shape();
+  [[-0.46, -0.33], [-0.33, -0.46], [0.33, -0.46], [0.46, -0.33], [0.46, 0.33], [0.33, 0.46], [-0.33, 0.46], [-0.46, 0.33]].forEach(([a, b], i) => (i ? chanfrado.lineTo(a, b) : chanfrado.moveTo(a, b)));
+  const sapata = new Mesh(chapa(chanfrado, 0.06, 0.015).rotateX(-Math.PI / 2), laranja);
   const sinalizador = new Mesh(new CylinderGeometry(0.11, 0.12, 0.12, 24).translate(0, 1.38, 0), fosco('#22262c', 0.5));
   const lenteMat = new MeshStandardMaterial({ color: '#ffcf70', roughness: 0.25, emissive: COR.ambar, emissiveIntensity: 0 });
   const lente = new Mesh(new SphereGeometry(0.115, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2).translate(0, 1.44, 0), lenteMat);
