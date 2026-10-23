@@ -102,6 +102,19 @@ export function iniciarPlanos() {
     plano.el.classList.add('is-3d');
   }
 
+  /** O quadro congelado saiu todo preto? (amostra de 16 × 8 pontos; a cena sempre tem luzes acesas) */
+  function preto(plano) {
+    const { width: w, height: h } = plano.quadro;
+    const d = plano.quadro.getContext('2d').getImageData(0, 0, w, h).data;
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 16; x++) {
+        const i = (Math.floor(((y + 0.5) / 8) * h) * w + Math.floor(((x + 0.5) / 16) * w)) * 4;
+        if (Math.max(d[i], d[i + 1], d[i + 2]) > 12) return false;
+      }
+    }
+    return true;
+  }
+
   function ativar(plano) {
     if (plano === ativo) return;
     if (ativo) congelar(ativo);
@@ -194,6 +207,19 @@ export function iniciarPlanos() {
       if (!width || !height) continue;
       mundo.tamanho(width, height, densidade);
       congelar(plano);
+      // Algumas placas devolvem preto no pós-processamento: tenta o desenho direto; se continuar preto, fica o cartaz.
+      if (preto(plano)) {
+        mundo.simplificar();
+        congelar(plano);
+        if (preto(plano)) {
+          perdido = true;
+          planos.forEach((p) => {
+            p.quadro?.remove();
+            p.el.classList.remove('is-3d');
+          });
+          return;
+        }
+      }
     }
     gsap.ticker.add(tique);
     escolher();
