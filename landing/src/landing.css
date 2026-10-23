@@ -364,7 +364,7 @@ a { color: inherit; }
 /* Plano 3D entre as cenas: tela de cinema (2,39:1) no fluxo da página, na largura das cenas e por cima da via, que
    entra e sai dela. Por baixo de tudo, um cartaz em SVG (a avenida à noite, #plano-cartaz) que vale sem JavaScript e
    sem WebGL; por cima, o quadro congelado (canvas 2D) e o canvas 3D, quando o plano está em cena. */
-.plano { position: relative; z-index: 2; margin: calc(var(--vao) * -0.3) 0; }
+.plano { position: relative; z-index: 2; margin: calc(var(--vao) * -0.3) 0 0; }
 .plano__tela {
   position: relative; aspect-ratio: 2.39 / 1; border-radius: 18px; overflow: hidden; isolation: isolate; background: #05080d;
   box-shadow: 0 0 0 1px rgb(15 26 43 / 0.12), 0 60px 90px -54px rgb(10 19 34 / 0.85), 0 24px 40px -30px rgb(10 19 34 / 0.5);
@@ -375,19 +375,30 @@ a { color: inherit; }
 .plano__tarja { position: absolute; left: 0; right: 0; z-index: 2; height: 11%; background: #000; transform: scaleY(0); pointer-events: none; }
 .plano__tarja--cima { top: 0; transform-origin: 50% 0; }
 .plano__tarja--baixo { bottom: 0; transform-origin: 50% 100%; }
-.plano__rotulo, .plano__estado {
+.plano__rotulo {
   position: absolute; z-index: 3; display: inline-flex; align-items: center; gap: 10px; margin: 0;
   font-size: 0.74rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; line-height: 1;
   color: rgb(237 241 247 / 0.86); text-shadow: 0 1px 8px rgb(0 0 0 / 0.6); pointer-events: none;
 }
 .plano__rotulo { top: clamp(14px, 2.2vw, 26px); left: clamp(14px, 2.4vw, 30px); }
 .plano__rotulo span { padding: 4px 7px 3px; border-radius: 5px; box-shadow: inset 0 0 0 1.5px rgb(124 245 225 / 0.75); color: var(--turquesa); letter-spacing: 0.08em; }
-.plano__estado { display: none; bottom: clamp(14px, 2.2vw, 26px); left: clamp(14px, 2.4vw, 30px); padding: 7px 11px 6px; border-radius: 6px; background: rgb(5 8 13 / 0.62); }
-.plano__estado::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--cor-fase, #ff3a24); box-shadow: 0 0 10px var(--cor-fase, #ff3a24); }
-.plano.is-3d .plano__estado:not(:empty) { display: inline-flex; }
-.plano__estado[data-fase="execucao"] { --cor-fase: var(--ambar); }
-.plano__estado[data-fase="concluida"] { --cor-fase: var(--turquesa); }
 .plano__legenda { max-width: min(46em, calc(50% - 48px)); margin-top: 14px; font-size: 0.9rem; color: var(--apagado); }
+/* ---------- Enfeites 3D (enfeites.js): objetos de fundo transparente apoiados na borda das capturas ----------
+   Decoração (aria-hidden): escondidos até o primeiro quadro, e ausentes sem WebGL. Nas cenas ficam na quina de cima
+   da captura, do lado de fora (longe da via), com a base sobre a borda: avançam só ~6% do tamanho sobre a imagem e
+   nunca passam da janela. Abaixo de 900 px (cenas em coluna) saem; o mapa e o mapa de calor precisam do lado direito
+   livre dos títulos e saem abaixo de 1180 px. */
+.enfeite { position: absolute; z-index: 3; width: var(--enfeite); aspect-ratio: 1; pointer-events: none; visibility: hidden; }
+.enfeite.is-3d { visibility: visible; }
+.enfeite canvas { display: block; width: 100%; height: 100%; }
+.enfeite--quina { --enfeite: clamp(112px, 12vw, 172px); top: calc(-0.94 * var(--enfeite)); right: calc(-0.2 * var(--enfeite)); }
+.cena--inversa .enfeite--quina { right: auto; left: calc(-0.2 * var(--enfeite)); }
+.vitrine { position: relative; }
+.enfeite--mapa { --enfeite: clamp(160px, 16vw, 236px); top: calc(-0.97 * var(--enfeite)); right: 1.5%; }
+.planejar__cabeca { position: relative; }
+.enfeite--calor { --enfeite: clamp(190px, 18vw, 270px); top: -14px; right: -10px; }
+@media (max-width: 1179.98px) { .enfeite--mapa, .enfeite--calor { display: none; } }
+@media (max-width: 899.98px) { .enfeite--quina { display: none; } }
 /* Selo, nota de limites e detalhamento opcional dentro das cenas. */
 .selo {
   display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px 10px; padding: 5px 10px 3px; border-radius: 6px;

@@ -1,8 +1,7 @@
 /*
- * Planos 3D das cenas de recursos: tomadas noturnas numa avenida, uma depois de cada cena com plano (inventário,
- * manutenção, revisões). Um único mundo — avenida, prédios, postes, trânsito — com três cenários ao longo dela; cada
- * plano é um caminho de câmera ligado à rolagem e um arranjo de luzes. O renderer é próprio (a hero continua com o
- * dela) e o canvas é emprestado ao plano em cena por planos.js: nada é copiado a cada quadro.
+ * Plano 3D das cenas de recursos: uma tomada noturna numa avenida, com uma lombada eletrônica em serviço. Um mundo —
+ * avenida, prédios, postes, trânsito — e um caminho de câmera ligado à rolagem. O renderer é próprio (a hero continua
+ * com o dela) e o canvas é emprestado ao plano em cena por planos.js: nada é copiado a cada quadro.
  *
  * Coordenadas em metros. A avenida corre ao longo de z, com o horizonte em -z. Do lado direito (x > 0) o trânsito vai
  * para -z (lanternas); do esquerdo, vem para +z (faróis). Chão em y = 0. Tudo é gerado aqui (geometria e texturas em
@@ -11,10 +10,10 @@
 import {
   AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, CatmullRomCurve3, Color,
   CylinderGeometry, DirectionalLight, DoubleSide, DynamicDrawUsage, ExtrudeGeometry, FogExp2, Group, HalfFloatType,
-  HemisphereLight, IcosahedronGeometry, InstancedMesh, LatheGeometry, MathUtils, Mesh, MeshBasicMaterial,
+  HemisphereLight, IcosahedronGeometry, InstancedMesh, MathUtils, Mesh, MeshBasicMaterial,
   MeshStandardMaterial, Object3D, PCFShadowMap, PerspectiveCamera, PlaneGeometry, PointLight, Quaternion,
-  RepeatWrapping, Scene, ShaderMaterial, Shape, SphereGeometry, SpotLight, Sprite, SpriteMaterial, SRGBColorSpace,
-  TorusGeometry, UniformsLib, UniformsUtils, Vector2, Vector3, WebGLRenderer, WebGLRenderTarget, ACESFilmicToneMapping,
+  RepeatWrapping, Scene, ShaderMaterial, Shape, SphereGeometry, SpotLight, SRGBColorSpace,
+  UniformsLib, UniformsUtils, Vector2, Vector3, WebGLRenderer, WebGLRenderTarget, ACESFilmicToneMapping,
   BackSide,
 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -33,14 +32,10 @@ const FAIXAS = [
   { x: 2.75, dir: -1, v: 11.2 }, { x: 6.25, dir: -1, v: 13.1 },
   { x: -2.75, dir: 1, v: 12.4 }, { x: -6.25, dir: 1, v: 10.6 },
 ];
-const CENARIO = { radar: 0, manutencao: -150, revisoes: -300 };
+const CENARIO = { radar: 0 };
 const LIMITE = 40; // km/h da lombada
 // Pose de repouso de cada plano (movimento reduzido): o quadro mais legível do caminho.
-export const REPOUSO = { radar: 0.52, manutencao: 0.32, revisoes: 0.14 };
-const PRIORIDADES = [
-  { tipo: 'cancela', z: -289, valor: 32 }, { tipo: 'patinete', z: -296.5, valor: 27 },
-  { tipo: 'lombada', z: -304, valor: 18 }, { tipo: 'camera', z: -311.5, valor: 9 },
-];
+export const REPOUSO = { radar: 0.52 };
 
 // ---------- Utilidades ----------
 function aleatorio(semente) {
@@ -57,8 +52,6 @@ const suave = (a, b, x) => {
   return t * t * (3 - 2 * t);
 };
 const linear = (hex, k = 1) => new Color(hex).multiplyScalar(k);
-/** O mesmo, numa cor que já existe (para o que muda a cada quadro). */
-const tingir = (cor, hex, k) => cor.set(hex).multiplyScalar(k);
 
 function imagem(w, h, desenhar) {
   const c = document.createElement('canvas');
@@ -274,7 +267,7 @@ function desenharPainel(g, valor) {
   g.fillText('km/h', 184, 103);
 }
 
-// ---------- Materiais com shader (luz no ar, hologramas) ----------
+// ---------- Material com shader (luz no ar) ----------
 const FOG_GLSL = /* glsl */ `
   float neblina() {
     #ifdef USE_FOG
@@ -325,50 +318,6 @@ function materialFacho(cor, intensidade) {
         float borda = pow(abs(dot(normalize(vNormal), normalize(vVista))), 1.8);
         float queda = mix(0.06, 1.0, pow(vAltura, 2.2));
         float a = intensidade * borda * queda * (1.0 - neblina());
-        gl_FragColor = vec4(cor * a, 1.0);
-      }`,
-    transparent: true, depthWrite: false, blending: AdditiveBlending, side: DoubleSide, fog: true,
-  });
-}
-
-/** Coluna de prioridade (holograma): borda acesa, faixas que sobem, topo marcado; cresce com "altura". */
-function materialColuna(cor) {
-  return new ShaderMaterial({
-    uniforms: UniformsUtils.merge([UniformsLib.fog, {
-      cor: { value: linear(cor) }, tempo: { value: 0 }, altura: { value: 1 }, brilho: { value: 1 },
-    }]),
-    vertexShader: /* glsl */ `
-      #include <common>
-      #include <fog_pars_vertex>
-      varying vec2 vUv;
-      varying vec3 vNormal;
-      varying vec3 vVista;
-      void main() {
-        vUv = uv;
-        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        vNormal = normalize(normalMatrix * normal);
-        vVista = normalize(-mvPosition.xyz);
-        gl_Position = projectionMatrix * mvPosition;
-        #include <fog_vertex>
-      }`,
-    fragmentShader: /* glsl */ `
-      uniform vec3 cor;
-      uniform float tempo;
-      uniform float altura;
-      uniform float brilho;
-      #include <common>
-      #include <fog_pars_fragment>
-      varying vec2 vUv;
-      varying vec3 vNormal;
-      varying vec3 vVista;
-      ${FOG_GLSL}
-      void main() {
-        if (vUv.y > altura) discard;
-        float borda = 1.0 - abs(dot(normalize(vNormal), normalize(vVista)));
-        float faixas = 0.55 + 0.45 * smoothstep(0.35, 0.5, abs(fract(vUv.y * 14.0 - tempo * 0.35) - 0.5));
-        float topo = smoothstep(altura - 0.035, altura, vUv.y);
-        float a = (0.16 + 0.9 * pow(borda, 2.2)) * faixas + topo * 2.2;
-        a *= mix(0.55, 1.0, vUv.y) * brilho * (1.0 - neblina());
         gl_FragColor = vec4(cor * a, 1.0);
       }`,
     transparent: true, depthWrite: false, blending: AdditiveBlending, side: DoubleSide, fog: true,
@@ -459,10 +408,9 @@ export function criarMundo({ celular }) {
   chave.shadow.normalBias = 0.012;
   chave.shadow.camera.near = 1;
   chave.shadow.camera.far = 40;
-  const giro = new SpotLight(COR.ambar, 0, 26, 0.42, 0.7, 1.4);
   const ponto1 = new PointLight(COR.ambar, 0, 14, 2);
   const ponto2 = new PointLight(COR.turquesa, 0, 14, 2);
-  cena.add(ceuLuz, lua, chave, chave.target, giro, giro.target, ponto1, ponto2);
+  cena.add(ceuLuz, lua, chave, chave.target, ponto1, ponto2);
 
   // ---------- Avenida ----------
   const larguraChao = 120;
@@ -571,13 +519,12 @@ export function criarMundo({ celular }) {
   // ---------- Postes: instâncias dos dois lados, com o cone de luz no ar e a poça no chão ----------
   const postes = [];
   // Perto dos cenários, os postes do lado da cena saem da frente da câmera e um fica logo atrás da peça (luz de recorte).
-  const livre = (lado, z) => !(lado > 0 && (Math.abs(z - CENARIO.radar) < 12 || (z < -268 && z > -322)))
-    && !(lado < 0 && Math.abs(z - CENARIO.manutencao) < 16);
+  const livre = (lado, z) => !(lado > 0 && Math.abs(z - CENARIO.radar) < 12);
   for (let z = VIA.z0 + 10; z > VIA.z0 - VIA.comprimento - 40; z -= 32) {
     if (livre(1, z)) postes.push({ x: VIA.borda + 0.7, z, lado: 1 });
     if (livre(-1, z - 16)) postes.push({ x: -VIA.borda - 0.7, z: z - 16, lado: -1 });
   }
-  postes.push({ x: VIA.borda + 0.7, z: CENARIO.radar - 12, lado: 1 }, { x: VIA.borda + 0.7, z: -300.2, lado: 1 });
+  postes.push({ x: VIA.borda + 0.7, z: CENARIO.radar - 12, lado: 1 });
   const BRACO = 2.6;
   const ALTURA_POSTE = 8.6;
   const posteGeo = juntar([
@@ -647,7 +594,7 @@ export function criarMundo({ celular }) {
   const arvoresPos = [];
   for (let z = VIA.z0; z > VIA.z0 - VIA.comprimento; z -= 13 + r() * 9) {
     // Fora dos cenários e dos caminhos de câmera (uma copa na frente da lente vira um borrão escuro).
-    if ([[-18, 60], [CENARIO.manutencao - 18, CENARIO.manutencao + 36], [-322, -252]].some(([a, b]) => z > a && z < b)) continue;
+    if (z > -18 && z < 60) continue;
     arvoresPos.push(z);
   }
   const arvores = new InstancedMesh(copaGeo, new MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }), arvoresPos.length);
@@ -844,208 +791,12 @@ export function criarMundo({ celular }) {
   });
   cena.add(lomb.g);
 
-  // ---------- Cenário 2: manutenção de um radar de braço na calçada da esquerda ----------
-  const Z2 = CENARIO.manutencao;
-  const XE = -VIA.borda - 1.4;
-  const radarBraco = new Group();
-  const estrutura = new Mesh(juntar([
-    pintar(cilindro(0.13, 0.17, 6.2, 14, 0, 3.1, 0), '#5a6472'),
-    pintar(cilindro(0.08, 0.08, 4.6, 10).rotateZ(Math.PI / 2).translate(2.3, 6.0, 0), '#5a6472'),
-    pintar(caixa(0.72, 0.42, 0.5, 4.3, 5.68, 0), '#aeb6c1'),
-    pintar(caixa(0.8, 0.06, 0.62, 4.3, 5.92, 0.04), '#c9cfd8'),
-    pintar(caixa(0.3, 0.3, 0.06, 4.3, 5.68, 0.27), '#0b0e13'),
-    pintar(caixa(0.36, 0.24, 0.3, 3.55, 5.62, 0), '#d3d8de'),
-  ]), new MeshStandardMaterial({ vertexColors: true, roughness: 0.45, metalness: 0.4 }));
-  estrutura.castShadow = true;
-  // Anel de situação na câmera: vermelho (falha), âmbar (em execução), turquesa (concluída).
-  const matSituacao = new MeshBasicMaterial({ color: linear('#ff3a24', 3) });
-  const anel = new Mesh(new TorusGeometry(0.2, 0.028, 8, 40), matSituacao);
-  anel.position.set(4.3, 5.68, 0.31);
-  // Gabinete com porta que abre e o miolo aceso.
-  const gabinete = new Mesh(extrusao(retangulo(0.9, 1.4, 0.06), 0.55, 0.03), new MeshStandardMaterial({ color: '#c9ced6', roughness: 0.5, metalness: 0.35 }));
-  gabinete.position.set(0.85, 0.86, 0);
-  gabinete.castShadow = true;
-  gabinete.receiveShadow = true;
-  const miolo = new Mesh(new PlaneGeometry(0.72, 1.18), new MeshBasicMaterial({
-    map: textura(imagem(64, 96, (c) => {
-      c.fillStyle = '#071410';
-      c.fillRect(0, 0, 64, 96);
-      const rr = aleatorio(3);
-      for (let i = 0; i < 70; i++) {
-        c.fillStyle = rr() > 0.7 ? '#ffb21a' : rr() > 0.4 ? '#4dffb0' : '#7cf5e1';
-        c.globalAlpha = 0.4 + rr() * 0.6;
-        c.fillRect(Math.floor(rr() * 14) * 4 + 4, Math.floor(rr() * 22) * 4 + 4, 2, 2);
-      }
-    })), color: linear('#ffffff', 0.9),
-  }));
-  miolo.position.set(0.85, 0.86, 0.281);
-  const dobradica = new Group();
-  dobradica.position.set(0.85 - 0.45, 0.86, 0.29);
-  const porta = new Mesh(new BoxGeometry(0.88, 1.36, 0.03).translate(0.44, 0, 0), new MeshStandardMaterial({ color: '#bfc5ce', roughness: 0.45, metalness: 0.4 }));
-  porta.castShadow = true;
-  dobradica.add(porta);
-  radarBraco.add(estrutura, anel, gabinete, miolo, dobradica);
-  // Na calçada da esquerda, o braço avança sobre a pista (+x), com a câmera voltada para o trânsito que vem.
-  radarBraco.position.set(XE, 0.16, Z2);
-  cena.add(radarBraco);
-  // Furgão de serviço na calçada, com a barra de luz âmbar girando.
-  const furgaoGeo = juntar([
-    pintar(extrusao(perfil([[-2.6, 0.38], [2.6, 0.38], [2.62, 1.12], [2.35, 1.32], [1.72, 2.12], [1.25, 2.28], [-2.5, 2.3], [-2.62, 2.18]]), 2.0, 0.08), '#e4e7eb'),
-    pintar(extrusao(perfil([[2.34, 1.34], [1.72, 2.1], [1.18, 2.1], [1.18, 1.36]]), 2.04, 0.05), new Color(0.02, 0.025, 0.03)),
-    pintar(caixa(5.1, 0.16, 2.04, 0, 1.1, 0), '#ff7a1a'),
-    ...[[-1.7, 0.85], [-1.7, -0.85], [1.75, 0.85], [1.75, -0.85]].map(([x, z]) => pintar(cilindro(0.38, 0.38, 0.26, 14).rotateX(Math.PI / 2).translate(x, 0.38, z), new Color(0.01, 0.01, 0.012))),
-  ]).rotateY(-Math.PI / 2);
-  const furgao = new Mesh(furgaoGeo, new MeshStandardMaterial({ vertexColors: true, roughness: 0.36, metalness: 0.3 }));
-  furgao.position.set(-VIA.borda - 2.3, 0.16, Z2 - 8);
-  furgao.castShadow = true;
-  const matBarra = new MeshBasicMaterial({ color: linear(COR.ambar, 1) });
-  const barra = new Mesh(new BoxGeometry(1.25, 0.13, 0.28), matBarra);
-  barra.position.set(furgao.position.x, 2.56, furgao.position.z + 1.0);
-  barra.rotation.y = Math.PI / 2;
-  const fachoGiro = new Mesh(new CylinderGeometry(0.15, 2.4, 9, 24, 1, true).rotateZ(Math.PI / 2).translate(4.5, 0, 0), materialFacho(COR.ambar, 0.0));
-  fachoGiro.position.copy(barra.position);
-  cena.add(furgao, barra, fachoGiro);
-  // Cones com faixas refletivas, isolando a área de trabalho.
-  const coneGeo = juntar([
-    pintar(new LatheGeometry([[0.001, 0.74], [0.04, 0.74], [0.16, 0.06], [0.001, 0.06]].map(([x, y]) => new Vector2(x, y)), 18), '#ff5a14'),
-    pintar(new LatheGeometry([[0.083, 0.5], [0.112, 0.36], [0.107, 0.36], [0.078, 0.5]].map(([x, y]) => new Vector2(x, y)), 18).scale(1.04, 1, 1.04), new Color(1.3, 1.3, 1.3)),
-    pintar(new LatheGeometry([[0.122, 0.3], [0.142, 0.2], [0.137, 0.2], [0.117, 0.3]].map(([x, y]) => new Vector2(x, y)), 18).scale(1.04, 1, 1.04), new Color(1.3, 1.3, 1.3)),
-    pintar(caixa(0.42, 0.05, 0.42, 0, 0.025, 0), '#1a1a1a'),
-  ]);
-  const posCones = [[-7.72, Z2 + 4.6], [-7.72, Z2 + 2.4], [-7.72, Z2 + 0.2], [-7.72, Z2 - 2.0], [-7.72, Z2 - 4.2], [-8.7, Z2 - 5.4]];
-  const cones = new InstancedMesh(coneGeo, new MeshStandardMaterial({ vertexColors: true, roughness: 0.55 }), posCones.length);
-  posCones.forEach(([x, z], i) => {
-    aux.position.set(x, x < -VIA.borda ? 0.16 : 0, z);
-    aux.rotation.set(0, i, 0);
-    aux.updateMatrix();
-    cones.setMatrixAt(i, aux.matrix);
-  });
-  cones.castShadow = true;
-  cena.add(cones);
-  // Refletor de trabalho num tripé, apontado para o gabinete.
-  const refletor = new Group();
-  const tripe = new Mesh(juntar([
-    ...[0, 2.1, 4.2].map((a) => pintar(cilindro(0.018, 0.018, 1.7, 5).translate(0, 0.85, 0).rotateZ(0.22).rotateY(a), '#2a2f36')),
-    pintar(cilindro(0.025, 0.025, 0.9, 6, 0, 1.95, 0), '#2a2f36'),
-    pintar(caixa(0.5, 0.36, 0.14, 0, 2.45, 0), '#22262c'),
-  ]), new MeshStandardMaterial({ vertexColors: true, roughness: 0.6, metalness: 0.5 }));
-  const lampadaRefletor = new Mesh(new PlaneGeometry(0.42, 0.28), new MeshBasicMaterial({ color: linear('#eef4ff', 0) }));
-  lampadaRefletor.position.set(0, 2.45, 0.075);
-  refletor.add(tripe, lampadaRefletor);
-  refletor.position.set(XE - 1.2, 0.16, Z2 + 2.6);
-  refletor.lookAt(XE + 0.85, 1.0, Z2);
-  cena.add(refletor);
-
-  // ---------- Cenário 3: equipamentos lado a lado, com a prioridade de revisão ----------
-  const XR = VIA.borda + 2.0;
-  const LADO_COLUNA = -1.9;
-  const pecasRevisao = [];
-  for (const item of PRIORIDADES) {
-    const g = new Group();
-    if (item.tipo === 'cancela') {
-      const listras = textura(imagem(256, 16, (c) => {
-        for (let i = 0; i < 8; i++) {
-          c.fillStyle = i % 2 ? '#f4f4f4' : '#d81f26';
-          c.fillRect(i * 32, 0, 32, 16);
-        }
-      }));
-      const poste = new Mesh(extrusao(retangulo(0.42, 1.1, 0.05), 0.36, 0.03).translate(0, 0.55, 0), new MeshStandardMaterial({ color: '#f2b705', roughness: 0.5, metalness: 0.2 }));
-      const braco = new Mesh(new BoxGeometry(0.1, 0.1, 3.6).translate(0, 0, -1.8),
-        new MeshStandardMaterial({ map: listras, emissiveMap: listras, emissive: '#ffffff', emissiveIntensity: 0.22, roughness: 0.4 }));
-      braco.position.set(0, 0.92, -0.1);
-      g.add(poste, braco);
-    } else if (item.tipo === 'patinete') {
-      const patinete = new Mesh(juntar([
-        pintar(caixa(0.17, 0.05, 1.0, 0, 0.12, 0), '#1c232c'),
-        pintar(cilindro(0.025, 0.025, 1.05, 8).rotateX(-0.22).translate(0, 0.62, -0.5), '#3a4452'),
-        pintar(cilindro(0.02, 0.02, 0.52, 8).rotateZ(Math.PI / 2).translate(0, 1.14, -0.62), '#3a4452'),
-        ...[-0.5, 0.48].map((z) => pintar(cilindro(0.1, 0.1, 0.05, 14).rotateZ(Math.PI / 2).translate(0, 0.1, z), '#0b0d10')),
-      ]), new MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.5 }));
-      const farolete = new Mesh(new BoxGeometry(0.06, 0.04, 0.02), matTurquesa);
-      farolete.position.set(0, 1.02, -0.58);
-      patinete.rotation.z = 0.12;
-      g.add(patinete, farolete);
-    } else if (item.tipo === 'lombada') {
-      g.add(lombada(0.72, false).g);
-    } else {
-      const camera = new Mesh(juntar([
-        pintar(cilindro(0.08, 0.1, 4.6, 12, 0, 2.3, 0), '#5a6472'),
-        pintar(cilindro(0.04, 0.04, 0.9, 8).rotateX(Math.PI / 2).translate(0, 4.5, -0.45), '#5a6472'),
-        pintar(cilindro(0.2, 0.2, 0.12, 20, 0, 4.42, -0.9), '#e5e8ec'),
-        pintar(new SphereGeometry(0.18, 20, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).translate(0, 4.37, -0.9), new Color(0.02, 0.025, 0.035)),
-      ]), new MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.5 }));
-      g.add(camera);
-    }
-    g.traverse((o) => {
-      if (o.isMesh) {
-        o.castShadow = true;
-        o.receiveShadow = true;
-      }
-    });
-    g.position.set(XR, 0.16, item.z);
-    cena.add(g);
-    // Coluna de prioridade atrás e ao lado da peça (as duas aparecem de frente), base em anel e o número no topo.
-    const principal = item === PRIORIDADES[0];
-    const cor = principal ? COR.ambar : COR.turquesa;
-    const alturaColuna = 0.6 + item.valor * 0.1;
-    const coluna = new Mesh(new CylinderGeometry(0.3, 0.3, alturaColuna, 32, 1, true).translate(0, alturaColuna / 2, 0), materialColuna(cor));
-    coluna.position.set(XR + 1.2, 0.16, item.z + LADO_COLUNA);
-    const base = new Mesh(new TorusGeometry(0.42, 0.025, 6, 48).rotateX(Math.PI / 2), new MeshBasicMaterial({ color: linear(cor, 2.2), transparent: true, blending: AdditiveBlending, depthWrite: false }));
-    base.position.set(XR + 1.2, 0.19, item.z + LADO_COLUNA);
-    const telaRotulo = document.createElement('canvas');
-    telaRotulo.width = 256;
-    telaRotulo.height = 128;
-    const texRotulo = textura(telaRotulo);
-    const desenharRotulo = () => {
-      const c = telaRotulo.getContext('2d');
-      c.clearRect(0, 0, 256, 128);
-      c.fillStyle = '#ffffff';
-      c.textBaseline = 'alphabetic';
-      c.font = '800 84px Overpass, system-ui, sans-serif';
-      const w = c.measureText(String(item.valor)).width;
-      c.font = '700 34px Overpass, system-ui, sans-serif';
-      const w2 = c.measureText('/100').width;
-      const x = (256 - w - w2 - 6) / 2;
-      c.font = '800 84px Overpass, system-ui, sans-serif';
-      c.fillText(String(item.valor), x, 100);
-      c.globalAlpha = 0.72;
-      c.font = '700 34px Overpass, system-ui, sans-serif';
-      c.fillText('/100', x + w + 6, 100);
-      texRotulo.needsUpdate = true;
-    };
-    desenharRotulo();
-    fontePronta.then(desenharRotulo);
-    const rotulo = new Sprite(new SpriteMaterial({ map: texRotulo, color: linear(cor, principal ? 2.4 : 1.6), transparent: true, depthWrite: false, fog: true }));
-    rotulo.scale.set(1.3, 0.65, 1);
-    rotulo.position.set(XR + 1.2, 0.16 + alturaColuna + 0.55, item.z + LADO_COLUNA);
-    cena.add(coluna, base, rotulo);
-    pecasRevisao.push({ item, coluna, base, rotulo, alturaColuna, principal });
-  }
-  // Varredura: linha no chão e uma cortina de luz que corre ao longo das peças.
-  const varredura = new Group();
-  const linha = new Mesh(new PlaneGeometry(4.6, 0.35).rotateX(-Math.PI / 2), new MeshBasicMaterial({ color: linear(COR.turquesa, 3), alphaMap: tex.mancha, transparent: true, blending: AdditiveBlending, depthWrite: false }));
-  linha.position.y = 0.2;
-  const cortina = new Mesh(new PlaneGeometry(4.6, 4.5).translate(0, 2.25, 0), new MeshBasicMaterial({ color: linear(COR.turquesa, 0.32), alphaMap: tex.rastro, transparent: true, blending: AdditiveBlending, depthWrite: false, side: DoubleSide }));
-  varredura.add(linha, cortina);
-  varredura.position.set(XR + 0.1, 0, PRIORIDADES[0].z + 6);
-  cena.add(varredura);
-
   // ---------- Câmeras: caminhos ligados à rolagem (p de 0 a 1) ----------
   const caminho = (pontos) => new CatmullRomCurve3(pontos.map((p) => new Vector3(...p)), false, 'centripetal');
   const CAMINHOS = {
     radar: {
       pos: caminho([[-4, 26, 52], [1, 15, 32], [6.5, 6, 18], [10.7, 2.0, 7.2]]),
       alvo: caminho([[5, 0, -8], [7, 1, -4], [8.6, 2.2, -1], [9.1, 2.95, -0.4]]),
-    },
-    manutencao: {
-      pos: caminho([[8, 14, Z2 + 32], [1.5, 6.8, Z2 + 18], [-4.5, 4.2, Z2 + 11.5], [-4.6, 2.1, Z2 + 8.6], [-4.4, 4.4, Z2 + 6.4], [-3.0, 6.7, Z2 + 5.2]]),
-      alvo: caminho([[-7.5, 2.5, Z2], [-8.3, 1.8, Z2], [-8.6, 1.5, Z2 - 0.1], [-8.7, 1.4, Z2 - 0.2], [-7.4, 3.6, Z2], [-5.3, 5.75, Z2]]),
-    },
-    revisoes: {
-      // De frente para a calçada, do canteiro e acima dos carros: um travelling que passa por cada equipamento, da maior
-      // prioridade para a menor.
-      pos: caminho([[0.6, 4.6, -282], [0.8, 4.2, -289.5], [0.8, 4.2, -297], [0.8, 4.2, -304.5], [0.8, 4.2, -312]]),
-      alvo: caminho([[10.8, 2.1, -288], [10.8, 2.3, -289.5], [10.8, 2.3, -297], [10.8, 2.3, -304.5], [10.8, 2.3, -312]]),
     },
   };
   const posCam = new Vector3();
@@ -1064,56 +815,24 @@ export function criarMundo({ celular }) {
   composer.addPass(filme);
   if (celular) filme.uniforms.grao.value = 0.035;
 
-  // ---------- Arranjos de luz por plano ----------
-  function arranjar(nome) {
-    for (const l of [chave, giro, ponto1, ponto2]) l.intensity = 0;
-    ponto2.distance = 14;
-    fachoGiro.material.uniforms.intensidade.value = 0;
-    if (nome === 'radar') {
-      chave.color.set('#ffd2a0');
-      chave.position.copy(LUZ_RADAR);
-      chave.target.position.set(VIA.borda + 1.5, 0, CENARIO.radar);
-      chave.angle = 0.85;
-      chave.distance = 30;
-      chave.intensity = 260;
-      ponto1.color.set(COR.ambar);
-      ponto1.position.set(VIA.borda + 1.2, 3.0, CENARIO.radar + 1.2);
-      ponto2.position.set(VIA.borda + 1.2, 3.55, CENARIO.radar + 0.6);
-    } else if (nome === 'manutencao') {
-      chave.color.set('#eef4ff');
-      chave.position.set(XE - 1.2, 2.6, Z2 + 2.6);
-      chave.target.position.set(XE + 0.85, 0.9, Z2);
-      chave.angle = 0.5;
-      chave.distance = 16;
-      giro.position.copy(barra.position);
-      ponto1.color.set('#9fffe0');
-      ponto1.position.set(XE + 0.85, 0.95, Z2 + 0.75);
-      ponto2.position.set(XE + 4.3, 5.3, Z2 + 1.4);
-      ponto2.distance = 5;
-    } else {
-      chave.color.set('#ffd2a0');
-      chave.position.copy(lampadaPerto(1, PRIORIDADES[1].z));
-      chave.target.position.set(XR, 0, PRIORIDADES[1].z);
-      chave.angle = 0.95;
-      chave.distance = 30;
-      chave.intensity = 220;
-      ponto1.color.set(COR.ambar);
-      ponto1.position.set(XR + 0.9, 2.2, PRIORIDADES[0].z);
-      ponto2.position.set(XR + 0.9, 1.6, PRIORIDADES[2].z);
-    }
-    chave.target.updateMatrixWorld();
-  }
+  // ---------- Luz da cena: o poste atrás da lombada e o brilho do painel e do sensor ----------
+  chave.color.set('#ffd2a0');
+  chave.position.copy(LUZ_RADAR);
+  chave.target.position.set(VIA.borda + 1.5, 0, CENARIO.radar);
+  chave.angle = 0.85;
+  chave.distance = 30;
+  chave.intensity = 260;
+  chave.target.updateMatrixWorld();
+  ponto1.color.set(COR.ambar);
+  ponto1.position.set(VIA.borda + 1.2, 3.0, CENARIO.radar + 1.2);
+  ponto2.position.set(VIA.borda + 1.2, 3.55, CENARIO.radar + 0.6);
+  ponto2.intensity = 2.2;
 
   // ---------- Quadro ----------
-  let arranjado = null;
   // Sem pós-processamento: desenho direto no canvas (tone mapping do renderer, sem bloom nem filme). Usado quando a
   // placa de vídeo devolve a imagem intermediária (ponto flutuante, antisserrilhado) preta.
   let direto = false;
   function quadro(nome, { p, t, parado }) {
-    if (arranjado !== nome) {
-      arranjar(nome);
-      arranjado = nome;
-    }
     // e = andamento da história. O plano fica inteiro na janela mais ou menos de p = 0,37 a 0,63; a história corre de
     // p = 0,04 a 0,6, então já terminou quando o plano chega ao meio da tela e começa a sair.
     const e = MathUtils.clamp((p - 0.04) / 0.56, 0, 1);
@@ -1132,103 +851,52 @@ export function criarMundo({ celular }) {
     ceu.position.copy(posCam);
     refletir(posCam);
     // Um leve giro no eixo da lente (dutch) que se desfaz ao chegar.
-    q.setFromAxisAngle(EIXO_Z, (1 - e) * (nome === 'manutencao' ? -0.05 : 0.04));
+    q.setFromAxisAngle(EIXO_Z, (1 - e) * 0.04);
     camera.quaternion.multiply(q);
     posicionarTransito(t);
-    let info = null;
 
-    if (nome === 'radar') {
-      // Leitura: o painel mostra a velocidade do último veículo das faixas da direita que cruzou os laços. O instante da
-      // passagem sai da posição (z = z0 − s − v·t), então não depende da taxa de quadros.
-      const dist = VIA.z0 - (CENARIO.radar + 11.5);
-      let ultimaLeitura = -99;
-      for (const v of veiculos) {
-        if (v.faixa.dir > 0) continue;
-        const voltas = Math.floor((v.faixa.v * t + v.s - dist) / VIA.comprimento);
-        const quando = (dist - v.s + voltas * VIA.comprimento) / v.faixa.v;
-        if (quando <= t && quando > ultimaLeitura) {
-          ultimaLeitura = quando;
-          lomb.ultima = Math.round(v.faixa.v * 3.6) + v.jitter;
-          lomb.faixaLida = FAIXAS.indexOf(v.faixa);
-        }
+    // Leitura: o painel mostra a velocidade do último veículo das faixas da direita que cruzou os laços. O instante da
+    // passagem sai da posição (z = z0 − s − v·t), então não depende da taxa de quadros.
+    const dist = VIA.z0 - (CENARIO.radar + 11.5);
+    let ultimaLeitura = -99;
+    for (const v of veiculos) {
+      if (v.faixa.dir > 0) continue;
+      const voltas = Math.floor((v.faixa.v * t + v.s - dist) / VIA.comprimento);
+      const quando = (dist - v.s + voltas * VIA.comprimento) / v.faixa.v;
+      if (quando <= t && quando > ultimaLeitura) {
+        ultimaLeitura = quando;
+        lomb.ultima = Math.round(v.faixa.v * 3.6) + v.jitter;
+        lomb.faixaLida = FAIXAS.indexOf(v.faixa);
       }
-      const desde = t - ultimaLeitura;
-      const valor = parado ? 38 : desde < 4.5 ? lomb.ultima : null;
-      if (valor !== lomb.valor) {
-        desenharPainel(lomb.ctx, valor);
-        lomb.texPainel.needsUpdate = true;
-        lomb.valor = valor;
-      }
-      lacos.forEach((l, i) => {
-        l.material.opacity = !parado && lomb.faixaLida === i ? Math.max(0, 1 - desde / 0.9) : 0;
-      });
-      ondas.forEach((o, i) => {
-        const fase = parado ? 0.35 + i * 0.22 : ((t * 0.8 + i / 3) % 1);
-        o.scale.setScalar(0.8 + fase * 2.2);
-        o.material.opacity = Math.sin(Math.PI * Math.min(fase * 1.3, 1)) * 0.75;
-      });
-      const acima = valor != null && valor > LIMITE;
-      ponto1.color.set(acima ? '#ff3a24' : COR.ambar);
-      ponto1.intensity = valor == null ? 1.2 : 5;
-      ponto2.intensity = 2.2;
-    } else if (nome === 'manutencao') {
-      // Da falha à conclusão, conforme a rolagem: porta, refletor, giroflex e o anel de situação.
-      const execucao = suave(0.24, 0.34, e) * (1 - suave(0.66, 0.76, e));
-      const fase = e < 0.28 ? 'falha' : e < 0.71 ? 'execucao' : 'concluida';
-      dobradica.rotation.y = -1.9 * execucao;
-      miolo.visible = execucao > 0.02;
-      chave.intensity = 55 * execucao;
-      tingir(lampadaRefletor.material.color, '#eef4ff', 4 * execucao);
-      const pisca = parado ? 1 : 0.55 + 0.45 * Math.sign(Math.sin(t * 7));
-      if (fase === 'falha') tingir(matSituacao.color, '#ff3a24', 2.4 * pisca);
-      else if (fase === 'execucao') tingir(matSituacao.color, COR.ambar, 2.4);
-      else tingir(matSituacao.color, COR.turquesa, 1.8);
-      ponto2.color.copy(matSituacao.color).multiplyScalar(0.3);
-      ponto2.intensity = 1.2;
-      ponto1.intensity = 0.2 * execucao;
-      const angulo = parado ? 3.7 : t * 4.2; // parado, o facho aponta para longe da lente
-      giro.intensity = 160 * execucao;
-      giro.target.position.set(barra.position.x + Math.cos(angulo) * 8, 0.2, barra.position.z + Math.sin(angulo) * 8);
-      giro.target.updateMatrixWorld();
-      fachoGiro.rotation.set(0, -angulo, 0);
-      fachoGiro.material.uniforms.intensidade.value = 0.22 * execucao;
-      tingir(matBarra.color, COR.ambar, 0.6 + 4 * execucao * (0.6 + 0.4 * Math.abs(Math.sin(angulo * 2))));
-      info = { fase };
-    } else {
-      // Revisões: a varredura passa pelas peças e as colunas sobem até a prioridade de cada uma.
-      const zv = MathUtils.lerp(PRIORIDADES[0].z + 3, PRIORIDADES[3].z - 3, MathUtils.clamp(e / 0.8, 0, 1));
-      varredura.position.z = zv;
-      const fimVarredura = suave(0.82, 0.92, e);
-      linha.material.opacity = 1 - fimVarredura;
-      cortina.material.opacity = 1 - fimVarredura;
-      for (const peca of pecasRevisao) {
-        const cresce = suave(peca.item.z + 1.5, peca.item.z - 1.5, zv - LADO_COLUNA);
-        peca.coluna.material.uniforms.altura.value = Math.max(0.001, cresce);
-        peca.coluna.material.uniforms.tempo.value = parado ? 0 : t;
-        peca.coluna.material.uniforms.brilho.value = peca.principal ? 1 + suave(0.1, 0.3, e) * 0.8 : 0.85;
-        peca.rotulo.position.y = 0.16 + peca.alturaColuna * cresce + 0.55;
-        peca.rotulo.material.opacity = suave(0.6, 1, cresce);
-        peca.base.material.opacity = 0.35 + cresce * 0.65;
-      }
-      ponto1.intensity = 6 * suave(0.05, 0.25, e);
-      ponto2.intensity = 1.5;
-      // A luz-chave acompanha o travelling: cada equipamento fica iluminado quando passa na frente da câmera.
-      chave.position.set(XR - 4, 6.5, posCam.z + 1.5);
-      chave.target.position.set(XR, 0.5, posCam.z - 0.5);
-      chave.target.updateMatrixWorld();
     }
+    const desde = t - ultimaLeitura;
+    const valor = parado ? 38 : desde < 4.5 ? lomb.ultima : null;
+    if (valor !== lomb.valor) {
+      desenharPainel(lomb.ctx, valor);
+      lomb.texPainel.needsUpdate = true;
+      lomb.valor = valor;
+    }
+    lacos.forEach((l, i) => {
+      l.material.opacity = !parado && lomb.faixaLida === i ? Math.max(0, 1 - desde / 0.9) : 0;
+    });
+    ondas.forEach((o, i) => {
+      const fase = parado ? 0.35 + i * 0.22 : ((t * 0.8 + i / 3) % 1);
+      o.scale.setScalar(0.8 + fase * 2.2);
+      o.material.opacity = Math.sin(Math.PI * Math.min(fase * 1.3, 1)) * 0.75;
+    });
+    const acima = valor != null && valor > LIMITE;
+    ponto1.color.set(acima ? '#ff3a24' : COR.ambar);
+    ponto1.intensity = valor == null ? 1.2 : 5;
 
     filme.uniforms.tempo.value = parado ? 0 : t;
     if (direto) renderer.render(cena, camera);
     else composer.render();
-    return info;
   }
 
   return {
     canvas,
     /** Compila os shaders sem travar a página (KHR_parallel_shader_compile quando existe). */
     preparar: () => {
-      arranjar('radar');
       posicionarTransito(0);
       refletir(camera.position);
       return renderer.compileAsync(cena, camera).catch(() => {});

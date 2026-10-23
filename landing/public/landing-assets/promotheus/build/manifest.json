@@ -1,20 +1,38 @@
 {
+  "_RoomEnvironment-LcFooO6X.js": {
+    "file": "RoomEnvironment-LcFooO6X.js",
+    "name": "RoomEnvironment",
+    "imports": [
+      "_three.module-BROWA2qQ.js"
+    ]
+  },
   "_three.module-BROWA2qQ.js": {
     "file": "three.module-BROWA2qQ.js",
     "name": "three.module"
   },
   "landing/src/cena3d.js": {
-    "file": "cena3d-BUipqxe9.js",
+    "file": "cena3d-BqTgD72D.js",
     "name": "cena3d",
     "src": "landing/src/cena3d.js",
     "isDynamicEntry": true,
     "imports": [
       "landing/src/pagina.js",
-      "_three.module-BROWA2qQ.js"
+      "_three.module-BROWA2qQ.js",
+      "_RoomEnvironment-LcFooO6X.js"
+    ]
+  },
+  "landing/src/enfeites3d.js": {
+    "file": "enfeites3d-Da3dRZ15.js",
+    "name": "enfeites3d",
+    "src": "landing/src/enfeites3d.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_three.module-BROWA2qQ.js",
+      "_RoomEnvironment-LcFooO6X.js"
     ]
   },
   "landing/src/landing.css": {
-    "file": "landing-dnbFtpPc.css",
+    "file": "landing-DdaczzXb.css",
     "name": "landing",
     "names": [
       "landing.css"
@@ -27,17 +45,18 @@
     ]
   },
   "landing/src/pagina.js": {
-    "file": "pagina-0rQpRmqY.js",
+    "file": "pagina-BvhF6W6h.js",
     "name": "pagina",
     "src": "landing/src/pagina.js",
     "isEntry": true,
     "dynamicImports": [
+      "landing/src/enfeites3d.js",
       "landing/src/cena3d.js",
       "landing/src/planos3d.js"
     ]
   },
   "landing/src/planos3d.js": {
-    "file": "planos3d-IrSmcGR3.js",
+    "file": "planos3d-DbCZEKpJ.js",
     "name": "planos3d",
     "src": "landing/src/planos3d.js",
     "isDynamicEntry": true,
