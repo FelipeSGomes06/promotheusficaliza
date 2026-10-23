@@ -36,7 +36,7 @@ const FAIXAS = [
 const CENARIO = { radar: 0, manutencao: -150, revisoes: -300 };
 const LIMITE = 40; // km/h da lombada
 // Pose de repouso de cada plano (movimento reduzido): o quadro mais legível do caminho.
-export const REPOUSO = { radar: 0.74, manutencao: 0.53, revisoes: 0.3 };
+export const REPOUSO = { radar: 0.52, manutencao: 0.32, revisoes: 0.14 };
 const PRIORIDADES = [
   { tipo: 'cancela', z: -289, valor: 32 }, { tipo: 'patinete', z: -296.5, valor: 27 },
   { tipo: 'lombada', z: -304, valor: 18 }, { tipo: 'camera', z: -311.5, valor: 9 },
@@ -476,13 +476,14 @@ export function criarMundo({ celular }) {
   const zc = VIA.z0 - VIA.comprimento / 2;
   const concreto = new Color('#3a414c');
   const guia = new Color('#8d96a3');
-  const largCalcada = VIA.calcada - VIA.borda;
+  // Calçada e canteiro encostam nas guias sem dividir face com elas (faces no mesmo plano piscam: z-fighting).
+  const largCalcada = VIA.calcada - VIA.borda - 0.18;
   const meioFio = juntar([
-    pintar(caixa(largCalcada, 0.16, comp, VIA.borda + largCalcada / 2, 0.08, zc), concreto),
-    pintar(caixa(largCalcada, 0.16, comp, -VIA.borda - largCalcada / 2, 0.08, zc), concreto),
+    pintar(caixa(largCalcada, 0.16, comp, VIA.borda + 0.18 + largCalcada / 2, 0.08, zc), concreto),
+    pintar(caixa(largCalcada, 0.16, comp, -VIA.borda - 0.18 - largCalcada / 2, 0.08, zc), concreto),
     pintar(caixa(0.18, 0.18, comp, VIA.borda + 0.09, 0.09, zc), guia),
     pintar(caixa(0.18, 0.18, comp, -VIA.borda - 0.09, 0.09, zc), guia),
-    pintar(caixa(VIA.canteiro * 2, 0.22, comp, 0, 0.11, zc), new Color('#1a2a20')),
+    pintar(caixa(VIA.canteiro * 2 - 0.24, 0.22, comp, 0, 0.11, zc), new Color('#1a2a20')),
     pintar(caixa(0.12, 0.24, comp, VIA.canteiro - 0.06, 0.12, zc), guia),
     pintar(caixa(0.12, 0.24, comp, -VIA.canteiro + 0.06, 0.12, zc), guia),
   ]);
@@ -761,8 +762,8 @@ export function criarMundo({ celular }) {
   function lombada(escala = 1, comPlaca = true) {
     const g = new Group();
     const corpo = new Mesh(juntar([
-      pintar(extrusao(retangulo(0.95, 1.05, 0.08), 0.6, 0.03).translate(0, 0.68, 0), '#1f2733'),
-      pintar(caixa(0.34, 1.5, 0.26, 0, 1.95, 0), '#26303d'),
+      pintar(extrusao(retangulo(0.95, 1.05, 0.08), 0.6, 0.03).translate(0, 0.525, 0), '#1f2733'),
+      pintar(caixa(0.34, 1.6, 0.26, 0, 1.8, 0), '#26303d'),
       pintar(extrusao(retangulo(1.56, 0.9, 0.1), 0.32, 0.04).translate(0, 3.0, 0), '#141a22'),
       pintar(caixa(0.6, 0.26, 0.34, 0, 3.6, 0), '#1a212b'),
     ]), new MeshStandardMaterial({ vertexColors: true, roughness: 0.45, metalness: 0.6 }));
@@ -827,8 +828,9 @@ export function criarMundo({ celular }) {
   const ondas = [0, 1, 2].map(() => {
     const m = new Mesh(new ExtrudeGeometry(arco(0.4, 0.7, 0.045), { depth: 0.02, bevelEnabled: false, curveSegments: 12 }),
       new MeshBasicMaterial({ color: linear(COR.turquesa, 1.6), transparent: true, opacity: 0, blending: AdditiveBlending, depthWrite: false }));
+    // Centro do arco a ~0,9 m do sensor, na direção do trânsito que chega (−x, +z): as ondas nascem longe da caixa.
     m.rotation.y = -2.2;
-    m.position.set(VIA.borda + 1.3, 3.75, CENARIO.radar + 0.4);
+    m.position.set(VIA.borda + 0.95, 3.72, CENARIO.radar + 0.95);
     cena.add(m);
     return m;
   });
@@ -1104,10 +1106,10 @@ export function criarMundo({ celular }) {
       arranjar(nome);
       arranjado = nome;
     }
-    // O plano fica inteiro na janela mais ou menos de p = 0,37 a 0,63: o caminho de câmera corre de 0,12 a 0,88,
-    // com as viradas da história perto do meio.
-    const e = MathUtils.clamp(p, 0, 1);
-    const k = suave(0.12, 0.88, e) * 0.7 + MathUtils.clamp((e - 0.12) / 0.76, 0, 1) * 0.3;
+    // e = andamento da história. O plano fica inteiro na janela mais ou menos de p = 0,37 a 0,63; a história corre de
+    // p = 0,04 a 0,6, então já terminou quando o plano chega ao meio da tela e começa a sair.
+    const e = MathUtils.clamp((p - 0.04) / 0.56, 0, 1);
+    const k = suave(0, 1, e) * 0.7 + e * 0.3;
     const cam = CAMINHOS[nome];
     cam.pos.getPoint(k, posCam);
     cam.alvo.getPoint(k, alvoCam);
@@ -1154,7 +1156,7 @@ export function criarMundo({ celular }) {
       });
       ondas.forEach((o, i) => {
         const fase = parado ? 0.35 + i * 0.22 : ((t * 0.8 + i / 3) % 1);
-        o.scale.setScalar(0.6 + fase * 1.7);
+        o.scale.setScalar(0.8 + fase * 2.2);
         o.material.opacity = Math.sin(Math.PI * Math.min(fase * 1.3, 1)) * 0.75;
       });
       const acima = valor != null && valor > LIMITE;
@@ -1163,8 +1165,8 @@ export function criarMundo({ celular }) {
       ponto2.intensity = 2.2;
     } else if (nome === 'manutencao') {
       // Da falha à conclusão, conforme a rolagem: porta, refletor, giroflex e o anel de situação.
-      const execucao = suave(0.32, 0.42, e) * (1 - suave(0.62, 0.7, e));
-      const fase = e < 0.36 ? 'falha' : e < 0.66 ? 'execucao' : 'concluida';
+      const execucao = suave(0.24, 0.34, e) * (1 - suave(0.66, 0.76, e));
+      const fase = e < 0.28 ? 'falha' : e < 0.71 ? 'execucao' : 'concluida';
       dobradica.rotation.y = -1.9 * execucao;
       miolo.visible = execucao > 0.02;
       chave.intensity = 55 * execucao;
@@ -1186,21 +1188,21 @@ export function criarMundo({ celular }) {
       info = { fase };
     } else {
       // Revisões: a varredura passa pelas peças e as colunas sobem até a prioridade de cada uma.
-      const zv = MathUtils.lerp(PRIORIDADES[0].z + 3, PRIORIDADES[3].z - 3, MathUtils.clamp((e - 0.08) / 0.6, 0, 1));
+      const zv = MathUtils.lerp(PRIORIDADES[0].z + 3, PRIORIDADES[3].z - 3, MathUtils.clamp(e / 0.8, 0, 1));
       varredura.position.z = zv;
-      const fimVarredura = suave(0.58, 0.68, e);
+      const fimVarredura = suave(0.82, 0.92, e);
       linha.material.opacity = 1 - fimVarredura;
       cortina.material.opacity = 1 - fimVarredura;
       for (const peca of pecasRevisao) {
         const cresce = suave(peca.item.z + 1.5, peca.item.z - 1.5, zv - LADO_COLUNA);
         peca.coluna.material.uniforms.altura.value = Math.max(0.001, cresce);
         peca.coluna.material.uniforms.tempo.value = parado ? 0 : t;
-        peca.coluna.material.uniforms.brilho.value = peca.principal ? 1 + suave(0.62, 0.8, e) * 0.8 : 0.85;
+        peca.coluna.material.uniforms.brilho.value = peca.principal ? 1 + suave(0.1, 0.3, e) * 0.8 : 0.85;
         peca.rotulo.position.y = 0.16 + peca.alturaColuna * cresce + 0.55;
         peca.rotulo.material.opacity = suave(0.6, 1, cresce);
         peca.base.material.opacity = 0.35 + cresce * 0.65;
       }
-      ponto1.intensity = 6 * suave(0.55, 0.75, e);
+      ponto1.intensity = 6 * suave(0.05, 0.25, e);
       ponto2.intensity = 1.5;
       // A luz-chave acompanha o travelling: cada equipamento fica iluminado quando passa na frente da câmera.
       chave.position.set(XR - 4, 6.5, posCam.z + 1.5);
