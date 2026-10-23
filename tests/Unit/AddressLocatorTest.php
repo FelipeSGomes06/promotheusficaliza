@@ -74,7 +74,11 @@ final class AddressLocatorTest extends TestCase
         $geo = new FakeGeocoder(['Avenida Sampaio Vidal' => ['lat' => '-22.213900', 'lng' => '-49.945800'], 'Rua Paraíba' => ['lat' => '-22.226000', 'lng' => '-49.930000']]);
         $locator = new AddressLocator($cep, $geo);
 
-        self::assertSame(['situacao' => 'ENCONTRADO', 'lat' => '-22.213900', 'lng' => '-49.945800', 'rua' => 'Avenida Sampaio Vidal'], $locator->locate(null, '17501-000'), 'rua do CEP');
+        self::assertSame(
+            ['situacao' => 'ENCONTRADO', 'lat' => '-22.213900', 'lng' => '-49.945800', 'rua' => 'Avenida Sampaio Vidal', 'caixa' => [-22.2154, -22.2124, -49.9473, -49.9443]],
+            $locator->locate(null, '17501-000'),
+            'rua do CEP; sem retângulo do provedor, ≈ 150 m em volta do ponto',
+        );
         self::assertSame('-22.226000', $locator->locate(' Rua Paraíba ', '17501-000')['lat'] ?? null, 'a rua informada vale mais que a do CEP');
         self::assertSame(['17501-000'], $cep->calls, 'com a rua informada, o CEP nem é consultado');
         self::assertSame(['situacao' => 'SEM_RUA'], $locator->locate('', '17500-000'), 'CEP geral não indica a rua');
@@ -88,6 +92,19 @@ final class AddressLocatorTest extends TestCase
         self::assertSame(['situacao' => 'INDISPONIVEL'], $locator->locate('Avenida Sampaio Vidal', null));
         $cep->down = true;
         self::assertSame(['situacao' => 'INDISPONIVEL'], $locator->locate(null, '17501-000'));
+    }
+
+    /** A área do endereço decide se um ponto já marcado está "fora do endereço": a rua inteira (com folga) ou a casa. */
+    public function testAddressAreaIsTheStreetStretchOrTheHouse(): void
+    {
+        $nominatim = $this->geocoder([200, '[{"lat":"-22.2139","lon":"-49.9458","boundingbox":["-22.2200","-22.2050","-49.9600","-49.9300"]}]', 0])->locate('Avenida Sampaio Vidal');
+        self::assertSame([-22.22, -22.205, -49.96, -49.93], $nominatim['box'] ?? null, 'retângulo do Nominatim: sul, norte, oeste, leste');
+
+        $street = new FakeGeocoder(['Avenida Sampaio Vidal' => ['lat' => '-22.213900', 'lng' => '-49.945800', 'box' => [-22.22, -22.205, -49.96, -49.93]]]);
+        self::assertSame([-22.221, -22.204, -49.961, -49.929], (new AddressLocator(new FakeCepLookup(), $street))->locate('Avenida Sampaio Vidal', null, '1200')['caixa'] ?? null, 'casa não achada: o trecho da rua com ≈ 100 m de folga');
+
+        $house = new FakeGeocoder(['1200 Avenida Sampaio Vidal' => ['lat' => '-22.210000', 'lng' => '-49.940000', 'box' => [-22.2101, -22.2099, -49.9401, -49.9399]]]);
+        self::assertSame([-22.2115, -22.2085, -49.9415, -49.9385], (new AddressLocator(new FakeCepLookup(), $house))->locate('Avenida Sampaio Vidal', null, '1200')['caixa'] ?? null, 'casa achada: ≈ 150 m em volta dela');
     }
 
     public function testGeocoderAddressComesFromConfigAndMustBeHttps(): void

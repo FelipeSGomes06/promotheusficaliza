@@ -181,7 +181,8 @@ depende desta rota.
 Query: `rua` (até 120) e/ou `cep` (8 dígitos); `numero` opcional (com dígitos iniciais, tenta a casa antes da rua). Sem nenhum dos dois, ou com algum inválido → 422 `INVALIDO`, sem
 chamada externa. Usa a rua informada ou, sem ela, a rua do CEP (ViaCEP); depois o Nominatim, preso ao retângulo de
 Marília ([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)). Resposta JSON com `situacao`, `lat`, `lng`
-(texto com 6 casas, ou `null`), `rua` e `mensagem`; `Cache-Control: no-store`.
+(texto com 6 casas, ou `null`), `rua`, `caixa` (área do endereço `[sul, norte, oeste, leste]`: um ponto já marcado fora
+dela é levado ao endereço pela tela) e `mensagem`; `Cache-Control: no-store`.
 
 | `situacao` | HTTP | Quando |
 |---|---|---|

@@ -30,8 +30,11 @@ primeiras chamadas a serviços externos feitas durante uma requisição web.
   da cidade, de outra cidade, provedor fora do ar ou sem rede: aparece o campo "Rua" para digitar, com o motivo.
 - **Ponto pelo endereço** (quem não consegue pelo mapa): `GET /api/localizar?rua=&cep=` usa a rua informada ou, sem
   ela, a rua do CEP, e consulta o **Nominatim** (o buscador do OpenStreetMap, a mesma base do mapa) com busca
-  estruturada "rua + Marília/SP", presa ao retângulo da demonstração. Com JavaScript, ao achar a rua pelo CEP sem ponto
-  marcado, a base vai sozinha para o endereço; "Levar a base até este endereço" faz o mesmo sob pedido; um clique no
+  estruturada "rua + Marília/SP", presa ao retângulo da demonstração. Com JavaScript, sempre que o endereço muda (CEP
+  achado, rua ou número alterados), ele é localizado: sem ponto, **ou com o ponto marcado fora do endereço**, a base vai
+  para o endereço (pedido do autor); dentro, o ponto fica. "Fora" = fora da área devolvida em `caixa`: com o número
+  achado, ≈ 150 m em volta da casa; só com a rua, o trecho da rua (retângulo do Nominatim) com ≈ 100 m de folga, para
+  uma base em qualquer ponto de uma avenida longa continuar valendo; "Levar a base até este endereço" faz o mesmo sob pedido; um clique no
   mapa ajusta. Sem JavaScript, o servidor localiza ao salvar (só com o resto do formulário válido, fora da transação);
   se não achar, explica no campo e mantém o que foi digitado. O ponto do endereço é aproximado (meio da rua): não há
   número da casa.

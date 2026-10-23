@@ -64,7 +64,14 @@ final class NominatimGeocoder implements Geocoder
             return null;
         }
 
-        return ['lat' => number_format($lat, 6, '.', ''), 'lng' => number_format($lng, 6, '.', '')];
+        $point = ['lat' => number_format($lat, 6, '.', ''), 'lng' => number_format($lng, 6, '.', '')];
+        // boundingbox do Nominatim: [sul, norte, oeste, leste] como texto; numa rua, cobre o trecho inteiro.
+        $box = array_map(static fn($v) => filter_var($v, FILTER_VALIDATE_FLOAT), is_array($first['boundingbox'] ?? null) ? array_values($first['boundingbox']) : []);
+        if (count($box) === 4 && !in_array(false, $box, true)) {
+            $point['box'] = [(float) $box[0], (float) $box[1], (float) $box[2], (float) $box[3]];
+        }
+
+        return $point;
     }
 
     /** @return array{0: int, 1: string|false, 2: int} */

@@ -11,7 +11,8 @@ namespace Fiscaliza\Application;
 interface Geocoder
 {
     /**
-     * @return array{lat: string, lng: string}|null graus decimais com 6 casas; null se a rua não for achada na área atendida
+     * @return array{lat: string, lng: string, box?: array{0: float, 1: float, 2: float, 3: float}}|null graus decimais com 6
+     *         casas e, se o provedor der, o retângulo do lugar achado [sul, norte, oeste, leste]; null se não for achado
      * @throws ProviderUnavailable quando o provedor não responde a tempo, falha ou responde fora do formato esperado
      */
     public function locate(string $street): ?array;
