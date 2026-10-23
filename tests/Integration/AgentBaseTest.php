@@ -92,7 +92,7 @@ final class AgentBaseTest extends FirebirdTestCase
         self::assertSame([-22.2139, 'Avenida Sampaio Vidal', $this->regionId], [$agent['base_lat'] ?? null, $agent['base_street'] ?? null, (int) ($agent['region_id'] ?? 0)], 'a rua do CEP passa a ser a rua gravada');
 
         $agents->create($this->minimal(['base_street' => 'Rua Paraíba']), null);
-        self::assertSame(['Rua Paraíba', 'Avenida Sampaio Vidal'], $geo->calls, 'com o ponto do mapa, nada é localizado');
+        self::assertSame(['Rua Paraíba', 'Avenida Sampaio Vidal', 'Rua Paraíba'], $geo->calls, 'com o ponto do mapa e endereço novo, o endereço é conferido');
 
         foreach ([[['base_street' => 'Rua Inexistente'], 'base_street', 'Não achamos esta rua'], [['call_sign' => '', 'base_street' => 'Rua Paraíba'], 'call_sign', null]] as [$data, $field, $text]) {
             try {
@@ -105,7 +105,7 @@ final class AgentBaseTest extends FirebirdTestCase
                 }
             }
         }
-        self::assertSame(['Rua Paraíba', 'Avenida Sampaio Vidal', 'Rua Inexistente'], $geo->calls, 'com outro campo inválido, não há consulta externa');
+        self::assertSame(['Rua Paraíba', 'Avenida Sampaio Vidal', 'Rua Paraíba', 'Rua Inexistente'], $geo->calls, 'com outro campo inválido, não há consulta externa');
 
         $geo->down = true;
         try {
@@ -114,6 +114,31 @@ final class AgentBaseTest extends FirebirdTestCase
         } catch (ValidationFailed $e) {
             self::assertStringContainsString('não respondeu agora', $e->errors['base_lat'] ?? '');
         }
+    }
+
+    /** Com endereço novo ou alterado, um ponto fora dele vai para o endereço; dentro, ou sem mudar o endereço, fica. */
+    public function testPointOutsideTheAddressGoesToTheAddressOnSave(): void
+    {
+        $geo = new FakeGeocoder(['Rua Paraíba' => ['lat' => '-22.226000', 'lng' => '-49.930000', 'box' => [-22.228, -22.224, -49.935, -49.925]]]);
+        $services = $this->services->withGeocoder($geo);
+        $far = $this->minimal(['base_street' => 'Rua Paraíba', 'base_lat' => '-22.2010', 'base_lng' => '-49.9690']);
+
+        $id = $services->agents()->create($far, null);
+        $agent = $this->services->agentRepository()->find($id);
+        self::assertSame([-22.226, -49.93, $this->fragata], [$agent['base_lat'] ?? null, $agent['base_lng'] ?? null, (int) ($agent['region_id'] ?? 0)], 'ponto longe da rua: vai para o endereço');
+
+        $near = $services->agents()->create($this->minimal(['base_street' => 'Rua Paraíba', 'base_lat' => '-22.2275', 'base_lng' => '-49.9260']), null);
+        self::assertSame(-22.2275, $this->services->agentRepository()->find($near)['base_lat'] ?? null, 'dentro do trecho da rua: o ajuste fica');
+
+        $version = (string) $this->services->agentRepository()->find($id)['version_no'];
+        $calls = count($geo->calls);
+        $services->agents()->update($id, $far + ['version' => $version], $this->userId());
+        self::assertSame(-22.201, $this->services->agentRepository()->find($id)['base_lat'] ?? null, 'endereço igual: o ponto marcado na edição fica');
+        self::assertCount($calls, $geo->calls, 'sem mudança no endereço, nada é consultado');
+
+        $geo->down = true;
+        $kept = $services->agents()->create($far, null);
+        self::assertSame(-22.201, $this->services->agentRepository()->find($kept)['base_lat'] ?? null, 'provedor fora do ar: fica o ponto marcado');
     }
 
     /** Cadastro antigo (bairro escolhido à mão, logradouro e número digitados): abre, salva sem mudar e só muda o que mudou. */

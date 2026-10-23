@@ -34,7 +34,10 @@ primeiras chamadas a serviços externos feitas durante uma requisição web.
   achado, rua ou número alterados), ele é localizado: sem ponto, **ou com o ponto marcado fora do endereço**, a base vai
   para o endereço (pedido do autor); dentro, o ponto fica. "Fora" = fora da área devolvida em `caixa`: com o número
   achado, ≈ 150 m em volta da casa; só com a rua, o trecho da rua (retângulo do Nominatim) com ≈ 100 m de folga, para
-  uma base em qualquer ponto de uma avenida longa continuar valendo; "Levar a base até este endereço" faz o mesmo sob pedido; um clique no
+  uma base em qualquer ponto de uma avenida longa continuar valendo. Com o endereço preenchido, um clique no mapa só
+  vale dentro dessa área (ajuste fino); fora, a base volta para o endereço e a tela diz para mudar o endereço se a base
+  for em outro lugar. Ao salvar, com endereço novo ou alterado, o servidor confere o mesmo (provedor fora do ar: fica o
+  ponto marcado); salvar sem mexer no endereço não consulta nada; "Levar a base até este endereço" faz o mesmo sob pedido; um clique no
   mapa ajusta. Sem JavaScript, o servidor localiza ao salvar (só com o resto do formulário válido, fora da transação);
   se não achar, explica no campo e mantém o que foi digitado. O ponto do endereço é aproximado (meio da rua): não há
   número da casa.

@@ -86,10 +86,14 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
         && picker.startsWith('Base marcada em -22.213900, -49.945800') && /Base posta no endereço/.test(await n.locator('[data-locate-status]').innerText()), picker);
       await n.locator('.base-address').evaluate((e) => e.scrollIntoView({ block: 'center' })); await shot(n, '01b-base-pelo-endereco');
       const box = await n.locator('#picker').boundingBox(); await n.locator('#picker').scrollIntoViewIfNeeded();
-      const b2 = await n.locator('#picker').boundingBox(); await n.mouse.click(b2.x + b2.width * 0.3, b2.y + b2.height * 0.6); await sleep(200);
-      const clicked = await n.inputValue('#f-base_lat');
-      await n.click('[data-locate]'); await n.waitForFunction(() => document.getElementById('f-base_lat').value === '-22.213900', null, { timeout: 5000 }).catch(() => {});
-      check('clique_ajusta_e_botao_volta_ao_endereco', box !== null && clicked !== '-22.213900' && (await n.inputValue('#f-base_lat')) === '-22.213900', { clicked });
+      // Com endereço preenchido: clique longe → a base volta ao endereço; clique pertinho do ponto (ajuste fino) → vale.
+      const b2 = await n.locator('#picker').boundingBox(); await n.mouse.click(b2.x + b2.width * 0.3, b2.y + b2.height * 0.6); await sleep(300);
+      const farMsg = await n.locator('[data-locate-status]').innerText();
+      check('clique_fora_do_endereco_volta', box !== null && (await n.inputValue('#f-base_lat')) === '-22.213900' && /fora do endereço informado/.test(farMsg), farMsg);
+      const pin = await n.locator('.leaflet-overlay-pane path.leaflet-interactive').boundingBox();
+      await n.mouse.click(pin.x + pin.width / 2 + 3, pin.y + pin.height / 2 + 3); await sleep(300);
+      const fine = await n.inputValue('#f-base_lat');
+      check('ajuste_fino_dentro_do_endereco_vale', fine !== '-22.213900' && Math.abs(Number(fine) + 22.2139) < 0.0015 && (await n.locator('[data-locate-status]').innerText()) === '', fine);
       // Ponto marcado longe e depois o endereço: a base vai para o endereço; mexer no número com o ponto já dentro, fica.
       await n.mouse.click(b2.x + b2.width * 0.9, b2.y + b2.height * 0.1); await sleep(200);
       await n.fill('#f-base_cep', ''); await n.fill('#f-base_street', ''); await n.locator('#f-base_cep').pressSequentially('17509000', { delay: 20 });
