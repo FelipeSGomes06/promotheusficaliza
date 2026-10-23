@@ -75,14 +75,15 @@ const fosco = (cor, rugosidade = 0.55, metal = 0) => new MeshStandardMaterial({ 
 // Mancha radial branca (sombra de contato e halos).
 let manchaCache = null;
 function mancha() {
-  // Queda gaussiana (sem borda): a sombra some aos poucos e o halo não vira disco.
+  // Queda gaussiana (sem borda) nos canais de cor, com alfa cheio: alphaMap lê o verde, e um degradê só no alfa vira
+  // disco de borda dura em navegadores que guardam o canvas pré-multiplicado.
   manchaCache ??= textura(imagem(128, 128, (g) => {
     const d = g.createImageData(128, 128);
     for (let y = 0; y < 128; y++) {
       for (let x = 0; x < 128; x++) {
         const r = Math.hypot(x - 63.5, y - 63.5) / 64;
         const a = Math.round(255 * Math.exp(-r * r * 5) * (1 - suave(0.85, 1, r)));
-        d.data.set([255, 255, 255, a], (y * 128 + x) * 4);
+        d.data.set([a, a, a, 255], (y * 128 + x) * 4);
       }
     }
     g.putImageData(d, 0, 0);
@@ -99,7 +100,7 @@ function sombra(w, d, forca = 0.32) {
 }
 /** Halo colorido de uma luz (mistura normal: aparece também sobre o papel claro). */
 function halo(cor, tamanho) {
-  const s = new Sprite(new SpriteMaterial({ map: mancha(), color: cor, transparent: true, opacity: 0, depthWrite: false }));
+  const s = new Sprite(new SpriteMaterial({ alphaMap: mancha(), color: cor, transparent: true, opacity: 0, depthWrite: false }));
   s.scale.setScalar(tamanho);
   return s;
 }
@@ -281,7 +282,7 @@ function cone() {
   grupo.add(corpo, chao);
   return {
     grupo,
-    camera: [[2.1, 1.75, 3.5], [0, 0.72, 0]],
+    camera: [[2.1, 1.9, 3.5], [0, 0.9, 0]],
     atualizar({ entrada, t, giro, x, y, parado }) {
       // Cai (0–0,4), achata no impacto e balança até parar.
       const queda = faixa(0, 0.4, entrada);
@@ -368,7 +369,7 @@ function placa() {
   grupo.add(chapaGrupo, sombra(2.0, 0.7, 0.26));
   return {
     grupo,
-    camera: [[0.4, 0.8, 3.3], [0, 0.52, 0]],
+    camera: [[0.4, 0.9, 3.3], [0, 0.68, 0]],
     atualizar({ entrada, t, giro, x, y, parado }) {
       const e = passa(suave(0, 0.7, entrada));
       chapaGrupo.rotation.set(
