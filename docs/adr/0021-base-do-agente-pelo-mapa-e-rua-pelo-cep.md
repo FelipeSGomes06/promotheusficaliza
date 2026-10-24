@@ -60,6 +60,16 @@ primeiras chamadas a serviços externos feitas durante uma requisição web.
   "Rua: …"; o "número ou referência" antigo aparece no campo Número). Nenhuma coluna mudou; sem migração. O histórico passa a listar rótulos ("Cadastro alterado: rua, ponto no mapa."), e a ficha
   mostra assim também as alterações antigas, que guardavam o nome técnico dos campos.
 
+## Equipamentos (mesmo dia, pedido do autor)
+
+O formulário de equipamento passou ao mesmo modelo, pela classe compartilhada `AddressPoint`: mapa primeiro, coordenadas
+ocultas, **CEP | Cidade fixa** e **Rua | Número ou referência** (a referência livre — "km 3", "em frente à praça" —
+continua; só os dígitos iniciais ajudam a localizar), bairro pelo ponto e ponto dentro do endereço. **O local passa a
+ser obrigatório para todo equipamento, inclusive o planejado**: planeja-se um equipamento num lugar, para uma
+utilidade; o botão "Remover ponto marcado" saiu. Cadastros antigos sem coordenadas continuam na lista e na ficha, mas
+precisam de um local na próxima edição (pelo mapa ou pelo endereço). "Este ponto é" (instalado, planejado, base de
+recurso móvel) não mudou. O formulário de multas não mudou.
+
 ## Saída para a internet no contêiner publicado
 
 As consultas saem do contêiner `app`. Em [`compose.yaml`](../../compose.yaml) ele está na rede `backend`, que **não** é
@@ -81,7 +91,7 @@ log da aplicação mostra "consulta de CEP indisponível: …" ou "localização
 - Duas dependências de rede, ambas opcionais enquanto o mapa funciona: se o ViaCEP cair, a rua deixa de vir sozinha;
   se o Nominatim cair (ou bloquear o IP do servidor), o caminho sem mapa para. Sem mapa **e** sem provedores, não há
   como marcar a base: é a consequência de nunca digitar coordenadas.
-- O endpoint de CEP pode servir depois ao formulário de equipamentos, que tem o mesmo bloco de rua/CEP (não alterado).
+- Agentes e equipamentos usam o mesmo modelo; a multa ainda tem o bloco antigo (referência livre exigida para registrar).
 - Coberto por `CepLookupTest` e `AddressLocatorTest` (clientes com transporte falso: encontrado, inexistente, geral,
   outra cidade, fora da área, fora do ar, tempo esgotado), `AgentsHttpTest` (entradas inválidas → 422 sem chamada
   externa, sem login → 401, cada resposta, formulário, cadastro sem mapa, ficha e dados antigos), `AgentBaseTest`

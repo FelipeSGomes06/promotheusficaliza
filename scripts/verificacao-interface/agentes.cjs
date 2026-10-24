@@ -222,7 +222,19 @@ const POINTS = { 'Avenida Sampaio Vidal': { lat: '-22.213900', lng: '-49.945800'
   }
   { const { ctx, p } = await page(D);
     await p.goto(`${BASE}/equipamentos/novo`, { waitUntil: 'networkidle' });
-    check('equipamentos_sem_mudanca', (await p.locator('#picker-status').innerText()) === 'Nenhum local marcado ainda.' && (await p.locator('[data-cep-lookup]').count()) === 0);
+    // Equipamento (mesmo padrão): local obrigatório mesmo planejado; CEP → rua → local; cadastra e abre a ficha.
+    check('equipamento_estado_inicial', (await p.locator('#picker-status').innerText()) === 'Clique no mapa para marcar o local.'
+      && (await p.locator('#f-lat').getAttribute('type')) === 'hidden' && (await p.locator('[name="region_id"], [data-clear-point]').count()) === 0);
+    await p.locator('.base-address').evaluate((e) => e.scrollIntoView({ block: 'center' })); await shot(p, '09-equipamento-novo');
+    await p.selectOption('#f-type_code', 'CAMERA'); await p.fill('#f-manufacturer', 'Óptica Teste'); await p.fill('#f-model', 'OT-1');
+    await p.selectOption('#f-agency_id', { index: 1 }); await p.selectOption('#s-CAMERA-resolution', '1080P').catch(() => {});
+    await p.fill('#f-cep', ''); await p.locator('#f-cep').pressSequentially('17501-000', { delay: 20 });
+    await p.waitForFunction(() => document.getElementById('f-lat').value === '-22.213900', null, { timeout: 5000 }).catch(() => {});
+    check('equipamento_local_pelo_endereco', (await p.inputValue('#f-street')) === 'Avenida Sampaio Vidal' && (await p.inputValue('#f-lat')) === '-22.213900'
+      && (await p.locator('#picker-status').innerText()).startsWith('Local marcado em -22.213900'));
+    await p.locator('.base-address').evaluate((e) => e.scrollIntoView({ block: 'center' })); await shot(p, '10-equipamento-endereco');
+    await Promise.all([p.waitForNavigation(), p.click('button[type=submit]:has-text("Cadastrar equipamento")')]);
+    check('equipamento_planejado_cadastra_com_local', /\/equipamentos\/\d+$/.test(p.url()) && /Coordenadas: -22,213900/.test(await p.content()), p.url());
     await ctx.close();
   }
 

@@ -7,7 +7,7 @@ namespace Fiscaliza\Application;
 /**
  * Ponto da base pelo endereço, para quem não consegue marcar no mapa (ADR-0021): a rua informada ou, sem ela, a rua
  * do CEP; depois o provedor de localização. Latitude e longitude nunca são digitadas. Usado pela tela
- * (GET /api/localizar) e pelo cadastro de agente quando chega sem ponto (formulário sem JavaScript).
+ * (GET /api/localizar) e pelos cadastros de agente e de equipamento quando chegam sem ponto (formulário sem JavaScript).
  */
 final class AddressLocator
 {
@@ -17,10 +17,10 @@ final class AddressLocator
 
     /** Mensagem de cada situação, pronta para a tela. */
     public const MESSAGES = [
-        'ENCONTRADO' => 'Base posta no endereço (ponto aproximado). Confira no mapa; para ajustar, clique no ponto certo.',
+        'ENCONTRADO' => 'Ponto posto no endereço (aproximado). Confira no mapa; para ajustar, clique no ponto certo.',
         'SEM_RUA' => 'Para localizar pelo endereço, informe a rua: este CEP não indica a rua.',
-        'NAO_ENCONTRADO' => 'Não achamos esta rua em Marília. Confira a rua e o CEP ou marque a base no mapa.',
-        'INDISPONIVEL' => 'A localização pelo endereço não respondeu agora. Tente de novo em instantes ou marque a base no mapa.',
+        'NAO_ENCONTRADO' => 'Não achamos esta rua em Marília. Confira a rua e o CEP ou marque no mapa.',
+        'INDISPONIVEL' => 'A localização pelo endereço não respondeu agora. Tente de novo em instantes ou marque no mapa.',
     ];
 
     public function __construct(private readonly CepLookup $cep, private readonly Geocoder $geocoder) {}

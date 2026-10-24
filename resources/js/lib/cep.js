@@ -14,10 +14,10 @@ import { reveal } from './reveal.js';
 const WAIT_MS = 250; // pausa depois do 8º dígito: colar ou corrigir não dispara duas consultas
 const GIVE_UP_MS = 8000; // o servidor desiste do provedor em 3 s; isto cobre o próprio servidor lento
 const FALLBACK = 'Não foi possível consultar o CEP agora. Digite a rua; o cadastro não depende da consulta.';
-const LOCATE_FALLBACK = 'Não foi possível localizar agora. Tente de novo em instantes ou marque a base no mapa.';
-const MOVED = 'O ponto marcado estava fora deste endereço: a base foi para o endereço informado. Para ajustar, clique no ponto certo.';
+const LOCATE_FALLBACK = 'Não foi possível localizar agora. Tente de novo em instantes ou marque no mapa.';
+const MOVED = 'O ponto marcado estava fora deste endereço: ele foi para o endereço informado. Para ajustar, clique no ponto certo.';
 const KEPT = 'O ponto marcado já fica neste endereço e foi mantido.';
-const OUTSIDE = 'Esse ponto fica fora do endereço informado: a base voltou para o endereço. Para marcar em outro lugar, mude ou apague o endereço.';
+const OUTSIDE = 'Esse ponto fica fora do endereço informado: o ponto voltou para o endereço. Para marcar em outro lugar, mude ou apague o endereço.';
 
 /** O ponto (lat, lng) cai dentro da área do endereço [sul, norte, oeste, leste]? */
 const insideArea = (area, a, b) => Array.isArray(area) && area.length === 4 && a >= area[0] && a <= area[1] && b >= area[2] && b <= area[3];

@@ -6,8 +6,8 @@
 {% block content %}
 {% set v = values %}
 {% set labels = {type_code: 'Tipo', status: 'Situação inicial', manufacturer: 'Marca', model: 'Modelo', serial_number: 'Série do fabricante', asset_tag: 'Patrimônio',
-  agency_id: 'Órgão responsável', maint_interval_days: 'Preventiva a cada', street: 'Logradouro', address_ref: 'Número ou referência', cep: 'CEP', region_id: 'Bairro',
-  location_kind: 'Este ponto é', lat: 'Latitude', lng: 'Longitude', installed_on: 'Data de instalação', notes: 'Observações'} %}
+  agency_id: 'Órgão responsável', maint_interval_days: 'Preventiva a cada', street: 'Rua', address_ref: 'Número ou referência', cep: 'CEP', region_id: 'Bairro',
+  location_kind: 'Este ponto é', lat: 'Local no mapa', lng: 'Local no mapa', installed_on: 'Data de instalação', notes: 'Observações'} %}
 {% for t in types|filter(t => t.code == (v.type_code ?? '')) %}{% for f in t.fields %}{% set labels = labels|merge({('specs.' ~ f.name): f.label}) %}{% endfor %}{% endfor %}
 {# column, não merge: array_merge renumera chaves numéricas e o mapa perderia os IDs #}
 {% set agencyNames = agencies|column('name', 'id') %}
@@ -77,31 +77,35 @@
 
     <fieldset class="form-step">
       <legend><span class="form-step__n" aria-hidden="true">2</span> Onde fica</legend>
-      <p class="hint">Toque no mapa para marcar o ponto. Também vale só o endereço ou uma referência: sem ponto no mapa, o equipamento aparece apenas na lista.</p>
-      <div class="picker" id="picker" data-picker data-lat="f-lat" data-lng="f-lng" data-status="picker-status" data-tiles="{{ app.map.tiles }}" data-attribution="{{ app.map.attribution }}" role="application" aria-label="Mapa para marcar o local. Use também os campos de coordenadas em Opções avançadas."></div>
-      <p class="picker-status" id="picker-status" aria-live="polite"></p>
-      <p><button type="button" class="btn btn--quiet btn--small" data-clear-point="picker">Remover ponto marcado</button></p>
+      <p class="hint">Todo equipamento tem um local, mesmo o planejado: é onde ele está ou vai ficar, para a utilidade que se planejou.</p>
       <div class="form-grid">
         {{ ui.select('location_kind', 'Este ponto é', {INSTALADO: 'Local de instalação (já instalado)', PLANEJADO: 'Local planejado (ainda não instalado)', BASE: 'Base: onde o veículo ou patinete fica guardado'}, v.location_kind ?? 'PLANEJADO', errors, {required: true, dataAttr: 'location-kind', class: 'span-2'}) }}
         <p class="hint span-2" data-mobile-note hidden>Veículos e patinetes usam a base como endereço; a posição atual vem das observações recebidas e é mostrada à parte.</p>
-        {{ ui.input('street', 'Logradouro', v, errors, {max: 120, placeholder: 'Ex.: Avenida Sampaio Vidal', class: 'span-2'}) }}
-        {{ ui.input('address_ref', 'Número ou referência', v, errors, {max: 160, help: 'Número, quilômetro ou descrição (ex.: "em frente à praça").'}) }}
-        {{ ui.input('cep', 'CEP', v, errors, {max: 9, inputmode: 'numeric', placeholder: '17500-000'}) }}
-        <div class="field {{ errors.region_id is defined ? 'has-error' }}">
-          <label for="f-region_id">Bairro <span class="optional">(opcional)</span></label>
-          <select id="f-region_id" name="region_id"><option value="">Sem bairro</option>{% for r in regions %}<option value="{{ r.id }}" {{ ((v.region_id ?? '') ~ '') == (r.id ~ '') ? 'selected' }}>{{ r.name }}</option>{% endfor %}</select>
-          {{ ui.field_error(errors, 'region_id') }}
-        </div>
-        <div class="field"><span class="label">Cidade</span><span>Marília / SP</span></div>
       </div>
-      <details class="advanced" {{ errors.lat is defined or errors.lng is defined ? 'open' }}>
-        <summary>Opções avançadas: coordenadas</summary>
-        <p class="hint">Latitude e longitude em graus decimais (WGS84, o padrão do GPS). O mapa preenche estes campos; digite só se tiver o valor exato.</p>
-        <div class="form-grid">
-          {{ ui.input('lat', 'Latitude', v, errors, {max: 20, inputmode: 'decimal', placeholder: '-22.213900'}) }}
-          {{ ui.input('lng', 'Longitude', v, errors, {max: 20, inputmode: 'decimal', placeholder: '-49.945800'}) }}
+      <p class="hint" data-without-map="picker">Sem o mapa (JavaScript desligado ou mapa que não carregou): preencha o endereço abaixo e, ao salvar, o local vai para ele.</p>
+      <p class="picker-howto" id="picker-howto" hidden data-needs-map="picker">{{ ui.icon('i-pin') }}<span><strong>Clique no mapa para marcar ou mudar o local.</strong> Não achou o lugar? Use o endereço logo abaixo.</span></p>
+      <div class="picker" id="picker" hidden data-picker data-lat="f-lat" data-lng="f-lng" data-status="picker-status" data-empty="Clique no mapa para marcar o local." data-marked="Local marcado em {ponto}. Para mudar, clique em outro ponto." data-mark-center data-tiles="{{ app.map.tiles }}" data-attribution="{{ app.map.attribution }}" role="application" aria-label="Mapa para marcar o local: clique para marcar ou mudar o ponto. Pelo teclado, mova o mapa com as setas e tecle Enter para marcar o centro." aria-describedby="picker-howto"></div>
+      <p class="picker-status" id="picker-status" aria-live="polite" hidden data-needs-map="picker"></p>
+      {# Latitude e longitude não são digitadas: vêm do mapa (picker.js) ou do endereço (cep.js / servidor ao salvar). #}
+      <input type="hidden" id="f-lat" name="lat" value="{{ v.lat ?? '' }}">
+      <input type="hidden" id="f-lng" name="lng" value="{{ v.lng ?? '' }}">
+      {% set pointError = errors.lat ?? errors.lng ?? null %}
+      {% if pointError %}<p class="error base-point-error" id="err-lat" role="alert">{{ pointError }}</p>{% endif %}
+      <p class="hint base-region">Bairro: {% if existing and existing.region_name %}<strong>{{ existing.region_name }}</strong> (muda sozinho se você mudar o ponto){% else %}definido pelo ponto, ao salvar{% endif %}.</p>
+      <p class="hint base-address__intro">Endereço: com o CEP, a rua é preenchida sozinha e pode ser corrigida. Se não marcar no mapa, o local vai para este endereço.</p>
+      <div class="form-grid base-address" data-cep-lookup data-cep="f-cep" data-street="f-street" data-number="f-address_ref"
+           data-url="{{ url('/api/cep/') }}" data-locate-url="{{ url('/api/localizar') }}" data-lat="f-lat" data-lng="f-lng" data-map="picker">
+        {{ ui.input('cep', 'CEP', v, errors, {max: 9, inputmode: 'numeric', placeholder: '17500-000', autocomplete: 'off'}) }}
+        {# Sistema de Marília: a cidade é fixa, mostrada como campo travado (não é enviada). #}
+        <div class="field"><label for="f-city">Cidade</label><input id="f-city" type="text" value="Marília / SP" readonly class="input-fixed"></div>
+        {{ ui.input('street', 'Rua', v, errors, {max: 120, placeholder: 'Ex.: Avenida Sampaio Vidal'}) }}
+        {{ ui.input('address_ref', 'Número ou referência', v, errors, {max: 160, placeholder: 'Ex.: 1200, km 3 ou em frente à praça'}) }}
+        <p class="cep-street__status span-2" data-cep-status aria-live="polite"></p>
+        <div class="cep-street__locate span-2" data-locate-box hidden>
+          <button type="button" class="btn btn--small" data-locate>{{ ui.icon('i-pin') }}Levar o local até este endereço</button>
+          <p class="cep-street__locate-status" data-locate-status aria-live="polite"></p>
         </div>
-      </details>
+      </div>
     </fieldset>
 
     <fieldset class="form-step">

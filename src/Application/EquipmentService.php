@@ -23,6 +23,8 @@ final class EquipmentService
     /** Campos do formulário comparados no histórico de alterações. */
     private const TRACKED = ['type_code', 'manufacturer', 'model', 'serial_number', 'asset_tag', 'agency_id', 'cep', 'street', 'address_ref',
         'region_id', 'lat', 'lng', 'location_kind', 'maint_interval_days', 'installed_on', 'notes', 'specs'];
+    /** Local no mapa ou pelo endereço (ADR-0021): obrigatório para todo equipamento, inclusive o planejado. */
+    private const POINT = ['lat' => 'lat', 'lng' => 'lng', 'street' => 'street', 'cep' => 'cep', 'number' => 'address_ref'];
 
     public function __construct(
         private readonly Database $db,
@@ -32,6 +34,7 @@ final class EquipmentService
         private readonly History $history,
         private readonly AlertService $alerts,
         private readonly Clock $clock,
+        private readonly AddressPoint $point,
     ) {}
 
     /** @param array<string, mixed> $data campos do formulário */
@@ -40,6 +43,7 @@ final class EquipmentService
         $input = new Input($data);
         $status = EquipmentStatus::tryFrom((string) $input->choice('status', array_map(static fn($s) => $s->value, EquipmentStatus::cases()))) ?? EquipmentStatus::NaoInstalado;
         $values = $this->validate($input, $status);
+        $values['region_id'] = $this->point->regionAt((float) $values['lat'], (float) $values['lng']);
         $now = Time::toDb($this->clock->now());
         $type = EquipmentCatalog::get($values['type_code']) ?? throw new \LogicException('tipo validado');
 
@@ -69,7 +73,8 @@ final class EquipmentService
         if ($current['archived_at'] !== null) {
             throw new RuleViolation('Equipamento arquivado não pode ser editado.');
         }
-        $values = $this->validate($input, EquipmentStatus::from($current['status']));
+        $values = $this->validate($input, EquipmentStatus::from($current['status']), $current);
+        $values += $this->point->regionOnUpdate($current, $values, 'lat', 'lng');
 
         $this->db->transaction(function () use ($id, $version, $values, $current, $actorId): void {
             $saved = $this->persist(fn() => $this->equipment->updateVersioned($id, (int) $version, $values + ['updated_at' => Time::toDb($this->clock->now())]));
@@ -95,10 +100,11 @@ final class EquipmentService
     {
         $current = $this->equipment->find($id) ?? throw new NotFound('Equipamento não encontrado.');
         try {
-            $values = $this->validate(new Input($data), EquipmentStatus::from($current['status']));
+            $values = $this->validate(new Input($data), EquipmentStatus::from($current['status']), $current);
         } catch (ValidationFailed) {
             return [];
         }
+        $values += $this->point->regionOnUpdate($current, $values, 'lat', 'lng');
 
         return History::diff(array_intersect_key($current, array_flip(self::TRACKED)), $values);
     }
@@ -199,11 +205,13 @@ final class EquipmentService
     }
 
     /**
-     * Valida os campos do formulário (criação e edição) e devolve os valores prontos para gravar.
+     * Valida os campos do formulário (criação e edição) e devolve os valores prontos para gravar. O bairro não é
+     * escolhido (vem do ponto) e o local é obrigatório: mapa ou endereço, nunca coordenadas digitadas.
      *
+     * @param array<string, mixed>|null $current cadastro atual, na edição
      * @return array<string, mixed>
      */
-    private function validate(Input $input, EquipmentStatus $status): array
+    private function validate(Input $input, EquipmentStatus $status, ?array $current = null): array
     {
         $typeCode = $input->choice('type_code', array_keys(EquipmentCatalog::all()));
         $type = $typeCode === null ? null : EquipmentCatalog::get($typeCode);
@@ -217,7 +225,6 @@ final class EquipmentService
             'cep' => $input->cep('cep'),
             'street' => $input->text('street', 120, false),
             'address_ref' => $input->text('address_ref', 160, false),
-            'region_id' => $input->int('region_id', 1, PHP_INT_MAX, false),
             'lat' => $input->coordinate('lat', 'lat', false),
             'lng' => $input->coordinate('lng', 'lng', false),
             'location_kind' => $input->choice('location_kind', ['INSTALADO', 'PLANEJADO', 'BASE']),
@@ -225,17 +232,8 @@ final class EquipmentService
             'installed_on' => $input->date('installed_on', false),
             'notes' => $input->text('notes', 500, false),
         ];
-        if (($values['lat'] === null) !== ($values['lng'] === null)) {
-            $input->fail('lat', 'Informe latitude e longitude juntas, ou nenhuma (recurso fica em "sem localização").');
-        }
-        if ($values['street'] === null && $values['address_ref'] === null && $values['lat'] === null) {
-            $input->fail('street', 'Informe logradouro, referência ou coordenadas.');
-        }
         if ($values['agency_id'] !== null && !$this->references->agencyExists($values['agency_id'])) {
             $input->fail('agency_id', 'Órgão inexistente.');
-        }
-        if ($values['region_id'] !== null && !$this->references->regionExists($values['region_id'])) {
-            $input->fail('region_id', 'Bairro inexistente.');
         }
         if ($type !== null && $values['location_kind'] !== null) {
             if ($type->mobile && $values['location_kind'] !== 'BASE') {
@@ -252,6 +250,7 @@ final class EquipmentService
             $input->merge($errors);
             $values['specs'] = $specs;
         }
+        $this->point->resolve($input, $values, $current, self::POINT, 'o local');
         $input->assertValid();
 
         return $values;
