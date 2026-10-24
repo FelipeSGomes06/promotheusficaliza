@@ -88,4 +88,7 @@ demonstração manual: nada é consultado no Detran/Senatran, emitido, cobrado o
   aplica a esta infração" fora de excesso de velocidade, como a regra de "A conferir" já tratava.
 - **Radar sem a função da infração:** registrar ou retificar exige a observação sobre a origem quando as funções do
   cadastro do radar não incluem o tipo da infração — o mesmo tratamento do órgão divergente: o cadastro atual pode ter
-  mudado desde o fato, então a explicação basta e nada é bloqueado.
+  mudado desde o fato, então a explicação basta e nada é bloqueado. Pelo mesmo caminho (pedido do autor): radar
+  "Não instalado" sem data de instalação, e radar de modalidade "Fixo" com agente operador. A modalidade (fixo ou
+  portátil) é uma característica opcional do radar (`SPECS.modality`, sem migração) e entra no retrato da origem;
+  radares sem modalidade informada não disparam a segunda regra.

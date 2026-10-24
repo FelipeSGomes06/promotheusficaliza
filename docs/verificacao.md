@@ -16,6 +16,7 @@ Relatório da revisão fora do repositório (entrega do Codex): `~/.codex/entreg
 | Migração 0008 | antes: 1 multa com contador diferente da regra nova (#7); depois: 0; segunda execução sem efeito |
 | Navegador (painel do Claude Code, 800 px e 375 px) | central (ficha e marcador do furtado, código na lista, resumo de urgentes = seção Urgentes, com e sem filtro de veículo), fichas de equipamento (furtado, revisão sem ordem, ordem existente, ordem fora da janela), cadastro (situação × local; recusa no servidor), reposição de furtado, multas #3, #2, #6 e #7, formulário de multa (observação para radar sem a função), planejar (designado, missão), retrospecto e revisões (janela e cálculo antigo) |
 | Site publicado | **não verificado** (sem conta nesta sessão) |
+| Adendo (modalidade do radar; radar nunca instalado ou fixo com operador) | `phpunit` 255 testes, 1664 asserções, OK; `FinesTest::testNeverInstalledOrFixedRadarWithAnOperatorNeedsAnExplanation`; PHPStan e estilo sem pendências; no navegador, cadastro do RAD-0001 como fixo e o formulário de multa mostrando a observação só nos casos da regra |
 
 ## Cadastrar agente: base pelo mapa ou pelo endereço, rua pelo CEP (23/10/2026)
 

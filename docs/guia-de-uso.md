@@ -85,8 +85,9 @@ Três etapas: **1. O que é** (tipo, situação inicial, marca, modelo, órgão,
 ponto é" local de instalação, planejado ou base; **clique no mapa para marcar ou mudar o local**, ou use o endereço:
 CEP, rua e número ou referência, como "km 3" ou "em frente à praça"; o local é obrigatório mesmo para equipamento
 planejado; o bairro vem do ponto e as coordenadas nunca são digitadas; com o endereço preenchido, o ponto fica dentro
-dele) e **3. Características** do tipo escolhido, periodicidade da preventiva, data de instalação e
-observações. Ao trocar o tipo, só aparecem as características dele. Cidade é sempre Marília/SP.
+dele) e **3. Características** do tipo escolhido (no radar, a **modalidade**: fixo, instalado no local, ou portátil,
+operado por agente — opcional; o local do portátil é o ponto de referência da operação), periodicidade da preventiva,
+data de instalação e observações. Ao trocar o tipo, só aparecem as características dele. Cidade é sempre Marília/SP.
 
 | Erro comum | Mensagem | Como resolver |
 |---|---|---|
@@ -174,8 +175,10 @@ protocolado ([ADR-0017](adr/0017-aba-multas.md)). Use só dados fictícios.
   pode mudá-la), mas o que for preenchido precisa estar bem formado. Campos opcionais ou alternativos ficam recolhidos
   e abrem com um clique: código da infração, "Não tem o número do AIT?", "Não tem o RENAVAM?", operador associado ao
   radar, cor e ano. A observação sobre a origem só aparece quando o órgão autuador difere do órgão do radar ou do
-  agente, ou quando o cadastro do radar não tem a função da infração escolhida (é quando ela é exigida: o cadastro
-  pode ter mudado desde o fato, então a explicação basta). Escolha
+  agente, ou quando o cadastro do radar não combina com o fato: sem a função da infração escolhida, nunca instalado
+  ("Não instalado" e sem data de instalação) ou com modalidade "Fixo" e um agente indicado como operador. É quando ela
+  é exigida: o cadastro pode ter mudado desde o fato, então a explicação basta. A lista de radares mostra "fixo",
+  "portátil" e "(não instalado)" ao lado de cada um. Escolha
   **Radar** (do inventário; pode indicar o agente operador do medidor) ou **Agente de trânsito**; com JavaScript, o bloco
   da outra origem some e não é enviado, e o que foi digitado nele volta se você trocar de ideia. Sem JavaScript, os dois
   blocos aparecem: preencha só o da origem escolhida. Velocidades (regulamentada, medida, considerada) só em excesso de

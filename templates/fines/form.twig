@@ -110,7 +110,7 @@
             <label for="f-equipment_id">Radar do inventário <span class="req" aria-hidden="true">*</span></label>
             <span class="hint" id="f-equipment_id-help">Arquivados aparecem no fim, para registro histórico: o cadastro atual pode diferir do que valia na ocorrência.</span>
             <select id="f-equipment_id" name="equipment_id" aria-describedby="{{ errors.equipment_id is defined ? 'err-equipment_id ' }}f-equipment_id-help"><option value="">Escolha…</option>
-              {% for r in sources.radars %}<option value="{{ r.id }}" data-agency="{{ r.agency_id }}" data-functions="{{ r.functions|join(' ') }}" {{ ((v.equipment_id ?? '') ~ '') == (r.id ~ '') ? 'selected' }}>{{ r.code }} · {{ r.manufacturer }} {{ r.model }}{{ r.street ? ' · ' ~ r.street }} · {{ r.agency_code }}{{ r.speed_limit_kmh ? ' · limite cadastrado ' ~ r.speed_limit_kmh ~ ' km/h' }}{{ r.archived_at ? ' (arquivado)' }}</option>{% endfor %}
+              {% for r in sources.radars %}<option value="{{ r.id }}" data-agency="{{ r.agency_id }}" data-functions="{{ r.functions|join(' ') }}" data-modality="{{ r.modality }}" data-never-installed="{{ r.status == 'NAO_INSTALADO' and not r.installed_on ? '1' : '0' }}" {{ ((v.equipment_id ?? '') ~ '') == (r.id ~ '') ? 'selected' }}>{{ r.code }} · {{ r.manufacturer }} {{ r.model }}{{ r.street ? ' · ' ~ r.street }} · {{ r.agency_code }}{{ r.speed_limit_kmh ? ' · limite cadastrado ' ~ r.speed_limit_kmh ~ ' km/h' }}{{ r.modality == 'PORTATIL' ? ' · portátil' : (r.modality == 'FIXO' ? ' · fixo') }}{{ r.status == 'NAO_INSTALADO' ? ' (não instalado)' }}{{ r.archived_at ? ' (arquivado)' }}</option>{% endfor %}
             </select>
             {{ ui.field_error(errors, 'equipment_id') }}
           </div>
@@ -160,7 +160,7 @@
         </div>
       </fieldset>
       {# Exigida só quando os órgãos diferem (FineService::divergence); com JavaScript aparece nesse caso (multas.js). #}
-      <div data-source-note>{{ ui.input('source_note', 'Observação sobre a origem', v, errors, {type: 'textarea', max: 300, help: 'Exigida quando o órgão autuador difere do órgão do radar ou do agente, ou quando o cadastro do radar não tem a função desta infração.'}) }}</div>
+      <div data-source-note>{{ ui.input('source_note', 'Observação sobre a origem', v, errors, {type: 'textarea', max: 300, help: 'Exigida quando o órgão autuador difere do órgão do radar ou do agente, ou quando o cadastro do radar não combina com o fato: sem a função desta infração, nunca instalado ou fixo com agente operador.'}) }}</div>
     </fieldset>
 
     <fieldset class="form-step">

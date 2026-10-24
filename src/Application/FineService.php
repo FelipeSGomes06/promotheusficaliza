@@ -614,8 +614,9 @@ final class FineService
 
     /**
      * Divergências com o cadastro da origem exigem justificativa (não são proibidas nem conclusão de validade): órgão
-     * autuador diferente do órgão do recurso principal, ou radar sem a função da infração entre as cadastradas. O
-     * cadastro pode ter mudado desde o fato, por isso a observação basta.
+     * autuador diferente do órgão do recurso principal; radar sem a função da infração entre as cadastradas, nunca
+     * instalado (não instalado e sem data de instalação) ou fixo com agente operador. O cadastro pode ter mudado desde o
+     * fato, por isso a observação basta.
      *
      * @param array<string, mixed> $f
      * @param array<string, mixed>|null $equipment
@@ -636,6 +637,12 @@ final class FineService
         if ($f['source_kind'] === 'RADAR' && $equipment !== null && $kind !== null && $kind !== 'OUTRA' && !in_array($kind, $equipment['specs']['functions'] ?? [], true)) {
             $why[] = 'o cadastro do radar não inclui "' . mb_strtolower(FineRules::KINDS[$kind]) . '" entre as funções fiscalizadas';
         }
+        if ($f['source_kind'] === 'RADAR' && $equipment !== null && $equipment['status'] === 'NAO_INSTALADO' && $equipment['installed_on'] === null) {
+            $why[] = 'o radar consta como não instalado, sem data de instalação';
+        }
+        if ($f['source_kind'] === 'RADAR' && $f['agent_id'] !== null && ($equipment['specs']['modality'] ?? null) === 'FIXO') {
+            $why[] = 'o radar é fixo, e um agente foi indicado como operador';
+        }
 
         return $why === [] ? [] : ['source_note' => ucfirst(implode(' e ', $why)) . ': explique a divergência na observação sobre a origem.'];
     }
@@ -655,7 +662,8 @@ final class FineService
         if ($equipment !== null) {
             $snapshot['radar'] = ['id' => (int) $equipment['id'], 'codigo' => $equipment['code'], 'fabricante' => $equipment['manufacturer'], 'modelo' => $equipment['model'],
                 'serie' => $equipment['serial_number'], 'orgao' => $agency($equipment['agency_id']), 'funcoes' => $equipment['specs']['functions'] ?? [],
-                'limite_cadastrado_kmh' => $equipment['specs']['speed_limit_kmh'] ?? null, 'situacao' => $equipment['status'], 'arquivado' => $equipment['archived_at'] !== null];
+                'limite_cadastrado_kmh' => $equipment['specs']['speed_limit_kmh'] ?? null, 'modalidade' => $equipment['specs']['modality'] ?? null,
+                'situacao' => $equipment['status'], 'arquivado' => $equipment['archived_at'] !== null];
         }
         if ($agent !== null) {
             $snapshot['agente'] = ['id' => (int) $agent['id'], 'codigo' => $agent['code'], 'indicativo' => $agent['call_sign'], 'funcao' => $agent['role'],

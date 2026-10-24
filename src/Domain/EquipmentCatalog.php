@@ -33,6 +33,9 @@ final class EquipmentCatalog
                     'VELOCIDADE' => 'Velocidade', 'AVANCO_SEMAFORO' => 'Avanço de semáforo', 'PARADA_FAIXA' => 'Parada sobre a faixa',
                     'CONVERSAO_PROIBIDA' => 'Conversão proibida', 'FAIXA_EXCLUSIVA' => 'Faixa exclusiva de ônibus',
                 ]],
+                ['name' => 'modality', 'label' => 'Modalidade', 'kind' => 'enum', 'options' => [
+                    'FIXO' => 'Fixo (instalado no local)', 'PORTATIL' => 'Portátil (operado por agente)',
+                ], 'help' => 'Portátil: o local cadastrado é o ponto de referência da operação.'],
                 ['name' => 'speed_limit_kmh', 'label' => 'Limite de velocidade', 'kind' => 'int', 'min' => 20, 'max' => 120, 'unit' => 'km/h',
                     'requiredIf' => ['functions' => 'VELOCIDADE'], 'help' => 'Obrigatório quando fiscaliza velocidade.'],
                 ['name' => 'lanes', 'label' => 'Faixas monitoradas', 'kind' => 'int', 'min' => 1, 'max' => 8, 'unit' => 'faixa(s)'],

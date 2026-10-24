@@ -260,6 +260,29 @@ final class FinesTest extends FirebirdTestCase
         self::assertSame('REGISTRADO', $this->services->fineRepository()->find($id)['record_state'], 'com a explicação, o fato histórico é registrado');
     }
 
+    public function testNeverInstalledOrFixedRadarWithAnOperatorNeedsAnExplanation(): void
+    {
+        $fines = $this->services->fines();
+        $speed = ['functions' => ['VELOCIDADE'], 'speed_limit_kmh' => '50'];
+        $fixed = $this->createEquipment(['type_code' => 'RADAR', 'specs' => $speed + ['modality' => 'FIXO']]);
+        $planned = $this->createEquipment(['type_code' => 'RADAR', 'status' => 'NAO_INSTALADO', 'location_kind' => 'PLANEJADO', 'specs' => $speed]);
+        foreach (['fixo' => $fixed, 'não instalado' => $planned] as $why => $radar) {
+            $id = $fines->create($this->radarFine(['equipment_id' => (string) $radar, 'external_ait' => "DEMO-AIT-{$radar}"]), $this->user);
+            try {
+                $fines->register($id, $this->cmd($id), $this->user);
+                self::fail("radar {$why}");
+            } catch (ValidationFailed $e) {
+                self::assertStringContainsString($why, $e->errors['source_note']);
+            }
+        }
+
+        // Portátil com agente operador é o caso esperado: registra sem observação e o retrato guarda a modalidade.
+        $portable = $this->createEquipment(['type_code' => 'RADAR', 'specs' => $speed + ['modality' => 'PORTATIL']]);
+        $id = $fines->create($this->radarFine(['equipment_id' => (string) $portable, 'external_ait' => 'DEMO-AIT-PORT']), $this->user);
+        $fines->register($id, $this->cmd($id), $this->user);
+        self::assertSame('PORTATIL', $this->services->fineRepository()->find($id)['source_snapshot']['radar']['modalidade']);
+    }
+
     public function testReviewReminderAnswerIsStoredAsADateAndCannotPrecedeTheCheckedDay(): void
     {
         $fines = $this->services->fines();

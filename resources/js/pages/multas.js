@@ -39,11 +39,14 @@ function sourceForm(form) {
   const agency = form.querySelector('#f-agency_id');
   form.querySelectorAll('[data-fine-nojs]').forEach((n) => { n.hidden = true; });
   // Mesmas comparações de FineService::divergence: órgão autuador diferente do órgão do radar ou do agente escolhido,
-  // ou radar sem a função da infração no cadastro.
+  // ou cadastro do radar que não combina com o fato (sem a função da infração, nunca instalado, fixo com operador).
   const agencyOf = (select) => select?.selectedOptions[0]?.dataset.agency ?? '';
   const radarLacks = () => {
     const option = form.querySelector('#f-equipment_id')?.selectedOptions[0];
-    return Boolean(option?.value) && Boolean(kind?.value) && kind.value !== 'OUTRA' && !(option.dataset.functions ?? '').split(' ').includes(kind.value);
+    if (!option?.value) return false;
+    const operator = form.querySelector('#f-operator_agent_id')?.value ?? '';
+    return (Boolean(kind?.value) && kind.value !== 'OUTRA' && !(option.dataset.functions ?? '').split(' ').includes(kind.value))
+      || option.dataset.neverInstalled === '1' || (option.dataset.modality === 'FIXO' && operator !== '');
   };
   const update = (animate = true) => {
     const source = Array.from(radios).find((r) => r.checked)?.value ?? '';
