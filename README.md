@@ -56,7 +56,7 @@ docker compose --profile simulador up -d simulator
 docker compose --profile atualizador up -d atualizador
 ```
 
-`demo:seed` carrega o perfil **compacto** (16 equipamentos e 7 agentes que cobrem todas as categorias e situações);
+`demo:seed` carrega o perfil **compacto** (17 equipamentos e 7 agentes que cobrem todas as categorias e situações);
 `demo:seed --perfil=completo` carrega os 48 e 21 usados na metodologia ([ADR-0013](docs/adr/0013-perfil-compacto-de-demonstracao.md)).
 O comando `user:create` mostra **uma única vez** a senha gerada. Abra
 <http://localhost:8080/promotheusfiscaliza/> e entre com essa conta. **Não há acesso sem conta**: nenhuma tela, mapa

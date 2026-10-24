@@ -97,7 +97,12 @@ Antes da correção: 8,2% e 15,2% para o índice, 6,3% e 19,7% para a referênci
 ([ADR-0013](adr/0013-perfil-compacto-de-demonstracao.md)) as sementes foram medidas de novo nos dois perfis: completo
 8,5% de precisão e 16,4% de revocação (referência 7,3% e 22,4%; 1.697 pares); compacto 6,9% e 13,3% (referência 7,8% e
 26,7%; 526 pares, 30 falhas) — no compacto o índice não supera a referência, e a amostra é pequena demais para avaliar o
-método ([detalhes](evidencias/2026-10-18-avaliacao-sementes.md#perfis-compacto-e-completo-18102026)). A mudança vem da
+método ([detalhes](evidencias/2026-10-18-avaliacao-sementes.md#perfis-compacto-e-completo-18102026)). Em 24/10/2026,
+com o código atual, o compacto de 16 equipamentos deu 6,9% e 12,9% (referência 8,7% e 29,0%; 526 pares, 31 falhas); com
+o radar portátil acrescentado (17), 12,0% e 33,3% (referência 10,0% e 36,4%; 566 pares, 33 falhas). Um equipamento a
+mais inverte a comparação: confirma que o compacto não serve para avaliar o método. O completo não mudou com isso
+(8,0% e 15,4%, referência 6,9% e 21,5%, 1.690 pares, antes e depois); os números de 18/10 acima são da versão daquela
+data. A mudança vem da
 reconstrução temporal (menos informação "do futuro" em cada corte), não de ajuste do método. Leitura: o índice
 concentra falhas cerca de 2× acima do acaso com menos alertas que a referência, mas perde a maioria das falhas e o
 limiar escolhido varia entre cenários (25 a 55) — amostras pequenas (~13 falhas por janela). Serve para **priorizar

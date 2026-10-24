@@ -16,7 +16,7 @@ namespace Fiscaliza\Demo;
  */
 final class DemoScenario
 {
-    /** Perfil padrão da apresentação: 16 equipamentos e 7 agentes que cobrem todas as categorias e situações. */
+    /** Perfil padrão da apresentação: 17 equipamentos e 7 agentes que cobrem todas as categorias e situações. */
     public const COMPACT = 'compacto';
     /** Perfil completo (48 equipamentos e 21 agentes), para testes de volume e para a metodologia da análise. */
     public const FULL = 'completo';
@@ -24,14 +24,14 @@ final class DemoScenario
     /**
      * Curadoria do perfil compacto (por série). Cada item cobre mais de uma capacidade:
      * - radares: multifunção com evento atrasado; lombada com preventiva vencida; falha com corretiva imediata;
-     *   ponto planejado (não instalado);
+     *   ponto planejado (não instalado); portátil operado por agente (multa com operador associado);
      * - câmeras: PTZ em operação; instalação recente (histórico curto) com sinal atrasado; furtada; sem sinal;
      * - balança com preventiva próxima; cancela com preventiva futura; totem desativado;
      * - veículos: dois em circulação (posição × base) e um em manutenção em execução;
      * - patinetes: um em circulação e um furtado (última posição antiga).
      */
     private const COMPACT_SERIALS = [
-        'VS5-24-00201', 'PCL-0042', 'PCL-0063', 'VS5-26-00012',
+        'VS5-24-00201', 'PCL-0042', 'VS3-23-00088', 'PCL-0063', 'VS5-26-00012',
         'LV30-7781', 'OPD-4K-1199', 'OPD-4K-1140', 'OPB-1080-2290',
         'PPW-0007', 'BVF-3301', 'TXC-0555',
         'AUR-P-0301', 'AUR-E-0110', 'AUR-P-0340',
@@ -118,8 +118,8 @@ final class DemoScenario
     /** @return list<array<string, mixed>> */
     private static function allEquipment(): array
     {
-        $radar = static fn(array $functions, ?int $limit, int $lanes, string $direction) => array_filter(
-            ['functions' => $functions, 'speed_limit_kmh' => $limit, 'lanes' => $lanes, 'direction' => $direction],
+        $radar = static fn(array $functions, ?int $limit, int $lanes, string $direction, string $modality = 'FIXO') => array_filter(
+            ['functions' => $functions, 'modality' => $modality, 'speed_limit_kmh' => $limit, 'lanes' => $lanes, 'direction' => $direction],
             static fn($v) => $v !== null,
         );
         $camera = static fn(string $res, bool $ir, bool $color, bool $ptz, int $fov) => ['resolution' => $res, 'night_vision' => $ir, 'color_image' => $color, 'ptz' => $ptz, 'field_of_view_deg' => $fov];
@@ -147,7 +147,7 @@ final class DemoScenario
             $e('RADAR', 'Vigília Sistemas', 'VS-Rad 300', 'VS3-24-00117', 'DMT', 'Avenida Sampaio Vidal', 'Quadra central, sentido bairro', '17509-051', 'Centro', '-22.211200', '-49.951500', null, 90, 0.6, 900, $radar(['VELOCIDADE'], 50, 2, 'Centro → bairro')),
             $e('RADAR', 'Vigília Sistemas', 'VS-Rad 500 Multi', 'VS5-24-00201', 'DMT', 'Avenida Sampaio Vidal', 'Cruzamento semaforizado', '17500-200', 'Palmital', '-22.209700', '-49.952600', null, 90, 1.0, 900, $radar(['VELOCIDADE', 'AVANCO_SEMAFORO', 'PARADA_FAIXA'], 50, 3, 'Ambos os sentidos')),
             $e('RADAR', 'Ponto Certo Tecnologia', 'PC-Lombada E', 'PCL-0042', 'DMT', 'Avenida Rio Branco', 'Lombada eletrônica próxima à escola', '17500-060', 'Fragata', '-22.221200', '-49.951000', null, 60, 2.6, 1200, $radar(['VELOCIDADE'], 40, 2, 'Bairro → centro')),
-            $e('RADAR', 'Vigília Sistemas', 'VS-Rad 300', 'VS3-23-00088', 'DMT', 'Avenida Rio Branco', 'Trecho do Jardim Polyana', '17502-000', 'Jardim Polyana', '-22.223700', '-49.958300', null, 90, 1.2, 1300, $radar(['VELOCIDADE'], 60, 2, 'Oeste → centro')),
+            $e('RADAR', 'Vigília Sistemas', 'VS-Rad 300', 'VS3-23-00088', 'DMT', 'Avenida Rio Branco', 'Trecho do Jardim Polyana', '17502-000', 'Jardim Polyana', '-22.223700', '-49.958300', null, 90, 1.2, 1300, $radar(['VELOCIDADE'], 60, 2, 'Oeste → centro', 'PORTATIL')),
             $e('RADAR', 'Vigília Sistemas', 'VS-Rad 500 Multi', 'VS5-23-00150', 'DMT', 'Avenida República', 'Cruzamento com semáforo', '17509-200', 'Fragata', '-22.216900', '-49.941900', null, 90, 2.2, 1100, $radar(['AVANCO_SEMAFORO', 'PARADA_FAIXA'], null, 2, 'Sul → norte')),
             $e('RADAR', 'Ponto Certo Tecnologia', 'PC-Lombada E', 'PCL-0057', 'DMT', 'Avenida República', 'Próximo à praça', '17506-030', 'Somenzari', '-22.197800', '-49.956000', null, 60, 0.8, 700, $radar(['VELOCIDADE'], 40, 1, 'Norte → centro')),
             $e('RADAR', 'Vigília Sistemas', 'VS-Rad 300', null, 'DMT', 'Avenida das Esmeraldas', 'Antes da rotatória', '17521-460', 'Jardim Tropical', '-22.228700', '-49.919500', null, 90, 1.5, 1000, $radar(['VELOCIDADE'], 60, 2, 'Leste → oeste')),

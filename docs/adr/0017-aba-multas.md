@@ -92,3 +92,8 @@ demonstração manual: nada é consultado no Detran/Senatran, emitido, cobrado o
   "Não instalado" sem data de instalação, e radar de modalidade "Fixo" com agente operador. A modalidade (fixo ou
   portátil) é uma característica opcional do radar (`SPECS.modality`, sem migração) e entra no retrato da origem;
   radares sem modalidade informada não disparam a segunda regra.
+- **Carga `multas-v3`:** os radares da demonstração têm modalidade (lombadas e demais fixos; o VS3-23-00088 é
+  portátil e entrou no perfil compacto) e o caso 2 (medidor com agente operador) usa esse portátil num trecho de
+  60 km/h, em vez da lombada da escola. `demo:seed-multas` leva uma carga v1 ou v2 à v3 sem apagar nada: informa a
+  modalidade dos radares que ainda não a têm (histórico "carga da demonstração") e retifica o caso 2 pelo caso de uso,
+  com motivo e retrato novo.

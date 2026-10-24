@@ -17,15 +17,25 @@ use Fiscaliza\Services;
 final class FineScenario
 {
     /** Versão da carga, gravada em APP_META "fines_seed": repetir a mesma versão não duplica nada. */
-    public const VERSION = 'multas-v2';
+    public const VERSION = 'multas-v3';
 
-    /** Carga anterior que upgrade() leva à versão atual (relatos descritivos; rascunho de radar com a placa lida). */
-    public const PREVIOUS = 'multas-v1';
+    /**
+     * Cargas anteriores que upgrade() leva à versão atual: v1 → v2 (relatos descritivos; rascunho de radar com a placa
+     * lida); v2 → v3 (modalidade dos radares; caso 2 com o radar portátil do inventário).
+     */
+    public const PREVIOUS = ['multas-v1', 'multas-v2'];
+
+    /** Caso 2: medidor portátil operado por agente, num trecho de 60 km/h (o portátil é usado em vias de 60 km/h ou mais). */
+    private const C02 = [
+        'description' => 'Excesso de velocidade medido por radar portátil operado por agente', 'street' => 'Avenida Rio Branco',
+        'address_ref' => 'Trecho do Jardim Polyana', 'speed_limit_kmh' => '60', 'speed_measured_kmh' => '81',
+        'radar_meter_kind' => 'Medidor portátil operado por agente (informado)',
+    ];
 
     /** Relato factual de cada caso (fictício), exibido em "O que aconteceu". */
     private const RELATOS = [
         'c01' => 'O radar fixo da Av. Sampaio Vidal registrou o veículo a 71 km/h num trecho regulamentado em 50 km/h. Descontado o erro admitido do medidor, a velocidade considerada foi 64 km/h. As duas imagens (fictícias) mostram a placa legível.',
-        'c02' => 'Medidor portátil operado pelo agente Hermes 04 em frente à escola, no horário de entrada dos alunos. O veículo passou a 58 km/h medidos (51 km/h considerados) onde o limite é 40 km/h. O documento não trouxe o registro no Inmetro nem a data da última verificação do medidor.',
+        'c02' => 'Radar portátil operado pelo agente Hermes 04 no trecho do Jardim Polyana da Av. Rio Branco, no início da manhã. O veículo passou a 81 km/h medidos (74 km/h considerados) onde o limite é 60 km/h. O documento não trouxe o registro no Inmetro nem a data da última verificação do medidor.',
         'c03' => 'No cruzamento da Av. Sampaio Vidal, o radar registrou o veículo cruzando a faixa de retenção com o semáforo vermelho aceso havia cerca de 3 segundos. A sequência de imagens (fictícia) mostra o veículo antes e depois da faixa.',
         'c04' => 'O agente Hermes 01 viu o veículo parado sobre a faixa de pedestres do calçadão, aguardando o semáforo abrir, e pedestres desviando pela pista. O condutor apresentou o CRLV-e no local.',
         'c05' => 'O agente Hermes 06 viu o veículo fazer a conversão à esquerda onde a placa de regulamentação proíbe a manobra. O condutor não apresentou o documento do veículo, e o RENAVAM ficou sem informação.',
@@ -53,12 +63,21 @@ final class FineScenario
     }
 
     /**
-     * Leva a carga anterior à versão atual sem apagar nada: troca o texto genérico pelo relato de cada caso e, no
-     * rascunho de radar, informa a placa lida na imagem. Cada mudança passa pelo caso de uso e fica no histórico.
+     * Leva a carga anterior à versão atual sem apagar nada; cada mudança passa pelo caso de uso e fica no histórico.
      *
      * @return int registros atualizados
      */
     public static function upgrade(Services $s): int
+    {
+        $count = $s->metaRepository()->text('fines_seed') === 'multas-v1' ? self::upgradeFromV1($s) : 0;
+        $count += self::upgradeToV3($s);
+        $s->metaRepository()->set('fines_seed', self::VERSION, $count, Time::toDb($s->clock()->now()));
+
+        return $count;
+    }
+
+    /** v1 → v2: troca o texto genérico pelo relato de cada caso e, no rascunho de radar, informa a placa lida na imagem. */
+    private static function upgradeFromV1(Services $s): int
     {
         $fines = $s->fines();
         $repo = $s->fineRepository();
@@ -81,11 +100,61 @@ final class FineScenario
                 $data = ['vehicle_plate' => 'DMO9K56', 'vehicle_uf' => 'SP', 'description' => 'Avanço de sinal: placa lida na imagem, dados do veículo a transcrever',
                     'evidence_reference' => 'DEMO-IMG-0909 (sequência fictícia de imagens)'] + $data;
             }
-            $fines->update((int) $f['id'], $data + ['version' => (string) $f['version_no'], 'command_uid' => self::uid("{$key}:" . self::VERSION),
+            $fines->update((int) $f['id'], $data + ['version' => (string) $f['version_no'], 'command_uid' => self::uid("{$key}:multas-v2"),
                 'reason' => 'Cenário de demonstração atualizado: relato descritivo da ocorrência.'], null, 'SEMENTE');
             $count++;
         }
-        $s->metaRepository()->set('fines_seed', self::VERSION, $count, Time::toDb($s->clock()->now()));
+
+        return $count;
+    }
+
+    /**
+     * v2 → v3: os radares da demonstração recebem a modalidade do cenário (só onde ainda não há) e o caso 2, que tinha
+     * agente operador numa lombada eletrônica (fixa), passa ao radar portátil do inventário, se ele existir no banco.
+     */
+    private static function upgradeToV3(Services $s): int
+    {
+        $db = $s->database();
+        $count = 0;
+        $modality = [];
+        // Pela série; o radar da demonstração sem série, pelo endereço.
+        foreach (DemoScenario::equipment(DemoScenario::FULL) as $e) {
+            if ($e['type'] === 'RADAR') {
+                $modality[$e['serial'] ?? "{$e['street']}|{$e['ref']}"] = $e['specs']['modality'];
+            }
+        }
+        $db->transaction(function () use ($s, $db, $modality, &$count): void {
+            foreach ($db->all("SELECT ID, SERIAL_NUMBER, STREET, ADDRESS_REF, SPECS FROM EQUIPMENT WHERE TYPE_CODE = 'RADAR' AND ARCHIVED_AT IS NULL") as $r) {
+                $specs = is_string($r['specs']) ? (json_decode($r['specs'], true) ?: []) : [];
+                $chosen = $modality[$r['serial_number'] === null ? rtrim((string) $r['street']) . '|' . rtrim((string) $r['address_ref']) : rtrim($r['serial_number'])] ?? null;
+                if ($chosen === null || isset($specs['modality'])) {
+                    continue;
+                }
+                $s->equipmentRepository()->updateState((int) $r['id'], ['specs' => $specs + ['modality' => $chosen], 'updated_at' => Time::toDb($s->clock()->now())]);
+                $s->history()->record(
+                    'EQUIPAMENTO',
+                    (int) $r['id'],
+                    'ALTERACAO',
+                    null,
+                    'Cenário de demonstração atualizado: modalidade do radar informada.',
+                    ['alteracoes' => ['specs' => ['antes' => $specs, 'depois' => $specs + ['modality' => $chosen]]]],
+                    'SEMENTE',
+                );
+                $count++;
+            }
+        });
+
+        $repo = $s->fineRepository();
+        $event = $repo->eventByUid(self::uid('c02:criar'));
+        $f = $event === null ? null : $repo->find((int) $event['fine_id']);
+        $portable = (int) $db->value("SELECT ID FROM EQUIPMENT WHERE TYPE_CODE = 'RADAR' AND SERIAL_NUMBER = 'VS3-23-00088'");
+        $region = (int) $db->value("SELECT ID FROM REGION WHERE NAME = 'Jardim Polyana'");
+        if ($f !== null && $f['record_state'] !== 'CANCELADO' && $portable > 0 && $region > 0 && (int) $f['equipment_id'] !== $portable) {
+            $s->fines()->update((int) $f['id'], ['equipment_id' => (string) $portable, 'region_id' => (string) $region, 'notes' => self::RELATOS['c02']] + self::C02
+                + FineService::formValues($f) + ['version' => (string) $f['version_no'], 'command_uid' => self::uid('c02:multas-v3'),
+                    'reason' => 'Cenário de demonstração atualizado: o medidor operado por agente passa a ser o radar portátil do inventário.'], null, 'SEMENTE');
+            $count++;
+        }
 
         return $count;
     }
@@ -96,12 +165,12 @@ final class FineScenario
         $db = $s->database();
         $now = $s->clock()->now()->setTimezone(Time::local());
         $agency = (int) $db->value("SELECT ID FROM AGENCY WHERE CODE = 'DMT'");
-        $radars = array_column($db->all("SELECT ID, SERIAL_NUMBER FROM EQUIPMENT WHERE TYPE_CODE = 'RADAR' AND SERIAL_NUMBER IN ('VS5-24-00201', 'PCL-0042', 'PCL-0063')"), 'id', 'serial_number');
+        $radars = array_column($db->all("SELECT ID, SERIAL_NUMBER FROM EQUIPMENT WHERE TYPE_CODE = 'RADAR' AND SERIAL_NUMBER IN ('VS5-24-00201', 'PCL-0042', 'PCL-0063', 'VS3-23-00088')"), 'id', 'serial_number');
         $agents = array_column($db->all("SELECT ID, CALL_SIGN FROM AGENT WHERE ROLE = 'TRANSITO' AND CALL_SIGN IN ('Hermes 01', 'Hermes 04', 'Hermes 06')"), 'id', 'call_sign');
         $radars = array_combine(array_map('rtrim', array_keys($radars)), $radars);
         $agents = array_combine(array_map('rtrim', array_keys($agents)), $agents);
-        if ($agency === 0 || count($radars) < 3 || count($agents) < 3) {
-            throw new \RuntimeException('O cenário de multas usa os radares e agentes da demonstração (DMT, VS5-24-00201, PCL-0042, PCL-0063, Hermes 01/04/06). Carregue a demonstração antes (demo:seed).');
+        if ($agency === 0 || count($radars) < 4 || count($agents) < 3) {
+            throw new \RuntimeException('O cenário de multas usa os radares e agentes da demonstração (DMT, VS5-24-00201, PCL-0042, PCL-0063, VS3-23-00088, Hermes 01/04/06). Carregue a demonstração antes (demo:seed).');
         }
         $regions = [];
         foreach ($s->referenceRepository()->regions() as $r) {
@@ -158,10 +227,9 @@ final class FineScenario
         $progress('c01', $id, ['process_stage' => 'AUTUACAO', 'nominal_amount' => '130,16', 'autuation_issued_on' => $day(3)]);
         $count++;
 
-        // 2. Medidor com agente operador associado e dados metrológicos incompletos (A conferir).
-        $id = $create('c02', $radar('PCL-0042', 'VELOCIDADE', 'Avenida Rio Branco', 'Lombada eletrônica próxima à escola', 'Fragata', 'Hermes 04')
-            + ['description' => 'Velocidade acima do limite junto à escola, medidor com operador', 'occurred_at' => $at(4, '07:45'), 'external_ait' => 'DEMO-AIT-26-000102',
-                'speed_limit_kmh' => '40', 'speed_measured_kmh' => '58', 'speed_considered_kmh' => '51', 'radar_meter_kind' => 'Medidor operado por agente (informado)']
+        // 2. Radar portátil com agente operador associado e dados metrológicos incompletos (A conferir).
+        $id = $create('c02', $radar('VS3-23-00088', 'VELOCIDADE', self::C02['street'], self::C02['address_ref'], 'Jardim Polyana', 'Hermes 04') + self::C02
+            + ['occurred_at' => $at(4, '07:45'), 'external_ait' => 'DEMO-AIT-26-000102']
             + $vehicle('DMO2B34', '09876543210', 'Rodafort', 'Carga 2', 'Carga', 'Branca', 2019));
         $register('c02', $id);
         $count++;

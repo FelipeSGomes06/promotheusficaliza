@@ -175,7 +175,7 @@
             <dt>Base</dt><dd>{{ e.lat is null ? 'sem coordenadas' : 'endereço acima (onde o recurso fica guardado)' }}</dd>
             <dt>Última posição</dt><dd>{{ e.pos_lat is null ? 'nenhuma recebida' : 'recebida ' ~ e.pos_observed_at|local_dt }}{% if e.pos_lat is not null %} · {{ ui.freshness(position_freshness.value, e.pos_observed_at, 'Posição') }}{% endif %}</dd>
           {% else %}
-            <dt>Local</dt><dd>{{ e.lat is null ? 'sem coordenadas: aparece só na lista' : (e.location_kind == 'PLANEJADO' ? 'planejado (ainda não instalado)' : (e.status == 'FURTADO' ? 'local de instalação; localização atual desconhecida após o furto' : 'local de instalação')) }}</dd>
+            <dt>Local</dt><dd>{{ e.lat is null ? 'sem coordenadas: aparece só na lista' : (e.location_kind == 'PLANEJADO' ? 'planejado (ainda não instalado)' : (e.status == 'FURTADO' ? 'local de instalação; localização atual desconhecida após o furto' : ((e.specs.modality ?? null) == 'PORTATIL' ? 'ponto de referência da operação (radar portátil)' : 'local de instalação'))) }}</dd>
           {% endif %}
         </dl>
         {% if e.lat is not null and not e.archived_at %}<p><a class="btn btn--small" href="{{ url('/', {selecionar: 'EQUIPAMENTO:' ~ e.id}) }}">{{ ui.icon('i-map') }}Ver no mapa</a></p>{% endif %}

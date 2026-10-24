@@ -122,16 +122,17 @@ oferecida: exigiria durações de estado com tratamento de lacunas, fora do esco
 ## Dados de demonstração
 
 [`DemoScenario`](../src/Demo/DemoScenario.php): 5 órgãos, 22 bairros e dois perfis
-([ADR-0013](adr/0013-perfil-compacto-de-demonstracao.md)). **Compacto (padrão): 16 equipamentos e 7 agentes** — todas
+([ADR-0013](adr/0013-perfil-compacto-de-demonstracao.md)). **Compacto (padrão): 17 equipamentos e 7 agentes** — todas
 as categorias e situações; manutenção em execução, imediata, vencida, próxima e futura (as três últimas com data fixa
 relativa à carga); sinal atual, atrasado (concentrador com 25 min de defasagem) e sem informação; recurso móvel furtado
-com posição antiga; evento atrasado permanente; câmera com histórico curto; agente em atividade sem posição recente.
+com posição antiga; evento atrasado permanente; câmera com histórico curto; agente em atividade sem posição recente;
+radares com modalidade (lombadas e demais fixos; um portátil).
 **Completo: 48 e 21**, para volume e para a metodologia da análise. `DEMO_PROFILE` ou `demo:seed --perfil=…` escolhem. [`DemoSeeder`](../src/Demo/DemoSeeder.php)
 gera 240 dias de histórico com semente fixa (`SIM_SEED`): mesmo cenário relativo à data da carga.
 
 **Multas** ([`FineScenario`](../src/Demo/FineScenario.php)): 12 casos no perfil compacto e 40 no completo, gravados pelos
-casos de uso (origem `SEMENTE`): radar de velocidade completo; medidor com agente operador e dados metrológicos a
-conferir; avanço de sinal sem velocidades; agente com placa antiga e RENAVAM com zeros; RENAVAM ausente justificado;
+casos de uso (origem `SEMENTE`): radar de velocidade completo; radar portátil com agente operador, num trecho de
+60 km/h, e dados metrológicos a conferir; avanço de sinal sem velocidades; agente com placa antiga e RENAVAM com zeros; RENAVAM ausente justificado;
 pendência documental (com revisão vencida); pendência na ocorrência e regularidade posterior; penalidade + pagamento
 informado + recurso em análise; rascunho; cancelamento interno; radar hoje em falha com o retrato da ocorrência; e
 retificação da placa com a conferência antiga só no histórico. Placas, RENAVAM, AIT e marcas são fictícios.
