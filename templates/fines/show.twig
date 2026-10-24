@@ -306,7 +306,7 @@
             <dt>Origem</dt><dd>{{ source_kinds[snap.origem] ?? '—' }}</dd>
             <dt>Órgão autuador</dt><dd>{{ snap.orgao_autuador.nome ?? '—' }}</dd>
             {% if snap.radar is defined %}
-              <dt>Radar</dt><dd><span class="code-tag">{{ snap.radar.codigo }}</span> {{ snap.radar.fabricante }} {{ snap.radar.modelo }}{{ snap.radar.serie ? ' · série ' ~ snap.radar.serie }} · {{ snap.radar.orgao.nome ?? '' }}
+              <dt>Radar</dt><dd><span class="code-tag">{{ snap.radar.codigo }}</span> {{ snap.radar.fabricante }} {{ snap.radar.modelo }}{{ snap.radar.serie ? ' · série ' ~ snap.radar.serie }}{{ snap.radar.modalidade is defined and snap.radar.modalidade ? ' · ' ~ (snap.radar.modalidade == 'PORTATIL' ? 'portátil' : 'fixo') }} · {{ snap.radar.orgao.nome ?? '' }}
                 {% if snap.radar.limite_cadastrado_kmh %}<br><span class="hint">limite no cadastro naquele momento: {{ snap.radar.limite_cadastrado_kmh }} km/h</span>{% endif %}</dd>
             {% endif %}
             {% if snap.agente is defined %}

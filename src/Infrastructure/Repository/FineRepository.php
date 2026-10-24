@@ -196,10 +196,11 @@ final class FineRepository
                 $specs = is_string($row['specs'] ?? null) ? (json_decode($row['specs'], true) ?: []) : [];
                 $row['speed_limit_kmh'] = $specs['speed_limit_kmh'] ?? null;
                 $row['functions'] = $specs['functions'] ?? [];
+                $row['modality'] = $specs['modality'] ?? null;
                 unset($row['specs']);
 
                 return $row;
-            }, $this->db->all("SELECT e.ID, e.CODE, e.MANUFACTURER, e.MODEL, e.STREET, e.STATUS, e.ARCHIVED_AT, e.SPECS, e.AGENCY_ID, a.CODE AS AGENCY_CODE
+            }, $this->db->all("SELECT e.ID, e.CODE, e.MANUFACTURER, e.MODEL, e.STREET, e.STATUS, e.INSTALLED_ON, e.ARCHIVED_AT, e.SPECS, e.AGENCY_ID, a.CODE AS AGENCY_CODE
                 FROM EQUIPMENT e JOIN AGENCY a ON a.ID = e.AGENCY_ID WHERE e.TYPE_CODE = 'RADAR' ORDER BY CASE WHEN e.ARCHIVED_AT IS NULL THEN 0 ELSE 1 END, e.CODE")),
             'agents' => array_map($trim, $this->db->all("SELECT g.ID, g.CODE, g.CALL_SIGN, g.STATUS, g.ARCHIVED_AT, g.AGENCY_ID, a.CODE AS AGENCY_CODE
                 FROM AGENT g JOIN AGENCY a ON a.ID = g.AGENCY_ID WHERE g.ROLE = 'TRANSITO' ORDER BY CASE WHEN g.ARCHIVED_AT IS NULL THEN 0 ELSE 1 END, g.CODE")),
