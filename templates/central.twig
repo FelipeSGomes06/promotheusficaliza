@@ -253,12 +253,22 @@
           <div class="fresh" x-text="panel.where"></div>
         </div>
         <div class="detail__attention" x-show="panel.attention" data-stagger>{{ ui.icon('i-alert') }}<span x-text="'Precisa de atenção: ' + panel.attention"></span></div>
+        {# Mesma decisão da ficha completa (AlertFollowUp::nextAction), calculada no servidor. #}
+        <section class="next-action next-action--compact" :class="panel.next.tone" x-show="panel.next.what" aria-label="Próxima ação" data-stagger>
+          <p class="small muted m-0">Próxima ação</p>
+          <p class="next-action__what" x-text="panel.next.what"></p>
+          <p class="muted" x-text="panel.next.detail"></p>
+        </section>
         <div data-stagger>
           <template x-for="a in panel.alerts" :key="a.id">
             <div :class="a.cls">
               <p x-text="a.message"></p>
               <span class="small muted" x-text="a.meta"></span>
+              <dl class="facts alert-box__facts" x-show="a.follow.length > 0">
+                <template x-for="f in a.follow" :key="f.label"><div class="contents"><dt x-text="f.label"></dt><dd x-text="f.value"></dd></div></template>
+              </dl>
               <div x-show="a.canAck"><button class="btn btn--small" type="button" @click="acknowledge($event, a.id)">{{ ui.icon('i-check', null, 'icon icon--pop') }}<span>Registrar ciência</span></button></div>
+              <div x-show="a.followUrl"><a class="btn btn--small" :href="a.followUrl">{{ ui.icon('i-plus') }}<span>Registrar providência</span></a></div>
             </div>
           </template>
         </div>

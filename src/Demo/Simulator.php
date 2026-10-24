@@ -97,7 +97,7 @@ final class Simulator
             } elseif ($status === AgentStatus::EmPausa && $rng->nextFloat() < 0.03) {
                 $this->services->agents()->changeStatus((int) $g['id'], AgentStatus::EmAtividade->value, null, 'SIMULADOR', 'retorno simulado');
             }
-            // Um agente do cenário segue "em atividade sem posição recente": seu rádio simulado não transmite.
+            // Um agente do cenário segue "em turno sem posição recente": seu rádio simulado não transmite (em pausa ninguém transmite).
             if ($status === AgentStatus::EmAtividade && $g['call_sign'] !== 'Hermes 06') {
                 [$lat, $lng] = $this->step($rng, $g['pos_lat'] ?? $g['base_lat'], $g['pos_lng'] ?? $g['base_lng'], (float) $g['base_lat'], (float) $g['base_lng']);
                 $deliver(fn() => $ingest->position("{$uid}-pos", 'AGENTE', (int) $g['id'], $lat, $lng, $now, $tickNo % 6 === 0));

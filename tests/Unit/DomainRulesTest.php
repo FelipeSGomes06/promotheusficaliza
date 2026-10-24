@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fiscaliza\Tests\Unit;
 
 use DateTimeImmutable;
+use Fiscaliza\Domain\AlertFollowUp;
 use Fiscaliza\Domain\AlertRules;
 use Fiscaliza\Domain\EquipmentStatus;
 use Fiscaliza\Domain\Freshness;
@@ -134,6 +135,24 @@ final class DomainRulesTest extends TestCase
         self::assertSame(Freshness::NaoSeAplica, Freshness::of(null, $now, false));
     }
 
+    public function testNextActionFollowsTheAlertFromOpenToFollowUp(): void
+    {
+        $now = new DateTimeImmutable('2026-10-18 12:00:00', Time::utc());
+        $agent = ['status' => 'EM_ATIVIDADE', 'status_changed_at' => '2026-10-18 08:00:00', 'archived_at' => null, 'pos_observed_at' => '2026-10-18 10:00:00'];
+        $next = static fn(?array $alert, ?array $last = null, array $a = []) => AlertFollowUp::nextAction($a + $agent, $alert, $last, $now);
+
+        self::assertSame(['urgent', 'Registrar ciência e conferir a comunicação com a equipe'], array_values(array_slice($next(['state' => 'ABERTO', 'next_check_at' => null]), 0, 2)));
+        self::assertStringContainsString('há 2 h (18/10 às 07:00)', $next(['state' => 'ABERTO', 'next_check_at' => null])['detail']);
+        self::assertSame('Conferir a comunicação com a equipe e registrar a providência', $next(['state' => 'RECONHECIDO', 'next_check_at' => null])['what']);
+        self::assertSame('Aguardar a próxima conferência, 18/10 às 09:30', $next(['state' => 'RECONHECIDO', 'next_check_at' => '2026-10-18 12:30:00'], ['action_code' => 'CONTATO_TENTADO'])['what']);
+        self::assertSame('urgent', $next(['state' => 'RECONHECIDO', 'next_check_at' => '2026-10-18 11:30:00'], ['action_code' => 'CONTATO_TENTADO'])['tone'], 'conferência vencida');
+        self::assertSame('Nada pendente agora', $next(null)['what']);
+        self::assertSame('Registrar o retorno quando ele acontecer', $next(null, null, ['status' => 'INDISPONIVEL'])['what']);
+        self::assertSame('POSICAO_RECEBIDA', AlertRules::resolutionReason('AGENTE', 'SEM_POSICAO', ['status' => 'EM_PAUSA']));
+        self::assertSame('FORA_DE_TURNO', AlertRules::resolutionReason('AGENTE', 'SEM_POSICAO', ['status' => 'INDISPONIVEL']));
+        self::assertSame('ARQUIVADO', AlertRules::resolutionReason('AGENTE', 'SEM_POSICAO', null));
+    }
+
     public function testAlertConditionsFromCurrentState(): void
     {
         $now = new DateTimeImmutable('2026-10-18 12:00:00', Time::utc());
@@ -144,11 +163,14 @@ final class DomainRulesTest extends TestCase
             ['id' => 4, 'code' => 'TOT-0001', 'status' => 'DESATIVADO', 'last_seen_at' => null],
         ];
         $orders = [['equipment_id' => 3, 'priority' => 'PROGRAMADA', 'due_date' => '2026-10-10']];
-        $agents = [['id' => 9, 'call_sign' => 'Hermes 06', 'status' => 'EM_ATIVIDADE', 'pos_observed_at' => '2026-10-18 10:00:00']];
+        // Em pausa continua em turno (mesma regra da ficha e da central); fora de serviço, a posição não se aplica.
+        $agents = [['id' => 9, 'call_sign' => 'Hermes 06', 'status' => 'EM_ATIVIDADE', 'pos_observed_at' => '2026-10-18 10:00:00'],
+            ['id' => 10, 'call_sign' => 'Hermes 07', 'status' => 'EM_PAUSA', 'pos_observed_at' => '2026-10-18 10:00:00'],
+            ['id' => 11, 'call_sign' => 'Hermes 08', 'status' => 'FORA_DE_SERVICO', 'pos_observed_at' => null]];
 
         $keys = array_keys(AlertRules::conditions($equipment, $agents, $orders, $now));
         sort($keys);
 
-        self::assertSame(['AGENTE:9:SEM_POSICAO', 'EQUIPAMENTO:1:FURTO', 'EQUIPAMENTO:2:SEM_COMUNICACAO', 'EQUIPAMENTO:3:MANUTENCAO_VENCIDA'], $keys);
+        self::assertSame(['AGENTE:10:SEM_POSICAO', 'AGENTE:9:SEM_POSICAO', 'EQUIPAMENTO:1:FURTO', 'EQUIPAMENTO:2:SEM_COMUNICACAO', 'EQUIPAMENTO:3:MANUTENCAO_VENCIDA'], $keys);
     }
 }

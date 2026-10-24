@@ -103,6 +103,10 @@ final class WebApp
             $g->post("/agentes/{$id}", [$agents, 'update']);
             $g->post("/agentes/{$id}/situacao", [$agents, 'changeStatus']);
             $g->post("/agentes/{$id}/arquivar", [$agents, 'archive']);
+            $g->post("/agentes/{$id}/simular-posicao", [$agents, 'simulatePosition']);
+            $g->post("/agentes/{$id}/alertas/{alert:[0-9]+}/ciencia", [$agents, 'acknowledgeAlert']);
+            $g->post("/agentes/{$id}/alertas/{alert:[0-9]+}/responsavel", [$agents, 'assignAlert']);
+            $g->post("/agentes/{$id}/alertas/{alert:[0-9]+}/providencias", [$agents, 'recordFollowUp']);
             $g->get('/multas/novo', [$fines, 'createForm']);
             $g->post('/multas', [$fines, 'store']);
             $g->get("/multas/{$id}/editar", [$fines, 'editForm']);

@@ -240,4 +240,47 @@ final class AgentsHttpTest extends FirebirdTestCase
         self::assertStringContainsString('Rua: Avenida Sampaio Vidal, 1200 · Bairro: Centro', $show);
         self::assertStringContainsString('Cadastro alterado: rua, número, ponto no mapa.', $show, 'o ponto antigo ficava fora do endereço novo: foi para o endereço');
     }
+
+    public function testFollowUpOnTheAgentPageKeepsWhatWasTypedOnEveryRefusal(): void
+    {
+        $this->loginAs('ADMIN');
+        $agent = $this->services->agents()->create(['call_sign' => 'Hermes 77', 'role' => 'TRANSITO', 'agency_id' => (string) $this->agencyId, 'status' => 'EM_ATIVIDADE',
+            'base_name' => 'Base de teste', 'base_lat' => '-22.2165', 'base_lng' => '-49.9490'], null);
+        $other = $this->services->agents()->create(['call_sign' => 'Hermes 78', 'role' => 'TRANSITO', 'agency_id' => (string) $this->agencyId, 'status' => 'EM_ATIVIDADE',
+            'base_name' => 'Base de teste', 'base_lat' => '-22.2165', 'base_lng' => '-49.9490'], null);
+        $this->services->database()->transaction(fn() => $this->services->alerts()->reconcile());
+        $alert = (int) $this->services->alertRepository()->unresolvedFor('AGENTE', $agent)[0]['id'];
+        $newAccount = (int) $this->services->auth()->createUser('nova.conta', 'Nova Conta', 'OPERADOR', 'senha-de-teste-bem-longa')['id'];
+        $csrf = $this->session->csrfToken();
+        $base = "/agentes/{$agent}/alertas/{$alert}";
+        $version = fn() => (string) $this->services->alertRepository()->find($alert)['followup_no'];
+
+        $page = (string) $this->request('GET', "/agentes/{$agent}")->getBody();
+        self::assertStringContainsString('Registrar ciência e conferir a comunicação com a equipe', $page);
+        self::assertStringContainsString('Sem responsável', $page);
+        self::assertStringContainsString('Nova Conta (nova.conta)', $page, 'conta recém-cadastrada já aparece na seleção');
+
+        self::assertSame(404, $this->request('POST', "/agentes/{$other}/alertas/{$alert}/ciencia", ['_csrf' => $csrf])->getStatusCode(), 'alerta de outro agente');
+        self::assertStringEndsWith('#acompanhamento', $this->request('POST', "{$base}/ciencia", ['_csrf' => $csrf, 'note' => 'equipe chamada'])->getHeaderLine('Location'));
+
+        $refused = $this->request('POST', "{$base}/providencias", ['_csrf' => $csrf, 'action' => '', 'note' => 'relato digitado', 'version' => $version()]);
+        self::assertSame(422, $refused->getStatusCode());
+        self::assertStringContainsString('relato digitado', (string) $refused->getBody());
+        self::assertStringContainsString('Escolha o que foi feito.', (string) $refused->getBody());
+
+        $stale = $version();
+        self::assertSame(303, $this->request('POST', "{$base}/responsavel", ['_csrf' => $csrf, 'assignee' => (string) $newAccount, 'version' => $stale])->getStatusCode());
+        $conflict = $this->request('POST', "{$base}/providencias", ['_csrf' => $csrf, 'action' => 'CONTATO_TENTADO', 'note' => 'relato no conflito', 'version' => $stale]);
+        self::assertSame(409, $conflict->getStatusCode());
+        self::assertStringContainsString('relato no conflito', (string) $conflict->getBody());
+        self::assertStringContainsString('outra pessoa registrou uma providência ou trocou o responsável', (string) $conflict->getBody());
+
+        $status = $this->request('POST', "/agentes/{$agent}/situacao", ['_csrf' => $csrf, 'status' => 'FORA_DE_SERVICO', 'note' => '']);
+        self::assertSame(422, $status->getStatusCode());
+        self::assertStringContainsString('Informe o motivo da mudança', (string) $status->getBody());
+        $this->request('POST', "/agentes/{$agent}/situacao", ['_csrf' => $csrf, 'status' => 'FORA_DE_SERVICO', 'note' => 'fim do turno']);
+        $page = (string) $this->request('GET', "/agentes/{$agent}")->getBody();
+        self::assertStringContainsString('Deixou de se aplicar: o agente saiu de turno.', $page);
+        self::assertStringContainsString('Nada pendente agora', $page);
+    }
 }

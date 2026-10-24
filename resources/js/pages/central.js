@@ -112,7 +112,7 @@ function central() {
     showAllOthers: false,
     selectedKey: null,
     // A ficha nunca fica nula: ao fechar, o conteúdo anterior permanece invisível (inert) até a próxima escolha.
-    panel: { key: '', title: '', line: '', mini: '', miniCaption: '', stClass: 'st', glyph: '', statusLabel: '', fresh: '', freshClass: 'fresh', where: '', attention: '', alerts: [], facts: [], detailUrl: '#', canSimulate: false, simulateId: null, located: false, gone: false },
+    panel: { key: '', title: '', line: '', mini: '', miniCaption: '', stClass: 'st', glyph: '', statusLabel: '', fresh: '', freshClass: 'fresh', where: '', attention: '', next: { what: '', detail: '', tone: '' }, alerts: [], facts: [], detailUrl: '#', canSimulate: false, simulateId: null, located: false, gone: false },
     panelOpen: false,
     view: 'mapa',
     loading: false,
@@ -199,13 +199,23 @@ function central() {
       };
     },
     panelVM(r) {
+      // Acompanhamento (responsável, conferência, última providência) vem pronto do servidor, como na ficha completa.
       const alerts = snapshot.alerts.filter((a) => a.kind === r.kind && a.resource_id === r.id).map((a) => ({
         id: a.id,
         message: a.message,
         cls: `alert-box alert-box--${safe(a.severity, 'MEDIA')}`,
-        meta: a.state === 'RECONHECIDO' ? `Ciência registrada por ${a.ack_by || 'operador'}; o alerta se resolve sozinho quando a causa acabar.` : `Aberto em ${dateTime(a.opened_at)}.`,
+        meta: a.state === 'RECONHECIDO'
+          ? `Ciência registrada por ${a.ack_by || 'operador'}${a.ack_at ? ` em ${dateTime(a.ack_at)}` : ''}; o alerta se resolve sozinho quando a causa acabar.`
+          : `Aberto em ${dateTime(a.opened_at)}. Registrar ciência não resolve a causa.`,
+        follow: a.kind !== 'AGENTE' ? [] : [
+          { label: 'Responsável', value: a.assignee ? `${a.assignee}${a.assignee_active ? '' : ' · conta desativada: reatribua'}` : 'Sem responsável' },
+          { label: 'Próxima conferência', value: a.next_check_at ? `${dateTime(a.next_check_at)}${a.check_overdue ? ' · vencida' : ''}` : 'Não definida' },
+          { label: 'Última providência', value: a.last_follow_up ? `${a.last_follow_up.label} · ${a.last_follow_up.by}, ${dateTime(a.last_follow_up.at)}` : 'Nenhuma registrada' },
+        ],
         canAck: cfg.canEdit && a.state === 'ABERTO',
+        followUrl: cfg.canEdit && a.kind === 'AGENTE' && a.state === 'RECONHECIDO' ? `${cfg.base}/agentes/${Number(a.resource_id)}#providencia` : '',
       }));
+      const next = r.next_action || null;
       const facts = [];
       if (r.kind === 'EQUIPAMENTO') facts.push({ label: 'Código', value: r.code });
       if (r.maintenance) {
@@ -230,6 +240,7 @@ function central() {
         freshClass: `fresh fresh--${safe(r.freshness, 'X')}`,
         where: hasPosition(r) ? `${positionText(r)}${r.position.observed_at ? ` · ${dateTime(r.position.observed_at)}` : ''} · ponto ilustrativo` : 'Sem localização cadastrada: aparece só na lista.',
         attention: r.attention.join(' · '),
+        next: { what: next ? next.what : '', detail: next ? next.detail : '', tone: next ? ({ urgent: 'next-action--urgent', calm: 'next-action--calm' }[next.tone] || '') : '' },
         alerts,
         facts,
         detailUrl: `${cfg.base}/${r.kind === 'AGENTE' ? 'agentes' : 'equipamentos'}/${Number(r.id)}`,

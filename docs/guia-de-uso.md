@@ -157,7 +157,29 @@ Agentes são equipes fictícias mostradas no mapa — **não** são contas de ac
 - Situação muda na ficha (**Mudar situação**). Cadastro em duas etapas: quem é e base de trabalho.
 
 **Exemplo.** "Agente de trânsito · Hermes 06" em atividade, mas "Sem informação recente": o rádio não transmitiu há
-mais de 30 min. Aparece em "precisam de atenção" como "Em atividade sem posição recente" — não é falha do agente.
+mais de 30 min. Aparece em "precisam de atenção" como "Em turno sem posição recente" — não é falha do agente.
+
+### Acompanhar um alerta de agente
+
+A ficha do agente começa pela **Próxima ação** (a mesma que aparece na ficha resumida da central), com o tempo sem
+posição e uma orientação. Logo abaixo fica o **Acompanhamento do alerta**, com três fatos lado a lado: ciência,
+responsável e próxima conferência.
+
+1. **Registrar ciência** (nota opcional): grava seu nome e o horário. Não atribui ninguém nem encerra o alerta.
+2. **Atribuir a / Reatribuir para**: escolha uma conta ativa cadastrada em **Contas** (uma conta nova aparece na lista
+   sem mais nada). A troca fica nos registros, com quem trocou e quando. Conta desativada depois continua aparecendo
+   como "conta desativada: reatribua" e não pode receber atribuição nova.
+3. **Registrar providência** (depois da ciência): o que foi feito por outro meio (contato tentado, contato confirmado,
+   comunicação verificada ou outra), relato e, se quiser, a **próxima conferência** (até 7 dias). Os registros
+   anteriores ficam. Contato confirmado não atualiza a localização: o alerta continua "aguardando posição recente".
+4. **Encerramento**: sozinho, quando chega posição recente ("Encerrado: posição recente recebida") ou quando o agente
+   sai de turno ("Deixou de se aplicar: o agente saiu de turno" — não quer dizer que a comunicação voltou). Os
+   encerrados ficam em **Alertas encerrados**, com o motivo; os de antes de 24/10/2026 dizem "motivo não registrado".
+
+Se outra pessoa mexeu no acompanhamento enquanto você preenchia, a ficha avisa e mantém o que você digitou; confira e
+envie de novo. **Mudar situação** pede o motivo. Para demonstrar uma resolução, use **Mais ações → Simular recebimento
+de posição** (posição fictícia, identificada no histórico; nenhuma mensagem é enviada; o Hermes 06 continua sem
+transmitir, então o alerta volta depois de 30 min).
 
 ## Multas (`/multas`)
 
@@ -233,7 +255,8 @@ Concluir uma preventiva de equipamento com periodicidade agenda a próxima autom
 
 Nascem sozinhos quando há uma condição (furto, mau funcionamento, sem sinal ou posição recente, manutenção imediata ou
 vencida) e se resolvem sozinhos quando ela acaba. **Registrar ciência** (na ficha resumida ou completa) só informa que
-alguém viu: não resolve a causa.
+alguém viu: não resolve a causa. Alerta de agente sem posição vale enquanto ele está em turno (atividade ou pausa) e tem
+acompanhamento próprio: ver [Acompanhar um alerta de agente](#acompanhar-um-alerta-de-agente).
 
 ## Revisões recomendadas (`/antecipacao`)
 

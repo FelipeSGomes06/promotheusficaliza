@@ -365,7 +365,7 @@
   /* ---------- Formulários ---------- */
   .field { display: grid; gap: 5px; align-content: start; }
   .field label, .field .label { font-weight: 650; font-size: 0.92rem; }
-  input[type="text"], input[type="search"], input[type="number"], input[type="date"], input[type="password"], input:not([type]), select, textarea {
+  input[type="text"], input[type="search"], input[type="number"], input[type="date"], input[type="datetime-local"], input[type="password"], input:not([type]), select, textarea {
     width: 100%; min-height: 44px; padding: 9px 12px; border: 1px solid var(--color-control); border-radius: var(--radius-md);
     background: var(--color-surface); color: var(--color-ink); font: inherit; transition: border-color var(--t-hover) ease, box-shadow var(--t-hover) ease;
   }
@@ -618,6 +618,8 @@
   .alert-box--MEDIA { background: var(--color-warn-soft); border-color: #ecd789; }
   .alert-box p { margin: 0 0 6px; }
   .alert-box .btn { margin-top: 6px; }
+  .alert-box__facts { margin-top: 8px; gap: 3px 12px; font-size: 0.86rem; }
+  .alert-box__facts dt { font-size: 0.82rem; }
   .facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 7px 16px; margin: 0; }
   .facts dt { color: var(--color-muted); font-size: 0.88rem; }
   .facts dd { margin: 0; overflow-wrap: anywhere; }
@@ -727,6 +729,33 @@
   .next-action__what { font-size: 1.12rem; font-weight: 750; margin-bottom: 6px; }
   .next-action--urgent::before { background: var(--color-fail); }
   .next-action--calm::before { background: var(--color-ok); }
+  .next-action > .btn-row, .next-action__form { margin-top: 14px; }
+  .next-action__form { display: grid; gap: 12px; }
+  .next-action__form textarea { min-height: 64px; }
+  .next-action__note { display: flex; gap: 8px; align-items: flex-start; margin: 10px 0 0; font-size: 0.9rem; }
+  .next-action__note .icon { flex: none; margin-top: 2px; color: var(--color-brand-600); }
+  .next-action--compact { padding: 12px 14px 12px 18px; margin-bottom: 12px; }
+  .next-action--compact::before { width: 4px; }
+  .next-action--compact .next-action__what { font-size: 1rem; margin-bottom: 4px; }
+  .next-action--compact p { margin: 0; font-size: 0.88rem; }
+  /* Acompanhamento do alerta: três fatos de mesmo peso (ciência, responsável, conferência). */
+  .follow-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 14px 0 0; }
+  .follow-facts__item { display: grid; gap: 2px; align-content: start; padding: 10px 12px; border-radius: var(--radius-md); background: var(--color-sunken); border: 1px solid var(--color-line); }
+  .follow-facts__item.is-warn { background: var(--color-warn-soft); border-color: #ecd789; }
+  .follow-facts dt { font-size: 0.8rem; font-weight: 650; color: var(--color-muted); }
+  .follow-facts dd { margin: 0; display: grid; gap: 2px; overflow-wrap: anywhere; }
+  .follow-facts dd .hint { font-size: 0.8rem; }
+  @media (max-width: 680px) { .follow-facts { grid-template-columns: 1fr; } }
+  /* Rótulos no topo e campos na mesma linha de base, mesmo quando só um dos lados tem dica. */
+  .follow-form > .field:not(.span-2) { display: flex; flex-direction: column; gap: 5px; }
+  .follow-form > .field:not(.span-2) > :is(input, select) { margin-top: auto; }
+  .follow-quote { margin: 10px 0 0; padding: 8px 12px; border-left: 3px solid var(--color-line-strong); font-size: 0.92rem; }
+  .assign-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: end; }
+  @media (max-width: 480px) { .assign-form { grid-template-columns: 1fr; } .assign-form .btn { justify-self: start; } }
+  .follow-panel h3 { font-size: 1rem; margin: 0 0 10px; }
+  .closed-alerts { margin: 4px 0 0; padding: 0; display: grid; gap: 10px; }
+  .closed-alerts li { display: grid; gap: 2px; padding-top: 10px; border-top: 1px solid var(--color-line); font-size: 0.92rem; }
+  .closed-alerts li:first-child { border-top: 0; padding-top: 0; }
   .timeline { margin: 0; padding: 0; }
   .timeline li { position: relative; padding: 0 0 14px 22px; border-left: 2px solid var(--color-line); margin-left: 6px; }
   .timeline li::before { content: ""; position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--color-surface); border: 2px solid var(--color-brand-600); }

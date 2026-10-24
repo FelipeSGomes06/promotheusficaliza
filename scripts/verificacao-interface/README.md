@@ -15,9 +15,11 @@ node scripts/verificacao-interface/captures.cjs /tmp/fotos   # capturas JPEG 144
 node scripts/verificacao-interface/fps.cjs                   # intervalos entre quadros durante as animações
 node scripts/verificacao-interface/multas.cjs  /tmp/multas  # aba Multas: capturas 1440/390/360 px + relatório (filtro, origem, 422, 409, sem JS, movimento reduzido)
 node scripts/verificacao-interface/agentes.cjs /tmp/agentes # cadastro de agente: base pelo mapa ou pelo endereço, rua pelo CEP (respostas simuladas + servidor real), sem JS, 390/360 px
+PF_AGENTE=<id> node scripts/verificacao-interface/acompanhamento.cjs /tmp/acomp # alerta de agente: ciência → responsável de Contas → providência → conflito → conta desativada → posição simulada (central, 390/360 px, teclado)
 ```
 
 `verify.cjs` e `record.cjs` registram falhas simuladas e ciência de alertas: use só em banco de demonstração.
 
 `multas.cjs` também grava rascunhos e edições de teste (precisa do cenário de multas: `demo:seed` ou `demo:seed-multas`).
 `PF_CHROMIUM` aponta um executável do Chromium já instalado quando a versão do Playwright não traz o seu.
+`acompanhamento.cjs` cadastra uma conta de teste (e a desativa), registra ciência e providências e simula posição: use só em banco de demonstração, com um agente que tenha alerta `SEM_POSICAO` aberto.

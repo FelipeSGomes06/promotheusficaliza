@@ -23,7 +23,11 @@ se presente, `Origin` igual a `APP_ORIGIN` (ou à origem da requisição).
 | POST | `/manutencoes/{id}/iniciar` · `/concluir` · `/cancelar` | operador | Ciclo da ordem. |
 | POST | `/alertas/{id}/reconhecer` | operador | Registra ciência. Com `Accept: application/json` responde JSON. |
 | GET | `/agentes`, `/agentes/{id}` | conta | Lista e ficha. Query da lista: `q`, `categoria[]` (`AG_TRANSITO`…), `situacao[]`, `orgao[]`, `ordem` ∈ {codigo, nome, funcao, situacao, bairro}, `arquivados=1`, `pagina`. |
-| GET/POST | `/agentes/novo`, `/agentes`, `/agentes/{id}/editar`, `/agentes/{id}`, `/agentes/{id}/situacao`, `/agentes/{id}/arquivar` | operador | Como nos equipamentos. |
+| GET/POST | `/agentes/novo`, `/agentes`, `/agentes/{id}/editar`, `/agentes/{id}`, `/agentes/{id}/situacao`, `/agentes/{id}/arquivar` | operador | Como nos equipamentos. `situacao` pede `status` e `note` (motivo, obrigatório, até 300); erro → 422 com a ficha e a digitação. |
+| POST | `/agentes/{id}/alertas/{alerta}/ciencia` | operador | `note` opcional (até 300). Alerta de outro recurso → 404. Ciência já registrada por outra pessoa → 409 com a nota levada ao formulário de providência. |
+| POST | `/agentes/{id}/alertas/{alerta}/responsavel` | operador | `assignee` (ID de conta ativa), `version` (`FOLLOWUP_NO` lido). Mesma conta, conta inexistente ou desativada → 422; versão antiga → 409; alerta encerrado → 409. Sucesso → 303 para `#acompanhamento`. |
+| POST | `/agentes/{id}/alertas/{alerta}/providencias` | operador | `action` ∈ {CONTATO_TENTADO, CONTATO_CONFIRMADO, COMUNICACAO_VERIFICADA, OUTRA}, `note` (até 500; obrigatório em OUTRA), `next_check` (`AAAA-MM-DDTHH:MM`, hora de Marília, depois de agora e em até 7 dias; vazio = sem conferência), `version`. Antes da ciência → 409. Erros mantêm a digitação. |
+| POST | `/agentes/{id}/simular-posicao` | operador | Demonstração: posição fictícia perto da base pelo `EventIngestor` + reconciliação; histórico com origem simulada; nenhuma mensagem. |
 | GET | `/multas` | conta | Lista paginada (20) com três resumos do mesmo filtro (registros, a conferir, pagamento informado). Query: `q` (código interno `DEMO-MUL-…`, AIT, placa ou RENAVAM; até 60), `origem` ∈ {RADAR, AGENTE}, `etapa`, `orgao` (autuador), `radar`, `agente` (agente da constatação ou operador do radar), `documentacao` (na ocorrência), `pagamento`, `de`/`ate` (datas locais inclusivas; inválidas ou invertidas → 422 com o filtro preservado), `cadastro` ∈ {ativo (padrão: rascunho + registrado), rascunho, registrado, cancelado, todos}, `ordem` ∈ {ocorrencia, codigo, atualizado}, `pagina`. |
 | GET | `/multas/{id}` | conta | Ficha: ocorrência, origem (snapshot gravado + link ao cadastro atual), veículo autuado, documentação na ocorrência e posterior, andamento, histórico paginado (`eventos_pagina`). `voltar` = query da lista, validada e reconstruída (nunca URL). |
 | GET | `/multas/novo` · `/multas/{id}/editar` | operador | Formulário (rascunho / retificação). `?radar=<id>` ou `?agente=<id>` só pré-selecionam a origem. Cancelado → 409. |
@@ -217,7 +221,13 @@ resposta vêm do **mesmo** conjunto filtrado.
                  "highlights": [{"label": "…", "value": "…"}], …}],
   "regions": [{"name": "Fragata", "equipment": 9, "unavailable": 2, "availability": 0.7778, "agents_active": 3, "alerts": 2, …}],
   "maintenance": {"urgent": […], "upcoming": […]},
-  "alerts": [{"id": 3, "kind": "EQUIPAMENTO", "resource_id": 7, "severity": "ALTA", "state": "ABERTO", "message": "…", …}],
+  "alerts": [{"id": 3, "kind": "EQUIPAMENTO", "resource_id": 7, "severity": "ALTA", "state": "ABERTO", "message": "…",
+              "ack_by": "Avaliador" | null, "ack_at": "…" | null,
+              "assignee": "Nome da conta" | null, "assignee_active": true,   // false: responsável com conta desativada (reatribuir)
+              "next_check_at": "…" | null, "check_overdue": false,
+              "last_follow_up": {"label": "Contato confirmado com a equipe", "by": "…", "at": "…"} | null, …}],
+  // Agentes também trazem "next_action": {"tone": "urgent"|"normal"|"calm", "what": "…", "detail": "…"} (AlertFollowUp::nextAction,
+  // a mesma decisão da ficha completa) e "mission_id" (missão vigente ou null).
   "sync": {"last_event_id": 5198, "last_event_received_at": "…", "simulator_last_tick_at": "…", "simulator_running": true,
            "duplicates_ignored": 4, "late_events": 3}
 }

@@ -29,6 +29,17 @@ final class UserRepository
         return array_map(self::trim(...), $this->db->all('SELECT ID, USERNAME, DISPLAY_NAME, ROLE, ACTIVE, LAST_LOGIN_AT, CREATED_AT FROM APP_USER ORDER BY USERNAME'));
     }
 
+    /**
+     * Contas que podem acompanhar um alerta: as ativas cadastradas em Contas (operador ou administrador, que operam o
+     * sistema). Lidas a cada tela, então uma conta nova aparece sem mudar o código.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function assignable(): array
+    {
+        return array_map(self::trim(...), $this->db->all('SELECT ID, USERNAME, DISPLAY_NAME, ROLE FROM APP_USER WHERE ACTIVE = TRUE ORDER BY DISPLAY_NAME, USERNAME'));
+    }
+
     public function insert(string $username, string $displayName, string $hash, string $role, string $createdAt): int
     {
         return $this->db->insert(

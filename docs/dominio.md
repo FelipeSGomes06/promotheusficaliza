@@ -16,6 +16,7 @@ expressão), não só na interface.
 | `MAINTENANCE_ORDER` | Ordem corretiva/preventiva, prioridade imediata/programada, estado, data local, motivo, resolução, situação resultante, origem, autoria e instantes. | Programada exige data; estado encerrado ⇔ `CLOSED_AT`; resultado em lista fechada; **no máximo uma `EM_EXECUCAO` por equipamento** (índice único parcial `UX_MAINT_ONE_RUNNING`). |
 | `RESOURCE_EVENT` | Histórico append-only: uid, recurso, tipo, origem, autor, ocorrido, recebido, resultado (`APLICADO`/`HISTORICO`), resumo e antes/depois (JSON). | `EVENT_UID` único (duplicatas); o usuário da aplicação só tem `SELECT, INSERT`. |
 | `ALERT` | Alerta por recurso e motivo, gravidade, estado, reconhecimento e resolução. | `OPEN_KEY` único e nulo quando resolvido ⇒ um alerta aberto por causa, mesmo sob concorrência. |
+| `ALERT_FOLLOWUP` | Acompanhamento do alerta: providências (resultado, relato, próxima conferência) e atribuições (de/para conta), com autor e instante. | Aplicação só lê e insere; responsável atual, próxima conferência e versão (`FOLLOWUP_NO`) ficam em `ALERT`; `RESOLVED_REASON` diz por que encerrou ([ADR-0022](adr/0022-acompanhamento-dos-alertas-de-agentes.md)). |
 | `ANALYSIS_RUN`, `ANALYSIS_RESULT` | Execuções da análise (método, parâmetros, período, avaliação) e resultado por equipamento. | Resultado único por execução/equipamento. |
 | `APP_USER`, `LOGIN_ATTEMPT` | Contas (operador/admin) e tentativas de login guardadas por hash: cada verificação reserva uma vaga numerada (`SLOT_NO`) antes do hashing; login correto acrescenta uma linha de quitação (`SETTLES_ID`). | Usuário único sem diferenciar maiúsculas; vaga única por chave (índice parcial); a aplicação só lê e acrescenta tentativas. |
 | `URBAN_RUN` | Execução importada do treino por setores: período `[AS_OF, UNTIL_DATE)`, referência dos dados, método escolhido, ganho do candidato, emissão do modelo congelado, aviso, avaliação/modelo/proveniência (JSON original) e SHA-256 dos arquivos. | `BUNDLE_SHA256` único (reimportação idempotente); período de 7 dias; aplicação só lê e insere. |
@@ -87,6 +88,10 @@ desenhar ícone (`icons.svg#i-<TIPO>`) e miniatura (`miniaturas/<tipo>.svg`). Es
 
 Silêncio do dispositivo não vira "falha": vira atualidade "sem informação" e um alerta de comunicação.
 
+Agente sem posição há mais de 30 min **em turno** (atividade ou pausa) abre `SEM_POSICAO`; entrar em pausa não encerra
+o alerta. Ele encerra com posição recente (`POSICAO_RECEBIDA`) ou quando deixa de se aplicar (`FORA_DE_TURNO`,
+`ARQUIVADO`). Ciência e providências não encerram a causa.
+
 **Histórico na ficha.** Itens com linha tracejada são registros que **não alteraram** a situação atual (`OUTCOME =
 HISTORICO`); o motivo aparece no item: evento atrasado (estado atual mais recente), situação definida por pessoa
 (manutenção, desativado, furtado, não instalado), equipamento arquivado ou nenhuma mudança (já estava naquela
@@ -125,7 +130,7 @@ oferecida: exigiria durações de estado com tratamento de lacunas, fora do esco
 ([ADR-0013](adr/0013-perfil-compacto-de-demonstracao.md)). **Compacto (padrão): 17 equipamentos e 7 agentes** — todas
 as categorias e situações; manutenção em execução, imediata, vencida, próxima e futura (as três últimas com data fixa
 relativa à carga); sinal atual, atrasado (concentrador com 25 min de defasagem) e sem informação; recurso móvel furtado
-com posição antiga; evento atrasado permanente; câmera com histórico curto; agente em atividade sem posição recente;
+com posição antiga; evento atrasado permanente; câmera com histórico curto; agente em turno sem posição recente;
 radares com modalidade (lombadas e demais fixos; um portátil).
 **Completo: 48 e 21**, para volume e para a metodologia da análise. `DEMO_PROFILE` ou `demo:seed --perfil=…` escolhem. [`DemoSeeder`](../src/Demo/DemoSeeder.php)
 gera 240 dias de histórico com semente fixa (`SIM_SEED`): mesmo cenário relativo à data da carga.

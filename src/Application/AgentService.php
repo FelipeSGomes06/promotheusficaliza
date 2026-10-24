@@ -96,6 +96,10 @@ final class AgentService
     public function changeStatus(int $id, string $target, ?int $actorId, string $source = 'MANUAL', ?string $note = null): void
     {
         $status = AgentStatus::tryFrom($target) ?? throw new ValidationFailed(['status' => 'Situação inválida.']);
+        $note = $note === null ? null : trim($note);
+        if ($source === 'MANUAL' && ($note === null || $note === '' || mb_strlen($note) > 300)) {
+            throw new ValidationFailed(['note' => 'Informe o motivo da mudança (até 300 caracteres).']);
+        }
         $this->db->transaction(function () use ($id, $status, $actorId, $source, $note): void {
             $current = $this->agents->lock($id) ?? throw new NotFound('Agente não encontrado.');
             if ($current['archived_at'] !== null) {

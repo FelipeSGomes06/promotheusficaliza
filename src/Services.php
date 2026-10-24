@@ -232,6 +232,7 @@ final class Services
             $this->equipmentRepository(),
             $this->agentRepository(),
             $this->maintenanceRepository(),
+            $this->userRepository(),
             $this->clock(),
         ));
     }
@@ -296,6 +297,7 @@ final class Services
             $this->agentRepository(),
             $this->maintenanceRepository(),
             $this->alertRepository(),
+            $this->missionRepository(),
             $this->eventRepository(),
             $this->metaRepository(),
             $this->referenceRepository(),
