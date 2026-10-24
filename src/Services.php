@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fiscaliza;
 
 use Fiscaliza\Application\AddressLocator;
+use Fiscaliza\Application\AddressPoint;
 use Fiscaliza\Application\AgentService;
 use Fiscaliza\Application\AlertService;
 use Fiscaliza\Application\AnalysisService;
@@ -93,6 +94,11 @@ final class Services
     public function geocoder(): Geocoder
     {
         return $this->geocoder ??= new NominatimGeocoder($this->config->geocoderUrl());
+    }
+
+    public function addressPoint(): AddressPoint
+    {
+        return $this->shared(__FUNCTION__, fn() => new AddressPoint($this->addressLocator(...), $this->referenceRepository()));
     }
 
     public function addressLocator(): AddressLocator
@@ -240,6 +246,7 @@ final class Services
             $this->history(),
             $this->alerts(),
             $this->clock(),
+            $this->addressPoint(),
         ));
     }
 
@@ -252,7 +259,7 @@ final class Services
             $this->history(),
             $this->alerts(),
             $this->clock(),
-            $this->addressLocator(...),
+            $this->addressPoint(),
         ));
     }
 

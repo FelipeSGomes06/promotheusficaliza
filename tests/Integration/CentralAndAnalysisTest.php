@@ -69,7 +69,8 @@ final class CentralAndAnalysisTest extends FirebirdTestCase
 
     public function testResourceWithoutCoordinatesIsListedButNotPlaced(): void
     {
-        $this->createEquipment(['lat' => '', 'lng' => '']);
+        // Cadastro antigo sem coordenadas (hoje o local é obrigatório): continua na lista, fora do mapa.
+        $this->services->equipmentRepository()->updateState($this->createEquipment(), ['lat' => null, 'lng' => null]);
         $resource = $this->services->central()->snapshot(new Filters())['resources'][0];
 
         self::assertNull($resource['position']['lat']);

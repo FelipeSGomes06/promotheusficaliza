@@ -78,9 +78,11 @@ definida por pessoa (ex.: em manutenção), equipamento arquivado ou nenhuma mud
 
 ### Cadastrar e editar
 
-Três etapas: **1. O que é** (tipo, situação inicial, marca, modelo, órgão, série, patrimônio), **2. Onde fica** (toque
-no mapa para marcar o ponto; "este ponto é" local de instalação, planejado ou base; endereço; bairro; coordenadas em
-"Opções avançadas") e **3. Características** do tipo escolhido, periodicidade da preventiva, data de instalação e
+Três etapas: **1. O que é** (tipo, situação inicial, marca, modelo, órgão, série, patrimônio), **2. Onde fica** ("este
+ponto é" local de instalação, planejado ou base; **clique no mapa para marcar ou mudar o local**, ou use o endereço:
+CEP, rua e número ou referência, como "km 3" ou "em frente à praça"; o local é obrigatório mesmo para equipamento
+planejado; o bairro vem do ponto e as coordenadas nunca são digitadas; com o endereço preenchido, o ponto fica dentro
+dele) e **3. Características** do tipo escolhido, periodicidade da preventiva, data de instalação e
 observações. Ao trocar o tipo, só aparecem as características dele. Cidade é sempre Marília/SP.
 
 | Erro comum | Mensagem | Como resolver |

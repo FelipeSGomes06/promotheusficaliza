@@ -59,10 +59,9 @@ redirecionamento 303 com aviso).
 | `serial_number` | opcional, até 60; único por fabricante (sem diferenciar maiúsculas/espaços). |
 | `asset_tag` | opcional, até 30, único. |
 | `agency_id` | obrigatório; órgão existente. |
-| `street` (≤120), `address_ref` (≤160) | opcionais, mas é preciso **logradouro, referência ou coordenadas**. |
+| `street` (≤120), `address_ref` (≤160) | opcionais; rua (o CEP preenche) e número ou referência livre ("1200", "km 3", "em frente à praça"). |
 | `cep` | opcional; `00000-000` (aceita sem hífen). |
-| `region_id` | opcional; bairro existente. |
-| `lat`, `lng` | opcionais, **juntos ou nenhum**; graus decimais (vírgula aceita) dentro da área de Marília; gravados com 6 casas. |
+| `lat`, `lng` | **local obrigatório** para todo equipamento, inclusive o planejado; graus decimais dentro da área de Marília, nunca digitados na tela (vêm do mapa). Sem eles, o servidor localiza pela `street` ou pela rua do `cep` (dígitos iniciais de `address_ref` ajudam); com eles e endereço novo ou alterado, ponto fora do endereço vai para o endereço ([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)). `region_id` enviado é ignorado: o bairro vem do ponto. |
 | `location_kind` | obrigatório: `INSTALADO`, `PLANEJADO` ou `BASE`. Recurso móvel (veículo, patinete) só `BASE`; fixo nunca `BASE`; não instalado não pode ser `INSTALADO`. |
 | `maint_interval_days` | opcional, 7–730. |
 | `installed_on` | opcional, `AAAA-MM-DD`. |

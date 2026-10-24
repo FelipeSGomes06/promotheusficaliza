@@ -7,7 +7,6 @@ namespace Fiscaliza\Application;
 use Fiscaliza\Domain\AgentRole;
 use Fiscaliza\Domain\AgentStatus;
 use Fiscaliza\Domain\Clock;
-use Fiscaliza\Domain\NearestRegion;
 use Fiscaliza\Domain\RuleViolation;
 use Fiscaliza\Domain\Time;
 use Fiscaliza\Domain\ValidationFailed;
@@ -31,7 +30,8 @@ final class AgentService
         'base_lat' => 'ponto no mapa', 'base_lng' => 'ponto no mapa'];
     private const PREFIX = ['TRANSITO' => 'AGT', 'GUARDA' => 'GCM', 'POLICIA' => 'POL'];
 
-    /** @param \Closure(): AddressLocator $locator criado só quando um cadastro chega sem o ponto do mapa */
+    private const POINT = ['lat' => 'base_lat', 'lng' => 'base_lng', 'street' => 'base_street', 'cep' => 'base_cep', 'number' => 'base_ref'];
+
     public function __construct(
         private readonly Database $db,
         private readonly AgentRepository $agents,
@@ -39,7 +39,7 @@ final class AgentService
         private readonly History $history,
         private readonly AlertService $alerts,
         private readonly Clock $clock,
-        private readonly \Closure $locator,
+        private readonly AddressPoint $point,
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -48,7 +48,7 @@ final class AgentService
         $input = new Input($data);
         $status = AgentStatus::tryFrom((string) $input->choice('status', array_map(static fn($s) => $s->value, AgentStatus::cases())));
         $values = $this->validate($input);
-        $values['region_id'] = $this->regionAt((float) $values['base_lat'], (float) $values['base_lng']);
+        $values['region_id'] = $this->point->regionAt((float) $values['base_lat'], (float) $values['base_lng']);
         $now = Time::toDb($this->clock->now());
 
         return $this->db->transaction(function () use ($values, $status, $now, $actorId, $source): int {
@@ -81,7 +81,7 @@ final class AgentService
         if ($current['archived_at'] !== null) {
             throw new RuleViolation('Agente arquivado não pode ser editado.');
         }
-        $values += $this->derivedOnUpdate($current, $values);
+        $values += $this->point->regionOnUpdate($current, $values, 'base_lat', 'base_lng');
         $this->db->transaction(function () use ($id, $version, $values, $current, $actorId): void {
             if (!$this->agents->updateVersioned($id, (int) $version, $values + ['updated_at' => Time::toDb($this->clock->now())])) {
                 throw new ConcurrencyConflict('Outra pessoa alterou este agente depois que você abriu o formulário. Recarregue para ver a versão atual.');
@@ -167,110 +167,9 @@ final class AgentService
         if ($values['agency_id'] !== null && !$this->references->agencyExists($values['agency_id'])) {
             $input->fail('agency_id', 'Órgão inexistente.');
         }
-        $this->resolvePoint($input, $values, $current);
+        $this->point->resolve($input, $values, $current, self::POINT, 'a base');
         $input->assertValid();
 
         return $values;
-    }
-
-    /**
-     * Ponto da base: o do mapa (latitude e longitude vêm da tela, nunca digitadas) ou, sem mapa, o do endereço: a rua
-     * informada ou a do CEP, localizada pelo provedor (ADR-0021). A consulta externa só acontece com o resto do
-     * formulário válido e fora da transação; a rua achada pelo CEP passa a ser a rua gravada.
-     *
-     * Com ponto e endereço (novo ou alterado), o ponto precisa ficar no endereço: fora da área dele, vai para o endereço
-     * (a tela já faz isso; aqui vale também para quem envia direto). Provedor fora do ar: fica o ponto marcado.
-     *
-     * @param array<string, mixed> $values
-     * @param array<string, mixed>|null $current
-     */
-    private function resolvePoint(Input $input, array &$values, ?array $current): void
-    {
-        $errors = $input->errors();
-        if (isset($errors['base_lat']) || isset($errors['base_lng'])) {
-            return;
-        }
-        if ($values['base_lat'] !== null && $values['base_lng'] !== null) {
-            if ($errors === [] && $values['base_street'] !== null && self::addressChanged($current, $values)) {
-                $this->keepInsideAddress($values);
-            }
-
-            return;
-        }
-        if ($values['base_lat'] !== null || $values['base_lng'] !== null || ($values['base_street'] === null && $values['base_cep'] === null)) {
-            $input->fail('base_lat', 'Marque a base no mapa ou, sem o mapa, informe o CEP e a rua.');
-
-            return;
-        }
-        if ($errors !== []) {
-            return;
-        }
-        $found = ($this->locator)()->locate($values['base_street'], $values['base_cep'], $values['base_ref']);
-        if ($found['situacao'] !== 'ENCONTRADO') {
-            $input->fail($found['situacao'] === 'INDISPONIVEL' ? 'base_lat' : 'base_street', AddressLocator::MESSAGES[$found['situacao']]);
-
-            return;
-        }
-        $values['base_lat'] = $found['lat'];
-        $values['base_lng'] = $found['lng'];
-        $values['base_street'] = $found['rua'];
-    }
-
-    /**
-     * @param array<string, mixed>|null $current
-     * @param array<string, mixed> $values
-     */
-    private static function addressChanged(?array $current, array $values): bool
-    {
-        foreach (['base_street', 'base_cep', 'base_ref'] as $key) {
-            if ($current === null || (string) ($current[$key] ?? '') !== (string) ($values[$key] ?? '')) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /** @param array<string, mixed> $values */
-    private function keepInsideAddress(array &$values): void
-    {
-        $found = ($this->locator)()->locate($values['base_street'], $values['base_cep'], $values['base_ref']);
-        if ($found['situacao'] !== 'ENCONTRADO') {
-            return;
-        }
-        [$south, $north, $west, $east] = $found['caixa'];
-        [$lat, $lng] = [(float) $values['base_lat'], (float) $values['base_lng']];
-        if ($lat < $south || $lat > $north || $lng < $west || $lng > $east) {
-            $values['base_lat'] = $found['lat'];
-            $values['base_lng'] = $found['lng'];
-        }
-    }
-
-    /**
-     * Na edição, o bairro acompanha o ponto: é recalculado quando o ponto muda (ou se ainda não havia bairro); fora
-     * isso, fica o gravado, inclusive o escolhido à mão em cadastros antigos.
-     *
-     * @param array<string, mixed> $current
-     * @param array<string, mixed> $values
-     * @return array<string, mixed>
-     */
-    private function derivedOnUpdate(array $current, array $values): array
-    {
-        $moved = number_format((float) $current['base_lat'], 6, '.', '') !== $values['base_lat']
-            || number_format((float) $current['base_lng'], 6, '.', '') !== $values['base_lng'];
-        $derived = [];
-        if ($moved || $current['region_id'] === null) {
-            $derived['region_id'] = $this->regionAt((float) $values['base_lat'], (float) $values['base_lng']);
-        }
-
-        return $derived;
-    }
-
-    /** Bairro de referência de centro mais próximo do ponto, a mesma régua do Planejar (ADR-0021). */
-    private function regionAt(float $lat, float $lng): ?int
-    {
-        $region = NearestRegion::of($lat, $lng, $this->references->regions());
-
-        return $region === null ? null : (int) $region['id'];
     }
 }

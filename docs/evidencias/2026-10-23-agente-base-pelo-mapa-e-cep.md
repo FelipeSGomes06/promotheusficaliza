@@ -26,6 +26,16 @@ Capturas em [`capturas-2026-10-23-agente-base/`](capturas-2026-10-23-agente-base
 mapa porque os tiles estavam bloqueados pela rede do ambiente; respostas de CEP e localização simuladas no navegador,
 exceto `05` e `08`, que mostram o servidor real sem saída para a internet).
 
+## Equipamentos (24/10/2026)
+
+O formulário de equipamento passou ao mesmo modelo: mapa primeiro, coordenadas ocultas, CEP \| Cidade fixa e Rua \|
+Número ou referência (referência livre mantida), bairro pelo ponto e ponto dentro do endereço. O local passou a ser
+**obrigatório para todo equipamento, inclusive o planejado** (pedido do autor); "Remover ponto marcado", a lista de
+bairros e "Opções avançadas: coordenadas" saíram. Defeito antigo corrigido no caminho: o bloco "Características" saía
+espremido à direita (a legenda flutuante do passo não era "limpa" quando havia blocos de outros tipos ocultos antes);
+estava igual em `main`. Testes: `EquipmentLocationTest` (4) e `WebSecurityTest::testEquipmentFormAsksForLocationByMapOrAddress`;
+no navegador, `agentes.cjs` ganhou 3 verificações do equipamento (capturas `09` e `10`) e `multas.cjs` seguiu com 45/45.
+
 ## Verificação
 
 Ambiente: contêiner de nuvem do Claude Code (Linux), Docker local; PHP 8.5.11 (`php:8.5.11-apache-trixie` com

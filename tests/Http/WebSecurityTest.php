@@ -259,6 +259,22 @@ final class WebSecurityTest extends FirebirdTestCase
         self::assertSame('Minha versão', $this->services->equipmentRepository()->find($id)['model']);
     }
 
+    /** Formulário de equipamento no padrão do agente (ADR-0021): local obrigatório pelo mapa ou endereço, sem coordenadas digitadas. */
+    public function testEquipmentFormAsksForLocationByMapOrAddress(): void
+    {
+        $this->loginAs('OPERADOR');
+        $html = (string) $this->request('GET', '/equipamentos/novo')->getBody();
+
+        self::assertStringContainsString('Clique no mapa para marcar ou mudar o local.', $html);
+        self::assertStringContainsString('<input type="hidden" id="f-lat" name="lat"', $html);
+        self::assertStringNotContainsString('Opções avançadas: coordenadas', $html);
+        self::assertStringNotContainsString('name="region_id"', $html, 'bairro vem do ponto');
+        self::assertStringNotContainsString('data-clear-point', $html, 'o local é obrigatório: não há "remover ponto"');
+        self::assertMatchesRegularExpression('#<input id="f-city" type="text" value="Marília / SP" readonly#', $html);
+        self::assertStringContainsString('data-cep-lookup data-cep="f-cep" data-street="f-street" data-number="f-address_ref"', $html);
+        self::assertStringContainsString('Todo equipamento tem um local, mesmo o planejado', $html);
+    }
+
     /** O quadro "Salvo agora × Sua versão" mostra o nome do órgão e do bairro certos (IDs não começam em 0). */
     public function testEditConflictTableNamesTheRightAgencyAndRegion(): void
     {
@@ -268,7 +284,8 @@ final class WebSecurityTest extends FirebirdTestCase
         $id = $this->createEquipment();
         $old = (string) $this->services->equipmentRepository()->find($id)['version_no'];
         $ana = $this->services->auth()->createUser('ana', 'Ana', 'OPERADOR', 'senha-de-teste-bem-longa')['id'];
-        $this->services->equipment()->update($id, $this->equipmentData(['agency_id' => (string) $guarda, 'region_id' => (string) $zona, 'version' => $old]), $ana);
+        $this->services->equipment()->update($id, $this->equipmentData(['agency_id' => (string) $guarda, 'lat' => '-22.1905', 'lng' => '-49.9405', 'version' => $old]), $ana);
+        self::assertSame($zona, (int) $this->services->equipmentRepository()->find($id)['region_id'], 'bairro vem do ponto');
         $this->loginAs('OPERADOR');
 
         $conflict = $this->request('POST', "/equipamentos/{$id}", ['_csrf' => $this->session->csrfToken(), 'version' => $old] + $this->equipmentData());
