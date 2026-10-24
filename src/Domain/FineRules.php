@@ -183,11 +183,11 @@ final class FineRules
     }
 
     /**
-     * Motivos de "A conferir". Com $today (AAAA-MM-DD) inclui a revisão de conferência cuja data já passou; sem ele,
+     * Motivos de "A conferir". Com $today (AAAA-MM-DD) inclui o lembrete de conferência cuja data chegou; sem ele,
      * só os motivos que não dependem do dia (base da contagem gravada em ATTENTION_COUNT). Nenhum motivo significa
      * "multa inválida": são pendências de cadastro ou de conferência.
      *
-     * @param array<string, mixed> $f projeção atual (record_state, occ_doc_status, occ_doc_review_on, later_doc_status e campos do cadastro)
+     * @param array<string, mixed> $f projeção atual (record_state, occ_doc_status, doc_review_on, doc_review_scope, later_doc_status e campos do cadastro)
      * @return list<string>
      */
     public static function attention(array $f, ?string $today = null): array
@@ -207,9 +207,11 @@ final class FineRules
             // A pendência pede acompanhamento até alguém informar a regularização; a do dia da multa continua registrada.
             $reasons[] = 'Documentos do carro com pendência no dia da multa, sem regularização informada depois.';
         }
-        $review = $f['occ_doc_review_on'] ?? null;
-        if ($today !== null && is_string($review) && $review !== '' && $review < $today) {
-            $reasons[] = 'Documentos: precisam ser conferidos de novo (lembrete marcado para ' . self::brDate($review) . ').';
+        // Lembrete em vigor (da última conferência anotada): vale a partir do próprio dia escolhido, na data de Marília.
+        $review = $f['doc_review_on'] ?? null;
+        if ($today !== null && is_string($review) && $review !== '' && $review <= $today) {
+            $reasons[] = 'Documentos: precisam ser conferidos de novo (lembrete para ' . self::brDate($review)
+                . (($f['doc_review_scope'] ?? null) === 'POSTERIOR' ? ', marcado na conferência de depois da multa' : ', marcado na conferência do dia da multa') . ').';
         }
         if (($f['infraction_kind'] ?? null) === 'VELOCIDADE' && ($f['source_kind'] ?? null) === 'RADAR') {
             $radar = is_array($f['radar_details'] ?? null) ? $f['radar_details'] : [];

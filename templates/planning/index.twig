@@ -184,13 +184,13 @@
 
   {# ---------------- Acompanhar ---------------- #}
   <section class="section" id="missoes" aria-labelledby="missoes-titulo">
-    <div class="list-head"><h2 id="missoes-titulo">Missões {{ ui.origin_demo() }}</h2><p class="hint">Quando a ronda terminar, conclua a missão; se não for acontecer, cancele. Nos dois casos o agente fica livre de novo.</p></div>
+    <div class="list-head"><h2 id="missoes-titulo">Missões {{ ui.origin_demo() }}</h2><p class="hint">Quando a ronda terminar, conclua a missão; se não for acontecer, cancele. Nos dois casos o agente fica livre de novo. As vigentes aparecem todas, primeiro; das encerradas, as 20 mais recentes.</p></div>
     {% if missions is empty %}
       <div class="empty">Nenhuma missão ainda. Confirme a primeira no passo 3.</div>
     {% else %}
     <ul class="rows">
       {% for m in missions %}
-        <li class="mission">
+        <li class="mission" id="missao-{{ m.id }}">
           <div class="order__head">
             <span class="order__title">{{ m.agent_call_sign }} → {{ m.cell_label ?? m.sector_name }}</span>
             {{ ui.status(m.state, states[m.state] ?? m.state, m.state == 'CONFIRMADA' ? '●' : (m.state == 'CONCLUIDA' ? '✓' : '–')) }}

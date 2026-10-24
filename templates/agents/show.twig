@@ -39,7 +39,7 @@
         <dl class="facts">
           <dt>Base de trabalho</dt><dd>{{ a.base_name }}<br><span class="hint">{{ a.base_street ? 'Rua: ' ~ a.base_street : 'Rua não informada' }}{{ a.base_ref ? ', ' ~ a.base_ref }} · Bairro: {{ a.region_name ?? 'não definido' }}{{ a.base_cep ? ' · CEP ' ~ a.base_cep }} · Marília/SP</span><br><span class="hint">Ponto fixo marcado no mapa. Não indica onde o agente está agora.</span></dd>
           <dt>Última posição recebida</dt><dd>{% if a.pos_lat is null %}nenhuma recebida{% else %}{{ a.pos_observed_at|local_dt('d/m/Y H:i') }}<br><span class="hint">Recebida pelo rádio simulado às {{ a.pos_received_at|local_dt('H:i:s') }}. No mapa, aparece só enquanto o agente está em turno.</span>{% endif %}</dd>
-          <dt>Missão</dt><dd>{% if mission %}#{{ mission.id }} vigente · {{ mission.cell_label ?? mission.sector_name }}<br><span class="hint"><a href="{{ url('/planejar') }}#missoes">Revisar em Planejar reforço</a></span>{% else %}nenhuma vigente{% endif %}</dd>
+          <dt>Missão</dt><dd>{% if mission %}#{{ mission.id }} vigente · {{ mission.cell_label ?? mission.sector_name }}<br><span class="hint"><a href="{{ url('/planejar') }}#missao-{{ mission.id }}">Concluir ou cancelar em Planejar reforço</a></span>{% else %}nenhuma vigente{% endif %}</dd>
         </dl>
         {% if not a.archived_at %}<p><a class="btn btn--small" href="{{ url('/', {selecionar: 'AGENTE:' ~ a.id}) }}">{{ ui.icon('i-map') }}Ver no mapa</a></p>{% endif %}
         <p class="hint">Coordenadas da base: {{ a.base_lat|number_format(6, ',', '') }}, {{ a.base_lng|number_format(6, ',', '') }}{% if a.pos_lat is not null %} · última posição: {{ a.pos_lat|number_format(6, ',', '') }}, {{ a.pos_lng|number_format(6, ',', '') }}{% endif %}</p>
@@ -53,7 +53,7 @@
         <p class="next-action__what">{{ next.what }}</p>
         <p class="muted">{{ next.detail }}</p>
         {% if current and mission %}
-          <p class="next-action__note">{{ ui.icon('i-flag') }}<span>Missão #{{ mission.id }} vigente ({{ mission.cell_label ?? mission.sector_name }}, até {{ mission.period_until|date_modify('-1 day')|date('d/m') }}). Nada muda nela automaticamente: <a href="{{ url('/planejar') }}#missoes">revise em Planejar reforço</a> se for preciso reorganizar.</span></p>
+          <p class="next-action__note">{{ ui.icon('i-flag') }}<span>Missão #{{ mission.id }} vigente ({{ mission.cell_label ?? mission.sector_name }}, até {{ mission.period_until|date_modify('-1 day')|date('d/m') }}). Nada muda nela automaticamente: <a href="{{ url('/planejar') }}#missao-{{ mission.id }}">revise em Planejar reforço</a> se for preciso reorganizar.</span></p>
         {% endif %}
         {% if editable and current and current.state == 'ABERTO' %}
           {% set ackErr = form.name == 'ciencia' and fe.note is defined %}

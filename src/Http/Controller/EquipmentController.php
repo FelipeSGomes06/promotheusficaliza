@@ -62,6 +62,7 @@ final class EquipmentController extends Controller
             'specs' => EquipmentCatalog::get($equipment['type_code'])?->describe($equipment['specs']) ?? [],
             'events' => $this->services->eventRepository()->forResource('EQUIPAMENTO', $id),
             'orders' => $this->services->maintenanceRepository()->forEquipment($id),
+            'closed_total' => $this->services->maintenanceRepository()->closedCountFor($id),
             'alerts' => $this->services->alertRepository()->forResource('EQUIPAMENTO', $id),
             'analysis' => $this->services->analysisRepository()->latestForEquipment($id),
             'today' => Time::localDate($now),

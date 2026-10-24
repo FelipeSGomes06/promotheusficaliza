@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fiscaliza\Http\Controller;
 
 use Fiscaliza\Domain\EquipmentCatalog;
+use Fiscaliza\Domain\EquipmentStatus;
 use Fiscaliza\Domain\MaintenanceUrgency;
 use Fiscaliza\Domain\RuleViolation;
 use Fiscaliza\Domain\Time;
@@ -24,7 +25,7 @@ final class OperationsController extends Controller
         $running = [];
         foreach ($this->services->maintenanceRepository()->open() as $order) {
             $urgency = MaintenanceUrgency::classify((string) $order['priority'], $order['due_date'], $today);
-            $row = $order + ['urgency' => $urgency];
+            $row = $order + ['urgency' => $urgency, 'start_blocker' => EquipmentStatus::from((string) $order['equipment_status'])->maintenanceStartBlocker()];
             if ($order['state'] === 'EM_EXECUCAO') {
                 $groups['EM_EXECUCAO'][] = $row;
                 $running[(int) $order['equipment_id']] = (int) $order['id'];

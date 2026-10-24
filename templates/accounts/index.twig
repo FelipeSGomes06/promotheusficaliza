@@ -5,18 +5,24 @@
 <div class="page">
   <div class="page-head"><div>
     <h1>Contas de acesso</h1>
-    <p class="lead">Só quem tem conta cadastrada aqui acessa o sistema — não há cadastro aberto. Operadores consultam, cadastram, registram manutenção e alertas; administradores também gerenciam contas. Conta desativada perde o acesso na hora. Não confundir com agentes de campo.</p>
+    <p class="lead">Só quem tem conta cadastrada aqui acessa o sistema — não há cadastro aberto. Operadores consultam, cadastram, registram manutenção e alertas; administradores também gerenciam contas. Conta desativada perde o acesso na hora. Quem perdeu a senha recebe uma nova em <strong>Redefinir senha</strong>, na mesma conta. Não confundir com agentes de campo.</p>
   </div></div>
   {% if created %}
-    <div class="flash flash--success" role="status">Conta <strong>{{ created.username }}</strong> criada. Senha gerada (mostrada só agora): <code>{{ created.password }}</code></div>
+    <div class="flash flash--success section" role="status">Conta <strong>{{ created.username }}</strong> criada. Senha gerada (mostrada só agora): <code>{{ created.password }}</code></div>
+  {% endif %}
+  {% if reset is defined and reset %}
+    <div class="flash flash--success section" role="status">Senha de <strong>{{ reset.username }}</strong> redefinida. Senha nova (mostrada só agora): <code>{{ reset.password }}</code> — a anterior deixou de valer e as sessões abertas dessa conta foram encerradas. Entregue-a à pessoa por um canal seguro.</div>
   {% endif %}
   <div class="split">
     <section>
       <div class="table-wrap"><table class="data">
-        <thead><tr><th scope="col">Usuário</th><th scope="col">Papel</th><th scope="col">Último acesso</th><th scope="col">Ação</th></tr></thead>
+        <thead><tr><th scope="col">Usuário</th><th scope="col">Papel</th><th scope="col">Último acesso</th><th scope="col">Ações</th></tr></thead>
         <tbody>{% for u in users %}<tr>
-          <td><strong>{{ u.username }}</strong><br><span class="hint">{{ u.display_name }}</span></td><td>{{ u.role == 'ADMIN' ? 'Administrador' : 'Operador' }}{{ u.active ? '' : ' · desativada' }}</td><td>{{ u.last_login_at|local_dt }}</td>
-          <td><form method="post" action="{{ url('/contas/' ~ u.id ~ '/situacao') }}">{{ ui.csrf(app.csrf) }}<input type="hidden" name="active" value="{{ u.active ? '0' : '1' }}"><button class="btn btn--sm {{ u.active ? 'btn--danger' : '' }}" type="submit">{{ u.active ? 'Desativar' : 'Reativar' }}</button></form></td>
+          <td><strong>{{ u.username }}</strong><br><span class="hint">{{ u.display_name }}</span>{% if u.password_reset_at %}<br><span class="hint">Senha redefinida em {{ u.password_reset_at|local_dt }}{{ u.password_reset_by_name ? " por " ~ u.password_reset_by_name }}</span>{% endif %}</td><td>{{ u.role == 'ADMIN' ? 'Administrador' : 'Operador' }}{{ u.active ? '' : ' · desativada' }}</td><td>{{ u.last_login_at|local_dt }}</td>
+          <td><div class="btn-row">
+            {% if u.id != app.user.id %}<form method="post" action="{{ url('/contas/' ~ u.id ~ '/senha') }}" data-confirm="Redefinir a senha de {{ u.username }}? A senha atual deixa de valer e as sessões abertas dessa conta são encerradas. A conta, o papel e o histórico continuam os mesmos. A senha nova aparece uma única vez, na próxima tela.">{{ ui.csrf(app.csrf) }}<button class="btn btn--small" type="submit">Redefinir senha</button></form>{% endif %}
+            <form method="post" action="{{ url('/contas/' ~ u.id ~ '/situacao') }}">{{ ui.csrf(app.csrf) }}<input type="hidden" name="active" value="{{ u.active ? '0' : '1' }}"><button class="btn btn--small {{ u.active ? 'btn--danger' : '' }}" type="submit">{{ u.active ? 'Desativar' : 'Reativar' }}</button></form>
+          </div></td>
         </tr>{% endfor %}</tbody>
       </table></div>
     </section>
@@ -26,7 +32,7 @@
         {{ ui.input('username', 'Usuário', values ?? {}, errors, {required: true, max: 40, help: '3 a 40 letras, números, ponto, hífen ou sublinhado.'}) }}
         {{ ui.input('display_name', 'Nome de exibição', values ?? {}, errors, {required: true, max: 80}) }}
         {{ ui.select('role', 'Papel', {OPERADOR: 'Operador', ADMIN: 'Administrador'}, (values ?? {}).role ?? 'OPERADOR', errors) }}
-        <p class="hint">A senha é gerada aleatoriamente e mostrada uma única vez, nesta tela. Entregue-a à pessoa por um canal seguro.</p>
+        <p class="hint">A senha é gerada aleatoriamente e mostrada uma única vez, nesta tela. Entregue-a à pessoa por um canal seguro. Se ela se perder, use <strong>Redefinir senha</strong> na lista: não cadastre a pessoa de novo.</p>
         <button class="btn btn--primary" type="submit">Criar conta</button>
       </form>
     </section>

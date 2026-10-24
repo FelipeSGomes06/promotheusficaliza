@@ -32,7 +32,7 @@ final class FineRepository
         'VEHICLE_RENAVAM', 'RENAVAM_MISSING_REASON', 'PROCESS_STAGE', 'PAYMENT_STATUS', 'CONTEST_STATUS', 'CONTEST_KIND', 'NOMINAL_AMOUNT_CENTS',
         'AUTUATION_ISSUED_ON', 'AUTUATION_RECEIVED_ON', 'PENALTY_ISSUED_ON', 'PENALTY_RECEIVED_ON', 'PAYMENT_DUE_ON', 'DEFENSE_DUE_ON', 'APPEAL_DUE_ON',
         'PAID_ON', 'PAID_AMOUNT_CENTS', 'PAYMENT_REFERENCE', 'CONTEST_SUBMITTED_ON', 'CONTEST_REFERENCE', 'CONTEST_DECIDED_ON', 'CONTEST_RESULT_NOTE',
-        'CLOSED_ON', 'CLOSURE_REFERENCE', 'CLOSURE_NOTE', 'OCC_DOC_STATUS', 'OCC_DOC_REVIEW_ON', 'ATTENTION_COUNT', 'SUBJECT_VERSION', 'CREATED_AT',
+        'CLOSED_ON', 'CLOSURE_REFERENCE', 'CLOSURE_NOTE', 'OCC_DOC_STATUS', 'DOC_REVIEW_ON', 'DOC_REVIEW_SCOPE', 'ATTENTION_COUNT', 'SUBJECT_VERSION', 'CREATED_AT',
         'UPDATED_AT', 'CREATED_BY', 'UPDATED_BY', 'CREATED_SOURCE', 'REGISTERED_AT', 'CANCELLED_AT', 'CANCELLED_BY', 'CANCEL_SOURCE', 'CANCEL_REASON'];
 
     /** Ordenações permitidas: chave pública => ORDER BY fixo (ID desempata). */
@@ -99,9 +99,13 @@ final class FineRepository
     public function search(FineFilters $filters, string $today, int $page, int $perPage): array
     {
         [$where, $params] = self::where($filters);
+        if ($filters->attention) {
+            $where .= " AND f.RECORD_STATE <> 'CANCELADO' AND (f.ATTENTION_COUNT > 0 OR f.DOC_REVIEW_ON <= ?)";
+            $params[] = $today;
+        }
         $counts = $this->db->one(
             "SELECT COUNT(*) AS TOTAL,
-                SUM(CASE WHEN f.RECORD_STATE <> 'CANCELADO' AND (f.ATTENTION_COUNT > 0 OR f.OCC_DOC_REVIEW_ON < ?) THEN 1 ELSE 0 END) AS ATTENTION,
+                SUM(CASE WHEN f.RECORD_STATE <> 'CANCELADO' AND (f.ATTENTION_COUNT > 0 OR f.DOC_REVIEW_ON <= ?) THEN 1 ELSE 0 END) AS ATTENTION,
                 SUM(CASE WHEN f.PAYMENT_STATUS = 'PAGAMENTO_INFORMADO' THEN 1 ELSE 0 END) AS PAID
              FROM FINE f WHERE {$where}",
             [$today, ...$params],

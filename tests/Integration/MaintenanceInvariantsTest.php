@@ -41,6 +41,43 @@ final class MaintenanceInvariantsTest extends FirebirdTestCase
         self::assertSame('MANUTENCAO', $this->equipmentStatus($id));
     }
 
+    public function testOrdersCanBeScheduledInAnyStatusButStartOnlyWhereTheTransitionExists(): void
+    {
+        $maintenance = $this->services->maintenance();
+        foreach ([['NAO_INSTALADO', 'PLANEJADO', 'instalação'], ['DESATIVADO', 'INSTALADO', 'voltar a uso'], ['FURTADO', 'INSTALADO', 'reposição']] as $i => [$status, $location, $why]) {
+            $id = $this->createEquipment(['status' => $status, 'location_kind' => $location, 'serial_number' => "BLQ-{$i}"]);
+            $order = $this->openOrder($id);
+            try {
+                $maintenance->start($order, $this->userId());
+                self::fail("{$status} não entra em manutenção");
+            } catch (RuleViolation $e) {
+                self::assertStringContainsString($why, $e->getMessage(), 'a recusa diz o pré-requisito real');
+            }
+            self::assertSame(['ABERTA', $status], [$this->state($order), $this->equipmentStatus($id)], 'a ordem continua agendada e a situação não muda');
+        }
+        foreach (['OPERACIONAL', 'FALHA'] as $i => $status) {
+            $id = $this->createEquipment(['status' => $status, 'serial_number' => "LIV-{$i}"]);
+            $maintenance->start($this->openOrder($id), $this->userId());
+            self::assertSame('MANUTENCAO', $this->equipmentStatus($id));
+        }
+    }
+
+    public function testPendingOrdersAreAllReadEvenBehindMoreThanThirtyClosedOnes(): void
+    {
+        $id = $this->createEquipment();
+        $maintenance = $this->services->maintenance();
+        $old = $this->openOrder($id);
+        for ($i = 0; $i < 31; $i++) {
+            $this->clock->advance('+1 minute');
+            $order = $this->openOrder($id);
+            $maintenance->cancel($order, 'Aberta por engano no teste.', $this->userId());
+        }
+        $orders = $this->services->maintenanceRepository()->forEquipment($id);
+        self::assertSame([$old], array_map(intval(...), array_column(array_filter($orders, static fn(array $o): bool => $o['state'] === 'ABERTA'), 'id')), 'a pendência antiga não some');
+        self::assertCount(31, $orders, 'a pendência + as 30 encerradas mais recentes');
+        self::assertSame(31, $this->services->maintenanceRepository()->closedCountFor($id));
+    }
+
     public function testDatabaseRejectsTwoRunningInterventionsEvenOutsideTheService(): void
     {
         $id = $this->createEquipment();

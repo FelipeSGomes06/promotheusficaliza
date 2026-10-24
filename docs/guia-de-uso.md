@@ -27,7 +27,8 @@ Situações usadas em todas as telas, sempre com texto e símbolo além da cor:
   sistema"). Tocar alterna e a escolha fica salva neste navegador.
 - **Barra superior:** título, "Atualizado às…" (ponto verde; âmbar quando atrasado ou sem conexão), **Atualizar agora**
   (mostra um indicador enquanto busca) e **Pausar/Retomar** a atualização automática; aviso **Demonstração**.
-- **Resumos** (acima da lista; no celular, abaixo do título): equipamentos em serviço funcionando, recursos que precisam
+- **Resumos** (acima da lista; no celular, abaixo do título): equipamentos em serviço **operacionais** — pela
+  situação registrada, com a quantidade dos que têm **sinal** recente logo abaixo (sem sinal não é falha) —, recursos que precisam
   de atenção (toque para filtrar) e manutenções urgentes que ainda não começaram (leva à seção Urgentes da
   Manutenção, que mostra as mesmas ordens; a já iniciada fica em "Em andamento"). O botão ⓘ abre as fórmulas e a
   tabela por bairro.
@@ -44,8 +45,10 @@ Situações usadas em todas as telas, sempre com texto e símbolo além da cor:
   alertas, manutenção, código e características, com **Ver ficha completa**. Trocar de recurso com a ficha aberta só
   troca o conteúdo. `Esc` ou × fecha e devolve o foco a quem abriu.
 - **Com conta:** na ficha, **Registrar ciência** de um alerta e **Simular falha** (recurso da demonstração). O botão
-  mostra "Registrando…"/"Simulando…" e só depois da resposta do servidor aparece o aviso verde; se não der certo, o
-  aviso fica em vermelho até você fechar.
+  mostra "Registrando…"/"Simulando…" e só depois da resposta do servidor aparece o aviso verde; se o servidor recusar, o
+  aviso fica em vermelho até você fechar. Se a conexão cair antes da resposta, não dá para saber se a ação foi gravada:
+  o aviso diz **resultado não confirmado** ("Atualize os dados antes de tentar novamente"), a central recarrega os
+  dados e, quando eles chegam, pede para conferir na ficha se a ação aparece antes de repetir.
 - **Números redondos no mapa** juntam recursos próximos: toque para aproximar; se estiverem no mesmo ponto, aparece
   uma lista para escolher. O "!" indica que algum deles precisa de atenção.
 - **Formas no mapa** (ver **Legenda**): quadrado = local de instalação do equipamento (furtado: o ponto é de onde foi
@@ -189,7 +192,8 @@ protocolado ([ADR-0017](adr/0017-aba-multas.md)). Use só dados fictícios.
 - **Lista:** três resumos do mesmo filtro da lista — registros, **a conferir** (rascunhos, documentação não verificada
   ou com pendência sem regularização informada depois, lembrete de conferir de novo que passou, dados do medidor ou
   evidência a conferir em excesso de velocidade) e **pagamento informado**
-  (lançado à mão; não é arrecadação). Busca por código interno (`DEMO-MUL-000023`), AIT, placa ou RENAVAM; origem e
+  (lançado à mão; não é arrecadação). **Ver só as N a conferir**, ao lado dos resumos (ou "Só as que estão a conferir"
+  em Mais filtros), mostra só essas, pela mesma regra do resumo. Busca por código interno (`DEMO-MUL-000023`), AIT, placa ou RENAVAM; origem e
   etapa à mão; em **Mais filtros**, período da ocorrência, órgão autuador, radar, agente (da constatação ou operador do
   radar), documentação, pagamento, rascunhos/cancelados e ordem. A URL guarda os filtros, e a ficha volta para eles.
 - **Cadastrar multa:** um formulário em três etapas (ocorrência, como foi constatada, veículo). Salvar cria um
@@ -218,8 +222,11 @@ protocolado ([ADR-0017](adr/0017-aba-multas.md)). Use só dados fictícios.
   que pede: "Em dia" e "Com pendência", a fonte e a referência; "Com pendência", o que estava errado; "Não
   conferidos", o motivo. "Conferido em" já vem com a hora atual (clique para mudar). Depois de escolher o resultado aparece
   **Quer ser lembrado de conferir de novo?** (Não precisa, Em 30 dias, Em 90 dias ou Escolher data); com resultado
-  "Em dia" ela vem recolhida, já em "Não precisa". Passada a data, a multa mostra **Documentos: precisam ser conferidos
-  de novo** — um lembrete seu, não um prazo legal. Sem JavaScript, as opções e a data aparecem juntas: use só uma.
+  "Em dia" ela vem recolhida, já em "Não precisa". A pergunta vale para as conferências **no dia** e **depois da multa**.
+  A partir do **próprio dia escolhido** (data de Marília), a multa mostra **Documentos: precisam ser conferidos de novo**
+  e entra em **a conferir** — um lembrete seu, não um prazo legal. Vale o lembrete da conferência anotada por último: uma
+  conferência nova substitui o atual ("Não precisa" o retira; o anterior fica em "Todas as conferências"). A ficha mostra
+  o **lembrete em vigor** e de qual conferência ele veio. Sem JavaScript, as opções e a data aparecem juntas: use só uma.
 - **Andamento:** etapa administrativa, pagamento e contestação são independentes (pagamento informado e recurso em
   análise podem coexistir). Valores em reais (`1.234,56`). O sistema não calcula prazos, descontos nem decide nada.
   O formulário começa com as três perguntas (fase, pagamento, defesa ou recurso); cada resposta abre os campos dela
@@ -229,7 +236,9 @@ protocolado ([ADR-0017](adr/0017-aba-multas.md)). Use só dados fictícios.
   de velocidade e o relato escrito; os dados técnicos ficam em "Detalhes do registro".
 - **Perguntas frequentes:** no fim da lista e da ficha, os termos explicados (AIT, RENAVAM, velocidade considerada,
   Inmetro, CRLV, "Não verificada", autuação, penalidade, defesa prévia, recurso, enquadramento).
-- **Mais ações:** retificar (registrado: exige motivo; o original fica no histórico) e **cancelar registro** (interno,
+- **Mais ações:** retificar (registrado: exige motivo; o original fica no histórico; a nova data da ocorrência não pode
+  ficar depois de fatos já anotados na situação da multa — avisos, pagamento, defesa, encerramento —: o formulário diz
+  quais e até que data vale, mantém o que você digitou e oferece abrir a situação da multa em outra aba) e **cancelar registro** (interno,
   com motivo; o registro fica somente leitura e não é anulação do auto).
 - **Erros:** campo inválido volta com tudo o que foi digitado e um resumo com links; se outra pessoa salvou antes, a tela
   mostra "Salvo agora × Sua versão" e salvar de novo é uma decisão consciente. Enviar o mesmo formulário duas vezes não
@@ -244,10 +253,13 @@ número da ordem, motivo e prazo.
 | Ação | Onde | Efeito |
 |---|---|---|
 | Abrir ordem | Ficha → Manutenção → "Abrir ordem de manutenção" | Corretiva ou preventiva, imediata ou programada (com data). Não muda a situação. |
-| Iniciar intervenção | Manutenção ou ficha | O equipamento passa para "Em manutenção". **Só uma por equipamento:** com outra em execução, aparece "Aguardando: a ordem #N está em execução". |
+| Iniciar intervenção | Manutenção ou ficha | O equipamento passa para "Em manutenção". **Só uma por equipamento:** com outra em execução, aparece "Aguardando: a ordem #N está em execução". Não instalado, desativado ou furtado: a ordem pode ser agendada, mas não iniciada — no lugar do botão aparece "Ainda não pode ser iniciada" com o que falta (instalação, voltar a uso, reposição) ou a opção de cancelar. |
 | Concluir | "Concluir esta intervenção" | Informe o que foi feito e **como o equipamento ficou**. Essa situação passa a valer. |
 | Concluir em falha | Resultado "Continua com mau funcionamento" | A ordem fecha como concluída e o equipamento fica em mau funcionamento; abra uma nova corretiva se precisar. |
-| Cancelar | Ficha → "Cancelar esta ordem" | Só ordens não iniciadas; o motivo é obrigatório e fica registrado. |
+| Cancelar | Ficha → "Cancelar esta ordem" (o link da fila leva direto à ordem) | Só ordens não iniciadas; o motivo é obrigatório e fica registrado. |
+
+Na ficha, todas as ordens agendadas e em execução aparecem sempre, por mais antigas que sejam; das encerradas, as três
+mais recentes ficam à vista e as demais em "Ver ordens encerradas mais antigas" (até 30, com o total quando há mais).
 
 Concluir uma preventiva de equipamento com periodicidade agenda a próxima automaticamente.
 
@@ -287,7 +299,8 @@ Planejamento preventivo semanal ([método e resultados](planejamento-por-setores
   **Confirmar missão**. Se faltar algo, a tela volta no passo 3 com o aviso junto do campo e o que você digitou. A
   missão guarda o quadrado e o setor.
 - **Missões:** "agente → quadrado", situação, quem confirmou; **Concluir** ("como foi?") ou **Cancelar** ("por quê?")
-  liberam o agente. A missão começa ao confirmar, não tem horário e não expira sozinha: "designado" não quer dizer
+  liberam o agente. Todas as vigentes aparecem, primeiro; das encerradas, as 20 mais recentes. Na ficha do agente,
+  **Concluir ou cancelar em Planejar reforço** leva direto à missão dele. A missão começa ao confirmar, não tem horário e não expira sozinha: "designado" não quer dizer
   que o agente já chegou, e uma missão de semana encerrada ainda confirmada aparece com o aviso "o agente continua
   reservado". **Detalhes e histórico** mostra o motivo registrado e as transições. Se duas pessoas confirmarem o
   mesmo agente ao mesmo tempo, só uma vale.
@@ -310,6 +323,11 @@ método. Abaixo, sempre, o resultado do teste inteiro e os limites — uma seman
   (também se as tentativas forem simultâneas). Sessão expira após 30 min sem uso ou 8 h.
 - **Contas** (só administrador): é aqui que se dá acesso ao sistema. Criar conta (usuário, nome, papel) — a senha é
   gerada e mostrada **uma única vez**; desativar/reativar (a conta desativada perde o acesso na hora). Não é possível desativar a própria conta nem o último administrador ativo.
+- **Senha perdida:** o administrador usa **Redefinir senha** na linha da conta (confirma o efeito antes). A conta continua
+  a mesma — usuário, papel e histórico —, a senha nova aparece uma única vez, a anterior deixa de valer e as sessões
+  abertas dessa conta terminam (a pessoa vê no login que a senha foi redefinida). A lista mostra quando e por quem. A
+  própria senha é redefinida por outro administrador. No login, "Esqueceu a senha?" explica esse caminho. Não cadastre
+  a pessoa de novo: isso criaria outra conta, sem o histórico.
 - **Operador** cadastra, edita, registra manutenção e alertas. **Administrador** faz isso e gerencia contas.
 - Primeira conta (no servidor): `php bin/fiscaliza user:create nome --role=ADMIN --name="Nome"` (ver [operação](operacao.md)).
 

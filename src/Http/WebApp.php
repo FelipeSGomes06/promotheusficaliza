@@ -130,6 +130,7 @@ final class WebApp
             $g->get('/contas', [$auth, 'accounts']);
             $g->post('/contas', [$auth, 'createAccount']);
             $g->post("/contas/{$id}/situacao", [$auth, 'toggleAccount']);
+            $g->post("/contas/{$id}/senha", [$auth, 'resetPassword']);
         })->add($admin);
 
         $app->add(new CsrfGuard($config->get('APP_ORIGIN')));
