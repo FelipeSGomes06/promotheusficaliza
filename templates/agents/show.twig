@@ -4,8 +4,13 @@
 {% block content %}
 {% set eventLabels = {CADASTRO: 'Cadastro', ALTERACAO: 'Alteração do cadastro', SITUACAO: 'Situação', ARQUIVAMENTO: 'Arquivamento', POSICAO: 'Posição'} %}
 {% set sourceLabels = {MANUAL: 'por pessoa', SIMULADOR: 'pelo simulador', SEMENTE: 'carga da demonstração', SISTEMA: 'pelo sistema'} %}
-{% set alertStates = {ABERTO: 'Aberto', RECONHECIDO: 'Ciência registrada', RESOLVIDO: 'Resolvido'} %}
 {% set editable = app.user and not a.archived_at %}
+{% set current = pending|first %}
+{% set fv = form.values %}
+{% set fe = form.errors %}
+{% set mine = form.alert and current and form.alert == current.id %}
+{% set checkAt = current ? current.next_check_at : null %}
+{% set checkLate = checkAt and checkAt|local_dt('Y-m-d\\TH:i') <= now_local %}
 <div class="page">
   <div class="detail-head">
     <figure>
@@ -15,7 +20,7 @@
     <div>
       <p class="crumbs"><a href="{{ url('/agentes') }}">Agentes</a> · {{ role.label }}</p>
       <h1>{{ role.label }} · {{ a.call_sign }}</h1>
-      <p class="muted"><span class="code-tag">{{ a.code }}</span> {{ a.agency_name }}</p>
+      <p class="muted"><span class="code-tag">{{ a.code }}</span> {{ a.agency_name }} · agente em campo, fictício (não é uma conta de acesso)</p>
       <div class="state">
         {{ ui.agent_status(a.status) }}
         {% if freshness.value == 'NAO_SE_APLICA' %}<span class="fresh">Fora de turno: posição não se aplica</span>{% else %}{{ ui.freshness(freshness.value, a.pos_observed_at, 'Posição') }}{% endif %}
@@ -24,51 +29,233 @@
     </div>
   </div>
 
-  <div class="split section">
-    <div class="stack">
+  {% if form.name and fe._form is defined %}
+    <div class="flash flash--error section" role="alert" tabindex="-1" data-error-summary>{{ fe._form }}</div>
+  {% endif %}
+
+      {% set where %}
       <section class="panel" aria-labelledby="onde">
         <h2 id="onde">{{ ui.icon('i-pin') }} Onde está</h2>
         <dl class="facts">
           <dt>Base de trabalho</dt><dd>{{ a.base_name }}<br><span class="hint">{{ a.base_street ? 'Rua: ' ~ a.base_street : 'Rua não informada' }}{{ a.base_ref ? ', ' ~ a.base_ref }} · Bairro: {{ a.region_name ?? 'não definido' }}{{ a.base_cep ? ' · CEP ' ~ a.base_cep }} · Marília/SP</span><br><span class="hint">Ponto fixo marcado no mapa. Não indica onde o agente está agora.</span></dd>
           <dt>Última posição recebida</dt><dd>{% if a.pos_lat is null %}nenhuma recebida{% else %}{{ a.pos_observed_at|local_dt('d/m/Y H:i') }}<br><span class="hint">Recebida pelo rádio simulado às {{ a.pos_received_at|local_dt('H:i:s') }}. No mapa, aparece só enquanto o agente está em turno.</span>{% endif %}</dd>
-          <dt>Situação desde</dt><dd>{{ a.status_changed_at|local_dt }}</dd>
+          <dt>Missão</dt><dd>{% if mission %}#{{ mission.id }} vigente · {{ mission.cell_label ?? mission.sector_name }}<br><span class="hint"><a href="{{ url('/planejar') }}#missoes">Revisar em Planejar reforço</a></span>{% else %}nenhuma vigente{% endif %}</dd>
         </dl>
         {% if not a.archived_at %}<p><a class="btn btn--small" href="{{ url('/', {selecionar: 'AGENTE:' ~ a.id}) }}">{{ ui.icon('i-map') }}Ver no mapa</a></p>{% endif %}
         <p class="hint">Coordenadas da base: {{ a.base_lat|number_format(6, ',', '') }}, {{ a.base_lng|number_format(6, ',', '') }}{% if a.pos_lat is not null %} · última posição: {{ a.pos_lat|number_format(6, ',', '') }}, {{ a.pos_lng|number_format(6, ',', '') }}{% endif %}</p>
       </section>
+      {% endset %}
+  <div class="split section">
+    <div class="stack">
+      {# Próxima ação: decidida por AlertFollowUp::nextAction, a mesma política da ficha resumida da central. #}
+      <section class="next-action {{ next.tone != 'normal' ? 'next-action--' ~ next.tone }}" id="prox" aria-labelledby="prox-titulo">
+        <h2 id="prox-titulo">Próxima ação</h2>
+        <p class="next-action__what">{{ next.what }}</p>
+        <p class="muted">{{ next.detail }}</p>
+        {% if current and mission %}
+          <p class="next-action__note">{{ ui.icon('i-flag') }}<span>Missão #{{ mission.id }} vigente ({{ mission.cell_label ?? mission.sector_name }}, até {{ mission.period_until|date_modify('-1 day')|date('d/m') }}). Nada muda nela automaticamente: <a href="{{ url('/planejar') }}#missoes">revise em Planejar reforço</a> se for preciso reorganizar.</span></p>
+        {% endif %}
+        {% if editable and current and current.state == 'ABERTO' %}
+          {% set ackErr = form.name == 'ciencia' and fe.note is defined %}
+          <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/alertas/' ~ current.id ~ '/ciencia') }}" class="next-action__form">{{ ui.csrf(app.csrf) }}
+            <div class="field {{ ackErr ? 'has-error' }}">
+              <label for="f-ack-note">Nota da ciência <span class="optional">(opcional)</span></label>
+              <span class="hint" id="f-ack-note-help">Fica junto da ciência, com seu nome e o horário. Registrar ciência não atribui o acompanhamento.</span>
+              <textarea id="f-ack-note" name="note" maxlength="300" rows="2" aria-describedby="f-ack-note-help">{{ form.name == 'ciencia' ? fv.note ?? '' }}</textarea>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn--primary" type="submit">{{ ui.icon('i-check') }}Registrar ciência</button>
+              {% if a.pos_lat is not null %}<a class="btn" href="{{ url('/', {selecionar: 'AGENTE:' ~ a.id}) }}">{{ ui.icon('i-map') }}Ver no mapa</a>{% endif %}
+            </div>
+          </form>
+        {% elseif editable and current %}
+          <div class="btn-row">
+            <a class="btn btn--primary" href="#providencia">{{ ui.icon('i-plus') }}Registrar providência</a>
+            {% if a.pos_lat is not null %}<a class="btn" href="{{ url('/', {selecionar: 'AGENTE:' ~ a.id}) }}">{{ ui.icon('i-map') }}Ver última posição no mapa</a>{% endif %}
+          </div>
+        {% elseif editable and a.status == 'INDISPONIVEL' %}
+          <div class="btn-row"><a class="btn" href="#situacao">Mudar situação</a></div>
+        {% endif %}
+      </section>
 
-      <section class="section" aria-labelledby="historico">
-        <h2 id="historico">{{ ui.icon('i-clock') }} Histórico</h2>
-        <p class="hint">Linha tracejada: registro que não alterou o estado atual (por exemplo, posição mais antiga que a atual).</p>
+      {% if current %}
+      <section class="panel follow-panel" id="acompanhamento" aria-labelledby="acomp-titulo">
+        <h2 id="acomp-titulo">{{ ui.icon('i-alert') }} Acompanhamento do alerta</h2>
+        <p class="m-0">{{ current.message }} <span class="hint">Aberto em {{ current.opened_at|local_dt }}.</span></p>
+        <p class="hint">Registre o que foi feito por outro meio (rádio, telefone). O sistema não envia mensagens. Ciência e providências não encerram o alerta: ele encerra sozinho quando chegar posição recente ou quando o agente sair de turno.</p>
+
+        <dl class="follow-facts">
+          <div class="follow-facts__item">
+            <dt>Ciência</dt>
+            {% if current.ack_at %}
+              <dd><strong>{{ current.ack_by_name }}</strong><span class="hint">{{ current.ack_at|local_dt('d/m \\à\\s H:i') }}</span></dd>
+            {% else %}
+              <dd><strong>Ainda não registrada</strong><span class="hint">Use "Registrar ciência" acima.</span></dd>
+            {% endif %}
+          </div>
+          <div class="follow-facts__item {{ current.assignee_id and not current.assignee_active ? 'is-warn' }}">
+            <dt>Responsável</dt>
+            {% if current.assignee_id %}
+              <dd><strong>{{ current.assignee_name }}</strong><span class="hint">{{ current.assignee_active ? 'Conta do sistema que acompanha' : 'Conta desativada: reatribua o acompanhamento' }}</span></dd>
+            {% else %}
+              <dd><strong>Sem responsável</strong><span class="hint">Atribua uma conta abaixo.</span></dd>
+            {% endif %}
+          </div>
+          <div class="follow-facts__item {{ checkLate ? 'is-warn' }}">
+            <dt>Próxima conferência</dt>
+            {% if checkAt %}
+              <dd><strong>{{ checkAt|local_dt('d/m \\à\\s H:i') }}</strong><span class="hint">{{ checkLate ? 'Vencida: confira e registre o resultado' : 'Definida na última providência' }}</span></dd>
+            {% else %}
+              <dd><strong>Não definida</strong><span class="hint">{{ current.state == 'ABERTO' ? 'Definida ao registrar uma providência' : 'Defina ao registrar a providência' }}</span></dd>
+            {% endif %}
+          </div>
+        </dl>
+        {% if current.ack_note %}<p class="follow-quote"><span class="hint">Nota da ciência:</span> {{ current.ack_note }}</p>{% endif %}
+
+        {% if editable %}
+          {% set ae = form.name == 'responsavel' and mine ? fe : {} %}
+          <hr class="divider">
+          <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/alertas/' ~ current.id ~ '/responsavel') }}" class="assign-form">{{ ui.csrf(app.csrf) }}
+            <input type="hidden" name="version" value="{{ current.followup_no }}">
+            {% if assignees is empty %}
+              <p class="hint m-0">Nenhuma conta ativa disponível para acompanhar.{% if app.user.role == 'ADMIN' %} <a href="{{ url('/contas') }}">Cadastre ou reative uma conta em Contas</a>.{% else %} Peça a um administrador para cadastrar ou reativar uma conta.{% endif %}</p>
+            {% else %}
+              {% set picked = form.name == 'responsavel' and mine ? fv.assignee ?? '' : '' %}
+              <div class="field {{ ae.assignee is defined ? 'has-error' }}">
+                <label for="f-assignee">{{ current.assignee_id ? 'Reatribuir para' : 'Atribuir a' }} <span class="req" aria-hidden="true">*</span></label>
+                <span class="hint" id="f-assignee-help">Contas ativas cadastradas em Contas. A troca fica registrada com seu nome e o horário.</span>
+                <select id="f-assignee" name="assignee" required aria-describedby="f-assignee-help{{ ae.assignee is defined ? ' err-assignee' }}" {% if ae.assignee is defined %}aria-invalid="true"{% endif %}>
+                  <option value="">Escolha uma conta…</option>
+                  {% for u in assignees %}<option value="{{ u.id }}" {{ (picked ~ '') == (u.id ~ '') ? 'selected' }} {{ u.id == current.assignee_id ? 'disabled' }}>{{ u.display_name }} ({{ u.username }}){{ u.id == app.user.id ? ' · você' }}{{ u.id == current.assignee_id ? ' · responsável atual' }}</option>{% endfor %}
+                </select>
+                {{ ui.field_error(ae, 'assignee') }}
+              </div>
+              <button class="btn" type="submit">{{ ui.icon('i-user') }}{{ current.assignee_id ? 'Reatribuir' : 'Atribuir' }}</button>
+            {% endif %}
+          </form>
+
+          <hr class="divider">
+          <h3 id="providencia">Registrar providência</h3>
+          {% if current.state == 'ABERTO' %}
+            <p class="hint m-0">Disponível depois da ciência: registre a ciência acima para liberar as providências.</p>
+          {% else %}
+            {% set pv = form.name == 'providencia' and mine ? fv : {} %}
+            {% set pe = form.name == 'providencia' and mine ? fe|filter((m, k) => k != '_form') : {} %}
+            {{ ui.error_summary(pe, {action: 'O que foi feito', note: 'Relato', next_check: 'Próxima conferência'}) }}
+            <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/alertas/' ~ current.id ~ '/providencias') }}" class="form-grid follow-form">{{ ui.csrf(app.csrf) }}
+              <input type="hidden" name="version" value="{{ current.followup_no }}">
+              {{ ui.select('action', 'O que foi feito', actions, pv.action ?? '', pe, {required: true, empty: 'Escolha…'}) }}
+              {{ ui.input('next_check', 'Próxima conferência', pv, pe, {type: 'datetime-local', help: 'Hora de Marília, em até 7 dias. Vazio: sem conferência marcada.'}) }}
+              {{ ui.input('note', 'Relato', pv, pe, {type: 'textarea', max: 500, class: 'span-2', help: 'O que aconteceu, em poucas palavras. Obrigatório em "Outra providência". Contato confirmado não atualiza a localização.'}) }}
+              <div class="span-2 btn-row">
+                <button class="btn btn--primary" type="submit">{{ ui.icon('i-check') }}Registrar providência</button>
+                <span class="hint">Seu nome, a data e a hora entram no registro. Os registros anteriores são mantidos.</span>
+              </div>
+            </form>
+          {% endif %}
+        {% endif %}
+
+        <hr class="divider">
+        {% set log = follow_ups[current.id] ?? [] %}
+        <h3>Registros do acompanhamento <span class="hint">({{ log|length + 1 + (current.ack_at ? 1 : 0) }})</span></h3>
         <ol class="timeline">
-          {% for ev in events %}
-            <li class="{{ ev.outcome == 'APLICADO' ? 'is-applied' : 'is-historical' }}"><time datetime="{{ ev.occurred_at }}">{{ ev.occurred_at|local_dt('d/m/Y H:i') }}</time> · <strong>{{ eventLabels[ev.event_type] ?? ev.event_type|lower }}</strong> <span class="small muted">{{ ev.actor_name ? 'por ' ~ ev.actor_name : (sourceLabels[ev.source] ?? ev.source|lower) }}</span><p>{{ ev.summary }}</p></li>
-          {% else %}<li>Sem registros.</li>{% endfor %}
+          {% for f in log|reverse %}
+            <li class="is-applied">
+              <time datetime="{{ f.created_at }}">{{ f.created_at|local_dt('d/m/Y H:i') }}</time> · <strong>{{ f.kind == 'ATRIBUICAO' ? (f.from_name ? 'Reatribuição' : 'Atribuição') : actions[f.action_code] ?? f.action_code }}</strong> <span class="small muted">por {{ f.created_by_name }}</span>
+              {% if f.kind == 'ATRIBUICAO' %}<p>{{ f.from_name ?? 'Sem responsável' }} → {{ f.to_name }}</p>{% endif %}
+              {% if f.note %}<p>{{ f.note }}</p>{% endif %}
+              {% if f.kind == 'PROVIDENCIA' %}<p class="small muted">{{ f.next_check_at ? 'Próxima conferência: ' ~ f.next_check_at|local_dt('d/m \\à\\s H:i') : 'Sem próxima conferência' }}</p>{% endif %}
+            </li>
+          {% endfor %}
+          {% if current.ack_at %}
+            <li class="is-applied"><time datetime="{{ current.ack_at }}">{{ current.ack_at|local_dt('d/m/Y H:i') }}</time> · <strong>Ciência registrada</strong> <span class="small muted">por {{ current.ack_by_name }}</span>{% if current.ack_note %}<p>{{ current.ack_note }}</p>{% endif %}</li>
+          {% endif %}
+          <li class="is-applied"><time datetime="{{ current.opened_at }}">{{ current.opened_at|local_dt('d/m/Y H:i') }}</time> · <strong>Alerta aberto</strong> <span class="small muted">pelo sistema</span><p>{{ current.message }}</p></li>
         </ol>
       </section>
+      {% endif %}
+      {# Sem pendência, "Onde está" fica sob a próxima ação: as duas colunas mantêm alturas parecidas. #}
+      {{ not current ? where }}
     </div>
+
     <div class="stack">
-      <section class="panel" aria-labelledby="alertas">
-        <h2 id="alertas">{{ ui.icon('i-alert') }} Alertas</h2>
-        {% for al in alerts %}
-          <div class="brief__alert brief__alert--{{ al.severity }}"><p>{{ ui.status(al.state == 'RESOLVIDO' ? 'RESOLVIDO' : al.severity, alertStates[al.state] ?? al.state) }} <span class="hint">{{ al.opened_at|local_dt }}</span></p><p>{{ al.message }}</p></div>
-        {% else %}<p class="muted">Nenhum alerta registrado.</p>{% endfor %}
-      </section>
       {% if editable %}
-      <section class="panel" aria-labelledby="situacao">
-        <h2 id="situacao">Mudar situação</h2>
+      {% set se = form.name == 'situacao' ? fe : {} %}
+      <section class="panel" id="situacao" aria-labelledby="situacao-titulo">
+        <h2 id="situacao-titulo">Mudar situação</h2>
+        <p class="m-0">{{ ui.agent_status(a.status) }} <span class="hint">desde {{ a.status_changed_at|local_dt }}</span></p>
         <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/situacao') }}" class="stack">{{ ui.csrf(app.csrf) }}
-          <div class="field"><label for="ns">Situação</label>
-            <select id="ns" name="status">{% for s in statuses %}<option value="{{ s.value }}" {{ s == status ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select>
-            <span class="hint">Em atividade e em pausa contam como "em turno": a posição recebida é esperada.</span></div>
-          <div><button class="btn btn--small" type="submit">Registrar situação</button></div>
+          <div class="field"><label for="ns">Nova situação</label>
+            <select id="ns" name="status" aria-describedby="ns-help">{% for s in statuses %}<option value="{{ s.value }}" {{ s.value == (form.name == 'situacao' ? fv.status ?? status.value : status.value) ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select>
+            <span class="hint" id="ns-help">Atividade e pausa contam como "em turno": a posição é esperada. Indisponível ou fora de serviço tira de turno: um alerta sem posição deixa de se aplicar, sem indicar que a comunicação voltou.</span></div>
+          <div class="field {{ se.note is defined ? 'has-error' }}"><label for="f-st-note">Motivo <span class="req" aria-hidden="true">*</span></label>
+            <input id="f-st-note" name="note" required maxlength="300" value="{{ form.name == 'situacao' ? fv.note ?? '' }}" {% if se.note is defined %}aria-invalid="true" aria-describedby="err-st-note"{% endif %}>
+            {% if se.note is defined %}<span class="error" id="err-st-note">{{ se.note }}</span>{% endif %}</div>
+          <div><button class="btn" type="submit">Registrar situação</button></div>
         </form>
       </section>
-      <details class="panel more-actions">
-        <summary>Mais ações: editar e arquivar</summary>
+      {% endif %}
+
+      {{ current ? where }}
+    </div>
+  </div>
+
+  <div class="split section">
+    <section aria-labelledby="historico">
+      <h2 id="historico">{{ ui.icon('i-clock') }} Histórico</h2>
+      <p class="hint">Linha tracejada: registro que não alterou o estado atual (por exemplo, posição mais antiga que a atual).</p>
+      {% set main = events|filter(ev => ev.event_type != 'POSICAO') %}
+      {% set samples = events|filter(ev => ev.event_type == 'POSICAO') %}
+      <ol class="timeline">
+        {% for ev in main %}
+          <li class="{{ ev.outcome == 'APLICADO' ? 'is-applied' : 'is-historical' }}"><time datetime="{{ ev.occurred_at }}">{{ ev.occurred_at|local_dt('d/m/Y H:i') }}</time> · <strong>{{ eventLabels[ev.event_type] ?? ev.event_type|lower }}</strong> <span class="small muted">{{ ev.actor_name ? 'por ' ~ ev.actor_name : (sourceLabels[ev.source] ?? ev.source|lower) }}</span><p>{{ ev.summary }}</p></li>
+        {% else %}<li>Sem registros de cadastro ou situação entre os mais recentes.</li>{% endfor %}
+      </ol>
+      {% if samples is not empty %}
+        <details class="more-actions"><summary>Ver amostras de posição ({{ samples|length }})</summary>
+          <ol class="timeline">
+            {% for ev in samples %}
+              <li class="{{ ev.outcome == 'APLICADO' ? 'is-applied' : 'is-historical' }}"><time datetime="{{ ev.occurred_at }}">{{ ev.occurred_at|local_dt('d/m/Y H:i') }}</time> · <strong>Posição</strong> <span class="small muted">{{ ev.actor_name ? 'por ' ~ ev.actor_name : (sourceLabels[ev.source] ?? ev.source|lower) }}</span><p>{{ ev.summary }}</p></li>
+            {% endfor %}
+          </ol>
+        </details>
+      {% endif %}
+    </section>
+
+    <div class="stack">
+      <section class="panel" aria-labelledby="encerrados">
+        <h2 id="encerrados">{{ ui.icon('i-check-circle') }} Alertas encerrados</h2>
+        {% if closed is empty %}
+          <p class="muted m-0">Nenhum alerta encerrado.</p>
+        {% else %}
+          <details class="more-actions">
+            <summary>Ver {{ closed_total > closed|length ? 'os ' ~ closed|length ~ ' mais recentes de ' ~ closed_total : (closed_total == 1 ? 'o alerta encerrado' : 'os ' ~ closed_total ~ ' alertas encerrados') }}</summary>
+            <ul class="closed-alerts">
+              {% for al in closed %}
+                <li>
+                  <p class="m-0"><strong>{{ al.resolved_at|local_dt('d/m/Y H:i') }}</strong> <span class="hint">aberto {{ al.opened_at|local_dt('d/m H:i') }}{{ al.ack_by_name ? ' · ciência por ' ~ al.ack_by_name }}</span></p>
+                  <p class="m-0">{{ resolutions[al.resolved_reason] ?? 'Encerrado quando a condição deixou de existir; motivo específico não registrado (alerta anterior a 24/10/2026).' }}</p>
+                </li>
+              {% endfor %}
+            </ul>
+          </details>
+        {% endif %}
+      </section>
+
+      {% if editable %}
+      <details class="panel more-actions" id="mais-acoes">
+        <summary>Mais ações: simulação, edição e arquivamento</summary>
         <div class="stack">
+          <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/simular-posicao') }}">{{ ui.csrf(app.csrf) }}
+            <h3>Simular recebimento de posição</h3>
+            <p class="hint">Recurso da demonstração: grava uma posição fictícia perto da base pelo mesmo caminho do simulador, identificada no histórico. Não envia mensagem. É um recebimento pontual: se o rádio simulado seguir sem transmitir, o alerta volta depois de 30 min sem posição.</p>
+            <button class="btn btn--small" type="submit">{{ ui.icon('i-signal') }}Simular recebimento de posição</button>
+          </form>
+          <hr class="divider">
           <p><a class="btn btn--small" href="{{ url('/agentes/' ~ a.id ~ '/editar') }}">{{ ui.icon('i-edit') }}Editar cadastro</a></p>
+          <hr class="divider">
           <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/arquivar') }}" class="stack" data-confirm="Arquivar este agente? O histórico é preservado.">{{ ui.csrf(app.csrf) }}
+            <h3>Arquivar</h3>
             <p class="hint">Arquivar retira o agente da operação; o histórico continua consultável.</p>
             <div class="field"><label for="ar">Motivo do arquivamento</label><input id="ar" name="reason" required maxlength="300"></div>
             <div><button class="btn btn--danger btn--small" type="submit">Arquivar agente</button></div>

@@ -54,7 +54,7 @@ final class CentralAndAnalysisTest extends FirebirdTestCase
         self::assertSame(['Câmera · Rua Paraná', 'Agente de trânsito · Hermes 99'], array_keys($reasons));
         self::assertSame(2, $attention['needs_attention']);
         self::assertContains('Mau funcionamento', $reasons['Câmera · Rua Paraná']);
-        self::assertSame(['Em atividade sem posição recente'], $reasons['Agente de trânsito · Hermes 99'], 'falta de posição é dita como tal, não como falha');
+        self::assertSame(['Em turno sem posição recente'], $reasons['Agente de trânsito · Hermes 99'], 'falta de posição é dita como tal, não como falha');
         self::assertCount(2, $attention['alerts'], 'alertas seguem o mesmo conjunto');
     }
 

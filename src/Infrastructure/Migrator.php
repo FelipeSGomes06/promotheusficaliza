@@ -14,10 +14,11 @@ final class Migrator
     /**
      * Tabelas em que o usuário da aplicação só lê e acrescenta: histórico não é alterado nem apagado, uma execução
      * importada do planejamento por setores (URBAN_RUN e filhas) não muda depois de gravada, e o histórico e as
-     * conferências documentais das multas (FINE_EVENT, FINE_DOCUMENT_CHECK) são imutáveis.
+     * conferências documentais das multas (FINE_EVENT, FINE_DOCUMENT_CHECK) e o acompanhamento dos alertas
+     * (ALERT_FOLLOWUP) são imutáveis.
      */
     public const APPEND_ONLY = ['RESOURCE_EVENT', 'LOGIN_ATTEMPT', 'URBAN_RUN', 'URBAN_SECTOR', 'URBAN_FORECAST', 'URBAN_REPLAY', 'URBAN_CELL', 'URBAN_SNAPSHOT', 'URBAN_DAILY', 'URBAN_MISSION_LOG',
-        'FINE_EVENT', 'FINE_DOCUMENT_CHECK'];
+        'FINE_EVENT', 'FINE_DOCUMENT_CHECK', 'ALERT_FOLLOWUP'];
 
     public function __construct(private readonly Database $db, private readonly string $directory) {}
 

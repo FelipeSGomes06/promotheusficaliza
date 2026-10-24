@@ -90,11 +90,12 @@ final class EventIngestor
 
     /**
      * Posição observada de agente ou de equipamento móvel. Com $keepHistory = false atualiza só o estado atual
-     * (o simulador grava no histórico uma amostra a cada N posições, para controlar volume).
+     * (o simulador grava no histórico uma amostra a cada N posições, para controlar volume). $detail identifica a
+     * origem no resumo (ex.: recebimento simulado pela demonstração).
      */
-    public function position(string $uid, string $kind, int $resourceId, string $lat, string $lng, \DateTimeImmutable $occurredAt, bool $keepHistory, string $source = 'SIMULADOR'): string
+    public function position(string $uid, string $kind, int $resourceId, string $lat, string $lng, \DateTimeImmutable $occurredAt, bool $keepHistory, string $source = 'SIMULADOR', ?int $actor = null, string $detail = ''): string
     {
-        return $this->db->transaction(function () use ($uid, $kind, $resourceId, $lat, $lng, $occurredAt, $keepHistory, $source): string {
+        return $this->db->transaction(function () use ($uid, $kind, $resourceId, $lat, $lng, $occurredAt, $keepHistory, $source, $actor, $detail): string {
             if ($keepHistory && $this->events->exists($uid)) {
                 return $this->duplicate();
             }
@@ -113,9 +114,9 @@ final class EventIngestor
             $outcome = $moved ? self::APPLIED : self::HISTORICAL;
             if ($keepHistory) {
                 $this->events->append([
-                    'uid' => $uid, 'kind' => $kind, 'resource_id' => $resourceId, 'type' => 'POSICAO', 'source' => $source, 'actor' => null,
+                    'uid' => $uid, 'kind' => $kind, 'resource_id' => $resourceId, 'type' => 'POSICAO', 'source' => $source, 'actor' => $actor,
                     'occurred_at' => $occurred, 'received_at' => $now, 'outcome' => $outcome,
-                    'summary' => $moved ? "Posição {$lat}, {$lng}" : "Posição antiga {$lat}, {$lng} (não substitui a atual)",
+                    'summary' => ($moved ? "Posição {$lat}, {$lng}" : "Posição antiga {$lat}, {$lng} (não substitui a atual)") . ($detail !== '' ? " ({$detail})" : ''),
                     'payload' => ['lat' => $lat, 'lng' => $lng],
                 ]) ?? throw new DuplicateEvent();
             }

@@ -57,7 +57,7 @@ final class DemoProfileTest extends FirebirdTestCase
         foreach (['INSTALADO', 'PLANEJADO', 'BASE', 'ULTIMA_POSICAO'] as $kind) {
             self::assertContains($kind, $positions, "posição {$kind} (base × última posição)");
         }
-        self::assertContains('Em atividade sem posição recente', array_merge(...array_column($agents, 'attention')));
+        self::assertContains('Em turno sem posição recente', array_merge(...array_column($agents, 'attention')));
 
         // Manutenção: em execução, imediata, vencida, próxima e futura — com datas fixas, em qualquer semente.
         $today = Time::localDate($this->clock->now());

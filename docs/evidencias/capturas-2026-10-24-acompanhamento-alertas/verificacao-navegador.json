@@ -1,0 +1,116 @@
+{
+  "base": "http://127.0.0.1:8097/promotheusfiscaliza",
+  "agente": "315",
+  "quando": "2026-10-24T16:16:42.316Z",
+  "capturas": [
+    "01-aberto-1440",
+    "02-acompanhamento-1440",
+    "03-conflito-1440",
+    "04-central-1440",
+    "05-ficha-390",
+    "06-central-390",
+    "05-ficha-360",
+    "06-central-360",
+    "07-encerrado-1440"
+  ],
+  "verificacoes": {
+    "ficha_proxima_acao_no_topo": {
+      "ok": true,
+      "detalhe": null
+    },
+    "sem_responsavel_antes_de_atribuir": {
+      "ok": true,
+      "detalhe": null
+    },
+    "conta_nova_na_selecao": {
+      "ok": true,
+      "detalhe": "5"
+    },
+    "foco_visivel_no_botao_de_ciencia": {
+      "ok": true,
+      "detalhe": null
+    },
+    "ciencia_registrada_com_autor": {
+      "ok": true,
+      "detalhe": "FeitoCiência registrada. O alerta continua pendente até chegar posição recente ou o agente sair de turno."
+    },
+    "ciencia_nao_atribui": {
+      "ok": true,
+      "detalhe": null
+    },
+    "atribuicao_com_mensagem": {
+      "ok": true,
+      "detalhe": "FeitoAcompanhamento atribuído a Operadora do Acompanhamento."
+    },
+    "erro_junto_ao_campo_e_relato_mantido": {
+      "ok": true,
+      "detalhe": null
+    },
+    "providencia_registrada": {
+      "ok": true,
+      "detalhe": "FeitoProvidência registrada. O alerta continua pendente até chegar posição recente ou o agente sair de turno."
+    },
+    "proxima_acao_aguarda_conferencia": {
+      "ok": true,
+      "detalhe": "Aguardar a próxima conferência, 24/10 às 14:02"
+    },
+    "conflito_preserva_digitacao": {
+      "ok": true,
+      "detalhe": null
+    },
+    "reenvio_consciente_apos_conflito": {
+      "ok": true,
+      "detalhe": null
+    },
+    "contato_confirmado_nao_encerra": {
+      "ok": true,
+      "detalhe": null
+    },
+    "conta_desativada_pede_reatribuicao": {
+      "ok": true,
+      "detalhe": null
+    },
+    "conta_desativada_fora_da_selecao": {
+      "ok": true,
+      "detalhe": null
+    },
+    "central_proxima_acao_coerente": {
+      "ok": true,
+      "detalhe": null
+    },
+    "central_mostra_responsavel_e_providencia": {
+      "ok": true,
+      "detalhe": null
+    },
+    "celular_390_sem_rolagem_horizontal": {
+      "ok": true,
+      "detalhe": null
+    },
+    "central_390_sem_rolagem_horizontal": {
+      "ok": true,
+      "detalhe": null
+    },
+    "celular_360_sem_rolagem_horizontal": {
+      "ok": true,
+      "detalhe": null
+    },
+    "central_360_sem_rolagem_horizontal": {
+      "ok": true,
+      "detalhe": null
+    },
+    "posicao_simulada_encerra": {
+      "ok": true,
+      "detalhe": "FeitoPosição simulada recebida: o alerta foi encerrado por posição recente. É um recebimento pontual; se o rádio simulado seguir sem transmitir, um alerta novo abre depois de 30 min."
+    },
+    "encerramento_explicado": {
+      "ok": true,
+      "detalhe": null
+    },
+    "historico_identifica_simulacao": {
+      "ok": true,
+      "detalhe": null
+    }
+  },
+  "console": [],
+  "ok": true
+}

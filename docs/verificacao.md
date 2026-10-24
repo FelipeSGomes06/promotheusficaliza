@@ -3,6 +3,21 @@
 Ambiente: Windows 11 + Docker Desktop 29.7.2; contêineres `php:8.5.11-apache-trixie` (PDO_FIREBIRD, fbclient 4.0.5)
 e `firebirdsql/firebird:5.0.4-trixie`. Data: 18/10/2026. Só está listado aqui o que de fato rodou.
 
+## Acompanhamento dos alertas de agentes (24/10/2026)
+
+Projeto Compose isolado `pf-rev` (porta 8097; PHP 8.5.11, Firebird 5.0.4, perfil completo) sobre
+`claude/revisao-auditoria-codex-1023` em `b893aae`. [Evidência](evidencias/2026-10-24-acompanhamento-de-alertas.md),
+[ADR-0022](adr/0022-acompanhamento-dos-alertas-de-agentes.md).
+
+| Verificação | Resultado |
+|---|---|
+| `vendor/bin/phpunit` | **267 testes, 1739 asserções, OK** |
+| Testes novos | `AlertFollowUpTest` (mesmo alerta na pausa; ciência sem resolver nem atribuir; providência só depois da ciência e só de acréscimo; validação; conta recém-cadastrada atribuída e reatribuída com histórico; conta desativada; versão antiga → conflito; posição nova, antiga e fora de ordem; saída de turno e arquivamento; pendência antiga além dos 20 encerrados; motivo obrigatório), `AgentsHttpTest` (percurso na ficha com 404, 422 e 409 mantendo a digitação), `DomainRulesTest` (pausa, próxima ação, motivo de encerramento) |
+| `phpstan analyse` (nível 6) · `php-cs-fixer fix --dry-run` · `npm run build` (Node 24) | 0 erros · 0 de 130 · sem erros |
+| Migração 0009 | aplicada sobre o banco populado; segunda execução sem efeito |
+| Navegador (`scripts/verificacao-interface/acompanhamento.cjs`, Chromium headless) | 24 verificações OK, 0 erros de console e de CSP; 1440, 390 e 360 px, teclado, movimento reduzido |
+| Site publicado | **não verificado** (não implantado) |
+
 ## Revisão da auditoria de interface do Codex (24/10/2026)
 
 Projeto Compose isolado `pf-rev` (porta 8097; PHP 8.5.11, Firebird 5.0.4) sobre `main` em `a6a4aae`, perfil completo.

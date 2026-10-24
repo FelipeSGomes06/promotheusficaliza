@@ -91,7 +91,10 @@ depois, recrie com `docker compose down -v` (apaga o banco local). Porta 8080 oc
 3. Em **Contas**, cadastre uma pessoa e confira, numa janela anônima, que ela só entra depois desse cadastro. Depois
    cadastre um radar (deixe "Velocidade" sem limite para ver o resumo de erros com a digitação mantida), instale-o
    (Não instalado → Operacional), inicie e conclua uma ordem (tente iniciar outra do mesmo equipamento), use
-   **Simular falha** e registre ciência do alerta — ele só resolve quando a causa some.
+   **Simular falha** e registre ciência do alerta — ele só resolve quando a causa some. Na ficha do agente Hermes 06
+   (em turno sem posição recente), registre ciência, atribua o acompanhamento à conta que você cadastrou, registre uma
+   providência com a próxima conferência e use **Mais ações → Simular recebimento de posição** para ver o encerramento
+   explicado ([ADR-0022](docs/adr/0022-acompanhamento-dos-alertas-de-agentes.md)).
 4. Revisões recomendadas: o que revisar e por quê; abra o método e o retrospecto com a referência.
 5. Planejar reforço: leia período, data dos dados e origem de cada camada; siga os três passos (onde reforçar, quem enviar,
    confirmar); confirme a missão fictícia sugerida; abra **Retrospecto da

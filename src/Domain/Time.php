@@ -46,6 +46,25 @@ final class Time
         return $instant->setTimezone(self::local())->format('Y-m-d');
     }
 
+    /** "19/10 às 15:43", hora de Marília. */
+    public static function short(DateTimeImmutable $instant): string
+    {
+        return $instant->setTimezone(self::local())->format('d/m \à\s H:i');
+    }
+
+    /** Tempo decorrido em linguagem comum: "12 min", "2 h 5 min", "5 dias". */
+    public static function elapsed(DateTimeImmutable $from, DateTimeImmutable $now): string
+    {
+        $minutes = intdiv(max(0, $now->getTimestamp() - $from->getTimestamp()), 60);
+        $days = intdiv($minutes, 1440);
+
+        return match (true) {
+            $minutes < 60 => "{$minutes} min",
+            $days === 0 => intdiv($minutes, 60) . ' h' . ($minutes % 60 > 0 ? ' ' . $minutes % 60 . ' min' : ''),
+            default => $days . ($days === 1 ? ' dia' : ' dias'),
+        };
+    }
+
     /** ISO 8601 com deslocamento, para JSON. */
     public static function iso(?DateTimeImmutable $instant): ?string
     {

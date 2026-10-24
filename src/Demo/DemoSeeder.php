@@ -98,7 +98,7 @@ final class DemoSeeder
     {
         $db = $this->services->database();
         $db->transaction(function () use ($db): void {
-            foreach (['FINE_DOCUMENT_CHECK', 'FINE_EVENT', 'FINE', 'URBAN_MISSION_LOG', 'URBAN_MISSION', 'ANALYSIS_RESULT', 'ANALYSIS_RUN', 'ALERT', 'RESOURCE_EVENT', 'MAINTENANCE_ORDER', 'EQUIPMENT', 'AGENT', 'REGION', 'AGENCY', 'APP_META'] as $table) {
+            foreach (['FINE_DOCUMENT_CHECK', 'FINE_EVENT', 'FINE', 'URBAN_MISSION_LOG', 'URBAN_MISSION', 'ANALYSIS_RESULT', 'ANALYSIS_RUN', 'ALERT_FOLLOWUP', 'ALERT', 'RESOURCE_EVENT', 'MAINTENANCE_ORDER', 'EQUIPMENT', 'AGENT', 'REGION', 'AGENCY', 'APP_META'] as $table) {
                 $db->execute("DELETE FROM {$table}");
             }
         });

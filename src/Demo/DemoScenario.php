@@ -225,7 +225,7 @@ final class DemoScenario
 
     /**
      * Agentes fictícios, com prefixos de rádio inspirados no mito de Prometeu (nenhum nome ou matrícula real).
-     * Campos: indicativo, função, órgão, base, situação, posição recente? (false = em atividade sem posição recente).
+     * Campos: indicativo, função, órgão, base, situação, posição recente? (false = em turno sem posição recente).
      *
      * @return list<array{0: string, 1: string, 2: string, 3: string, 4: string, 5: bool}>
      */

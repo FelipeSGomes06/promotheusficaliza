@@ -6,6 +6,7 @@ namespace Fiscaliza\Application;
 
 use Fiscaliza\Domain\AgentRole;
 use Fiscaliza\Domain\AgentStatus;
+use Fiscaliza\Domain\AlertFollowUp;
 use Fiscaliza\Domain\Clock;
 use Fiscaliza\Domain\EquipmentCatalog;
 use Fiscaliza\Domain\EquipmentStatus;
@@ -20,6 +21,7 @@ use Fiscaliza\Infrastructure\Repository\EquipmentRepository;
 use Fiscaliza\Infrastructure\Repository\EventRepository;
 use Fiscaliza\Infrastructure\Repository\MaintenanceRepository;
 use Fiscaliza\Infrastructure\Repository\MetaRepository;
+use Fiscaliza\Infrastructure\Repository\MissionRepository;
 use Fiscaliza\Infrastructure\Repository\ReferenceRepository;
 
 /**
@@ -34,6 +36,7 @@ final class CentralQuery
         private readonly AgentRepository $agents,
         private readonly MaintenanceRepository $maintenance,
         private readonly AlertRepository $alerts,
+        private readonly MissionRepository $missions,
         private readonly EventRepository $events,
         private readonly MetaRepository $meta,
         private readonly ReferenceRepository $references,
@@ -51,6 +54,8 @@ final class CentralQuery
             $agentRows = $this->agents->forCentral($filters);
             $orders = $this->maintenance->open(array_map(static fn($e) => (int) $e['id'], $equipmentRows));
             $alerts = $this->alerts->unresolved();
+            $followUps = $this->alerts->followUps(array_map(static fn($a) => (int) $a['id'], $alerts));
+            $missions = $this->missions->activeByAgent();
             $meta = $this->meta->all();
             $watermark = $this->events->watermark();
 
@@ -60,8 +65,10 @@ final class CentralQuery
                 $ordersByEquipment[(int) $o['equipment_id']][] = $o;
             }
             $alertReasons = [];
+            $alertRows = [];
             foreach ($alerts as $a) {
                 $alertReasons[$a['resource_kind'] . ':' . $a['resource_id']][] = (string) $a['reason'];
+                $alertRows[$a['resource_kind'] . ':' . $a['resource_id']] ??= $a;
             }
 
             $resources = [];
@@ -69,7 +76,8 @@ final class CentralQuery
                 $resources[] = $this->equipmentResource($e, $ordersByEquipment[(int) $e['id']] ?? [], $alertReasons['EQUIPAMENTO:' . $e['id']] ?? [], $now);
             }
             foreach ($agentRows as $g) {
-                $resources[] = $this->agentResource($g, $alertReasons['AGENTE:' . $g['id']] ?? [], $now);
+                $pending = $alertRows['AGENTE:' . $g['id']] ?? null;
+                $resources[] = $this->agentResource($g, $alertReasons['AGENTE:' . $g['id']] ?? [], $now, $pending, AlertFollowUp::lastAction($followUps[(int) ($pending['id'] ?? 0)] ?? []), $missions[(int) $g['id']] ?? null);
             }
             // Busca e "precisa de atenção" valem para tudo o que segue (mapa, lista, indicadores, alertas, bairros).
             $resources = array_values(array_filter($resources, static fn(array $r): bool => ($filters->text === '' || self::matches($r, $filters->text))
@@ -94,11 +102,20 @@ final class CentralQuery
                 'resources' => $resources,
                 'regions' => $this->regionSummary($resources, $visibleAlerts),
                 'maintenance' => $this->maintenanceLists($orders),
-                'alerts' => array_map(static fn($a) => [
-                    'id' => (int) $a['id'], 'kind' => $a['resource_kind'], 'resource_id' => (int) $a['resource_id'], 'resource_code' => $a['resource_code'],
-                    'reason' => $a['reason'], 'severity' => $a['severity'], 'state' => $a['state'], 'message' => $a['message'],
-                    'opened_at' => Time::iso(Time::fromDb($a['opened_at'])), 'ack_by' => $a['ack_by_name'], 'region' => $a['region_name'],
-                ], $visibleAlerts),
+                'alerts' => array_map(static function (array $a) use ($followUps, $now): array {
+                    $check = Time::fromDb($a['next_check_at']);
+                    $last = AlertFollowUp::lastAction($followUps[(int) $a['id']] ?? []);
+
+                    return [
+                        'id' => (int) $a['id'], 'kind' => $a['resource_kind'], 'resource_id' => (int) $a['resource_id'], 'resource_code' => $a['resource_code'],
+                        'reason' => $a['reason'], 'severity' => $a['severity'], 'state' => $a['state'], 'message' => $a['message'],
+                        'opened_at' => Time::iso(Time::fromDb($a['opened_at'])), 'ack_by' => $a['ack_by_name'], 'ack_at' => Time::iso(Time::fromDb($a['ack_at'])),
+                        'region' => $a['region_name'],
+                        'assignee' => $a['assignee_name'], 'assignee_active' => $a['assignee_id'] === null || (bool) $a['assignee_active'],
+                        'next_check_at' => Time::iso($check), 'check_overdue' => $check !== null && $check <= $now,
+                        'last_follow_up' => $last === null ? null : ['label' => AlertFollowUp::ACTIONS[$last['action_code']] ?? $last['action_code'], 'by' => $last['created_by_name'], 'at' => Time::iso(Time::fromDb($last['created_at']))],
+                    ];
+                }, $visibleAlerts),
                 'sync' => [
                     'last_event_id' => $watermark['last_id'],
                     'last_event_received_at' => Time::iso(Time::fromDb($watermark['last_received_at'])),
@@ -178,9 +195,11 @@ final class CentralQuery
     /**
      * @param array<string, mixed> $g
      * @param list<string> $alertReasons
+     * @param array<string, mixed>|null $pending alerta pendente do agente
+     * @param array<string, mixed>|null $lastAction última providência desse alerta
      * @return array<string, mixed>
      */
-    private function agentResource(array $g, array $alertReasons, \DateTimeImmutable $now): array
+    private function agentResource(array $g, array $alertReasons, \DateTimeImmutable $now, ?array $pending = null, ?array $lastAction = null, ?int $missionId = null): array
     {
         $status = AgentStatus::from($g['status']);
         $role = AgentRole::from($g['role']);
@@ -218,6 +237,8 @@ final class CentralQuery
             'maintenance' => null,
             'alerts' => count($alertReasons),
             'attention' => $attention,
+            'next_action' => AlertFollowUp::nextAction($g + ['archived_at' => null], $pending, $lastAction, $now),
+            'mission_id' => $missionId,
         ];
     }
 
@@ -232,7 +253,7 @@ final class CentralQuery
     private static function withAlertReasons(array $attention, array $alertReasons): array
     {
         $texts = ['FALHA' => EquipmentStatus::Falha->label(), 'FURTO' => EquipmentStatus::Furtado->label(), 'MANUTENCAO_IMEDIATA' => 'Manutenção imediata',
-            'MANUTENCAO_VENCIDA' => 'Manutenção vencida', 'SEM_COMUNICACAO' => 'Sem sinal recente (não confirma falha)', 'SEM_POSICAO' => 'Em atividade sem posição recente'];
+            'MANUTENCAO_VENCIDA' => 'Manutenção vencida', 'SEM_COMUNICACAO' => 'Sem sinal recente (não confirma falha)', 'SEM_POSICAO' => 'Em turno sem posição recente'];
         foreach ($alertReasons as $reason) {
             $attention[] = $texts[$reason] ?? 'Alerta aberto';
         }

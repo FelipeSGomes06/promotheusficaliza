@@ -58,13 +58,33 @@ final class AlertRules
         }
 
         foreach ($agents as $a) {
+            // Em turno (atividade ou pausa), como na ficha e na central: entrar em pausa não encerra o alerta.
             $status = AgentStatus::from($a['status']);
-            $position = Freshness::of(Time::fromDb($a['pos_observed_at'] ?? null), $now, $status->isActive(), Freshness::POSITION_CURRENT, Freshness::POSITION_STALE);
+            $position = Freshness::of(Time::fromDb($a['pos_observed_at'] ?? null), $now, $status->isOnShift(), Freshness::POSITION_CURRENT, Freshness::POSITION_STALE);
             if ($position === Freshness::SemInformacao) {
-                $add('AGENTE', (int) $a['id'], 'SEM_POSICAO', 'MEDIA', "{$a['call_sign']}: em atividade sem posição recente.");
+                $add('AGENTE', (int) $a['id'], 'SEM_POSICAO', 'MEDIA', "{$a['call_sign']}: em turno sem posição recente.");
             }
         }
 
         return $conditions;
+    }
+
+    /**
+     * Por que a condição de um alerta deixou de existir. "Posição recebida" só quando o agente segue em turno; se ele
+     * saiu de turno ou foi arquivado, a condição deixou de se aplicar — não se sabe se a comunicação voltou.
+     *
+     * @param array<string, mixed>|null $agent linha ativa do agente (null = arquivado)
+     */
+    public static function resolutionReason(string $kind, string $reason, ?array $agent): string
+    {
+        if ($kind !== 'AGENTE' || $reason !== 'SEM_POSICAO') {
+            return 'CAUSA_ENCERRADA';
+        }
+
+        return match (true) {
+            $agent === null => 'ARQUIVADO',
+            !AgentStatus::from($agent['status'])->isOnShift() => 'FORA_DE_TURNO',
+            default => 'POSICAO_RECEBIDA',
+        };
     }
 }
