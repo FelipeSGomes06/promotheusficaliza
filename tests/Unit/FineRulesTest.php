@@ -160,14 +160,18 @@ final class FineRulesTest extends TestCase
     {
         self::assertSame([], FineRules::attention(self::complete(['record_state' => 'REGISTRADO']), '2026-10-21'));
         self::assertCount(1, FineRules::attention(self::complete()), 'rascunho completo ainda precisa ser registrado');
-        $pending = FineRules::attention(self::complete(['record_state' => 'REGISTRADO', 'occ_doc_status' => 'NAO_VERIFICADA', 'radar_details' => [], 'occ_doc_review_on' => null]));
+        $pending = FineRules::attention(self::complete(['record_state' => 'REGISTRADO', 'occ_doc_status' => 'NAO_VERIFICADA', 'radar_details' => [], 'doc_review_on' => null]));
         self::assertCount(2, $pending, 'não verificada e dados metrológicos a conferir');
         self::assertSame([], FineRules::attention(self::complete(['record_state' => 'CANCELADO', 'occ_doc_status' => 'NAO_VERIFICADA'])));
 
-        $review = self::complete(['record_state' => 'REGISTRADO', 'occ_doc_review_on' => '2026-10-10']);
-        self::assertSame([], FineRules::attention($review), 'sem a data de hoje, a revisão vencida não conta');
-        self::assertSame(['Documentos: precisam ser conferidos de novo (lembrete marcado para 10/10/2026).'], FineRules::attention($review, '2026-10-21'), 'lembrete vencido');
-        self::assertSame([], FineRules::attention($review, '2026-10-10'), 'no próprio dia do lembrete ainda não conta');
+        $review = self::complete(['record_state' => 'REGISTRADO', 'doc_review_on' => '2026-10-10', 'doc_review_scope' => 'OCORRENCIA']);
+        self::assertSame([], FineRules::attention($review), 'sem a data de hoje, o lembrete não conta');
+        self::assertSame(['Documentos: precisam ser conferidos de novo (lembrete para 10/10/2026, marcado na conferência do dia da multa).'], FineRules::attention($review, '2026-10-21'), 'lembrete vencido');
+        // "Na data escolhida": conta a partir do próprio dia (data local de Marília), não no dia seguinte.
+        self::assertCount(1, FineRules::attention($review, '2026-10-10'), 'no próprio dia do lembrete já conta');
+        self::assertSame([], FineRules::attention($review, '2026-10-09'), 'na véspera ainda não');
+        $posterior = FineRules::attention(['doc_review_scope' => 'POSTERIOR'] + $review, '2026-10-10');
+        self::assertStringContainsString('conferência de depois da multa', $posterior[0], 'o motivo diz de qual conferência veio o lembrete');
         $later = FineRules::attention(self::complete(['record_state' => 'REGISTRADO', 'radar_details' => ['inmetro_record' => 'I', 'certificate' => 'C', 'verified_on' => '2026-10-25']]));
         self::assertStringContainsString('posterior à ocorrência', $later[0]);
     }

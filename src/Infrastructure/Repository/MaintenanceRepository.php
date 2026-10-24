@@ -76,10 +76,23 @@ final class MaintenanceRepository
         return array_map(self::trim(...), $this->db->all($sql . ' ORDER BY m.DUE_DATE NULLS FIRST, m.ID', $params));
     }
 
-    /** @return list<array<string, mixed>> */
-    public function forEquipment(int $equipmentId, int $limit = 30): array
+    /**
+     * Ordens da ficha: TODAS as pendentes (ABERTA/EM_EXECUCAO, que decidem próxima ação, início, cancelamento e
+     * arquivamento) e só as $closedLimit encerradas mais recentes. Um limite único escondia uma pendência antiga.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function forEquipment(int $equipmentId, int $closedLimit = 30): array
     {
-        return array_map(self::trim(...), $this->db->all(self::SELECT . ' WHERE m.EQUIPMENT_ID = ? ORDER BY m.OPENED_AT DESC ROWS ?', [$equipmentId, $limit]));
+        return array_map(self::trim(...), [
+            ...$this->db->all(self::SELECT . " WHERE m.EQUIPMENT_ID = ? AND m.STATE IN ('ABERTA', 'EM_EXECUCAO') ORDER BY m.OPENED_AT DESC, m.ID DESC", [$equipmentId]),
+            ...$this->db->all(self::SELECT . " WHERE m.EQUIPMENT_ID = ? AND m.STATE IN ('CONCLUIDA', 'CANCELADA') ORDER BY m.CLOSED_AT DESC, m.ID DESC ROWS ?", [$equipmentId, $closedLimit]),
+        ]);
+    }
+
+    public function closedCountFor(int $equipmentId): int
+    {
+        return (int) $this->db->value("SELECT COUNT(*) FROM MAINTENANCE_ORDER WHERE EQUIPMENT_ID = ? AND STATE IN ('CONCLUIDA', 'CANCELADA')", [$equipmentId]);
     }
 
     /** @return list<array<string, mixed>> */
