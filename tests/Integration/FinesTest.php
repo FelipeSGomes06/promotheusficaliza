@@ -293,10 +293,10 @@ final class FinesTest extends FirebirdTestCase
         // Hoje é 18/10/2026 no relógio dos testes; as respostas relativas contam a partir de hoje.
         foreach (['30' => '2026-11-17', '90' => '2027-01-16', 'NAO' => null] as $choice => $expected) {
             $fines->addCheck($id, $this->cmd($id, ['review_choice' => (string) $choice] + $base), $this->user);
-            self::assertSame($expected, $this->services->fineRepository()->find($id)['occ_doc_review_on'], "resposta {$choice}");
+            self::assertSame($expected, $this->services->fineRepository()->find($id)['doc_review_on'], "resposta {$choice}");
         }
         $fines->addCheck($id, $this->cmd($id, ['review_choice' => 'DATA', 'review_on' => '2026-12-01'] + $base), $this->user);
-        self::assertSame('2026-12-01', $this->services->fineRepository()->find($id)['occ_doc_review_on']);
+        self::assertSame('2026-12-01', $this->services->fineRepository()->find($id)['doc_review_on']);
         try {
             $fines->addCheck($id, $this->cmd($id, ['review_choice' => 'DATA', 'review_on' => '2026-10-17'] + $base), $this->user);
             self::fail('lembrete antes do dia a que a conferência se refere');
@@ -304,6 +304,78 @@ final class FinesTest extends FirebirdTestCase
             self::assertSame(['review_on'], array_keys($e->errors));
         }
         self::assertSame(4, $this->rows('FINE_DOCUMENT_CHECK', $id));
+    }
+
+    public function testLaterCheckReminderFollowsUpFromItsDayAndTheLastCheckDecides(): void
+    {
+        $fines = $this->services->fines();
+        $id = $fines->create($this->radarFine(), $this->user);
+        $fines->register($id, $this->cmd($id), $this->user);
+        $base = ['checked_at' => '2026-10-18T10:00', 'source_type' => 'CRLV_APRESENTADO', 'source_reference' => 'CRLV-e fictício'];
+        $fines->addCheck($id, $this->cmd($id, ['scope' => 'OCORRENCIA', 'document_status' => 'PENDENCIA_INFORMADA', 'pending_items' => 'Licenciamento não comprovado', 'review_choice' => 'NAO'] + $base), $this->user);
+        // Regularidade informada depois, com lembrete: a pendência do dia sai de "A conferir", o lembrete entra na data dele.
+        $fines->addCheck($id, $this->cmd($id, ['scope' => 'POSTERIOR', 'effective_on' => '2026-10-18', 'document_status' => 'REGULARIDADE_INFORMADA',
+            'checked_at' => '2026-10-18T11:00', 'review_choice' => 'DATA', 'review_on' => '2026-10-20'] + $base), $this->user);
+        $f = $this->services->fineRepository()->find($id);
+        self::assertSame(['PENDENCIA_INFORMADA', '2026-10-20', 'POSTERIOR'], [$f['occ_doc_status'], $f['doc_review_on'], $f['doc_review_scope']], 'o dia da multa não muda');
+        $state = function (): array {
+            $list = $this->services->fineQuery()->list(FineFilters::fromQuery([]), 1);
+            $only = $this->services->fineQuery()->list(FineFilters::fromQuery(['conferir' => '1']), 1);
+
+            return [count($this->services->fineQuery()->detail((int) $list['rows'][0]['id'], 1)['attention']), $list['attention'], count($list['rows'][0]['attention']), $only['total']];
+        };
+        self::assertSame([0, 0, 0, 0], $state(), 'antes do dia do lembrete');
+
+        // 20/10 começa às 03:00 UTC em Marília: um minuto antes ainda é 19/10.
+        $this->clock->set(new \DateTimeImmutable('2026-10-20 02:59:00', new \DateTimeZone('UTC')));
+        self::assertSame([0, 0, 0, 0], $state(), 'véspera no horário local');
+        $this->clock->set(new \DateTimeImmutable('2026-10-20 03:00:00', new \DateTimeZone('UTC')));
+        self::assertSame([1, 1, 1, 1], $state(), 'ficha, resumo, lista e filtro no próprio dia escolhido');
+        self::assertStringContainsString('conferência de depois da multa', $this->services->fineQuery()->detail($id, 1)['attention'][0]);
+
+        // Uma nova conferência responde de novo à pergunta: "Não precisa" retira o lembrete; o anterior fica no histórico.
+        $fines->addCheck($id, $this->cmd($id, ['scope' => 'POSTERIOR', 'effective_on' => '2026-10-19', 'document_status' => 'REGULARIDADE_INFORMADA',
+            'checked_at' => '2026-10-19T20:00', 'review_choice' => 'NAO'] + $base), $this->user);
+        self::assertSame([0, 0, 0, 0], $state());
+        self::assertSame(3, $this->rows('FINE_DOCUMENT_CHECK', $id));
+        self::assertSame('2026-10-20', array_column($this->services->fineRepository()->checks($id), 'review_on')[1]);
+
+        // Lembrete novo e depois a placa corrigida: a identidade nova não herda o lembrete da anterior.
+        $fines->addCheck($id, $this->cmd($id, ['scope' => 'OCORRENCIA', 'document_status' => 'PENDENCIA_INFORMADA', 'pending_items' => 'Licenciamento não comprovado',
+            'review_choice' => '30'] + $base), $this->user);
+        self::assertSame(['2026-11-19', 'OCORRENCIA'], [$this->services->fineRepository()->find($id)['doc_review_on'], $this->services->fineRepository()->find($id)['doc_review_scope']]);
+        $fines->update($id, $this->cmd($id, ['vehicle_plate' => 'ABC1D24', 'reason' => 'Placa transcrita com erro'] + $this->radarFine()), $this->user);
+        self::assertSame([null, null], [$this->services->fineRepository()->find($id)['doc_review_on'], $this->services->fineRepository()->find($id)['doc_review_scope']]);
+    }
+
+    public function testRetificationCannotPlaceTheOccurrenceAfterFactsAlreadyRecorded(): void
+    {
+        $fines = $this->services->fines();
+        $id = $fines->create($this->radarFine(['occurred_at' => '2026-10-10T09:10']), $this->user);
+        $fines->register($id, $this->cmd($id), $this->user);
+        // Vencimento antes da ocorrência é prazo informado, não fato: não entra na regra.
+        $progress = ['process_stage' => 'PENALIDADE_NOTIFICADA', 'payment_status' => 'PAGAMENTO_INFORMADO', 'paid_on' => '2026-10-14', 'paid_amount' => '10,00',
+            'payment_reference' => 'DEMO-PAG-R01', 'contest_status' => 'NAO_INFORMADA', 'nominal_amount' => '10,00', 'penalty_issued_on' => '2026-10-12', 'payment_due_on' => '2026-10-11'];
+        $fines->updateProgress($id, $this->cmd($id, $progress), $this->user);
+        $events = $this->rows('FINE_EVENT', $id);
+
+        try {
+            $fines->update($id, $this->cmd($id, ['occurred_at' => '2026-10-16T09:10', 'reason' => 'Data transcrita com erro'] + $this->radarFine()), $this->user);
+            self::fail('a retificação deixaria o pagamento e o aviso antes da ocorrência');
+        } catch (ValidationFailed $e) {
+            self::assertSame(['occurred_at'], array_keys($e->errors));
+            foreach (['aviso da multa enviado em 12/10/2026', 'pago em 14/10/2026', 'até 12/10/2026'] as $text) {
+                self::assertStringContainsString($text, $e->errors['occurred_at']);
+            }
+            self::assertStringNotContainsString('vencimento', $e->errors['occurred_at']);
+        }
+        $f = $this->services->fineRepository()->find($id);
+        self::assertSame(['2026-10-10 12:10:00', '2026-10-14', $events], [$f['occurred_at'], $f['paid_on'], $this->rows('FINE_EVENT', $id)], 'nada foi gravado nem ajustado');
+
+        // No mesmo dia do fato mais antigo vale (a mesma regra do andamento), e reenviar o andamento continua possível.
+        $fines->update($id, $this->cmd($id, ['occurred_at' => '2026-10-12T07:30', 'reason' => 'Horário do auto'] + $this->radarFine()), $this->user);
+        self::assertSame([], $fines->updateProgress($id, $this->cmd($id, $progress), $this->user));
+        self::assertSame('RETIFICACAO', $this->services->fineQuery()->detail($id, 1)['events'][0]['event_type']);
     }
 
     public function testProgressDimensionsAreIndependentAndCorrectionsNeedAReason(): void

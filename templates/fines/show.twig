@@ -25,7 +25,7 @@
       <div class="state">
         {{ fine.state(f.record_state) }}
         <span class="tag">{{ stages[f.process_stage] }}</span>
-        {{ fine.doc(f.occ_doc_status, f.occ_doc_review_on, today) }}
+        {{ fine.doc(f.occ_doc_status, f.doc_review_on, today) }}
       </div>
     </div>
   </div>
@@ -121,12 +121,11 @@
       <section class="panel" aria-labelledby="documentacao" id="documentacao-sec">
         <h2 id="documentacao">{{ ui.icon('i-check-circle') }} Documentos do carro no dia da multa</h2>
         {% set oc = occurrence_check %}
-        <p>{{ fine.doc(f.occ_doc_status, f.occ_doc_review_on, today) }}</p>
+        <p>{{ fine.doc(f.occ_doc_status, f.doc_review_on, today) }}</p>
         {% if oc %}
           <p>{{ doc_sources[oc.source_type] }}{{ oc.source_reference ? ': ' ~ oc.source_reference }}.</p>
           {% if oc.pending_items %}<p><strong>O que estava errado:</strong> {{ oc.pending_items }}</p>{% endif %}
           <p class="hint">Conferido em {{ oc.checked_at|local_dt('d/m/Y') }}, às {{ oc.checked_at|local_dt('H:i') }}, {{ oc.actor_name ? 'por ' ~ oc.actor_name : 'pela carga de exemplo do sistema' }}.{% if oc.crlv_exercise %} Licenciamento do ano {{ oc.crlv_exercise }}.{% endif %}</p>
-          {% if oc.review_on %}<p class="hint">Lembrete para conferir de novo em {{ oc.review_on|br_date }}{{ oc.review_on < today ? ' (essa data já passou)' }}.</p>{% endif %}
         {% else %}
           <p class="hint">Ninguém anotou ainda se os documentos estavam em dia no dia da multa{{ f.subject_version > 1 ? ' (a placa ou a data foram corrigidas, então é preciso conferir de novo)' }}. Isso não quer dizer que estavam em dia nem atrasados.</p>
         {% endif %}
@@ -134,6 +133,9 @@
           <h3 class="form-sub">Depois da multa</h3>
           <p>{{ fine.doc(later_check.document_status) }} <span class="hint">conferido em {{ later_check.checked_at|local_dt('d/m/Y') }} · {{ doc_sources[later_check.source_type]|lower }}</span></p>
           <p class="hint">Se o motorista regularizou depois, isso não muda como estava no dia da multa.</p>
+        {% endif %}
+        {% if f.doc_review_on %}
+          <p class="hint">Lembrete em vigor: conferir de novo a partir de {{ f.doc_review_on|br_date }}{{ f.doc_review_on <= today ? ' (a data chegou: a multa está em "A conferir")' }}, marcado na conferência {{ f.doc_review_scope == 'POSTERIOR' ? 'de depois da multa' : 'do dia da multa' }}.</p>
         {% endif %}
         {% set stale = checks|filter(c => c.subject_version != f.subject_version) %}
         {% if checks is not empty %}
@@ -175,7 +177,7 @@
                 <details class="advanced span-2" data-check-review open>
                   <summary id="lbl-review_choice">Quer ser lembrado de conferir de novo?<span data-review-answer></span></summary>
                   <div class="stack">
-                    <p class="hint">Na data escolhida, a multa passa a mostrar "Documentos: precisam ser conferidos de novo". É um lembrete seu, não é prazo legal.</p>
+                    <p class="hint">A partir do dia escolhido (data de Marília), a multa passa a mostrar "Documentos: precisam ser conferidos de novo" e entra em "A conferir". Vale o lembrete da conferência anotada por último: esta substitui {{ f.doc_review_on ? 'o atual, de ' ~ f.doc_review_on|br_date : 'qualquer lembrete anterior' }}. É um lembrete seu, não é prazo legal.</p>
                     <div class="field {{ ce.review_choice is defined ? 'has-error' }}">
                       <div class="checks checks--inline" role="radiogroup" aria-labelledby="lbl-review_choice" {% if ce.review_choice is defined %}aria-describedby="err-review_choice"{% endif %}>
                         {% for value, text in review_choices %}<label><input type="radio" {{ loop.first ? 'id=f-review_choice' }} name="review_choice" value="{{ value }}" data-review-choice {{ (cv.review_choice ?? '') == value ? 'checked' }}> {{ text }}</label>{% endfor %}

@@ -3,6 +3,21 @@
 Ambiente: Windows 11 + Docker Desktop 29.7.2; contêineres `php:8.5.11-apache-trixie` (PDO_FIREBIRD, fbclient 4.0.5)
 e `firebirdsql/firebird:5.0.4-trixie`. Data: 18/10/2026. Só está listado aqui o que de fato rodou.
 
+## Revisão de lógica e fluxos R01–R08 (24/10/2026)
+
+Projeto Compose isolado `pf-rev` (porta 8097; PHP 8.5.11, Firebird 5.0.4, perfil completo) sobre
+`claude/revisao-logica-fluxos-1024`, a partir de `main` em `6dd9eea`. [Evidência](evidencias/2026-10-24-revisao-logica-e-fluxos.md),
+[ADR-0023](adr/0023-revisao-de-logica-e-fluxos.md).
+
+| Verificação | Resultado |
+|---|---|
+| `vendor/bin/phpunit` | **278 testes, 1842 asserções, OK** |
+| Testes novos | `ReviewFlowsHttpTest` (R01, R02, R03, R06, R07, R08 pelo app Slim), `FinesTest` (retificação × fatos do andamento; lembrete posterior, virada do dia local, última conferência, nova identidade), `MaintenanceInvariantsTest` (início por situação; pendência atrás de 31 encerradas), `DomainRulesTest` (impedimento × tabela de transições), `FineRulesTest` (lembrete no próprio dia) |
+| `phpstan analyse` (nível 6) · `php-cs-fixer fix --dry-run` · `npm run build` (Node 24) | 0 erros · 0 de 131 · sem erros |
+| Migrações 0010 e 0011 | backup gbak antes; aplicadas sobre o banco populado com as mesmas contagens; segunda execução sem efeito |
+| Navegador (`scripts/verificacao-interface/revisao-fluxos.cjs`, Chromium headless) | 35 verificações OK, 0 erros de console e de CSP; 1440, 390 e 360 px |
+| Site publicado | **não verificado** (não implantado) |
+
 ## Acompanhamento dos alertas de agentes (24/10/2026)
 
 Projeto Compose isolado `pf-rev` (porta 8097; PHP 8.5.11, Firebird 5.0.4, perfil completo) sobre

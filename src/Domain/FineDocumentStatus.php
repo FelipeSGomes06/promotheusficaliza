@@ -72,4 +72,24 @@ final class FineDocumentStatus
 
         return $best;
     }
+
+    /**
+     * Conferência cujo lembrete está em vigor: a anotada por último (maior ID) na versão atual do sujeito, de qualquer
+     * momento. Cada conferência responde de novo "Quer ser lembrado?": a resposta mais recente substitui a anterior,
+     * inclusive "Não precisa"; as anteriores ficam no histórico.
+     *
+     * @param list<array<string, mixed>> $checks
+     * @return array<string, mixed>|null
+     */
+    public static function reminder(array $checks, int $subjectVersion): ?array
+    {
+        $last = null;
+        foreach ($checks as $check) {
+            if ((int) $check['subject_version'] === $subjectVersion && ($last === null || (int) $check['id'] > (int) $last['id'])) {
+                $last = $check;
+            }
+        }
+
+        return $last;
+    }
 }

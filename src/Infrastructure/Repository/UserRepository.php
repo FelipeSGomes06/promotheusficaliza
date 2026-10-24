@@ -26,7 +26,8 @@ final class UserRepository
     /** @return list<array<string, mixed>> */
     public function all(): array
     {
-        return array_map(self::trim(...), $this->db->all('SELECT ID, USERNAME, DISPLAY_NAME, ROLE, ACTIVE, LAST_LOGIN_AT, CREATED_AT FROM APP_USER ORDER BY USERNAME'));
+        return array_map(self::trim(...), $this->db->all('SELECT u.ID, u.USERNAME, u.DISPLAY_NAME, u.ROLE, u.ACTIVE, u.LAST_LOGIN_AT, u.CREATED_AT, u.PASSWORD_RESET_AT,
+            r.DISPLAY_NAME AS PASSWORD_RESET_BY_NAME FROM APP_USER u LEFT JOIN APP_USER r ON r.ID = u.PASSWORD_RESET_BY ORDER BY u.USERNAME'));
     }
 
     /**
@@ -51,6 +52,12 @@ final class UserRepository
     public function updateHash(int $id, string $hash): void
     {
         $this->db->execute('UPDATE APP_USER SET PASSWORD_HASH = ? WHERE ID = ?', [$hash, $id]);
+    }
+
+    /** Senha nova da mesma conta: avança CREDENTIAL_NO (encerra as sessões abertas) e grava autoria e instante. */
+    public function resetPassword(int $id, string $hash, int $by, string $at): void
+    {
+        $this->db->execute('UPDATE APP_USER SET PASSWORD_HASH = ?, CREDENTIAL_NO = CREDENTIAL_NO + 1, PASSWORD_RESET_AT = ?, PASSWORD_RESET_BY = ? WHERE ID = ?', [$hash, $at, $by, $id]);
     }
 
     public function touchLogin(int $id, string $at): void

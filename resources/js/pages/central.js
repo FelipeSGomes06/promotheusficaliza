@@ -93,6 +93,7 @@ function central() {
   let inflight = null; // { controller, seq, reason }
   let reqSeq = 0;
   let failures = 0;
+  let unconfirmed = null; // { key, what }: ação sem resposta, conferida no próximo retrato que chegar
   let nextAt = 0;
   let lastOkAt = Date.now();
   let knownAlerts = null;
@@ -257,7 +258,7 @@ function central() {
       const k = snap.kpis.equipment;
       this.kpi = {
         operational: k.operational, in_service: k.in_service, needs_attention: snap.needs_attention, urgent: snap.maintenance.urgent.length,
-        availability: pct(k.availability), availability_confirmed: pct(k.availability_confirmed), operational_unconfirmed: k.operational_unconfirmed,
+        availability: pct(k.availability), availability_confirmed: pct(k.availability_confirmed), operational_unconfirmed: k.operational_unconfirmed, operational_confirmed: k.operational_confirmed,
         total: k.total, not_installed: k.not_installed, deactivated: k.deactivated, unavailable: k.unavailable, failure: k.failure,
         maintenance: k.maintenance, stolen: k.stolen, agents_active: snap.kpis.agents.active, agents_total: snap.kpis.agents.total,
         agents_stale: snap.kpis.agents.position_not_current, upcoming: snap.maintenance.upcoming.length,
@@ -728,6 +729,12 @@ function central() {
         lastOkAt = Date.now();
         this.applySnapshot(snap, reason);
         if (window.__pfCentral) window.__pfCentral.applied += 1;
+        if (unconfirmed) {
+          // Retrato novo depois de uma ação sem resposta: a ficha e a lista já mostram se ela foi gravada.
+          toast({ type: 'warning', title: `${unconfirmed.what}: confira o resultado`, key: unconfirmed.key,
+            body: `O servidor não confirmou a ação. Dados atualizados às ${clock(snap.generated_at)}: veja na ficha se ela aparece antes de tentar novamente.` });
+          unconfirmed = null;
+        }
         if (recovered) {
           dismissToast('offline');
           toast({ type: 'success', title: 'Conexão restabelecida', body: `Dados atualizados às ${clock(snap.generated_at)}.`, key: 'online' });
@@ -818,7 +825,8 @@ function central() {
         if (res.status === 401 || res.status === 403) return { ok: false, message: data.error || 'Sua sessão expirou. Entre novamente para continuar.' };
         return { ok: res.ok && data.ok !== false, message: data.message || data.error || (res.ok ? '' : 'O servidor recusou a ação.') };
       } catch {
-        return { ok: false, message: 'Sem conexão: nada foi registrado. Tente de novo quando a conexão voltar.' };
+        // Sem resposta não dá para saber se o servidor gravou (a resposta pode ter se perdido depois do registro).
+        return { ok: false, unknown: true, message: 'Não foi possível confirmar o resultado. Atualize os dados antes de tentar novamente.' };
       } finally {
         setBusy(btn, false);
       }
@@ -830,9 +838,18 @@ function central() {
       if (result.ok) {
         toast({ type: 'success', title: 'Ciência registrada', body: result.message, key: `ack-${id}` });
         await this.load('action');
+      } else if (result.unknown) {
+        await this.unconfirmed(`ack-${id}`, 'Ciência', result.message);
       } else {
         toast({ type: 'error', title: 'Ciência não registrada', body: result.message, key: `ack-${id}` });
       }
+    },
+    /** Resultado desconhecido: avisa sem afirmar que nada mudou e reconfere o estado (de novo quando a conexão voltar). */
+    async unconfirmed(key, what, message) {
+      toast({ type: 'warning', title: `${what}: resultado não confirmado`, body: message, key, timeout: false,
+        actions: [{ label: 'Atualizar agora', onClick: (btn) => { setBusy(btn, true, 'Atualizando…'); this.load('manual').finally(() => setBusy(btn, false)); } }] });
+      unconfirmed = { key, what };
+      await this.load('action');
     },
     async simulateFailure(e) {
       const btn = e.currentTarget;
@@ -842,8 +859,10 @@ function central() {
       if (result.ok) {
         toast({ type: 'success', title: 'Falha simulada registrada', body: result.message, key: `sim-${id}` });
         await this.load('action');
+      } else if (result.unknown) {
+        await this.unconfirmed(`sim-${id}`, 'Falha simulada', result.message);
       } else {
-        toast({ type: 'error', title: 'A situação não mudou', body: result.message, key: `sim-${id}` });
+        toast({ type: 'error', title: 'Falha simulada não registrada', body: result.message, key: `sim-${id}` });
       }
     },
 

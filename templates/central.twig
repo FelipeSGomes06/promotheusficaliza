@@ -13,7 +13,7 @@
 
 {% macro kpis(k, snapshot, cls) %}
 <ul class="kpis {{ cls }}" aria-label="Resumo do filtro atual">
-  <li class="kpi"><span class="kpi__n"><span data-kpi="operational" x-text="kpi.operational">{{ k.operational }}</span><span class="muted">/</span><span data-kpi="in_service" x-text="kpi.in_service">{{ k.in_service }}</span></span><span class="kpi__label">funcionando<br>dos em serviço</span></li>
+  <li class="kpi"><span class="kpi__n"><span data-kpi="operational" x-text="kpi.operational">{{ k.operational }}</span><span class="muted">/</span><span data-kpi="in_service" x-text="kpi.in_service">{{ k.in_service }}</span></span><span class="kpi__label">operacionais<br><span data-kpi="operational_confirmed" x-text="kpi.operational_confirmed">{{ k.operational_confirmed }}</span> com sinal</span></li>
   <li><a class="kpi" href="{{ url('/', {atencao: '1'}) }}" @click.prevent="showAttention"><span class="kpi__n kpi__n--fail" data-kpi="needs_attention" x-text="kpi.needs_attention">{{ snapshot.needs_attention }}</span><span class="kpi__label">precisam<br>de atenção</span></a></li>
   <li><a class="kpi" href="{{ url('/manutencao') }}#urgentes"><span class="kpi__n kpi__n--warn" data-kpi="urgent" x-text="kpi.urgent">{{ snapshot.maintenance.urgent|length }}</span><span class="kpi__label">manutenções<br>urgentes</span></a></li>
 </ul>
@@ -28,9 +28,9 @@
   <h2 class="panel-title">{{ ui.icon('i-chart') }} Indicadores do filtro atual</h2>
   <dl class="indicators__body">
     <div><dt>Disponibilidade registrada: <span class="n" x-text="kpi.availability">{{ k.availability|pct }}</span></dt>
-      <dd>Funcionando ÷ em serviço. "Em serviço" = funcionando + mau funcionamento + manutenção + furtados.</dd></div>
+      <dd>Em situação operacional ÷ em serviço, pela situação registrada (com ou sem sinal recente). "Em serviço" = operacionais + mau funcionamento + manutenção + furtados.</dd></div>
     <div><dt>Confirmada por sinal recente: <span class="n" x-text="kpi.availability_confirmed">{{ k.availability_confirmed|pct }}</span></dt>
-      <dd>Só quem funciona e mandou sinal nos últimos 10 min. <span x-text="kpi.operational_unconfirmed">{{ k.operational_unconfirmed }}</span> funcionando sem sinal recente — não é falha.</dd></div>
+      <dd>Só os operacionais que mandaram sinal nos últimos 10 min. <span x-text="kpi.operational_unconfirmed">{{ k.operational_unconfirmed }}</span> operacionais sem sinal recente — não é falha.</dd></div>
     <div><dt>Equipamentos no filtro: <span class="n" x-text="kpi.total">{{ k.total }}</span></dt>
       <dd><span x-text="kpi.not_installed">{{ k.not_installed }}</span> não instalados e <span x-text="kpi.deactivated">{{ k.deactivated }}</span> desativados ficam fora da disponibilidade.</dd></div>
     <div><dt>Indisponíveis: <span class="n" x-text="kpi.unavailable">{{ k.unavailable }}</span></dt>

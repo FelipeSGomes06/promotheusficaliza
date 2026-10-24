@@ -44,7 +44,12 @@
       <legend><span class="form-step__n" aria-hidden="true">1</span> Ocorrência</legend>
       <div class="form-grid">
         {{ ui.select('infraction_kind', 'Tipo de infração', kinds, v.infraction_kind ?? '', errors, {empty: 'A definir', required: true, dataAttr: 'fine-kind', help: 'Categoria desta demonstração, não o catálogo nacional.'}) }}
-        {{ ui.input('occurred_at', 'Data e hora da ocorrência', v, errors, {type: 'datetime-local', required: true, help: 'Horário de Marília. Não pode estar no futuro.'}) }}
+        {# Fatos já anotados na situação da multa (FineService::FACT_DATES): a ocorrência não pode ficar depois deles. #}
+        {% set facts = existing ? [existing.autuation_issued_on, existing.autuation_received_on, existing.penalty_issued_on, existing.penalty_received_on, existing.paid_on, existing.contest_submitted_on, existing.contest_decided_on, existing.closed_on]|filter(d => d) : [] %}
+        {{ ui.input('occurred_at', 'Data e hora da ocorrência', v, errors, {type: 'datetime-local', required: true, help: facts is empty ? 'Horário de Marília. Não pode estar no futuro.' : 'Horário de Marília. Não pode estar no futuro nem depois do que já está anotado na situação da multa (a data mais antiga anotada é ' ~ min(facts)|br_date ~ ').'}) }}
+        {% if facts is not empty and errors.occurred_at is defined %}
+          <p class="hint span-2"><a href="{{ url('/multas/' ~ existing.id) }}#andamento" target="_blank" rel="noopener">Abrir a situação da multa em outra aba</a>: esta página continua com o que você digitou.</p>
+        {% endif %}
         {{ ui.input('legal_reference', 'Enquadramento informado', v, errors, {required: true, max: 120, help: 'Transcreva do documento. O sistema não sugere nem confere o enquadramento.'}) }}
         {{ ui.select('agency_id', 'Órgão autuador', agencyNames, v.agency_id ?? '', errors, {empty: 'Escolha…', required: true}) }}
         {# Opcionais e só transcritos: recolhidos, abertos quando já têm valor ou erro. #}

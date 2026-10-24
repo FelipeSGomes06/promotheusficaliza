@@ -28,8 +28,12 @@ final class SessionContext implements MiddlewareInterface
             $now = time();
             $idle = $now - (int) $this->session->get('last_activity', 0) > Session::IDLE_SECONDS;
             $tooOld = $now - (int) $this->session->get('auth_at', 0) > Session::ABSOLUTE_SECONDS;
+            $reset = false;
             try {
                 $user = ($idle || $tooOld) ? null : $this->auth->activeUser($userId);
+                // Senha redefinida depois deste login: a sessão deixa de valer (a pessoa entra com a senha nova).
+                $reset = $user !== null && (int) ($user['credential_no'] ?? 0) !== (int) $this->session->get('credential_no', 0);
+                $user = $reset ? null : $user;
             } catch (\Fiscaliza\Infrastructure\DatabaseUnavailable) {
                 // Banco fora: a conta não pôde ser conferida; RequireRole exibirá a página de indisponibilidade.
                 return $handler->handle($request->withAttribute('session', $this->session)->withAttribute('user', null)->withAttribute('database_unavailable', true));
@@ -37,7 +41,7 @@ final class SessionContext implements MiddlewareInterface
             if ($user === null) {
                 $this->session->remove('user_id');
                 $this->session->regenerate();
-                $this->session->flash('warning', 'Sua sessão expirou. Entre novamente para continuar.');
+                $this->session->flash('warning', $reset ? 'A senha desta conta foi redefinida pelo administrador. Entre com a senha nova.' : 'Sua sessão expirou. Entre novamente para continuar.');
             } else {
                 $this->session->set('last_activity', $now);
             }
