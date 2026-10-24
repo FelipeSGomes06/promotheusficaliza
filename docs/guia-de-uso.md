@@ -28,8 +28,9 @@ Situações usadas em todas as telas, sempre com texto e símbolo além da cor:
 - **Barra superior:** título, "Atualizado às…" (ponto verde; âmbar quando atrasado ou sem conexão), **Atualizar agora**
   (mostra um indicador enquanto busca) e **Pausar/Retomar** a atualização automática; aviso **Demonstração**.
 - **Resumos** (acima da lista; no celular, abaixo do título): equipamentos em serviço funcionando, recursos que precisam
-  de atenção (toque para filtrar) e manutenções urgentes (leva à Manutenção). O botão ⓘ abre as fórmulas e a tabela
-  por bairro.
+  de atenção (toque para filtrar) e manutenções urgentes que ainda não começaram (leva à seção Urgentes da
+  Manutenção, que mostra as mesmas ordens; a já iniciada fica em "Em andamento"). O botão ⓘ abre as fórmulas e a
+  tabela por bairro.
 - **Filtros (chips):** busca (endereço, tipo, código ou nome, sem precisar de acentos), **Tipo** e **Situação** (marque
   um ou vários), **Precisa de atenção** e **Mais filtros** (bairro e órgão). Cada filtro ativo vira um chip com ×
   logo abaixo; **Limpar tudo** volta ao início. Mapa, lista e números mudam juntos, e a lista se reorganiza com uma
@@ -47,7 +48,8 @@ Situações usadas em todas as telas, sempre com texto e símbolo além da cor:
   aviso fica em vermelho até você fechar.
 - **Números redondos no mapa** juntam recursos próximos: toque para aproximar; se estiverem no mesmo ponto, aparece
   uma lista para escolher. O "!" indica que algum deles precisa de atenção.
-- **Formas no mapa** (ver **Legenda**): quadrado = equipamento no local de instalação; borda tracejada = local
+- **Formas no mapa** (ver **Legenda**): quadrado = local de instalação do equipamento (furtado: o ponto é de onde foi
+  levado; a localização atual é desconhecida); borda tracejada = local
   planejado (não instalado); círculo = agente ou veículo na última posição recebida; borda pontilhada com ⌛ = posição
   antiga; "B" = base de trabalho, quando não há posição recente.
 - Recursos sem coordenadas aparecem só na lista (o mapa avisa quantos são). Se o mapa de fundo não carregar, os pontos,
@@ -68,7 +70,8 @@ quando for o caso, "Sinal atrasado", "Sem sinal recente (não indica falha)" ou 
 busca, tipo e situação; em **Mais filtros**, bairro, órgão, ordenação e **Mostrar só arquivados**.
 
 **Ficha.** De cima para baixo: o que é e onde está (título, código, órgão), situação e atualidade; **Próxima ação**
-(uma só: concluir a intervenção em andamento, iniciar uma ordem urgente, abrir corretiva, registrar instalação ou
+(uma só: concluir a intervenção em andamento, decidir reposição ou baixa de um furtado, iniciar uma ordem urgente,
+abrir corretiva, registrar instalação ou entrada em operação, avaliar a inspeção que a revisão recomendada sugere ou
 "nada pendente"); manutenção; histórico; à direita, onde está (com **Ver no mapa**), cadastro, revisão recomendada,
 alertas e **Mais ações** (mudar situação, simular falha, arquivar).
 
@@ -112,7 +115,13 @@ conflito; concluir uma instalação (planejado → instalado) causa, porque muda
 
 **Mais ações → Mudar situação**: só aparecem as mudanças possíveis a partir da situação atual, e o motivo é
 obrigatório (fica no histórico). Instalar = "Não instalado" → "Operacional" (o local planejado vira local de
-instalação e a data é registrada). Com intervenção em execução, a situação só muda ao concluí-la.
+instalação e a data é registrada; em veículo e patinete, a data de entrada em operação). Repor um furtado ou um
+desativado = "Não instalado": o local de instalação volta a ser o local planejado da nova instalação. Com intervenção
+em execução, a situação só muda ao concluí-la.
+
+**Situação × local.** Operacional, mau funcionamento, em manutenção e furtado usam "local de instalação"; não
+instalado usa "local planejado"; desativado aceita os dois. O formulário acompanha a situação escolhida e o servidor
+recusa a combinação incoerente ("Equipamento "Operacional" já foi instalado…").
 
 ### Arquivamento
 
@@ -155,7 +164,8 @@ Registro **demonstrativo** de infrações informadas à mão: nada é consultado
 protocolado ([ADR-0017](adr/0017-aba-multas.md)). Use só dados fictícios.
 
 - **Lista:** três resumos do mesmo filtro da lista — registros, **a conferir** (rascunhos, documentação não verificada
-  ou com pendência, lembrete de conferir de novo que passou, dados do medidor ou evidência a conferir) e **pagamento informado**
+  ou com pendência sem regularização informada depois, lembrete de conferir de novo que passou, dados do medidor ou
+  evidência a conferir em excesso de velocidade) e **pagamento informado**
   (lançado à mão; não é arrecadação). Busca por código interno (`DEMO-MUL-000023`), AIT, placa ou RENAVAM; origem e
   etapa à mão; em **Mais filtros**, período da ocorrência, órgão autuador, radar, agente (da constatação ou operador do
   radar), documentação, pagamento, rascunhos/cancelados e ordem. A URL guarda os filtros, e a ficha volta para eles.
@@ -164,7 +174,8 @@ protocolado ([ADR-0017](adr/0017-aba-multas.md)). Use só dados fictícios.
   pode mudá-la), mas o que for preenchido precisa estar bem formado. Campos opcionais ou alternativos ficam recolhidos
   e abrem com um clique: código da infração, "Não tem o número do AIT?", "Não tem o RENAVAM?", operador associado ao
   radar, cor e ano. A observação sobre a origem só aparece quando o órgão autuador difere do órgão do radar ou do
-  agente (é quando ela é exigida). Escolha
+  agente, ou quando o cadastro do radar não tem a função da infração escolhida (é quando ela é exigida: o cadastro
+  pode ter mudado desde o fato, então a explicação basta). Escolha
   **Radar** (do inventário; pode indicar o agente operador do medidor) ou **Agente de trânsito**; com JavaScript, o bloco
   da outra origem some e não é enviado, e o que foi digitado nele volta se você trocar de ideia. Sem JavaScript, os dois
   blocos aparecem: preencha só o da origem escolhida. Velocidades (regulamentada, medida, considerada) só em excesso de
@@ -250,15 +261,18 @@ Planejamento preventivo semanal ([método e resultados](planejamento-por-setores
   **Confirmar missão**. Se faltar algo, a tela volta no passo 3 com o aviso junto do campo e o que você digitou. A
   missão guarda o quadrado e o setor.
 - **Missões:** "agente → quadrado", situação, quem confirmou; **Concluir** ("como foi?") ou **Cancelar** ("por quê?")
-  liberam o agente. **Detalhes e histórico** mostra o motivo registrado e as transições. Se duas pessoas confirmarem o
+  liberam o agente. A missão começa ao confirmar, não tem horário e não expira sozinha: "designado" não quer dizer
+  que o agente já chegou, e uma missão de semana encerrada ainda confirmada aparece com o aviso "o agente continua
+  reservado". **Detalhes e histórico** mostra o motivo registrado e as transições. Se duas pessoas confirmarem o
   mesmo agente ao mesmo tempo, só uma vale.
 - **Semana encerrada:** a tela avisa e não confirma missões até a atualização seguinte.
 
 ### Retrospecto (`/planejar/retrospecto`)
 
 Faixa tracejada grafite/turquesa = **histórico**, não a previsão atual. Escolha a semana do teste de 2025 (ou use
-semana anterior/próxima). A tabela mostra a previsão do **modelo congelado em 01/01/2025** e as contagens de
-entrada daquela semana; a coluna "Registrado" fica **oculta** até **Revelar o que foi registrado** (os números nem
+semana anterior/próxima). O método foi **escolhido e fixado em 01/01/2025**, antes do teste; cada semana é
+calculada com os registros que já estariam publicados no início dela (ex.: semana de 10/11/2025 → registros até
+31/08/2025), e a faixa mostra essas duas datas; a coluna "Registrado" fica **oculta** até **Revelar o que foi registrado** (os números nem
 são enviados antes). Depois, a página diz quantos registros houve e quantos caíram no setor priorizado por cada
 método. Abaixo, sempre, o resultado do teste inteiro e os limites — uma semana isolada não prova nada.
 

@@ -8,6 +8,8 @@
 {% set scheduled = orders|filter(o => o.state == 'ABERTA') %}
 {% set urgent = scheduled|filter(o => o.priority == 'IMEDIATA' or o.due_date < today)|first %}
 {% set nextOrder = urgent ?: scheduled|sort((a, b) => (a.due_date ?? '') <=> (b.due_date ?? ''))|first %}
+{% set inPlace = running ?: nextOrder %}
+{% set mobile = type and type.mobile %}
 {% set editable = app.user and not e.archived_at %}
 {% set eventLabels = {CADASTRO: 'Cadastro', ALTERACAO: 'Alteração do cadastro', SITUACAO: 'Situação', MANUTENCAO_ABERTA: 'Ordem aberta', MANUTENCAO_INICIADA: 'Intervenção iniciada', MANUTENCAO_CONCLUIDA: 'Ordem concluída', MANUTENCAO_CANCELADA: 'Ordem cancelada', ARQUIVAMENTO: 'Arquivamento', POSICAO: 'Posição'} %}
 {% set sourceLabels = {MANUAL: 'por pessoa', SIMULADOR: 'pelo simulador', SEMENTE: 'carga da demonstração', SISTEMA: 'pelo sistema'} %}
@@ -42,6 +44,12 @@
           <p class="muted">Em execução desde {{ running.started_at|local_dt }}. Ao concluir, a situação que você informar passa a valer para o equipamento — concluir não prova que ele voltou a funcionar.</p>
           {% if editable %}<a class="btn btn--primary" href="#ordem-{{ running.id }}">Ir para a conclusão</a>{% endif %}
         </section>
+      {% elseif e.status == 'FURTADO' %}
+        <section class="next-action" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
+          <p class="next-action__what">Decidir a reposição ou a baixa</p>
+          <p class="muted">Registrado como furtado em {{ e.status_changed_at|local_dt }}; a localização atual é desconhecida. Quando houver decisão, mude a situação para "Não instalado" (repor{{ mobile ? '' : ' neste local' }}) ou "Desativado" (baixa).</p>
+          {% if editable %}<a class="btn" href="#mais-acoes">Mudar situação</a>{% endif %}
+        </section>
       {% elseif urgent %}
         <section class="next-action next-action--urgent" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
           <p class="next-action__what">Iniciar a ordem #{{ urgent.id }}: {{ urgent.kind == 'PREVENTIVA' ? 'preventiva' : 'corretiva' }} {{ urgent.priority == 'IMEDIATA' ? 'imediata' : 'vencida em ' ~ urgent.due_date|br_date }}</p>
@@ -56,14 +64,20 @@
         </section>
       {% elseif e.status == 'NAO_INSTALADO' %}
         <section class="next-action" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
-          <p class="next-action__what">Registrar a instalação quando ela acontecer</p>
-          <p class="muted">Ao mudar a situação para "Operacional", o local planejado passa a ser o local de instalação.</p>
+          <p class="next-action__what">{{ mobile ? 'Registrar a entrada em operação quando ela acontecer' : 'Registrar a instalação quando ela acontecer' }}</p>
+          <p class="muted">{{ mobile ? 'Mude a situação para "Operacional": a base continua a mesma e a data de entrada em operação é registrada.' : 'Ao mudar a situação para "Operacional", o local planejado passa a ser o local de instalação.' }}</p>
           {% if editable %}<a class="btn" href="#mais-acoes">Mudar situação</a>{% endif %}
+        </section>
+      {% elseif not nextOrder and analysis and analysis.attention == 'ALTA' and e.status == 'OPERACIONAL' %}
+        <section class="next-action next-action--calm" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
+          <p class="next-action__what">Avaliar a inspeção preventiva sugerida</p>
+          <p class="muted">Sem ordens abertas. A revisão recomendada sugere inspecionar nos próximos 7 dias (prioridade {{ analysis.score }}/100, índice heurístico calculado em {{ analysis.as_of|local_dt }}): é uma sugestão, não um prazo.</p>
+          {% if editable %}<a class="btn" href="#nova-ordem">Abrir ordem preventiva</a>{% endif %}
         </section>
       {% else %}
         <section class="next-action next-action--calm" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
           <p class="next-action__what">{{ nextOrder ? 'Próxima manutenção: ordem #' ~ nextOrder.id ~ (nextOrder.due_date ? ', programada para ' ~ nextOrder.due_date|br_date : '') : 'Nada pendente agora' }}</p>
-          <p class="muted">{{ nextOrder ? 'Agendar não tira o equipamento de operação.' : 'Sem ordens abertas. Acompanhe o sinal e as revisões recomendadas.' }}</p>
+          <p class="muted">{{ nextOrder ? 'Agendar não tira o equipamento de operação.' : (status.expectsSignal() ? 'Sem ordens abertas. Acompanhe o sinal e as revisões recomendadas.' : 'Sem ordens abertas. Nesta situação não há sinal a acompanhar.') }}</p>
         </section>
       {% endif %}
 
@@ -161,7 +175,7 @@
             <dt>Base</dt><dd>{{ e.lat is null ? 'sem coordenadas' : 'endereço acima (onde o recurso fica guardado)' }}</dd>
             <dt>Última posição</dt><dd>{{ e.pos_lat is null ? 'nenhuma recebida' : 'recebida ' ~ e.pos_observed_at|local_dt }}{% if e.pos_lat is not null %} · {{ ui.freshness(position_freshness.value, e.pos_observed_at, 'Posição') }}{% endif %}</dd>
           {% else %}
-            <dt>Local</dt><dd>{{ e.lat is null ? 'sem coordenadas: aparece só na lista' : (e.location_kind == 'PLANEJADO' ? 'planejado (ainda não instalado)' : 'local de instalação') }}</dd>
+            <dt>Local</dt><dd>{{ e.lat is null ? 'sem coordenadas: aparece só na lista' : (e.location_kind == 'PLANEJADO' ? 'planejado (ainda não instalado)' : (e.status == 'FURTADO' ? 'local de instalação; localização atual desconhecida após o furto' : 'local de instalação')) }}</dd>
           {% endif %}
         </dl>
         {% if e.lat is not null and not e.archived_at %}<p><a class="btn btn--small" href="{{ url('/', {selecionar: 'EQUIPAMENTO:' ~ e.id}) }}">{{ ui.icon('i-map') }}Ver no mapa</a></p>{% endif %}
@@ -176,7 +190,7 @@
           <dt>Série</dt><dd>{{ e.serial_number ?? 'desconhecida' }}</dd>
           <dt>Patrimônio</dt><dd>{{ e.asset_tag ?? '—' }}</dd>
           <dt>Órgão</dt><dd>{{ e.agency_name }}</dd>
-          <dt>Instalado em</dt><dd>{{ e.installed_on|br_date }}</dd>
+          <dt>{{ mobile ? 'Em operação desde' : 'Instalado em' }}</dt><dd>{{ e.installed_on|br_date }}</dd>
           <dt>Preventiva</dt><dd>{{ e.maint_interval_days ? 'a cada ' ~ e.maint_interval_days ~ ' dias' : 'sem periodicidade' }}</dd>
           {% for s in specs %}<dt>{{ s.label }}</dt><dd>{{ s.value }}</dd>{% endfor %}
         </dl>
@@ -191,7 +205,7 @@
         <p>{{ ui.status(analysis.attention, attentionLabels[analysis.attention] ?? analysis.attention|capitalize) }}{% if analysis.score is not null %} <span class="hint">prioridade sugerida {{ analysis.score }}/100 — índice heurístico, não é probabilidade</span>{% endif %}</p>
         <ul class="factor-list">{% for f in analysis.factors %}<li>{{ f.label }}{% if f.points %} (+{{ f.points }}){% endif %}</li>{% else %}<li>Nenhum fator de risco no histórico.</li>{% endfor %}
           {% for a in analysis.admin_flags %}<li class="muted">{{ a }}</li>{% endfor %}</ul>
-        <p class="hint">{{ analysis.recommendation }} Calculado em {{ analysis.as_of|local_dt }} sobre histórico sintético. <a href="{{ url('/antecipacao') }}">Como funciona</a></p>
+        <p class="hint">{% if inPlace and analysis.attention in ['ALTA', 'MODERADA'] %}{{ ui.order_advice(inPlace, '#ordem-' ~ inPlace.id, today, analysis.attention, analysis.as_of|local_dt('Y-m-d')|date_modify('+7 days')|date('Y-m-d')) }}{% else %}{{ analysis.recommendation }}{% endif %} Calculado em {{ analysis.as_of|local_dt }} sobre histórico sintético. <a href="{{ url('/antecipacao') }}">Como funciona</a></p>
       </section>
       {% endif %}
 

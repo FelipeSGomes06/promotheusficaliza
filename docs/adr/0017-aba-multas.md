@@ -77,3 +77,15 @@ demonstração manual: nada é consultado no Detran/Senatran, emitido, cobrado o
   (ver limites no pacote de planejamento, documento 06).
 - Rascunhos podem ficar incompletos; o banco garante, por CHECK, os campos mínimos de um registro e a coerência da
   origem e das velocidades.
+
+## Adendo (24/10/2026) — revisão da auditoria de interface do Codex
+
+- **Pendência regularizada depois:** a pendência documental no dia da multa deixa de contar em "A conferir" quando a
+  última conferência "depois da multa" da mesma identidade informa "Em dia". A situação no dia da multa continua "Com
+  pendência" (selo, ficha, filtro). A leitura traz `LATER_DOC_STATUS` por subconsulta (sem coluna nova); a migração
+  0008 só recontou o `ATTENTION_COUNT` dos registros já gravados.
+- **Medidor fora de velocidade:** registro no Inmetro, certificado e verificação metrológica aparecem como "não se
+  aplica a esta infração" fora de excesso de velocidade, como a regra de "A conferir" já tratava.
+- **Radar sem a função da infração:** registrar ou retificar exige a observação sobre a origem quando as funções do
+  cadastro do radar não incluem o tipo da infração — o mesmo tratamento do órgão divergente: o cadastro atual pode ter
+  mudado desde o fato, então a explicação basta e nada é bloqueado.

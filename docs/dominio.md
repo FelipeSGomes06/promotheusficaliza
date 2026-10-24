@@ -58,7 +58,11 @@ desenhar ícone (`icons.svg#i-<TIPO>`) e miniatura (`miniaturas/<tipo>.svg`). Es
 | Desativado | ✓ | | | | | ✓ |
 | Furtado | | | | ✓ | | ✓ (reposição) |
 
-- Instalar move o local "planejado" para "instalado" e registra a data.
+- Instalar move o local "planejado" para "instalado" e registra a data. Voltar para "Não instalado" (reposição de
+  furtado ou desativado) faz o inverso: o ponto continua, como local planejado. Equipamento fixo em serviço
+  (operacional, falha, manutenção, furtado) só aceita local instalado; não instalado, só planejado; desativado, os dois.
+- `INSTALLED_ON` é o início de operação no ponto: instalação, para fixo; entrada em operação, para veículo e patinete
+  (registrada ao passar de "Não instalado" para "Operacional", se ainda não houver data).
 - **Telemetria** só alterna Operacional ↔ Falha. Manutenção, desativado, furtado e não instalado são
   **administrativos**: eventos de telemetria contra eles ficam só no histórico.
 - Agendar manutenção não muda a situação; **iniciar** a intervenção põe em manutenção; **concluir** exige informar a
@@ -106,7 +110,7 @@ Calculados em [`Indicators`](../src/Domain/Indicators.php) sobre o conjunto filt
 | Disponibilidade confirmada | operacionais com sinal atual ÷ em serviço. |
 | Sem denominador | "não se aplica" (nunca 0% ou 100%). |
 | Agentes ativos | agentes não arquivados "em atividade" no filtro (unidade própria). |
-| Manutenção urgente | ordens abertas imediatas ou vencidas; próximas: programadas de hoje até 7 dias. |
+| Manutenção urgente | ordens agendadas (ainda não iniciadas) imediatas ou vencidas — o mesmo conjunto da seção Urgentes da Manutenção; próximas: agendadas de hoje até 7 dias. A já iniciada conta em "Em andamento" e o equipamento, em manutenção, entra em "precisam de atenção". |
 | Precisam de atenção | recursos em mau funcionamento, manutenção ou furto, agente indisponível, manutenção imediata/vencida ou com alerta aberto (inclusive "sem sinal/posição recente", que não confirma falha). Cada recurso traz os motivos em texto. |
 
 **Escopo dos filtros.** Equipamentos entram se o filtro de tipo (quando houver) tiver algum tipo de equipamento e o

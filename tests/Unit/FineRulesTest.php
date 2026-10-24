@@ -172,6 +172,20 @@ final class FineRulesTest extends TestCase
         self::assertStringContainsString('posterior à ocorrência', $later[0]);
     }
 
+    public function testPendingDocumentsStopNeedingAttentionOnlyWhenRegularityIsInformedLater(): void
+    {
+        $pending = self::complete(['record_state' => 'REGISTRADO', 'occ_doc_status' => 'PENDENCIA_INFORMADA']);
+        self::assertCount(1, FineRules::attention($pending), 'pendência sem conferência posterior');
+        self::assertCount(1, FineRules::attention($pending + ['later_doc_status' => 'PENDENCIA_INFORMADA']), 'ainda com pendência depois');
+        self::assertCount(1, FineRules::attention($pending + ['later_doc_status' => 'NAO_VERIFICADA']));
+        self::assertSame([], FineRules::attention($pending + ['later_doc_status' => 'REGULARIDADE_INFORMADA']), 'regularizada depois: nada a acompanhar');
+        self::assertCount(
+            1,
+            FineRules::attention(self::complete(['record_state' => 'REGISTRADO', 'occ_doc_status' => 'NAO_VERIFICADA', 'later_doc_status' => 'REGULARIDADE_INFORMADA'])),
+            'regularidade posterior não diz nada sobre o dia da multa',
+        );
+    }
+
     public function testReviewReminderAnswerBecomesADateCountedFromToday(): void
     {
         self::assertSame('2026-11-17', FineDocumentStatus::reviewOn('30', null, '2026-10-18'));

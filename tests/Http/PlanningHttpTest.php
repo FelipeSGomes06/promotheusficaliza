@@ -135,6 +135,10 @@ final class PlanningHttpTest extends FirebirdTestCase
         self::assertStringContainsString('Missão fictícia #', $page);
         self::assertStringContainsString('Hermes 10 → Setor sudoeste', $page, 'missão sem quadrado mostra o setor');
         self::assertStringContainsString('&lt;b&gt;reforço&lt;/b&gt;', $page, 'observação escapada');
+        self::assertStringNotContainsString('A semana desta missão terminou', $page);
+        // A missão não expira sozinha: depois do fim (exclusivo) da semana, a tela avisa que o agente segue reservado.
+        $this->clock->set(new \DateTimeImmutable('2026-10-27 03:00:00', Time::utc()));
+        self::assertStringContainsString('A semana desta missão terminou e o agente continua reservado', (string) $this->request('GET', '/planejar')->getBody());
 
         $id = (int) $this->services->database()->value('SELECT ID FROM URBAN_MISSION');
         self::assertSame(303, $this->request('POST', "/planejar/missoes/{$id}/concluir", ['_csrf' => $this->session->csrfToken(), 'reason' => 'ronda feita'])->getStatusCode());
@@ -190,6 +194,12 @@ final class PlanningHttpTest extends FirebirdTestCase
         self::assertStringNotContainsString('Poisson', $revealed);
         self::assertStringContainsString('233 de 626 · 37,2%', $revealed);
         self::assertStringContainsString('<option value="2025-12-22"', $hidden, 'todas as semanas do teste navegáveis');
+
+        // Três datas distintas: método fixado antes do teste, semana prevista e corte dos dados usados nela.
+        $november = (string) $this->request('GET', '/planejar/retrospecto?semana=2025-11-10')->getBody();
+        self::assertStringContainsString('Escolhido e fixado em 01/01/2025', $november);
+        self::assertStringContainsString('Calculada com os registros até 31/08/2025', $november);
+        self::assertStringNotContainsString('só com o que se sabia até então', $november);
     }
 
     private function import(): int

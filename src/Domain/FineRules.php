@@ -187,7 +187,7 @@ final class FineRules
      * só os motivos que não dependem do dia (base da contagem gravada em ATTENTION_COUNT). Nenhum motivo significa
      * "multa inválida": são pendências de cadastro ou de conferência.
      *
-     * @param array<string, mixed> $f projeção atual (record_state, occ_doc_status, occ_doc_review_on e campos do cadastro)
+     * @param array<string, mixed> $f projeção atual (record_state, occ_doc_status, occ_doc_review_on, later_doc_status e campos do cadastro)
      * @return list<string>
      */
     public static function attention(array $f, ?string $today = null): array
@@ -203,8 +203,9 @@ final class FineRules
         $doc = $f['occ_doc_status'] ?? FineDocumentStatus::NOT_CHECKED;
         if ($doc === FineDocumentStatus::NOT_CHECKED) {
             $reasons[] = 'Documentos do carro no dia da multa ainda não conferidos.';
-        } elseif ($doc === FineDocumentStatus::PENDING) {
-            $reasons[] = 'Documentos do carro com pendência no dia da multa.';
+        } elseif ($doc === FineDocumentStatus::PENDING && ($f['later_doc_status'] ?? null) !== FineDocumentStatus::REGULAR) {
+            // A pendência pede acompanhamento até alguém informar a regularização; a do dia da multa continua registrada.
+            $reasons[] = 'Documentos do carro com pendência no dia da multa, sem regularização informada depois.';
         }
         $review = $f['occ_doc_review_on'] ?? null;
         if ($today !== null && is_string($review) && $review !== '' && $review < $today) {

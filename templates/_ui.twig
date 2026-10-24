@@ -28,6 +28,13 @@
 {%- endmacro %}
 
 {# Origem de cada camada de dados (texto, não só cor): contagens reais agregadas × operação fictícia. #}
+{# Revisão recomendada × ordem que já existe para o equipamento (aberta ou em execução): o que fazer com ela.
+   ALTA pede revisão até o fim da janela de 7 dias; uma ordem marcada para depois pode ser iniciada antes da data. #}
+{% macro order_advice(o, href, today, attention, windowEnd) -%}
+{%- set late = attention == 'ALTA' and o.state == 'ABERTA' and o.priority != 'IMEDIATA' and o.due_date > windowEnd -%}
+Já existe a ordem <a href="{{ href }}">#{{ o.id }}, {{ o.kind == 'PREVENTIVA' ? 'preventiva' : 'corretiva' }} {{ o.state == 'EM_EXECUCAO' ? 'em execução' : (o.priority == 'IMEDIATA' ? 'imediata' : (o.due_date < today ? 'vencida em ' : 'para ') ~ o.due_date|br_date) }}</a>{{ late ? ', depois da janela de 7 dias: se a revisão não puder esperar, inicie essa ordem antes da data em vez de abrir outra.' : '; use-a em vez de agendar outra inspeção.' }}
+{%- endmacro %}
+
 {% macro origin_real() %}<span class="origin origin--real"><span class="origin__g" aria-hidden="true">◆</span>Real agregado · Infosiga-SP</span>{% endmacro %}
 {% macro origin_demo() %}<span class="origin origin--demo"><span class="origin__g" aria-hidden="true">◇</span>Fictício</span>{% endmacro %}
 

@@ -77,6 +77,7 @@
         <section class="next-action next-action--calm" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
           <p class="next-action__what">Acompanhar o andamento informado</p>
           <p class="muted">Nada pendente de cadastro ou conferência. <a href="#andamento">Atualizar situação</a> quando chegar nova informação.</p>
+          {% if f.occ_doc_status == 'PENDENCIA_INFORMADA' %}<p class="muted">A pendência dos documentos no dia da multa continua registrada; a regularização informada depois encerrou o acompanhamento.</p>{% endif %}
         </section>
       {% endif %}
       {% if active and attention is not empty and f.record_state == 'RASCUNHO' %}
@@ -330,13 +331,15 @@
         {% endif %}
         {% if f.source_note %}<p class="hint">Observação: {{ f.source_note }}</p>{% endif %}
         {% if f.source_kind == 'RADAR' %}
+          {# Inmetro e verificação metrológica são do medidor de velocidade: só faltam ("a conferir") em excesso de velocidade, como em FineRules::attention. #}
+          {% set missingMeter = f.infraction_kind == 'VELOCIDADE' ? 'a conferir' : 'não se aplica a esta infração' %}
           <h3 class="form-sub">Medidor e evidência</h3>
           <dl class="facts">
             <dt>Medidor</dt><dd>{{ f.radar_details.meter_kind ?? 'não informado' }}</dd>
-            <dt>Registro Inmetro</dt><dd>{{ f.radar_details.inmetro_record ?? 'a conferir' }}</dd>
-            <dt>Certificado</dt><dd>{{ f.radar_details.certificate ?? 'a conferir' }}</dd>
-            <dt>Última verificação</dt><dd>{{ f.radar_details.verified_on is defined ? f.radar_details.verified_on|br_date : 'a conferir' }}</dd>
-            <dt>Evidência</dt><dd>{{ f.evidence_reference ?? 'a conferir' }}</dd>
+            <dt>Registro Inmetro</dt><dd>{{ f.radar_details.inmetro_record ?? missingMeter }}</dd>
+            <dt>Certificado</dt><dd>{{ f.radar_details.certificate ?? missingMeter }}</dd>
+            <dt>Última verificação</dt><dd>{{ f.radar_details.verified_on is defined ? f.radar_details.verified_on|br_date : missingMeter }}</dd>
+            <dt>Evidência</dt><dd>{{ f.evidence_reference ?? (f.infraction_kind == 'VELOCIDADE' ? 'a conferir' : 'não informada') }}</dd>
           </dl>
         {% endif %}
       </section>

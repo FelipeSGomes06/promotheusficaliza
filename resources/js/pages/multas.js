@@ -38,8 +38,13 @@ function sourceForm(form) {
   const note = form.querySelector('[data-source-note]');
   const agency = form.querySelector('#f-agency_id');
   form.querySelectorAll('[data-fine-nojs]').forEach((n) => { n.hidden = true; });
-  // Mesma comparação de FineService::divergence: órgão autuador diferente do órgão do radar ou do agente escolhido.
+  // Mesmas comparações de FineService::divergence: órgão autuador diferente do órgão do radar ou do agente escolhido,
+  // ou radar sem a função da infração no cadastro.
   const agencyOf = (select) => select?.selectedOptions[0]?.dataset.agency ?? '';
+  const radarLacks = () => {
+    const option = form.querySelector('#f-equipment_id')?.selectedOptions[0];
+    return Boolean(option?.value) && Boolean(kind?.value) && kind.value !== 'OUTRA' && !(option.dataset.functions ?? '').split(' ').includes(kind.value);
+  };
   const update = (animate = true) => {
     const source = Array.from(radios).find((r) => r.checked)?.value ?? '';
     blocks.forEach((b) => reveal(b, b.dataset.sourceBlock === source, animate));
@@ -50,7 +55,7 @@ function sourceForm(form) {
     }
     if (note) {
       const resource = { RADAR: agencyOf(form.querySelector('#f-equipment_id')), AGENTE: agencyOf(form.querySelector('#f-agent_id')) }[source] ?? '';
-      reveal(note, (resource !== '' && agency?.value !== '' && resource !== agency?.value) || filled(note), animate);
+      reveal(note, (resource !== '' && agency?.value !== '' && resource !== agency?.value) || (source === 'RADAR' && radarLacks()) || filled(note), animate);
     }
   };
   form.addEventListener('change', () => update());

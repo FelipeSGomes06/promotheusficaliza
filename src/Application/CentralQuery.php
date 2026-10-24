@@ -168,6 +168,7 @@ final class CentralQuery
             'maintenance' => $top === null ? null : [
                 'urgency' => $top['urgency']->value, 'label' => $top['urgency']->label(), 'due_date' => $top['due_date'],
                 'reason' => $top['reason'], 'order_id' => (int) $top['id'], 'state' => $top['state'], 'open_orders' => count($orders),
+                'urgent_waiting' => array_filter($orders, static fn($o) => $o['state'] === 'ABERTA' && $o['urgency']->isUrgent()) !== [],
             ],
             'alerts' => count($alertReasons),
             'attention' => $attention,
@@ -286,7 +287,7 @@ final class CentralQuery
                 $regions[$key]['operational'] += (int) ($status === EquipmentStatus::Operacional);
                 $regions[$key]['in_service'] += (int) $status->isInService();
                 $regions[$key]['unavailable'] += (int) $status->isUnavailable();
-                $regions[$key]['urgent_maintenance'] += (int) in_array($r['maintenance']['urgency'] ?? null, ['IMEDIATA', 'VENCIDA'], true);
+                $regions[$key]['urgent_maintenance'] += (int) ($r['maintenance']['urgent_waiting'] ?? false);
             } else {
                 $regions[$key]['agents_active'] += (int) ($r['status'] === AgentStatus::EmAtividade->value);
             }
@@ -313,9 +314,13 @@ final class CentralQuery
             'state' => $o['state'], 'region' => $o['region_name'],
         ];
 
+        // Só ordens aguardando início, como nas seções Urgentes e Próximos 7 dias da Manutenção: a já iniciada fica em
+        // "Em andamento" lá e o equipamento aparece aqui como "Em manutenção".
+        $waiting = array_filter($orders, static fn($o) => $o['state'] === 'ABERTA');
+
         return [
-            'urgent' => array_values(array_map($shape, array_filter($orders, static fn($o) => $o['urgency']->isUrgent()))),
-            'upcoming' => array_values(array_map($shape, array_filter($orders, static fn($o) => $o['urgency'] === MaintenanceUrgency::Proxima))),
+            'urgent' => array_values(array_map($shape, array_filter($waiting, static fn($o) => $o['urgency']->isUrgent()))),
+            'upcoming' => array_values(array_map($shape, array_filter($waiting, static fn($o) => $o['urgency'] === MaintenanceUrgency::Proxima))),
         ];
     }
 }

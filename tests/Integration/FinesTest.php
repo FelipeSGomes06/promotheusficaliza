@@ -218,6 +218,48 @@ final class FinesTest extends FirebirdTestCase
         self::assertSame([2, 'REGULARIDADE_INFORMADA'], [(int) $this->services->fineRepository()->find($id)['subject_version'], $this->services->fineRepository()->find($id)['occ_doc_status']]);
     }
 
+    public function testPendingOnTheOccurrenceDayLeavesToReviewOnlyWhenRegularityIsInformedLater(): void
+    {
+        $fines = $this->services->fines();
+        $id = $fines->create($this->radarFine(), $this->user);
+        $fines->register($id, $this->cmd($id), $this->user);
+        $base = ['checked_at' => '2026-10-18T10:00', 'source_type' => 'CRLV_APRESENTADO', 'source_reference' => 'CRLV-e fictício'];
+        $fines->addCheck($id, $this->cmd($id, ['scope' => 'OCORRENCIA', 'document_status' => 'PENDENCIA_INFORMADA', 'pending_items' => 'Licenciamento não comprovado'] + $base), $this->user);
+        $count = fn(): int => (int) $this->services->fineRepository()->find($id)['attention_count'];
+        self::assertSame(1, $count(), 'pendência no dia da multa, sem acompanhamento');
+
+        $fines->addCheck($id, $this->cmd($id, ['scope' => 'POSTERIOR', 'effective_on' => '2026-10-18', 'document_status' => 'PENDENCIA_INFORMADA', 'pending_items' => 'Ainda sem CRLV', 'checked_at' => '2026-10-18T11:00'] + $base), $this->user);
+        self::assertSame(1, $count(), 'continua com pendência depois');
+        $fines->addCheck($id, $this->cmd($id, ['scope' => 'POSTERIOR', 'effective_on' => '2026-10-18', 'document_status' => 'REGULARIDADE_INFORMADA', 'checked_at' => '2026-10-18T12:00'] + $base), $this->user);
+        $f = $this->services->fineRepository()->find($id);
+        self::assertSame(['PENDENCIA_INFORMADA', 'REGULARIDADE_INFORMADA', 0], [$f['occ_doc_status'], $f['later_doc_status'], (int) $f['attention_count']], 'o dia da multa não muda');
+        self::assertSame([], $this->services->fineQuery()->detail($id, 1)['attention']);
+        $list = $this->services->fineQuery()->list(FineFilters::fromQuery([]), 1);
+        self::assertSame([0, []], [$list['attention'], $list['rows'][0]['attention']], 'lista, resumo e ficha usam a mesma regra');
+
+        // Editar sem mexer na identidade mantém a conclusão; corrigir a placa pede tudo de novo.
+        $fines->update($id, $this->cmd($id, ['notes' => 'Relato complementar', 'reason' => 'Complemento'] + $this->radarFine()), $this->user);
+        self::assertSame(0, $count());
+        $fines->update($id, $this->cmd($id, ['vehicle_plate' => 'ABC1D24', 'reason' => 'Placa transcrita com erro'] + $this->radarFine()), $this->user);
+        self::assertSame(1, $count(), 'nova identidade: documentos ainda não conferidos');
+    }
+
+    public function testRadarWithoutTheInfractionAmongItsFunctionsNeedsAnExplanation(): void
+    {
+        $fines = $this->services->fines();
+        $id = $fines->create($this->radarFine(['infraction_kind' => 'AVANCO_SEMAFORO', 'speed_limit_kmh' => '', 'speed_measured_kmh' => '']), $this->user);
+        try {
+            $fines->register($id, $this->cmd($id), $this->user);
+            self::fail('radar cadastrado só para velocidade');
+        } catch (ValidationFailed $e) {
+            self::assertSame(['source_note'], array_keys($e->errors));
+            self::assertStringContainsString('avanço de sinal vermelho', $e->errors['source_note']);
+        }
+        $fines->update($id, $this->cmd($id, ['source_note' => 'Função de semáforo ativada depois do cadastro (fictício)'] + $this->radarFine(['infraction_kind' => 'AVANCO_SEMAFORO'])), $this->user);
+        $fines->register($id, $this->cmd($id), $this->user);
+        self::assertSame('REGISTRADO', $this->services->fineRepository()->find($id)['record_state'], 'com a explicação, o fato histórico é registrado');
+    }
+
     public function testReviewReminderAnswerIsStoredAsADateAndCannotPrecedeTheCheckedDay(): void
     {
         $fines = $this->services->fines();

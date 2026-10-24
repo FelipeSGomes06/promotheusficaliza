@@ -20,11 +20,15 @@ const TZ = 'America/Sao_Paulo';
 const ENUM = /^[A-Z_]+$/;
 const GLYPH = { NAO_INSTALADO: '◌', OPERACIONAL: '✓', FALHA: '!', MANUTENCAO: '⚙', DESATIVADO: '–', FURTADO: '✕', EM_ATIVIDADE: '●', EM_PAUSA: '❚❚', INDISPONIVEL: '!', FORA_DE_SERVICO: '–' };
 const POSITION = {
-  INSTALADO: 'No local de instalação',
+  INSTALADO: 'Local de instalação',
   PLANEJADO: 'Local planejado: ainda não instalado',
-  BASE: 'Na base de trabalho (não é posição recente)',
+  BASE: 'Base de trabalho (não é posição recente)',
   ULTIMA_POSICAO: 'Última posição recebida',
 };
+/** O que o ponto do mapa representa. Furtado: o ponto é de onde foi levado, não onde o equipamento está. */
+const positionText = (r) => (r.status === 'FURTADO' && r.position.kind === 'INSTALADO'
+  ? 'Local de instalação; localização atual desconhecida após o furto'
+  : POSITION[r.position.kind] || '');
 const MARILIA = [-22.2185, -49.944];
 const CLUSTER_PX = 34;
 const CLUSTER_UNTIL_ZOOM = 17;
@@ -181,7 +185,8 @@ function central() {
         key,
         url: `${cfg.base}/${r.kind === 'AGENTE' ? 'agentes' : 'equipamentos'}/${Number(r.id)}`,
         title: r.headline,
-        sub: r.region || 'sem bairro',
+        // Código à vista: dois recursos na mesma base ou endereço têm o mesmo título.
+        sub: `${r.kind === 'EQUIPAMENTO' ? `${r.code} · ` : ''}${r.region || 'sem bairro'}`,
         iconHref: `${ICONS}#i-${safe(r.category, 'RADAR')}`,
         thumbClass: r.kind === 'AGENTE' ? 'row__thumb row__thumb--agent' : 'row__thumb',
         stClass: `st st--${safe(r.status, 'NAO_SE_APLICA')}`,
@@ -223,7 +228,7 @@ function central() {
         statusLabel: r.status_label,
         fresh: fresh || '',
         freshClass: `fresh fresh--${safe(r.freshness, 'X')}`,
-        where: hasPosition(r) ? `${POSITION[r.position.kind] || ''}${r.position.observed_at ? ` · ${dateTime(r.position.observed_at)}` : ''} · ponto ilustrativo` : 'Sem localização cadastrada: aparece só na lista.',
+        where: hasPosition(r) ? `${positionText(r)}${r.position.observed_at ? ` · ${dateTime(r.position.observed_at)}` : ''} · ponto ilustrativo` : 'Sem localização cadastrada: aparece só na lista.',
         attention: r.attention.join(' · '),
         alerts,
         facts,
@@ -350,7 +355,7 @@ function central() {
       return `<span class="${cls.join(' ')}"><span class="pin__ring"></span><svg class="icon" aria-hidden="true"><use href="${ICONS}#i-${cat}"></use></svg>${alert}${corner}</span>`;
     },
     pinLabel(r) {
-      return `${r.headline}. ${r.status_label}. ${POSITION[r.position.kind] || ''}${r.attention.length ? `. Precisa de atenção: ${r.attention.join(', ')}` : ''}`;
+      return `${r.headline}${r.kind === 'EQUIPAMENTO' ? ` (${r.code})` : ''}. ${r.status_label}. ${positionText(r)}${r.attention.length ? `. Precisa de atenção: ${r.attention.join(', ')}` : ''}`;
     },
     asButton(marker, label, activate) {
       const node = marker.getElement();
