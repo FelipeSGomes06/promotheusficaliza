@@ -7,7 +7,7 @@
     <div>
       <p class="crumbs"><a href="{{ url('/planejar') }}">Planejar reforço</a> · retrospecto do teste</p>
       <h1>Retrospecto: a previsão congelada contra o que foi registrado</h1>
-      <p class="lead">Escolha uma semana do teste de 2025, veja o que o modelo congelado previa com os dados disponíveis naquela época e só depois revele o que foi registrado.</p>
+      <p class="lead">Escolha uma semana do teste de 2025, veja o que o método congelado previa com os dados disponíveis antes daquela semana e só depois revele o que foi registrado.</p>
     </div>
     <a class="btn" href="{{ url('/planejar') }}">{{ ui.icon('i-layers') }}Voltar à previsão atual</a>
   </div>
@@ -23,8 +23,8 @@
     <p class="era__kicker">{{ ui.icon('i-clock') }} Histórico · teste de 2025 · não é a previsão atual</p>
     <dl class="era__facts">
       <div><dt>Semana</dt><dd><strong>{{ r.week|br_date }} a {{ r.week_last_day|br_date }}</strong> ({{ r.position }}ª de {{ r.weeks|length }})</dd></div>
-      <div><dt>Previsão congelada</dt><dd>Feita em {{ r.run.model_issued_at|br_date }}, só com o que se sabia até então</dd></div>
-      <div><dt>Dados de entrada da semana</dt><dd>até {{ (r.sectors|first).history_through|br_date }} (mesmo atraso de publicação assumido)</dd></div>
+      <div><dt>Método congelado</dt><dd>Escolhido e fixado em {{ r.run.model_issued_at|br_date }}, antes de qualquer semana do teste; não foi mudado depois</dd></div>
+      <div><dt>Previsão desta semana</dt><dd>Calculada com os registros até {{ (r.sectors|first).history_through|br_date }}: os que já estariam publicados no início da semana, pela hipótese de dois meses completos de atraso</dd></div>
       <div><dt>Origem</dt><dd>{{ ui.origin_real() }}</dd></div>
     </dl>
   </section>

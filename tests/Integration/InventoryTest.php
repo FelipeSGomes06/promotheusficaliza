@@ -142,6 +142,31 @@ final class InventoryTest extends FirebirdTestCase
         self::assertNotNull($last['actor_name']);
     }
 
+    public function testLocationKindFollowsTheStatusOnCreationAndInTransitions(): void
+    {
+        try {
+            $this->createEquipment(['status' => 'OPERACIONAL', 'location_kind' => 'PLANEJADO']);
+            self::fail('operacional já foi instalado');
+        } catch (ValidationFailed $e) {
+            self::assertSame(['location_kind'], array_keys($e->errors));
+        }
+        self::assertGreaterThan(0, $this->createEquipment(['status' => 'DESATIVADO', 'location_kind' => 'PLANEJADO', 'serial_number' => 'D-1']), 'desativado aceita os dois');
+
+        // Reposição de um furtado: o ponto continua, como planejado; reinstalar registra a nova data.
+        $id = $this->createEquipment(['status' => 'FURTADO', 'serial_number' => 'F-1']);
+        $this->services->equipment()->changeStatus($id, 'NAO_INSTALADO', 'reposição', $this->userId());
+        self::assertSame(['NAO_INSTALADO', 'PLANEJADO'], [$this->services->equipmentRepository()->find($id)['status'], $this->services->equipmentRepository()->find($id)['location_kind']]);
+        $this->services->equipment()->changeStatus($id, 'OPERACIONAL', 'reinstalado', $this->userId());
+        $row = $this->services->equipmentRepository()->find($id);
+        self::assertSame(['INSTALADO', '2026-10-18'], [$row['location_kind'], $row['installed_on']]);
+
+        // Recurso móvel: a base não muda e a data passa a ser a de entrada em operação.
+        $mobile = $this->createEquipment(['type_code' => 'PATINETE', 'status' => 'NAO_INSTALADO', 'location_kind' => 'BASE', 'specs' => ['range_km' => '40']]);
+        $this->services->equipment()->changeStatus($mobile, 'OPERACIONAL', 'entrou em operação', $this->userId());
+        $row = $this->services->equipmentRepository()->find($mobile);
+        self::assertSame(['BASE', '2026-10-18'], [$row['location_kind'], $row['installed_on']]);
+    }
+
     public function testArchivingRemovesFromOperationButKeepsHistory(): void
     {
         $id = $this->createEquipment();

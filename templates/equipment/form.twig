@@ -44,7 +44,7 @@
   {% endif %}
   {{ ui.error_summary(errors, labels, 's-' ~ (v.type_code ?? '') ~ '-') }}
 
-  <form method="post" action="{{ existing ? url('/equipamentos/' ~ existing.id) : url('/equipamentos') }}" class="stack section" novalidate>
+  <form method="post" action="{{ existing ? url('/equipamentos/' ~ existing.id) : url('/equipamentos') }}" class="stack section" novalidate{% if existing %} data-equipment-status="{{ existing.status }}"{% endif %}>
     {{ ui.csrf(app.csrf) }}
     {% if existing %}<input type="hidden" name="version" value="{{ v.version ?? existing.version_no }}">{% endif %}
 
@@ -59,7 +59,7 @@
           {{ ui.field_error(errors, 'type_code') }}
         </div>
         {% if not existing %}
-          {{ ui.select('status', 'Situação inicial', {NAO_INSTALADO: 'Não instalado (ainda vai ser instalado)', OPERACIONAL: 'Operacional', FALHA: 'Mau funcionamento', MANUTENCAO: 'Em manutenção', DESATIVADO: 'Desativado', FURTADO: 'Furtado'}, v.status ?? 'NAO_INSTALADO', errors, {required: true}) }}
+          {{ ui.select('status', 'Situação inicial', {NAO_INSTALADO: 'Não instalado (ainda vai ser instalado ou entrar em operação)', OPERACIONAL: 'Operacional', FALHA: 'Mau funcionamento', MANUTENCAO: 'Em manutenção', DESATIVADO: 'Desativado', FURTADO: 'Furtado'}, v.status ?? 'NAO_INSTALADO', errors, {required: true}) }}
         {% else %}
           <div class="field"><span class="label">Situação</span><span>{{ ui.equipment_status(existing.status) }}</span><span class="hint">Mude a situação pela ficha: fica no histórico com o motivo.</span></div>
         {% endif %}
@@ -80,6 +80,7 @@
       <p class="hint">Todo equipamento tem um local, mesmo o planejado: é onde ele está ou vai ficar, para a utilidade que se planejou.</p>
       <div class="form-grid">
         {{ ui.select('location_kind', 'Este ponto é', {INSTALADO: 'Local de instalação (já instalado)', PLANEJADO: 'Local planejado (ainda não instalado)', BASE: 'Base: onde o veículo ou patinete fica guardado'}, v.location_kind ?? 'PLANEJADO', errors, {required: true, dataAttr: 'location-kind', class: 'span-2'}) }}
+        <p class="hint span-2">A situação define o ponto: "Não instalado" usa local planejado; operacional, mau funcionamento, em manutenção e furtado usam o local de instalação; desativado aceita os dois.</p>
         <p class="hint span-2" data-mobile-note hidden>Veículos e patinetes usam a base como endereço; a posição atual vem das observações recebidas e é mostrada à parte.</p>
       </div>
       <p class="hint" data-without-map="picker">Sem o mapa (JavaScript desligado ou mapa que não carregou): preencha o endereço abaixo e, ao salvar, o local vai para ele.</p>
@@ -141,7 +142,7 @@
       {% endfor %}
       <div class="form-grid section">
         {{ ui.input('maint_interval_days', 'Preventiva a cada (dias)', v, errors, {type: 'number', help: 'De 7 a 730. Ao concluir uma preventiva, a próxima é agendada sozinha.'}) }}
-        {{ ui.input('installed_on', 'Data de instalação', v, errors, {type: 'date'}) }}
+        {{ ui.input('installed_on', 'Data de instalação', v, errors, {type: 'date', help: 'Veículo e patinete: data em que entrou em operação.'}) }}
         {{ ui.input('notes', 'Observações', v, errors, {type: 'textarea', max: 500, class: 'span-2'}) }}
       </div>
     </fieldset>

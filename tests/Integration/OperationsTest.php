@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fiscaliza\Tests\Integration;
 
+use Fiscaliza\Application\Filters;
 use Fiscaliza\Domain\EquipmentStatus;
 use Fiscaliza\Domain\RuleViolation;
 use Fiscaliza\Domain\ValidationFailed;
@@ -133,6 +134,23 @@ final class OperationsTest extends FirebirdTestCase
         $maintenance->start($next, $this->userId());
         $this->expectException(RuleViolation::class);
         $maintenance->cancel($next, 'desisti', $this->userId());
+    }
+
+    public function testUrgentSummaryCountsOnlyOrdersWaitingToStart(): void
+    {
+        $id = $this->createEquipment();
+        $maintenance = $this->services->maintenance();
+        $order = $maintenance->open($id, ['kind' => 'CORRETIVA', 'priority' => 'IMEDIATA', 'reason' => 'lente trincada'], $this->userId());
+        $before = $this->services->central()->snapshot(new Filters());
+        self::assertSame([$order], array_column($before['maintenance']['urgent'], 'order_id'));
+        self::assertSame(1, $before['regions'][0]['urgent_maintenance']);
+
+        // Iniciada, sai do resumo como sai da seção Urgentes da Manutenção; o equipamento segue em atenção, em manutenção.
+        $maintenance->start($order, $this->userId());
+        $after = $this->services->central()->snapshot(new Filters());
+        self::assertSame([], $after['maintenance']['urgent']);
+        self::assertSame(0, $after['regions'][0]['urgent_maintenance']);
+        self::assertContains('Em manutenção', $after['resources'][0]['attention']);
     }
 
     public function testCompletionCanReportThatEquipmentStillFails(): void

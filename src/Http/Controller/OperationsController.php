@@ -117,11 +117,22 @@ final class OperationsController extends Controller
     public function analysis(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $run = $this->services->analysisRepository()->latestRun();
+        // Ordem que já cuida de cada equipamento, lida agora (a análise pode ser de outro dia): a em execução ou a
+        // primeira da fila (open() ordena imediatas e depois pela data).
+        $orders = [];
+        foreach ($this->services->maintenanceRepository()->open() as $order) {
+            $id = (int) $order['equipment_id'];
+            if (!isset($orders[$id]) || $order['state'] === 'EM_EXECUCAO') {
+                $orders[$id] = $order;
+            }
+        }
 
         return $this->render($request, $response, 'analysis/index.twig', [
             'run' => $run,
             'results' => $run === null ? [] : $this->services->analysisRepository()->results((int) $run['id']),
             'types' => EquipmentCatalog::all(),
+            'orders' => $orders,
+            'today' => Time::localDate($this->services->clock()->now()),
         ]);
     }
 

@@ -68,9 +68,12 @@ export function initForms() {
   });
   openTarget(window.location.hash.slice(1));
 
-  // Formulário de equipamento: mostra só as características do tipo escolhido (as demais não são enviadas).
+  // Formulário de equipamento: mostra só as características do tipo escolhido (as demais não são enviadas) e só os
+  // tipos de local coerentes com a situação (a mesma regra do servidor, EquipmentService::validate).
   const typeSelect = document.querySelector('[data-type-select]');
   if (typeSelect) {
+    const statusSelect = typeSelect.form.querySelector('select[name="status"]');
+    const installed = ['OPERACIONAL', 'FALHA', 'MANUTENCAO', 'FURTADO'];
     const update = () => {
       document.querySelectorAll('[data-spec-type]').forEach((fs) => {
         const on = fs.dataset.specType === typeSelect.value;
@@ -78,15 +81,15 @@ export function initForms() {
         fs.disabled = !on;
       });
       const mobile = typeSelect.selectedOptions[0]?.dataset.mobile === '1';
-      document.querySelectorAll('[data-location-kind] option').forEach((o) => {
-        o.disabled = mobile ? o.value !== 'BASE' : o.value === 'BASE';
-      });
+      const status = statusSelect ? statusSelect.value : typeSelect.form.dataset.equipmentStatus;
+      const allowed = mobile ? ['BASE'] : ({ NAO_INSTALADO: ['PLANEJADO'], DESATIVADO: ['INSTALADO', 'PLANEJADO'] }[status] || (installed.includes(status) ? ['INSTALADO'] : ['INSTALADO', 'PLANEJADO']));
+      document.querySelectorAll('[data-location-kind] option').forEach((o) => { o.disabled = !allowed.includes(o.value); });
       const kind = document.querySelector('[data-location-kind]');
-      if (kind && mobile) kind.value = 'BASE';
-      if (kind && !mobile && kind.value === 'BASE') kind.value = 'PLANEJADO';
+      if (kind && !allowed.includes(kind.value)) kind.value = allowed[0];
       document.querySelectorAll('[data-mobile-note]').forEach((n) => { n.hidden = !mobile; });
     };
     typeSelect.addEventListener('change', update);
+    statusSelect?.addEventListener('change', update);
     update();
   }
 }

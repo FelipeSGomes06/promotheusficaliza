@@ -3,6 +3,20 @@
 Ambiente: Windows 11 + Docker Desktop 29.7.2; contêineres `php:8.5.11-apache-trixie` (PDO_FIREBIRD, fbclient 4.0.5)
 e `firebirdsql/firebird:5.0.4-trixie`. Data: 18/10/2026. Só está listado aqui o que de fato rodou.
 
+## Revisão da auditoria de interface do Codex (24/10/2026)
+
+Projeto Compose isolado `pf-rev` (porta 8097; PHP 8.5.11, Firebird 5.0.4) sobre `main` em `a6a4aae`, perfil completo.
+Relatório da revisão fora do repositório (entrega do Codex): `~/.codex/entregas-para-claude/auditoria-logica-fiscaliza-2026-10-23/REVISAO-E-ALTERACOES-CLAUDE.md`.
+
+| Verificação | Resultado |
+|---|---|
+| `vendor/bin/phpunit` | 254 testes; falha só `OperationsTest::testSimulatorTickIsSkippedWhileAnotherTickHoldsTheLock`, porque outro projeto Compose do mesmo computador (`fiscaliza-claude`) roda `sim:run` sobre esta mesma pasta e segura `var/simulador.lock` — não depende das mudanças |
+| Testes novos | `FineRulesTest` (pendência × regularização posterior), `FinesTest` (contador, lista e ficha; radar sem a função), `InventoryTest` (situação × local, reposição, entrada em operação), `OperationsTest` (resumo de urgentes), `PlanningHttpTest` (aviso de semana encerrada; datas do retrospecto) |
+| `phpstan analyse` (nível 6) · `php-cs-fixer fix --dry-run` · `npm run build` (Node 24) | 0 erros · 0 de 128 · sem erros (mudam `app`, `central` e `multas`) |
+| Migração 0008 | antes: 1 multa com contador diferente da regra nova (#7); depois: 0; segunda execução sem efeito |
+| Navegador (painel do Claude Code, 800 px e 375 px) | central (ficha e marcador do furtado, código na lista, resumo de urgentes = seção Urgentes, com e sem filtro de veículo), fichas de equipamento (furtado, revisão sem ordem, ordem existente, ordem fora da janela), cadastro (situação × local; recusa no servidor), reposição de furtado, multas #3, #2, #6 e #7, formulário de multa (observação para radar sem a função), planejar (designado, missão), retrospecto e revisões (janela e cálculo antigo) |
+| Site publicado | **não verificado** (sem conta nesta sessão) |
+
 ## Cadastrar agente: base pelo mapa ou pelo endereço, rua pelo CEP (23/10/2026)
 
 Contêiner de nuvem do Claude Code, Docker local (PHP 8.5.11, Firebird 5.0.4) sobre `main` em `730e303`.

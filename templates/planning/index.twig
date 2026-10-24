@@ -119,7 +119,7 @@
     <h2 class="step__title" id="passo-2"><span class="step__n" aria-hidden="true">2</span>Quem enviar ao {{ target }}</h2>
     {% if cell %}<p class="step__target">{{ ui.icon('i-pin') }} {{ here.place(cell) }} · {{ s.name }}</p>{% endif %}
     {% if cell and assigned[cell.cell_no] is defined %}
-      <p class="flash flash--success m-0" role="status">{{ assigned[cell.cell_no]|join(', ') }} já {{ assigned[cell.cell_no]|length > 1 ? 'estão' : 'está' }} neste quadrado. Você pode mandar mais alguém ou escolher outro quadrado no passo 1.</p>
+      <p class="flash flash--success m-0" role="status">{{ assigned[cell.cell_no]|join(', ') }} já {{ assigned[cell.cell_no]|length > 1 ? 'estão designados' : 'está designado' }} para este quadrado (missão confirmada; não indica que já chegou). Você pode mandar mais alguém ou escolher outro quadrado no passo 1.</p>
     {% endif %}
 
     {% if candidates.eligible is empty %}
@@ -128,6 +128,7 @@
       <div class="empty section">A semana desta previsão já terminou; aguarde a próxima atualização para confirmar missões.</div>
     {% else %}
       <p class="hint">Sugerimos primeiro quem está mais perto e com posição recente. Só entram agentes de trânsito em atividade e sem outra missão (guarda e polícia não). A distância é em linha reta, não é tempo de chegada.</p>
+      <p class="hint">A sugestão usa a situação e a posição de agora: a missão começa ao confirmar, não tem horário e reserva o agente até alguém concluí-la ou cancelá-la.</p>
       {% set v = form.values %}
       {% set suggested = candidates.eligible|first %}
       {% set chosen = candidates.eligible|filter(c => (c.id ~ '') == (v.agent_id ?? ''))|first ?: suggested %}
@@ -199,6 +200,7 @@
           {% if m.support_point %}<p class="hint m-0">Ponto de apoio: {{ m.support_point }}</p>{% endif %}
           {% if m.note %}<p class="hint m-0">Observação: {{ m.note }}</p>{% endif %}
           {% if m.closed_at %}<p class="hint m-0">{{ states[m.state] ?? m.state }} por {{ m.closed_by_name }} em {{ m.closed_at|local_dt }}: {{ m.close_reason }}</p>{% endif %}
+          {% if m.state == 'CONFIRMADA' and m.period_until <= today %}<p class="tag tag--warn m-0">A semana desta missão terminou e o agente continua reservado: conclua ou cancele.</p>{% endif %}
           {% if m.state == 'CONFIRMADA' %}
             <div class="mission__actions">
               {% for action, label in {concluir: 'Concluir', cancelar: 'Cancelar'} %}

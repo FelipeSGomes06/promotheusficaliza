@@ -14,9 +14,12 @@ use Fiscaliza\Infrastructure\Database;
  */
 final class FineRepository
 {
+    /** LATER_DOC_STATUS: a última conferência "depois da multa" da identidade atual (mesma escolha de FineDocumentStatus::select). */
     private const SELECT = 'SELECT f.*, a.CODE AS AGENCY_CODE, a.NAME AS AGENCY_NAME, r.NAME AS REGION_NAME,
         e.CODE AS EQUIPMENT_CODE, e.ARCHIVED_AT AS EQUIPMENT_ARCHIVED_AT, g.CODE AS AGENT_CODE, g.CALL_SIGN AS AGENT_CALL_SIGN,
-        g.ARCHIVED_AT AS AGENT_ARCHIVED_AT, uc.DISPLAY_NAME AS CREATED_BY_NAME, uu.DISPLAY_NAME AS UPDATED_BY_NAME, ux.DISPLAY_NAME AS CANCELLED_BY_NAME
+        g.ARCHIVED_AT AS AGENT_ARCHIVED_AT, uc.DISPLAY_NAME AS CREATED_BY_NAME, uu.DISPLAY_NAME AS UPDATED_BY_NAME, ux.DISPLAY_NAME AS CANCELLED_BY_NAME,
+        (SELECT FIRST 1 c.DOCUMENT_STATUS FROM FINE_DOCUMENT_CHECK c WHERE c.FINE_ID = f.ID AND c.SCOPE = \'POSTERIOR\' AND c.SUBJECT_VERSION = f.SUBJECT_VERSION
+            ORDER BY c.CHECKED_AT DESC, c.ID DESC) AS LATER_DOC_STATUS
         FROM FINE f LEFT JOIN AGENCY a ON a.ID = f.AGENCY_ID LEFT JOIN REGION r ON r.ID = f.REGION_ID
         LEFT JOIN EQUIPMENT e ON e.ID = f.EQUIPMENT_ID LEFT JOIN AGENT g ON g.ID = f.AGENT_ID
         LEFT JOIN APP_USER uc ON uc.ID = f.CREATED_BY LEFT JOIN APP_USER uu ON uu.ID = f.UPDATED_BY LEFT JOIN APP_USER ux ON ux.ID = f.CANCELLED_BY';
@@ -192,6 +195,7 @@ final class FineRepository
                 $row = $trim($row);
                 $specs = is_string($row['specs'] ?? null) ? (json_decode($row['specs'], true) ?: []) : [];
                 $row['speed_limit_kmh'] = $specs['speed_limit_kmh'] ?? null;
+                $row['functions'] = $specs['functions'] ?? [];
                 unset($row['specs']);
 
                 return $row;

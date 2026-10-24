@@ -30,7 +30,9 @@
     <div class="empty section">Ainda não há análise calculada{% if app.user %}. Use "Recalcular agora"{% endif %}.</div>
   {% else %}
   {% set ev = run.evaluation %}
-  <p class="hint section">Calculado em {{ run.as_of|local_dt }}{{ run.created_by_name ? ' por ' ~ run.created_by_name }} · execução #{{ run.id }}, método {{ run.method_version }}.</p>
+  {% set asOfDay = run.as_of|local_dt('Y-m-d') %}
+  {% set windowEnd = asOfDay|date_modify('+7 days')|date('Y-m-d') %}
+  <p class="hint section">Calculado em {{ run.as_of|local_dt }}{{ run.created_by_name ? ' por ' ~ run.created_by_name }} · os 7 dias vão até {{ windowEnd|br_date }} · execução #{{ run.id }}, método {{ run.method_version }}.{% if asOfDay < today %} <strong>Cálculo de um dia anterior:</strong> falhas e manutenções desde então não entram na pontuação{{ app.user ? '; use "Recalcular agora"' }}. As ordens indicadas abaixo são as de hoje.{% endif %}</p>
 
   {% for key, g in groups %}
     {% set items = results|filter(r => r.attention == key) %}
@@ -52,7 +54,8 @@
               {% for f in r.factors %}<li>{{ f.label }}{% if f.points %} <span class="hint">(+{{ f.points }})</span>{% endif %}</li>{% endfor %}
               {% for a in r.admin_flags %}<li>{{ a }}</li>{% endfor %}
             </ul>
-            <p class="reco__action">O que fazer: {{ r.recommendation }}</p>
+            {% set order = orders[r.equipment_id] ?? null %}
+            <p class="reco__action">{% if order %}{{ ui.order_advice(order, url('/equipamentos/' ~ r.equipment_id) ~ '#ordem-' ~ order.id, today, r.attention, windowEnd) }}{% else %}O que fazer: {{ r.recommendation }}{% endif %}</p>
           </li>
         {% endfor %}
       </ul>

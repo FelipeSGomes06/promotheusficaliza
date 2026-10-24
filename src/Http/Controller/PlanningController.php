@@ -8,6 +8,7 @@ use Fiscaliza\Application\NotFound;
 use Fiscaliza\Application\PlanningService;
 use Fiscaliza\Domain\RuleViolation;
 use Fiscaliza\Domain\SectorForecast;
+use Fiscaliza\Domain\Time;
 use Fiscaliza\Domain\ValidationFailed;
 use Fiscaliza\Infrastructure\ConcurrencyConflict;
 use Psr\Http\Message\ResponseInterface;
@@ -73,6 +74,7 @@ final class PlanningController extends Controller
         return $this->render($request, $response, 'planning/index.twig', [
             'week' => $week, 'selected' => $selected, 'cell' => $cell, 'assigned' => $assigned, 'candidates' => $candidates, 'map' => $map,
             'cell_count' => $cellCount, 'missions' => $missions, 'states' => PlanningService::STATES, 'form' => $form,
+            'today' => Time::localDate($this->services->clock()->now()),
         ], $status);
     }
 

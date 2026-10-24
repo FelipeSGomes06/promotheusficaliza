@@ -38,7 +38,7 @@
     <div><dt>Agentes em atividade: <span class="n" x-text="kpi.agents_active">{{ ag.active }}</span></dt>
       <dd>De <span x-text="kpi.agents_total">{{ ag.total }}</span> no filtro; <span x-text="kpi.agents_stale">{{ ag.position_not_current }}</span> em turno sem posição recente. Nunca somados a equipamentos.</dd></div>
     <div><dt>Manutenções em 7 dias: <span class="n" x-text="kpi.upcoming">{{ snapshot.maintenance.upcoming|length }}</span></dt>
-      <dd>Urgentes = imediatas ou vencidas (data local de Marília).</dd></div>
+      <dd>Urgentes = imediatas ou vencidas que ainda não começaram (data local de Marília); as já iniciadas ficam em "Em andamento" na Manutenção.</dd></div>
   </dl>
   <div class="table-wrap">
     <table class="data">
@@ -173,7 +173,7 @@
               {% for r in items %}
                 <li data-ssr><a class="row" href="{{ url(r.kind == 'EQUIPAMENTO' ? '/equipamentos/' ~ r.id : '/agentes/' ~ r.id) }}">
                   <span class="row__thumb {{ r.kind == 'AGENTE' ? 'row__thumb--agent' }}">{{ ui.icon('i-' ~ r.category) }}</span>
-                  <span class="row__main"><span class="row__title">{{ r.headline }}</span><span class="row__sub">{{ r.region ?? 'sem bairro' }}</span></span>
+                  <span class="row__main"><span class="row__title">{{ r.headline }}</span><span class="row__sub">{{ r.kind == 'EQUIPAMENTO' ? r.code ~ ' · ' }}{{ r.region ?? 'sem bairro' }}</span></span>
                   <span class="row__meta">{{ ui.status(r.status, r.status_label, r.glyph) }}{% if r.position.lat is null %}<span class="fresh">Sem localização cadastrada</span>{% endif %}</span>
                   {% set reasons = r.attention|filter(why => why != r.status_label) %}
                   {% if reasons is not empty %}<span class="row__reasons">{% for why in reasons %}<span>{{ why }}</span>{% endfor %}</span>{% endif %}
@@ -219,7 +219,7 @@
         <summary>{{ ui.icon('i-layers') }}<span>Legenda</span></summary>
         <div class="popover">
           <ul class="legend__list">
-            <li><span class="pin pin--OPERACIONAL" aria-hidden="true">{{ ui.icon('i-RADAR') }}</span><span>Equipamento no local de instalação. A borda mostra a situação.</span></li>
+            <li><span class="pin pin--OPERACIONAL" aria-hidden="true">{{ ui.icon('i-RADAR') }}</span><span>Local de instalação do equipamento. A borda mostra a situação; furtado não está mais no local.</span></li>
             <li><span class="pin pin--NAO_INSTALADO pin--planned" aria-hidden="true">{{ ui.icon('i-CAMERA') }}</span><span>Local planejado: ainda não instalado.</span></li>
             <li><span class="pin pin--agent pin--EM_ATIVIDADE" aria-hidden="true">{{ ui.icon('i-AG_TRANSITO') }}</span><span>Agente, veículo ou patinete na última posição recebida.</span></li>
             <li><span class="pin pin--agent pin--EM_ATIVIDADE pin--stale" aria-hidden="true">{{ ui.icon('i-VEICULO') }}<span class="pin__kind">⌛</span></span><span>Posição antiga (borda pontilhada): pode ter mudado.</span></li>

@@ -157,7 +157,7 @@ final class FineService
                 // Origem trocada na retificação: snapshot novo; o anterior fica no evento.
                 $row['source_snapshot'] = $this->snapshot($values, $equipment, $agent);
             }
-            $row['attention_count'] = count(FineRules::attention(array_merge($f, $row)));
+            $row['attention_count'] = count(FineRules::attention(array_merge($f, $row, ['later_doc_status' => $identity ? null : $this->laterStatus($id, $subject)])));
             if (!$this->persist(fn() => $this->fines->updateVersioned($id, $version, $row))) {
                 throw new ConcurrencyConflict('O registro mudou depois que você abriu o formulário.');
             }
@@ -207,7 +207,7 @@ final class FineService
             }
             $snapshot = $this->snapshot($f, $equipment, $agent);
             $row = ['record_state' => 'REGISTRADO', 'registered_at' => $this->now(), 'source_snapshot' => $snapshot, 'updated_at' => $this->now(), 'updated_by' => $actor];
-            $row['attention_count'] = count(FineRules::attention(array_merge($f, $row)));
+            $row['attention_count'] = count(FineRules::attention(array_merge($f, $row, ['later_doc_status' => $this->laterStatus($id, (int) $f['subject_version'])])));
             if (!$this->fines->updateVersioned($id, $version, $row)) {
                 throw new ConcurrencyConflict('O registro mudou depois que você abriu esta página.');
             }
@@ -295,7 +295,7 @@ final class FineService
             $checkId = $this->fines->insertCheck(['effective_on' => $effective] + $c + ['fine_id' => $id, 'subject_version' => $subject, 'source' => $source,
                 'actor_user_id' => $actor, 'created_at' => $this->now()]);
             $row = $this->projection($id, $subject) + ['updated_at' => $this->now(), 'updated_by' => $actor];
-            $row['attention_count'] = count(FineRules::attention(array_merge($f, $row)));
+            $row['attention_count'] = count(FineRules::attention(array_merge($f, $row, ['later_doc_status' => $this->laterStatus($id, $subject)])));
             if (!$this->fines->updateVersioned($id, $version, $row)) {
                 throw new ConcurrencyConflict('O registro mudou depois que você abriu esta página.');
             }
@@ -613,7 +613,9 @@ final class FineService
     }
 
     /**
-     * Órgão autuador diferente do órgão do recurso principal exige justificativa (não é proibido, nem conclusão de validade).
+     * Divergências com o cadastro da origem exigem justificativa (não são proibidas nem conclusão de validade): órgão
+     * autuador diferente do órgão do recurso principal, ou radar sem a função da infração entre as cadastradas. O
+     * cadastro pode ter mudado desde o fato, por isso a observação basta.
      *
      * @param array<string, mixed> $f
      * @param array<string, mixed>|null $equipment
@@ -622,12 +624,20 @@ final class FineService
      */
     private function divergence(array $f, ?array $equipment, ?array $agent): array
     {
-        $resource = $f['source_kind'] === 'RADAR' ? $equipment : $agent;
-        if ($resource === null || $f['agency_id'] === null || (int) $resource['agency_id'] === (int) $f['agency_id'] || $f['source_note'] !== null) {
+        if ($f['source_note'] !== null) {
             return [];
         }
+        $resource = $f['source_kind'] === 'RADAR' ? $equipment : $agent;
+        $why = [];
+        if ($resource !== null && $f['agency_id'] !== null && (int) $resource['agency_id'] !== (int) $f['agency_id']) {
+            $why[] = 'o órgão autuador é diferente do órgão do ' . ($f['source_kind'] === 'RADAR' ? 'radar' : 'agente');
+        }
+        $kind = $f['infraction_kind'] ?? null;
+        if ($f['source_kind'] === 'RADAR' && $equipment !== null && $kind !== null && $kind !== 'OUTRA' && !in_array($kind, $equipment['specs']['functions'] ?? [], true)) {
+            $why[] = 'o cadastro do radar não inclui "' . mb_strtolower(FineRules::KINDS[$kind]) . '" entre as funções fiscalizadas';
+        }
 
-        return ['source_note' => 'O órgão autuador é diferente do órgão do ' . ($f['source_kind'] === 'RADAR' ? 'radar' : 'agente') . ': explique a divergência na observação sobre a origem.'];
+        return $why === [] ? [] : ['source_note' => ucfirst(implode(' e ', $why)) . ': explique a divergência na observação sobre a origem.'];
     }
 
     /**
@@ -666,6 +676,12 @@ final class FineService
         $check = FineDocumentStatus::select($this->fines->checks($id), $subjectVersion, 'OCORRENCIA');
 
         return ['occ_doc_status' => $check['document_status'] ?? FineDocumentStatus::NOT_CHECKED, 'occ_doc_review_on' => $check['review_on'] ?? null];
+    }
+
+    /** Situação informada na última conferência "depois da multa" da versão do sujeito (null se não houver). */
+    private function laterStatus(int $id, int $subjectVersion): ?string
+    {
+        return FineDocumentStatus::select($this->fines->checks($id), $subjectVersion, 'POSTERIOR')['document_status'] ?? null;
     }
 
     /** @return array<string, mixed> */

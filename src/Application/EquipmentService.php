@@ -152,6 +152,12 @@ final class EquipmentService
             // Instalação concluída: a posição planejada passa a ser a de instalação.
             $changes['location_kind'] = 'INSTALADO';
             $changes['installed_on'] = Time::localDate($this->clock->now());
+        } elseif ($target === EquipmentStatus::Operacional && $from === EquipmentStatus::NaoInstalado && $current['location_kind'] === 'BASE' && $current['installed_on'] === null) {
+            // Recurso móvel: INSTALLED_ON é a entrada em operação (a base não muda).
+            $changes['installed_on'] = Time::localDate($this->clock->now());
+        } elseif ($target === EquipmentStatus::NaoInstalado && $current['location_kind'] === 'INSTALADO') {
+            // Reposição (de furtado ou desativado): o ponto continua, agora como local planejado da nova instalação.
+            $changes['location_kind'] = 'PLANEJADO';
         }
         if ($target->expectsSignal()) {
             $changes['last_seen_at'] = $now;
@@ -215,6 +221,8 @@ final class EquipmentService
     {
         $typeCode = $input->choice('type_code', array_keys(EquipmentCatalog::all()));
         $type = $typeCode === null ? null : EquipmentCatalog::get($typeCode);
+        // Na edição, a situação atual só vale para conferir o local se o formulário foi aberto nesta mesma versão.
+        $stale = $current !== null && (string) $current['version_no'] !== (string) $input->raw('version');
         $values = [
             'type_code' => $typeCode,
             'manufacturer' => $input->text('manufacturer', 80),
@@ -240,8 +248,13 @@ final class EquipmentService
                 $input->fail('location_kind', 'Recurso móvel usa o endereço como base; a posição atual vem das observações.');
             } elseif (!$type->mobile && $values['location_kind'] === 'BASE') {
                 $input->fail('location_kind', 'Equipamento fixo usa local instalado ou planejado.');
+            } elseif ($stale) {
+                // Formulário aberto antes de uma mudança de situação: o conflito de edição explica o que mudou.
             } elseif ($status === EquipmentStatus::NaoInstalado && $values['location_kind'] === 'INSTALADO') {
                 $input->fail('location_kind', 'Equipamento ainda não instalado: use "planejado".');
+            } elseif ($status->isInService() && $values['location_kind'] === 'PLANEJADO') {
+                // Operacional, em falha, em manutenção ou furtado só existem depois da instalação (tabela de transições).
+                $input->fail('location_kind', "Equipamento \"{$status->label()}\" já foi instalado: este ponto é o local de instalação. Para um ponto ainda não instalado, use a situação \"Não instalado\".");
             }
         }
         if ($type !== null) {
