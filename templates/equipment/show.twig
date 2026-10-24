@@ -49,9 +49,27 @@
       {% elseif e.status == 'FURTADO' %}
         <section class="next-action" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
           <p class="next-action__what">Decidir a reposição ou a baixa</p>
-          <p class="muted">Registrado como furtado em {{ e.status_changed_at|local_dt }}; a localização atual é desconhecida. Quando houver decisão, mude a situação para "Não instalado" (repor{{ mobile ? '' : ' neste local' }}) ou "Desativado" (baixa).</p>
+          <p class="muted">Registrado como furtado em {{ e.status_changed_at|local_dt }}; a localização atual é desconhecida.</p>
           {% if nextOrder %}<p class="muted">Ordem #{{ nextOrder.id }} agendada. {{ blocker }}</p>{% endif %}
-          {% if editable %}<a class="btn" href="#mais-acoes">Mudar situação</a>{% endif %}
+          {% if editable %}
+            <form method="post" action="{{ url('/equipamentos/' ~ e.id ~ '/situacao') }}" class="next-action__form">{{ ui.csrf(app.csrf) }}
+              <fieldset class="candidates">
+                <legend>O equipamento será reposto?</legend>
+                <label class="candidate">
+                  <input type="radio" name="status" value="NAO_INSTALADO" required>
+                  <span><span class="candidate__title">Sim, repor</span>
+                    <span class="candidate__sub">Passa a "Não instalado" {{ mobile ? 'na mesma base, até o novo recurso entrar em operação' : 'com este ponto como local planejado, até a nova instalação' }}.</span></span>
+                </label>
+                <label class="candidate">
+                  <input type="radio" name="status" value="DESATIVADO" required>
+                  <span><span class="candidate__title">Não, dar baixa</span>
+                    <span class="candidate__sub">Passa a "Desativado": sai de uso e o histórico fica preservado.{{ nextOrder ? ' Depois, cancele a ordem agendada.' }}</span></span>
+                </label>
+              </fieldset>
+              <div class="field"><label for="fd">Motivo</label><input id="fd" name="note" required maxlength="300" placeholder="Ex.: boletim de ocorrência, decisão do órgão"></div>
+              <div><button class="btn btn--primary" type="submit">Registrar decisão</button></div>
+            </form>
+          {% endif %}
         </section>
       {% elseif urgent and not blocker %}
         <section class="next-action next-action--urgent" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
@@ -68,9 +86,14 @@
       {% elseif e.status == 'NAO_INSTALADO' %}
         <section class="next-action" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
           <p class="next-action__what">{{ mobile ? 'Registrar a entrada em operação quando ela acontecer' : 'Registrar a instalação quando ela acontecer' }}</p>
-          <p class="muted">{{ mobile ? 'Mude a situação para "Operacional": a base continua a mesma e a data de entrada em operação é registrada.' : 'Ao mudar a situação para "Operacional", o local planejado passa a ser o local de instalação.' }}</p>
+          <p class="muted">{{ mobile ? 'Ao registrar, a situação passa a "Operacional": a base continua a mesma e a data de entrada em operação é registrada.' : 'Ao registrar, a situação passa a "Operacional" e o local planejado passa a ser o local de instalação.' }}</p>
           {% if nextOrder %}<p class="muted">Ordem #{{ nextOrder.id }} agendada. {{ blocker }}</p>{% endif %}
-          {% if editable %}<a class="btn" href="#mais-acoes">Mudar situação</a>{% endif %}
+          {% if editable %}
+            <form method="post" action="{{ url('/equipamentos/' ~ e.id ~ '/situacao') }}" class="next-action__form">{{ ui.csrf(app.csrf) }}<input type="hidden" name="status" value="OPERACIONAL">
+              <div class="field"><label for="in">Motivo</label><input id="in" name="note" required maxlength="300" placeholder="{{ mobile ? 'Ex.: recurso entregue e testado' : 'Ex.: instalação concluída e testada' }}"></div>
+              <div><button class="btn btn--primary" type="submit">{{ mobile ? 'Registrar entrada em operação' : 'Registrar instalação' }}</button></div>
+            </form>
+          {% endif %}
         </section>
       {% elseif blocker and nextOrder %}
         <section class="next-action" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
