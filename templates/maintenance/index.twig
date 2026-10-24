@@ -35,7 +35,7 @@
           {% set busy = running[o.equipment_id] ?? null %}
           <li class="order">
             <div class="order__head">
-              <span class="order__title"><a href="{{ url('/equipamentos/' ~ o.equipment_id) }}#manutencao">{{ type ? type.shortLabel : o.type_code }} · {{ place ?: (o.region_name ?? 'sem endereço cadastrado') }}</a></span>
+              <span class="order__title"><a href="{{ url('/equipamentos/' ~ o.equipment_id) }}#ordem-{{ o.id }}">{{ type ? type.shortLabel : o.type_code }} · {{ place ?: (o.region_name ?? 'sem endereço cadastrado') }}</a></span>
               <span class="btn-row">
                 {% if o.state == 'EM_EXECUCAO' %}{{ ui.status('EM_EXECUCAO', 'Em execução') }}
                 {% else %}{{ ui.status(o.urgency.value, o.urgency.value in ['FUTURA', 'PROXIMA'] ? 'Para ' ~ o.due_date|br_date : (o.urgency.value == 'VENCIDA' ? 'Vencida em ' ~ o.due_date|br_date : 'Imediata')) }}{% endif %}
@@ -47,6 +47,8 @@
               {% if o.state == 'ABERTA' %}
                 {% if busy %}
                   <p class="order__effect">Aguardando: a ordem #{{ busy }} está em execução neste equipamento (uma intervenção por vez).</p>
+                {% elseif o.start_blocker %}
+                  <p class="order__effect">Ainda não pode ser iniciada. {{ o.start_blocker }} <a href="{{ url('/equipamentos/' ~ o.equipment_id) }}#ordem-{{ o.id }}">Abrir a ficha</a></p>
                 {% else %}
                   <form method="post" action="{{ url('/manutencoes/' ~ o.id ~ '/iniciar') }}">{{ ui.csrf(app.csrf) }}<input type="hidden" name="voltar" value="/manutencao#{{ s[0] }}">
                     <button class="btn btn--small {{ key == 'URGENTE' ? 'btn--primary' }}" type="submit">{{ ui.icon('i-wrench') }}<span>Iniciar intervenção</span></button>

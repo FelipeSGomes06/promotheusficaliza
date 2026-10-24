@@ -74,6 +74,10 @@ final class MaintenanceService
             if ($equipment['archived_at'] !== null) {
                 throw new RuleViolation('Equipamento arquivado não recebe intervenção.');
             }
+            $blocker = EquipmentStatus::from((string) $equipment['status'])->maintenanceStartBlocker();
+            if ($blocker !== null) {
+                throw new RuleViolation("A ordem #{$orderId} continua agendada. {$blocker}");
+            }
             // Uma intervenção por vez: a conclusão declara a situação real do equipamento, e duas intervenções
             // simultâneas tornariam esse resultado ambíguo (a primeira a terminar liberaria o equipamento).
             foreach ($this->orders->openFor((int) $equipment['id']) as $other) {

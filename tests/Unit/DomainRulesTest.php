@@ -95,6 +95,15 @@ final class DomainRulesTest extends TestCase
         self::assertSame($allowed, $from->canTransitionTo($to));
     }
 
+    public function testStartBlockerFollowsTheTransitionTable(): void
+    {
+        // A ficha e o quadro mostram o impedimento; o serviço recusa: os dois precisam concordar com a tabela.
+        foreach (EquipmentStatus::cases() as $status) {
+            $startable = $status === EquipmentStatus::Manutencao || $status->canTransitionTo(EquipmentStatus::Manutencao);
+            self::assertSame($startable, $status->maintenanceStartBlocker() === null, $status->value);
+        }
+    }
+
     public function testAdministrativeStatusesAreNotOverriddenByTelemetry(): void
     {
         self::assertTrue(EquipmentStatus::Manutencao->isAdministrative());

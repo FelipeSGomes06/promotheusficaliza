@@ -69,16 +69,17 @@ final class MissionRepository
     }
 
     /**
-     * Vigentes primeiro, depois as encerradas mais recentes.
+     * TODAS as vigentes (cada uma reserva um agente e precisa da ação de concluir/cancelar), depois só as
+     * $closedLimit encerradas mais recentes. Um limite único deixava vigentes fora da lista acima de 20.
      *
      * @return list<array<string, mixed>>
      */
-    public function recent(int $limit = 20): array
+    public function recent(int $closedLimit = 20): array
     {
-        return array_map(self::hydrate(...), $this->db->all(
-            self::SELECT . " ORDER BY IIF(m.STATE = 'CONFIRMADA', 0, 1), COALESCE(m.CLOSED_AT, m.CONFIRMED_AT) DESC, m.ID DESC ROWS ?",
-            [$limit],
-        ));
+        return array_map(self::hydrate(...), [
+            ...$this->db->all(self::SELECT . " WHERE m.STATE = 'CONFIRMADA' ORDER BY m.CONFIRMED_AT DESC, m.ID DESC"),
+            ...$this->db->all(self::SELECT . " WHERE m.STATE <> 'CONFIRMADA' ORDER BY m.CLOSED_AT DESC, m.ID DESC ROWS ?", [$closedLimit]),
+        ]);
     }
 
     public function log(int $missionId, ?string $from, string $to, int $actor, string $at, ?string $note): void

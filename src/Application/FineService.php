@@ -134,6 +134,9 @@ final class FineService
             if ($registered && $reason === null) {
                 throw new ValidationFailed(['reason' => 'Informe o motivo da retificação.']);
             }
+            if ($values['occurred_at'] !== null && $values['occurred_at'] !== $f['occurred_at']) {
+                self::assertFactsNotBefore($f, $values['occurred_at']);
+            }
             [$equipment, $agent] = $this->lockSources($values);
             if ($registered) {
                 $errors = FineRules::missingForRegistration($values) + FineRules::registrationConflicts($values) + $this->divergence($values, $equipment, $agent);
@@ -675,21 +678,46 @@ final class FineService
     }
 
     /**
-     * Situação na data da ocorrência para a versão do sujeito (a última conferência compatível, pelo instante).
+     * Situação na data da ocorrência para a versão do sujeito (a última conferência compatível, pelo instante) e o
+     * lembrete em vigor (o da conferência anotada por último, de qualquer momento: FineDocumentStatus::reminder).
      *
-     * @return array{occ_doc_status: string, occ_doc_review_on: ?string}
+     * @return array{occ_doc_status: string, doc_review_on: ?string, doc_review_scope: ?string}
      */
     private function projection(int $id, int $subjectVersion): array
     {
-        $check = FineDocumentStatus::select($this->fines->checks($id), $subjectVersion, 'OCORRENCIA');
+        $checks = $this->fines->checks($id);
+        $check = FineDocumentStatus::select($checks, $subjectVersion, 'OCORRENCIA');
+        $reminder = FineDocumentStatus::reminder($checks, $subjectVersion);
+        $review = $reminder['review_on'] ?? null;
 
-        return ['occ_doc_status' => $check['document_status'] ?? FineDocumentStatus::NOT_CHECKED, 'occ_doc_review_on' => $check['review_on'] ?? null];
+        return ['occ_doc_status' => $check['document_status'] ?? FineDocumentStatus::NOT_CHECKED, 'doc_review_on' => $review,
+            'doc_review_scope' => $review === null ? null : $reminder['scope']];
     }
 
     /** Situação informada na última conferência "depois da multa" da versão do sujeito (null se não houver). */
     private function laterStatus(int $id, int $subjectVersion): ?string
     {
         return FineDocumentStatus::select($this->fines->checks($id), $subjectVersion, 'POSTERIOR')['document_status'] ?? null;
+    }
+
+    /**
+     * Mesma regra do andamento (updateProgress): fatos já ocorridos gravados não podem ficar antes da nova ocorrência.
+     * Vencimentos e prazos (payment_due_on, defense_due_on, appeal_due_on) ficam de fora. Nada é ajustado em silêncio:
+     * a retificação é recusada dizendo quais datas conflitam.
+     *
+     * @param array<string, mixed> $f
+     * @throws ValidationFailed
+     */
+    private static function assertFactsNotBefore(array $f, string $occurredAt): void
+    {
+        $occurred = Time::localDate(Time::fromDb($occurredAt) ?? throw new \LogicException('Data da ocorrência inválida.'));
+        $before = array_filter(array_intersect_key($f, array_flip(self::FACT_DATES)), static fn($d): bool => is_string($d) && $d !== '' && $d < $occurred);
+        if ($before === []) {
+            return;
+        }
+        $list = array_map(static fn(string $k, string $d): string => mb_strtolower(self::PROGRESS_LABELS[$k]) . ' ' . self::br($d), array_keys($before), $before);
+        throw new ValidationFailed(['occurred_at' => 'A nova data fica depois do que já está anotado na situação da multa (' . implode('; ', $list) . '). '
+            . 'Use uma data até ' . self::br(min($before)) . ' ou, se essa anotação estiver errada, corrija-a antes na situação da multa (com o motivo; a anterior fica no histórico).']);
     }
 
     /** @return array<string, mixed> */

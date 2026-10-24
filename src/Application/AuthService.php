@@ -130,7 +130,7 @@ final class AuthService
             $input->fail('password', 'A senha precisa ter ao menos 12 caracteres.');
         }
         $input->assertValid();
-        $password ??= rtrim(strtr(base64_encode(random_bytes(15)), '+/', '-_'), '=');
+        $password ??= self::generatePassword();
 
         try {
             $id = $this->db->transaction(fn() => $this->users->insert($username, $displayName, self::hash($password), $role, Time::toDb($this->clock->now())));
@@ -139,6 +139,28 @@ final class AuthService
         }
 
         return ['id' => $id, 'password' => $password];
+    }
+
+    /**
+     * Redefinição pelo administrador para quem perdeu a senha: continua a MESMA conta (ID, usuário, papel e histórico),
+     * com senha nova gerada e mostrada uma única vez. As sessões abertas dessa conta deixam de valer (CREDENTIAL_NO) e
+     * a autoria e o instante ficam gravados; a senha nunca vai para log nem histórico. Não reativa conta desativada.
+     *
+     * @return string a senha nova, só para exibir agora
+     */
+    public function resetPassword(int $id, int $actorId): string
+    {
+        if ($id === $actorId) {
+            throw new RuleViolation('Para trocar a sua própria senha, peça a outro administrador: redefinir aqui encerraria a sua sessão.');
+        }
+        $password = self::generatePassword();
+        $hash = self::hash($password); // fora da transação: o hashing é lento de propósito
+        $this->db->transaction(function () use ($id, $actorId, $hash): void {
+            $this->users->find($id) ?? throw new NotFound('Conta não encontrada.');
+            $this->users->resetPassword($id, $hash, $actorId, Time::toDb($this->clock->now()));
+        });
+
+        return $password;
     }
 
     public function setActive(int $id, bool $active, int $actorId): void
@@ -153,6 +175,12 @@ final class AuthService
             }
             $this->users->setActive($id, $active);
         });
+    }
+
+    /** 20 caracteres aleatórios (120 bits), seguros para copiar: letras, números, - e _. */
+    private static function generatePassword(): string
+    {
+        return rtrim(strtr(base64_encode(random_bytes(15)), '+/', '-_'), '=');
     }
 
     /** @return list<array<string, mixed>> */

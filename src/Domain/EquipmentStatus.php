@@ -74,6 +74,21 @@ enum EquipmentStatus: string
         return in_array($target, $this->allowedTransitions(), true);
     }
 
+    /**
+     * Por que uma ordem agendada não pode ser iniciada nesta situação (null = pode). Iniciar leva a "Em manutenção",
+     * então vale a mesma tabela de transições; agendar continua possível. Usado pelo serviço e pelas telas, para a
+     * próxima ação nunca oferecer um início que será recusado.
+     */
+    public function maintenanceStartBlocker(): ?string
+    {
+        return match ($this) {
+            self::NaoInstalado => 'A intervenção só pode começar depois da instalação (ou da entrada em operação, se for um recurso móvel). Até lá, a ordem fica agendada.',
+            self::Desativado => 'Com o equipamento desativado, a intervenção só pode começar se ele voltar a uso. Se não for voltar, cancele a ordem.',
+            self::Furtado => 'Com o equipamento furtado, a intervenção só pode começar depois da reposição e da nova instalação. Se não houver reposição, cancele a ordem.',
+            self::Operacional, self::Falha, self::Manutencao => null,
+        };
+    }
+
     /** Sinal textual curto, usado junto com a cor (cor nunca é o único indicador). */
     public function glyph(): string
     {

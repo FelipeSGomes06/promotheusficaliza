@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fiscaliza\Http\Controller;
 
 use Fiscaliza\Application\AuthenticationFailed;
+use Fiscaliza\Application\NotFound;
 use Fiscaliza\Domain\RuleViolation;
 use Fiscaliza\Domain\ValidationFailed;
 use Psr\Http\Message\ResponseInterface;
@@ -36,6 +37,7 @@ final class AuthController extends Controller
         $session->regenerate();
         $session->set('user_id', (int) $user['id']);
         $session->set('auth_at', time());
+        $session->set('credential_no', (int) ($user['credential_no'] ?? 0));
         $session->set('last_activity', time());
         $session->set('_csrf', bin2hex(random_bytes(32)));
         $session->flash('success', "Olá, {$user['display_name']}. Suas alterações ficam registradas com sua autoria.");
@@ -81,6 +83,24 @@ final class AuthController extends Controller
         }
 
         return $this->redirect($response, '/contas');
+    }
+
+    /** @param array<string, string> $args */
+    public function resetPassword(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $id = self::id($args);
+        try {
+            $password = $this->services->auth()->resetPassword($id, $this->userId($request));
+        } catch (RuleViolation|NotFound $e) {
+            $this->session($request)->flash('error', $e->getMessage());
+
+            return $this->redirect($response, '/contas');
+        }
+        $users = $this->services->auth()->users();
+        $username = array_values(array_filter($users, static fn(array $u): bool => (int) $u['id'] === $id))[0]['username'] ?? '';
+
+        // Como na criação: a senha nova aparece uma única vez nesta resposta (não vai para sessão, log nem histórico).
+        return $this->render($request, $response, 'accounts/index.twig', ['users' => $users, 'created' => null, 'reset' => ['username' => $username, 'password' => $password], 'errors' => []]);
     }
 
     /** Destino pós-login: somente caminho interno do próprio prefixo (evita redirecionamento aberto). */

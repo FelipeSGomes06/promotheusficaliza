@@ -37,6 +37,8 @@ final class FineFilters
         public readonly ?string $until = null,
         public readonly string $record = 'ativo',
         public readonly string $sort = 'ocorrencia',
+        /** Só as que estão "A conferir" (o mesmo critério do resumo; o lembrete conta a partir do dia escolhido). */
+        public readonly bool $attention = false,
     ) {}
 
     /** @param array<string, mixed> $query */
@@ -83,6 +85,7 @@ final class FineFilters
             $until,
             $pick('cadastro', array_keys(self::RECORDS)) ?? 'ativo',
             $pick('ordem', array_keys(self::SORTS)) ?? 'ocorrencia',
+            $str('conferir') === '1',
         );
         $filters->errors = $errors;
 
@@ -112,7 +115,7 @@ final class FineFilters
     public function moreCount(): int
     {
         return count(array_filter([$this->agency, $this->radar, $this->agent, $this->document, $this->payment, $this->from, $this->until]))
-            + ($this->record !== 'ativo' ? 1 : 0) + ($this->sort !== 'ocorrencia' ? 1 : 0);
+            + ($this->record !== 'ativo' ? 1 : 0) + ($this->sort !== 'ocorrencia' ? 1 : 0) + ($this->attention ? 1 : 0);
     }
 
     public function isEmpty(): bool
@@ -127,6 +130,7 @@ final class FineFilters
             'q' => $this->q, 'origem' => $this->source, 'etapa' => $this->stage, 'orgao' => $this->agency, 'radar' => $this->radar,
             'agente' => $this->agent, 'documentacao' => $this->document, 'pagamento' => $this->payment, 'de' => $this->from, 'ate' => $this->until,
             'cadastro' => $this->record === 'ativo' ? null : $this->record, 'ordem' => $this->sort === 'ocorrencia' ? null : $this->sort,
+            'conferir' => $this->attention ? '1' : null,
         ], static fn($v) => $v !== null && $v !== '');
     }
 }

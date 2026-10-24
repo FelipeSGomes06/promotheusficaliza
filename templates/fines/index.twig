@@ -21,7 +21,7 @@
     <li class="kpi"><span class="kpi__n kpi__n--warn">{{ result.attention }}</span><span class="kpi__label">a conferir</span></li>
     <li class="kpi"><span class="kpi__n">{{ result.paid }}</span><span class="kpi__label">pagas</span></li>
   </ul>
-  <p class="hint">Os três números contam as multas da lista abaixo, com os mesmos filtros. "Pagas" são as que alguém anotou como pagas aqui.</p>
+  <p class="hint">Os três números contam as multas da lista abaixo, com os mesmos filtros. "Pagas" são as que alguém anotou como pagas aqui.{% if result.attention > 0 and not f.attention %} <a href="{{ url('/multas', query|merge({conferir: '1'})) }}">Ver só as {{ result.attention }} a conferir</a>.{% endif %}</p>
 
   {% if f.errors is not empty %}
     <div class="flash flash--error section" role="alert">{% for msg in f.errors %}{{ msg }} {% endfor %}O restante do filtro foi aplicado.</div>
@@ -56,6 +56,7 @@
             <select id="cadastro" name="cadastro">{% for k, l in {ativo: 'Rascunhos e registrados', rascunho: 'Só rascunhos', registrado: 'Só registrados', cancelado: 'Só cancelados internamente', todos: 'Todos, inclusive cancelados'} %}<option value="{{ k }}" {{ f.record == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
           <div class="field"><label for="ordem">Ordenar por</label>
             <select id="ordem" name="ordem">{% for k, l in sorts %}<option value="{{ k }}" {{ f.sort == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
+          <div class="checks"><label><input type="checkbox" name="conferir" value="1" {{ f.attention ? 'checked' }}> Só as que estão a conferir</label></div>
         </div>
       </details>
       <p class="result-count"><strong>{{ result.total }}</strong> {{ result.total == 1 ? 'registro' : 'registros' }}{{ f.isEmpty ? '' : ' no filtro' }}
@@ -83,7 +84,7 @@
           </span>
           <span class="row__meta">{{ fine.state(r.record_state) }}
             <span class="tag">{{ stages[r.process_stage] }}</span>
-            {{ fine.doc(r.occ_doc_status, r.occ_doc_review_on, today) }}
+            {{ fine.doc(r.occ_doc_status, r.doc_review_on, today) }}
             {% if r.attention is not empty %}<span class="tag tag--warn">A conferir: {{ r.attention|length }}</span>{% endif %}
             {% if r.payment_status == 'PAGAMENTO_INFORMADO' %}<span class="tag">Paga</span>{% endif %}</span>
         </a></li>

@@ -1,0 +1,188 @@
+{
+  "base": "http://127.0.0.1:8097/promotheusfiscaliza",
+  "quando": "2026-10-24T22:26:40.306Z",
+  "capturas": [
+    "01-r02-nao-instalado-1440",
+    "02-r02-quadro-1440",
+    "03-r03-pendencia-antiga-1440",
+    "04-r07-missao-pela-ficha-1440",
+    "05-r08-central-1440",
+    "06-r05-resultado-nao-confirmado-1440",
+    "07-r04-lembrete-posterior-1440",
+    "08-r04-lista-a-conferir-1440",
+    "09-r01-retificacao-recusada-1440",
+    "10-r06-contas-1440",
+    "11-r06-sessao-encerrada-1440",
+    "12-nao-instalado-390",
+    "12-central-390",
+    "12-multa-390",
+    "12-contas-390",
+    "13-r01-retificacao-390"
+  ],
+  "verificacoes": {
+    "r02_preRequisito_junto_do_formulario": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r02_proxima_acao_continua_instalacao": {
+      "ok": true,
+      "detalhe": "Próxima ação\n\nRegistrar a instalação quando ela acontecer\n\nAo mudar a situação para \"Operacional\", o local planejado passa a ser o local de instalação.\n\nOrdem #3588 agendada. A intervenção só pode começar depois da instalação (ou da entrada em operação, se for um recurso móvel). Até lá, a ordem fica agendada.\n\nMudar situação"
+    },
+    "r02_sem_botao_iniciar": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r02_impedimento_na_ordem_e_cancelar": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r02_quadro_sem_iniciar_com_link": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r03_fila_leva_a_ordem": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r03_proxima_acao_ve_a_antiga": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r03_limite_explicito": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r03_arquivar_pede_cancelar_a_antiga": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r03_cancelada_pela_ficha": {
+      "ok": true,
+      "detalhe": "FeitoOrdem cancelada."
+    },
+    "r07_todas_as_vigentes_com_acao": {
+      "ok": true,
+      "detalhe": 22
+    },
+    "r07_ficha_do_agente_leva_a_missao": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r07_concluida": {
+      "ok": true,
+      "detalhe": "FeitoMissão fictícia #90 concluída; o agente volta a ficar disponível para sugestões."
+    },
+    "r08_resumo_qualificado": {
+      "ok": true,
+      "detalhe": "39/44\noperacionais\n1 com sinal"
+    },
+    "r05_nao_afirma_que_nada_mudou": {
+      "ok": true,
+      "detalhe": [
+        "Falha simulada: resultado não confirmado\n\nNão foi possível confirmar o resultado. Atualize os dados antes de tentar novamente.\n\nAtualizar agora"
+      ]
+    },
+    "r05_reconfere_e_orienta": {
+      "ok": true,
+      "detalhe": [
+        "Falha simulada: confira o resultado\n\nO servidor não confirmou a ação. Dados atualizados às 19:27:20: veja na ficha se ela aparece antes de tentar novamente."
+      ]
+    },
+    "r05_servidor_tinha_registrado": {
+      "ok": true,
+      "detalhe": "FALHA"
+    },
+    "r04_texto_do_lembrete": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r04_ficha_mostra_o_lembrete": {
+      "ok": true,
+      "detalhe": "FeitoConferência documental registrada (informação manual)."
+    },
+    "r04_filtro_a_conferir": {
+      "ok": true,
+      "detalhe": "39\nregistros no filtro\n26\na conferir\n8\npagas"
+    },
+    "r04_nova_conferencia_substitui": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r01_recusa_nomeia_as_datas": {
+      "ok": true,
+      "detalhe": "Corrija o campo abaixo. O que você digitou foi mantido.\nData e hora da ocorrência: A nova data fica depois do que já está anotado na situação da multa (aviso de infração enviado em 04/09/2026; aviso de infração recebido em 09/09/2026). Use uma data até 04/09/2026 ou, se essa anotação estiver errada, corrija-a antes na situação da multa (com o motivo; a anterior fica no histórico)."
+    },
+    "r01_digitacao_mantida": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r01_campo_associado_e_caminho": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r01_nada_gravado": {
+      "ok": true,
+      "detalhe": "2026-08-25T13:30"
+    },
+    "r06_login_inicial": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r06_foco_visivel_no_botao": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r06_senha_nova_mostrada_uma_vez": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r06_autoria_e_instante": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r06_sessao_aberta_encerrada": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r06_login_orienta_senha_perdida": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r06_senha_anterior_recusada": {
+      "ok": true,
+      "detalhe": null
+    },
+    "r06_senha_nova_aceita": {
+      "ok": true,
+      "detalhe": null
+    },
+    "celular_sem_rolagem_lateral": {
+      "ok": true,
+      "detalhe": {
+        "nao-instalado-390": true,
+        "historico-390": true,
+        "manutencao-390": true,
+        "planejar-390": true,
+        "central-390": true,
+        "multa-390": true,
+        "multas-390": true,
+        "contas-390": true,
+        "retificacao-390": true,
+        "nao-instalado-360": true,
+        "historico-360": true,
+        "manutencao-360": true,
+        "planejar-360": true,
+        "central-360": true,
+        "multa-360": true,
+        "multas-360": true,
+        "contas-360": true,
+        "retificacao-360": true
+      }
+    },
+    "console_sem_erros_nem_csp": {
+      "ok": true,
+      "detalhe": []
+    }
+  },
+  "console": []
+}
