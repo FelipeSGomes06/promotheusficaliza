@@ -73,6 +73,18 @@ final class ReviewFlowsHttpTest extends FirebirdTestCase
         return $this->services->maintenance()->open($equipmentId, ['kind' => 'CORRETIVA', 'priority' => 'IMEDIATA', 'reason' => 'Inspeção de teste.'], $actor);
     }
 
+    /** Furtado: a próxima ação pede a decisão (repor ou dar baixa) ali mesmo, sem mandar para o fim da página. */
+    public function testStolenEquipmentAsksForReplacementOrWriteOffInTheNextAction(): void
+    {
+        $this->loginAs('OPERADOR');
+        $id = $this->createEquipment(['status' => 'FURTADO', 'serial_number' => 'FUR-A']);
+
+        $html = $this->page("/equipamentos/{$id}");
+        self::assertStringContainsString('O equipamento será reposto?', $html);
+        self::assertStringContainsString('name="status" value="NAO_INSTALADO"', $html);
+        self::assertStringContainsString('name="status" value="DESATIVADO"', $html);
+    }
+
     /** R02: a próxima ação e o quadro só oferecem iniciar quando o serviço aceita; o pré-requisito aparece junto. */
     public function testMaintenanceStartIsOfferedOnlyWhenTheEquipmentCanEnterMaintenance(): void
     {
