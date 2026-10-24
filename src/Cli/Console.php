@@ -112,9 +112,9 @@ final class Console
 
             return 0;
         }
-        if ($meta->text('fines_seed') === FineScenario::PREVIOUS) {
+        if (in_array($meta->text('fines_seed'), FineScenario::PREVIOUS, true)) {
             $count = FineScenario::upgrade($owner);
-            echo 'Cenário de multas atualizado para ' . FineScenario::VERSION . ": {$count} registro(s) com relato descritivo (alterações no histórico de cada um). Nada foi apagado.\n";
+            echo 'Cenário de demonstração atualizado para ' . FineScenario::VERSION . ": {$count} registro(s) alterado(s), cada um com a mudança no histórico. Nada foi apagado.\n";
 
             return 0;
         }
@@ -249,10 +249,11 @@ final class Console
               migrate                         aplica migrações pendentes e concede DML ao usuário da aplicação
               demo:seed [--reset] [--perfil=compacto|completo]
                                               carrega o cenário sintético de Marília (--reset apaga e recarrega;
-                                              compacto = 16 equipamentos e 7 agentes, o padrão; completo = 48 e 21)
+                                              compacto = 17 equipamentos e 7 agentes, o padrão; completo = 48 e 21)
               demo:seed-multas                acrescenta o cenário de multas (12 ou 40, conforme o perfil) a uma
                                               demonstração já carregada, sem apagar nada; repetir não duplica;
-                                              uma carga da versão anterior é atualizada (relatos)
+                                              uma carga de versão anterior é atualizada (relatos, modalidade dos
+                                              radares e o caso do radar portátil)
               user:create <usuario> [--role=ADMIN|OPERADOR] [--name="Nome"]
                                               cria conta com senha gerada (exibida uma vez)
               sim:tick                        executa um ciclo do simulador (para cron); ignora o ciclo se

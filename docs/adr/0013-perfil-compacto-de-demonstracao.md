@@ -11,6 +11,8 @@ características, situações e exemplos de manutenção e localização.
 
 - **compacto (padrão): 16 equipamentos e 7 agentes** — 4 radares, 4 câmeras, 1 balança, 1 cancela, 1 totem,
   3 veículos e 2 patinetes; 3 agentes de trânsito, 2 guardas e 2 policiais. Redução de 66,7% (46 de 69).
+  **Desde 24/10/2026, 17 equipamentos (5 radares):** entrou o radar portátil VS3-23-00088, usado no caso de multa com
+  agente operador (ver adendo da [ADR-0017](0017-aba-multas.md)). O perfil completo não mudou.
 - **completo: 48 e 21**, para testes de volume e para a metodologia da análise.
 
 O compacto é uma **curadoria por série** (não corte aleatório): cada item cobre mais de uma capacidade.

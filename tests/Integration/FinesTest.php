@@ -7,6 +7,7 @@ namespace Fiscaliza\Tests\Integration;
 use Fiscaliza\Application\FineFilters;
 use Fiscaliza\Application\FineService;
 use Fiscaliza\Cli\Console;
+use Fiscaliza\Demo\FineScenario;
 use Fiscaliza\Domain\RuleViolation;
 use Fiscaliza\Domain\ValidationFailed;
 use Fiscaliza\Infrastructure\ConcurrencyConflict;
@@ -545,10 +546,28 @@ final class FinesTest extends FirebirdTestCase
         $owner->metaRepository()->set('fines_seed', 'multas-v1', 12, '2026-10-18 15:00:00');
         [$code, $out] = $run();
         self::assertSame([0, true], [$code, str_contains($out, 'atualizado')], $out);
-        self::assertSame('multas-v2', $owner->metaRepository()->text('fines_seed'));
+        self::assertSame(FineScenario::VERSION, $owner->metaRepository()->text('fines_seed'));
         self::assertSame(0, (int) $owner->database()->value("SELECT COUNT(*) FROM FINE WHERE CREATED_SOURCE = 'SEMENTE' AND RECORD_STATE <> 'CANCELADO' AND NOTES IS NULL"));
         self::assertSame(0, (int) $owner->database()->value("SELECT COUNT(*) FROM FINE WHERE SOURCE_KIND = 'RADAR' AND VEHICLE_PLATE IS NULL"), 'todo registro de radar tem placa');
         self::assertSame(13, (int) $owner->database()->value('SELECT COUNT(*) FROM FINE'));
+
+        // Carga v2 (radares sem modalidade; caso 2 com operador na lombada): modalidade informada e caso 2 no portátil.
+        $db = $owner->database();
+        $id = static fn(string $serial): int => (int) $db->value('SELECT ID FROM EQUIPMENT WHERE SERIAL_NUMBER = ?', [$serial]);
+        foreach ($db->all("SELECT ID, SPECS FROM EQUIPMENT WHERE TYPE_CODE = 'RADAR'") as $r) {
+            $db->execute('UPDATE EQUIPMENT SET SPECS = ? WHERE ID = ?', [json_encode(array_diff_key(json_decode($r['specs'], true), ['modality' => 0])), $r['id']]);
+        }
+        $c02 = (int) $db->value("SELECT ID FROM FINE WHERE EXTERNAL_AIT = 'DEMO-AIT-26-000102'");
+        $db->execute('UPDATE FINE SET EQUIPMENT_ID = ? WHERE ID = ?', [$id('PCL-0042'), $c02]);
+        $owner->metaRepository()->set('fines_seed', 'multas-v2', 12, '2026-10-18 15:00:00');
+        [$code, $out] = $run();
+        self::assertSame([0, true], [$code, str_contains($out, 'atualizado')], $out);
+        $modality = static fn(string $serial): ?string => json_decode((string) $db->value('SELECT SPECS FROM EQUIPMENT WHERE ID = ?', [$id($serial)]), true)['modality'] ?? null;
+        self::assertSame(['FIXO', 'PORTATIL'], [$modality('PCL-0042'), $modality('VS3-23-00088')]);
+        $f = $this->services->fineRepository()->find($c02);
+        self::assertSame([$id('VS3-23-00088'), 'PORTATIL', 60], [(int) $f['equipment_id'], $f['source_snapshot']['radar']['modalidade'], (int) $f['speed_limit_kmh']], 'retificado pelo caso de uso, com retrato novo');
+        self::assertSame([0, true], [$run()[0], str_contains($run()[1], 'nada foi duplicado')], 'repetir não refaz a atualização');
+        self::assertSame(13, (int) $db->value('SELECT COUNT(*) FROM FINE'));
         $owner->metaRepository()->set('fines_seed', 'versao-antiga', 0, '2026-10-18 15:00:00');
         self::assertSame(1, $run()[0], 'carga de outra versão já presente: conflito, sem tocar em nada');
         self::assertSame(13, (int) $owner->database()->value('SELECT COUNT(*) FROM FINE'));

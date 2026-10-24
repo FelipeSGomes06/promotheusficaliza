@@ -109,7 +109,7 @@ estavam arquivados; ajusta o limiar numa janela, avalia em outra e grava a execu
 
 | Arquivo | Finalidade |
 |---|---|
-| `Demo/DemoScenario.php` | Dados sintéticos: órgãos, bairros, bases e os perfis **compacto** (16 equipamentos e 7 agentes, padrão) e **completo** (48 e 21) — [ADR-0013](adr/0013-perfil-compacto-de-demonstracao.md). |
+| `Demo/DemoScenario.php` | Dados sintéticos: órgãos, bairros, bases e os perfis **compacto** (17 equipamentos e 7 agentes, padrão) e **completo** (48 e 21) — [ADR-0013](adr/0013-perfil-compacto-de-demonstracao.md). |
 | `Demo/DemoSeeder.php` | Carga + 240 dias de histórico reproduzível (falhas, corretivas, preventivas com atraso). |
 | `Demo/FineScenario.php` | Cenário de multas (12 casos curados ou 40), gravado pelos casos de uso; também pelo `demo:seed-multas`, sem apagar nada. |
 | `Demo/Simulator.php` | Ciclo ao vivo: sinais, falhas/recuperações, deslocamentos, duplicatas e atrasos intencionais. |

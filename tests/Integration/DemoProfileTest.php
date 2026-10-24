@@ -36,16 +36,16 @@ final class DemoProfileTest extends FirebirdTestCase
         $equipment = array_values(array_filter($snap['resources'], static fn($r) => $r['kind'] === 'EQUIPAMENTO'));
         $agents = array_values(array_filter($snap['resources'], static fn($r) => $r['kind'] === 'AGENTE'));
 
-        self::assertCount(16, $equipment);
+        self::assertCount(17, $equipment);
         self::assertCount(7, $agents);
-        self::assertSame(16, $snap['kpis']['equipment']['total'], 'indicadores contam o perfil carregado, não o cenário cheio');
+        self::assertSame(17, $snap['kpis']['equipment']['total'], 'indicadores contam o perfil carregado, não o cenário cheio');
         self::assertSame(7, $snap['kpis']['agents']['total']);
         self::assertSame(DemoScenario::COMPACT, $this->services->metaRepository()->text('profile'));
 
         $count = static fn(array $rows, string $key) => array_count_values(array_column($rows, $key));
         $categories = $count($equipment, 'category') + $count($agents, 'category');
         ksort($categories);
-        self::assertSame(['AG_GUARDA' => 2, 'AG_POLICIA' => 2, 'AG_TRANSITO' => 3, 'BALANCA' => 1, 'CAMERA' => 4, 'CANCELA' => 1, 'PATINETE' => 2, 'RADAR' => 4, 'TOTEM' => 1, 'VEICULO' => 3], $categories);
+        self::assertSame(['AG_GUARDA' => 2, 'AG_POLICIA' => 2, 'AG_TRANSITO' => 3, 'BALANCA' => 1, 'CAMERA' => 4, 'CANCELA' => 1, 'PATINETE' => 2, 'RADAR' => 5, 'TOTEM' => 1, 'VEICULO' => 3], $categories);
         self::assertEqualsCanonicalizing(array_map(static fn($s) => $s->value, EquipmentStatus::cases()), array_keys($count($equipment, 'status')), 'todas as situações de equipamento');
         self::assertEqualsCanonicalizing(array_map(static fn($s) => $s->value, AgentStatus::cases()), array_keys($count($agents, 'status')), 'todas as situações de agente');
 
