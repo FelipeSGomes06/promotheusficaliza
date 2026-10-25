@@ -1,5 +1,6 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
+{% import '_ajuda.twig' as ajuda %}
 {% set place = [e.street, e.address_ref]|filter(v => v)|join(', ') %}
 {% set headline = (type ? type.shortLabel : e.type_code) ~ ' · ' ~ (place ?: (e.region_name ?? 'sem endereço cadastrado')) %}
 {% block title %}{{ headline }}{% endblock %}
@@ -54,7 +55,7 @@
           {% if editable %}
             <form method="post" action="{{ url('/equipamentos/' ~ e.id ~ '/situacao') }}" class="next-action__form">{{ ui.csrf(app.csrf) }}
               <fieldset class="candidates">
-                <legend>O equipamento será reposto?</legend>
+                <legend>O equipamento será reposto? {{ ui.help('ajuda-furtado', 'reposição ou baixa', ajuda.stolen_decision(mobile)) }}</legend>
                 <label class="candidate">
                   <input type="radio" name="status" value="NAO_INSTALADO" required>
                   <span><span class="candidate__title">Sim, repor</span>
@@ -66,7 +67,7 @@
                     <span class="candidate__sub">Passa a "Desativado": sai de uso e o histórico fica preservado.{{ nextOrder ? ' Depois, cancele a ordem agendada.' }}</span></span>
                 </label>
               </fieldset>
-              <div class="field"><label for="fd">Motivo</label><input id="fd" name="note" required maxlength="300" placeholder="Ex.: boletim de ocorrência, decisão do órgão"></div>
+              <div class="field"><div class="field__head"><label for="fd">Motivo</label>{{ ui.help('fd-tip', 'Motivo', ajuda.reason()) }}</div><input id="fd" name="note" required maxlength="300" placeholder="Ex.: boletim de ocorrência, decisão do órgão" aria-describedby="fd-tip"></div>
               <div><button class="btn btn--primary" type="submit">Registrar decisão</button></div>
             </form>
           {% endif %}
@@ -90,7 +91,7 @@
           {% if nextOrder %}<p class="muted">Ordem #{{ nextOrder.id }} agendada. {{ blocker }}</p>{% endif %}
           {% if editable %}
             <form method="post" action="{{ url('/equipamentos/' ~ e.id ~ '/situacao') }}" class="next-action__form">{{ ui.csrf(app.csrf) }}<input type="hidden" name="status" value="OPERACIONAL">
-              <div class="field"><label for="in">Motivo</label><input id="in" name="note" required maxlength="300" placeholder="{{ mobile ? 'Ex.: recurso entregue e testado' : 'Ex.: instalação concluída e testada' }}"></div>
+              <div class="field"><div class="field__head"><label for="in">Motivo</label>{{ ui.help('in-tip', 'Motivo', ajuda.reason()) }}</div><input id="in" name="note" required maxlength="300" aria-describedby="in-tip" placeholder="{{ mobile ? 'Ex.: recurso entregue e testado' : 'Ex.: instalação concluída e testada' }}"></div>
               <div><button class="btn btn--primary" type="submit">{{ mobile ? 'Registrar entrada em operação' : 'Registrar instalação' }}</button></div>
             </form>
           {% endif %}
@@ -148,9 +149,9 @@
               {% elseif editable and o.state == 'EM_EXECUCAO' %}
                 <form method="post" action="{{ url('/manutencoes/' ~ o.id ~ '/concluir') }}" class="complete-form">{{ ui.csrf(app.csrf) }}<input type="hidden" name="voltar" value="/equipamentos/{{ e.id }}#manutencao">
                   <div class="field"><label for="res-{{ o.id }}">O que foi feito</label><textarea id="res-{{ o.id }}" name="resolution" required maxlength="500"></textarea></div>
-                  <div class="field"><label for="rs-{{ o.id }}">Como o equipamento ficou?</label>
+                  <div class="field"><div class="field__head"><label for="rs-{{ o.id }}">Como o equipamento ficou?</label>{{ ui.help('rs-' ~ o.id ~ '-tip', 'Como o equipamento ficou', ajuda.maint_result()) }}</div>
                     <span class="hint" id="rs-{{ o.id }}-h">Esta situação passa a valer para o equipamento. Concluir não prova que voltou a funcionar: informe o resultado real.</span>
-                    <select id="rs-{{ o.id }}" name="result_status" required aria-describedby="rs-{{ o.id }}-h"><option value="">Escolha o resultado</option><option value="OPERACIONAL">Operacional (testado e funcionando)</option><option value="FALHA">Continua com mau funcionamento</option><option value="DESATIVADO">Desativado (retirado de uso)</option></select></div>
+                    <select id="rs-{{ o.id }}" name="result_status" required aria-describedby="rs-{{ o.id }}-h rs-{{ o.id }}-tip"><option value="">Escolha o resultado</option><option value="OPERACIONAL">Operacional (testado e funcionando)</option><option value="FALHA">Continua com mau funcionamento</option><option value="DESATIVADO">Desativado (retirado de uso)</option></select></div>
                   <div><button class="btn btn--primary" type="submit">Concluir ordem</button></div>
                 </form>
               {% endif %}
@@ -170,9 +171,9 @@
         {% if editable %}
           <details class="more-actions" id="nova-ordem" {{ e.status == 'FALHA' and not running and not urgent ? 'open' }}><summary>Abrir ordem de manutenção</summary>
             <form method="post" action="{{ url('/equipamentos/' ~ e.id ~ '/manutencoes') }}" class="panel form-grid">{{ ui.csrf(app.csrf) }}
-              <div class="field"><label for="mk">Tipo</label><select id="mk" name="kind"><option value="CORRETIVA">Corretiva (consertar)</option><option value="PREVENTIVA">Preventiva (revisar)</option></select></div>
-              <div class="field"><label for="mp">Quando</label><select id="mp" name="priority"><option value="IMEDIATA">Imediata</option><option value="PROGRAMADA">Programada (escolha a data)</option></select></div>
-              <div class="field"><label for="md">Data programada <span class="optional">(só para programada)</span></label><input id="md" type="date" name="due_date" min="{{ today }}"><span class="hint">Data local de Marília. Agendar não tira o equipamento de operação.</span></div>
+              <div class="field"><div class="field__head"><label for="mk">Tipo</label>{{ ui.help('mk-tip', 'Tipo de manutenção', ajuda.maint_kind()) }}</div><select id="mk" name="kind" aria-describedby="mk-tip"><option value="CORRETIVA">Corretiva (consertar)</option><option value="PREVENTIVA">Preventiva (revisar)</option></select></div>
+              <div class="field"><div class="field__head"><label for="mp">Quando</label>{{ ui.help('mp-tip', 'Quando: imediata ou programada', ajuda.maint_priority()) }}</div><select id="mp" name="priority" aria-describedby="mp-tip"><option value="IMEDIATA">Imediata</option><option value="PROGRAMADA">Programada (escolha a data)</option></select></div>
+              <div class="field"><div class="field__head"><label for="md">Data programada <span class="optional">(só para programada)</span></label>{{ ui.help('md-tip', 'Data programada', ajuda.maint_due()) }}</div><input id="md" type="date" name="due_date" min="{{ today }}" aria-describedby="md-tip"><span class="hint">Data local de Marília. Agendar não tira o equipamento de operação.</span></div>
               <div class="field span-2"><label for="mr">Motivo</label><input id="mr" name="reason" required maxlength="300"></div>
               {% if blocker %}<p class="hint span-2">Nesta situação dá para agendar, mas não para iniciar. {{ blocker }}</p>{% endif %}
               <div class="span-2"><button class="btn btn--primary" type="submit">Abrir ordem</button></div>
@@ -270,10 +271,10 @@
             {% if running %}
               <p class="hint">Há uma intervenção em execução (ordem #{{ running.id }}): a situação será definida ao concluí-la.</p>
             {% else %}
-              <div class="field"><label for="ns">Nova situação</label>
-                <select id="ns" name="status" required><option value="">Escolha…</option>{% for t in transitions %}<option value="{{ t.value }}">{{ t.label }}</option>{% endfor %}</select>
+              <div class="field"><div class="field__head"><label for="ns">Nova situação</label>{{ ui.help('ns-tip', 'Nova situação', ajuda.status_change(status)) }}</div>
+                <select id="ns" name="status" required aria-describedby="ns-tip"><option value="">Escolha…</option>{% for t in transitions %}<option value="{{ t.value }}">{{ t.label }}</option>{% endfor %}</select>
                 <span class="hint">Só aparecem as mudanças possíveis a partir de "{{ status.label }}". Fica no histórico com o motivo.</span></div>
-              <div class="field"><label for="nn">Motivo</label><input id="nn" name="note" required maxlength="300"></div>
+              <div class="field"><div class="field__head"><label for="nn">Motivo</label>{{ ui.help('nn-tip', 'Motivo', ajuda.reason()) }}</div><input id="nn" name="note" required maxlength="300" aria-describedby="nn-tip"></div>
               <div><button class="btn btn--small" type="submit">Registrar mudança</button></div>
             {% endif %}
           </form>

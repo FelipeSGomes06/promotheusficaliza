@@ -1,5 +1,6 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
+{% import '_ajuda.twig' as ajuda %}
 {% block title %}Equipamentos{% endblock %}
 {% block content %}
 {% set moreActive = (filters.regions|length > 0 ? 1 : 0) + (filters.agencies|length > 0 ? 1 : 0) + (archived ? 1 : 0) + (sort != 'codigo' ? 1 : 0) %}
@@ -17,8 +18,8 @@
       <div class="field field--search"><label for="q">Buscar</label><input id="q" type="search" name="q" value="{{ q }}" placeholder="Rua, código, série, marca ou patrimônio" maxlength="60"></div>
       <div class="field"><label for="tipo">Tipo</label>
         <select id="tipo" name="categoria[]"><option value="">Todos os tipos</option>{% for t in types %}<option value="{{ t.code }}" {{ t.code in filters.categories ? 'selected' }}>{{ t.label }}</option>{% endfor %}</select></div>
-      <div class="field"><label for="sit">Situação</label>
-        <select id="sit" name="situacao[]"><option value="">Todas as situações</option>{% for s in options.statuses|filter(s => s.group == 'Equipamentos') %}<option value="{{ s.value }}" {{ s.value in filters.statuses ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select></div>
+      <div class="field"><div class="field__head"><label for="sit">Situação</label>{{ ui.help('sit-tip', 'Situação', ajuda.equipment_status()) }}</div>
+        <select id="sit" name="situacao[]" aria-describedby="sit-tip"><option value="">Todas as situações</option>{% for s in options.statuses|filter(s => s.group == 'Equipamentos') %}<option value="{{ s.value }}" {{ s.value in filters.statuses ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select></div>
     </div>
     <div class="filter-bar">
       <button class="btn btn--primary" type="submit">{{ ui.icon('i-filter') }}<span>Filtrar</span></button>

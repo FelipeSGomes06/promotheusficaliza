@@ -1,5 +1,6 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
+{% import '_ajuda.twig' as ajuda %}
 {% block title %}{{ existing ? 'Editar ' ~ existing.code : 'Cadastrar equipamento' }}{% endblock %}
 {% block head %}<link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}">{% endblock %}
 {% block scripts %}<script src="{{ asset('vendor/leaflet/leaflet.js') }}" defer></script>{% endblock %}
@@ -52,26 +53,26 @@
       <legend><span class="form-step__n" aria-hidden="true">1</span> O que é</legend>
       <div class="form-grid">
         <div class="field {{ errors.type_code is defined ? 'has-error' }}">
-          <label for="f-type_code">Tipo <span class="req" aria-hidden="true">*</span></label>
-          <select id="f-type_code" name="type_code" data-type-select required {% if errors.type_code is defined %}aria-invalid="true" aria-describedby="err-type_code"{% endif %}>
+          <div class="field__head"><label for="f-type_code">Tipo <span class="req" aria-hidden="true">*</span></label>{{ ui.help('f-type_code-tip', 'Tipo', ajuda.equipment_type(types)) }}</div>
+          <select id="f-type_code" name="type_code" data-type-select required {% if errors.type_code is defined %}aria-invalid="true"{% endif %} aria-describedby="{{ errors.type_code is defined ? 'err-type_code ' }}f-type_code-tip">
             {% for t in types %}<option value="{{ t.code }}" data-mobile="{{ t.mobile ? '1' : '0' }}" {{ (v.type_code ?? '') == t.code ? 'selected' }}>{{ t.label }}</option>{% endfor %}
           </select>
           {{ ui.field_error(errors, 'type_code') }}
         </div>
         {% if not existing %}
-          {{ ui.select('status', 'Situação inicial', {NAO_INSTALADO: 'Não instalado (ainda vai ser instalado ou entrar em operação)', OPERACIONAL: 'Operacional', FALHA: 'Mau funcionamento', MANUTENCAO: 'Em manutenção', DESATIVADO: 'Desativado', FURTADO: 'Furtado'}, v.status ?? 'NAO_INSTALADO', errors, {required: true}) }}
+          {{ ui.select('status', 'Situação inicial', {NAO_INSTALADO: 'Não instalado (ainda vai ser instalado ou entrar em operação)', OPERACIONAL: 'Operacional', FALHA: 'Mau funcionamento', MANUTENCAO: 'Em manutenção', DESATIVADO: 'Desativado', FURTADO: 'Furtado'}, v.status ?? 'NAO_INSTALADO', errors, {required: true, help_tip: ajuda.equipment_status()}) }}
         {% else %}
-          <div class="field"><span class="label">Situação</span><span>{{ ui.equipment_status(existing.status) }}</span><span class="hint">Mude a situação pela ficha: fica no histórico com o motivo.</span></div>
+          <div class="field"><div class="field__head"><span class="label">Situação</span>{{ ui.help('f-status-tip', 'Situação', ajuda.equipment_status()) }}</div><span>{{ ui.equipment_status(existing.status) }}</span><span class="hint">Mude a situação pela ficha: fica no histórico com o motivo.</span></div>
         {% endif %}
         {{ ui.input('manufacturer', 'Marca', v, errors, {required: true, max: 80}) }}
         {{ ui.input('model', 'Modelo', v, errors, {required: true, max: 80}) }}
         <div class="field {{ errors.agency_id is defined ? 'has-error' }}">
-          <label for="f-agency_id">Órgão responsável <span class="req" aria-hidden="true">*</span></label>
-          <select id="f-agency_id" name="agency_id" required {% if errors.agency_id is defined %}aria-invalid="true" aria-describedby="err-agency_id"{% endif %}><option value="">Escolha…</option>{% for a in agencies %}<option value="{{ a.id }}" {{ ((v.agency_id ?? '') ~ '') == (a.id ~ '') ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select>
+          <div class="field__head"><label for="f-agency_id">Órgão responsável <span class="req" aria-hidden="true">*</span></label>{{ ui.help('f-agency_id-tip', 'Órgão responsável', ajuda.agency()) }}</div>
+          <select id="f-agency_id" name="agency_id" required {% if errors.agency_id is defined %}aria-invalid="true"{% endif %} aria-describedby="{{ errors.agency_id is defined ? 'err-agency_id ' }}f-agency_id-tip"><option value="">Escolha…</option>{% for a in agencies %}<option value="{{ a.id }}" {{ ((v.agency_id ?? '') ~ '') == (a.id ~ '') ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select>
           {{ ui.field_error(errors, 'agency_id') }}
         </div>
-        {{ ui.input('serial_number', 'Série do fabricante', v, errors, {max: 60, help: 'Única por marca. Deixe em branco se não souber.'}) }}
-        {{ ui.input('asset_tag', 'Patrimônio', v, errors, {max: 30, help: 'Número da plaqueta, se houver. Único.'}) }}
+        {{ ui.input('serial_number', 'Série do fabricante', v, errors, {max: 60, help: 'Única por marca. Deixe em branco se não souber.', help_tip: ajuda.serial()}) }}
+        {{ ui.input('asset_tag', 'Patrimônio', v, errors, {max: 30, help: 'Número da plaqueta, se houver. Único.', help_tip: ajuda.asset_tag()}) }}
       </div>
     </fieldset>
 
@@ -79,12 +80,12 @@
       <legend><span class="form-step__n" aria-hidden="true">2</span> Onde fica</legend>
       <p class="hint">Todo equipamento tem um local, mesmo o planejado: é onde ele está ou vai ficar, para a utilidade que se planejou.</p>
       <div class="form-grid">
-        {{ ui.select('location_kind', 'Este ponto é', {INSTALADO: 'Local de instalação (já instalado)', PLANEJADO: 'Local planejado (ainda não instalado)', BASE: 'Base: onde o veículo ou patinete fica guardado'}, v.location_kind ?? 'PLANEJADO', errors, {required: true, dataAttr: 'location-kind', class: 'span-2'}) }}
+        {{ ui.select('location_kind', 'Este ponto é', {INSTALADO: 'Local de instalação (já instalado)', PLANEJADO: 'Local planejado (ainda não instalado)', BASE: 'Base: onde o veículo ou patinete fica guardado'}, v.location_kind ?? 'PLANEJADO', errors, {required: true, dataAttr: 'location-kind', class: 'span-2', help_tip: ajuda.location_kind()}) }}
         <p class="hint span-2">A situação define o ponto: "Não instalado" usa local planejado; operacional, mau funcionamento, em manutenção e furtado usam o local de instalação; desativado aceita os dois.</p>
         <p class="hint span-2" data-mobile-note hidden>Veículos e patinetes usam a base como endereço; a posição atual vem das observações recebidas e é mostrada à parte.</p>
       </div>
       <p class="hint" data-without-map="picker">Sem o mapa (JavaScript desligado ou mapa que não carregou): preencha o endereço abaixo e, ao salvar, o local vai para ele.</p>
-      <p class="picker-howto" id="picker-howto" hidden data-needs-map="picker">{{ ui.icon('i-pin') }}<span><strong>Clique no mapa para marcar ou mudar o local.</strong> Não achou o lugar? Use o endereço logo abaixo.</span></p>
+      <div class="picker-howto" id="picker-howto" hidden data-needs-map="picker">{{ ui.icon('i-pin') }}<span><strong>Clique no mapa para marcar ou mudar o local.</strong> Não achou o lugar? Use o endereço logo abaixo. {{ ui.help('ajuda-ponto', 'local no mapa e coordenadas', ajuda.map_point()) }}</span></div>
       <div class="picker" id="picker" hidden data-picker data-lat="f-lat" data-lng="f-lng" data-status="picker-status" data-empty="Clique no mapa para marcar o local." data-marked="Local marcado em {ponto}. Para mudar, clique em outro ponto." data-mark-center data-tiles="{{ app.map.tiles }}" data-attribution="{{ app.map.attribution }}" role="application" aria-label="Mapa para marcar o local: clique para marcar ou mudar o ponto. Pelo teclado, mova o mapa com as setas e tecle Enter para marcar o centro." aria-describedby="picker-howto"></div>
       <p class="picker-status" id="picker-status" aria-live="polite" hidden data-needs-map="picker"></p>
       {# Latitude e longitude não são digitadas: vêm do mapa (picker.js) ou do endereço (cep.js / servidor ao salvar). #}
@@ -92,15 +93,15 @@
       <input type="hidden" id="f-lng" name="lng" value="{{ v.lng ?? '' }}">
       {% set pointError = errors.lat ?? errors.lng ?? null %}
       {% if pointError %}<p class="error base-point-error" id="err-lat" role="alert">{{ pointError }}</p>{% endif %}
-      <p class="hint base-region">Bairro: {% if existing and existing.region_name %}<strong>{{ existing.region_name }}</strong> (muda sozinho se você mudar o ponto){% else %}definido pelo ponto, ao salvar{% endif %}.</p>
+      <div class="hint base-region">Bairro {{ ui.help('ajuda-bairro', 'Bairro', ajuda.region()) }}: {% if existing and existing.region_name %}<strong>{{ existing.region_name }}</strong> (muda sozinho se você mudar o ponto){% else %}definido pelo ponto, ao salvar{% endif %}.</div>
       <p class="hint base-address__intro">Endereço: com o CEP, a rua é preenchida sozinha e pode ser corrigida. Se não marcar no mapa, o local vai para este endereço.</p>
       <div class="form-grid base-address" data-cep-lookup data-cep="f-cep" data-street="f-street" data-number="f-address_ref"
            data-url="{{ url('/api/cep/') }}" data-locate-url="{{ url('/api/localizar') }}" data-lat="f-lat" data-lng="f-lng" data-map="picker">
-        {{ ui.input('cep', 'CEP', v, errors, {max: 9, inputmode: 'numeric', placeholder: '17500-000', autocomplete: 'off'}) }}
+        {{ ui.input('cep', 'CEP', v, errors, {max: 9, inputmode: 'numeric', placeholder: '17500-000', autocomplete: 'off', help_tip: ajuda.cep()}) }}
         {# Sistema de Marília: a cidade é fixa, mostrada como campo travado (não é enviada). #}
         <div class="field"><label for="f-city">Cidade</label><input id="f-city" type="text" value="Marília / SP" readonly class="input-fixed"></div>
-        {{ ui.input('street', 'Rua', v, errors, {max: 120, placeholder: 'Ex.: Avenida Sampaio Vidal'}) }}
-        {{ ui.input('address_ref', 'Número ou referência', v, errors, {max: 160, placeholder: 'Ex.: 1200, km 3 ou em frente à praça'}) }}
+        {{ ui.input('street', 'Rua', v, errors, {max: 120, placeholder: 'Ex.: Avenida Sampaio Vidal', help_tip: ajuda.street()}) }}
+        {{ ui.input('address_ref', 'Número ou referência', v, errors, {max: 160, placeholder: 'Ex.: 1200, S/N, km 3 ou em frente à praça', help_tip: ajuda.address_ref()}) }}
         <p class="cep-street__status span-2" data-cep-status aria-live="polite"></p>
         <div class="cep-street__locate span-2" data-locate-box hidden>
           <button type="button" class="btn btn--small" data-locate>{{ ui.icon('i-pin') }}Levar o local até este endereço</button>
@@ -119,19 +120,22 @@
           {% for f in t.fields %}
             {% set key = 'specs.' ~ f.name %}
             {% set current = v.specs[f.name] ?? null %}
+            {# "?" de cada característica, com o texto do catálogo (EquipmentCatalog: tip, optionTips, faixa). #}
+            {% set tipId = 's-' ~ t.code ~ '-' ~ f.name ~ '-tip' %}
+            {% set tip = f.tip is defined ? ui.help(tipId, f.label, ajuda.spec(f)) : '' %}
             <div class="field {{ errors[key] is defined ? 'has-error' }}">
               {% if f.kind == 'bool' %}
-                <span class="label">{{ f.label }}</span>
-                <div class="checks"><label><input id="s-{{ t.code }}-{{ f.name }}" type="checkbox" name="specs[{{ f.name }}]" value="1" {{ current ? 'checked' }}> Sim</label></div>
+                <div class="field__head"><span class="label">{{ f.label }}</span>{{ tip }}</div>
+                <div class="checks"><label><input id="s-{{ t.code }}-{{ f.name }}" type="checkbox" name="specs[{{ f.name }}]" value="1" {{ current ? 'checked' }} {% if tip %}aria-describedby="{{ tipId }}"{% endif %}> Sim</label></div>
               {% elseif f.kind == 'multi' %}
-                <span class="label" id="s-{{ t.code }}-{{ f.name }}">{{ f.label }}{% if f.required ?? false %} <span class="req" aria-hidden="true">*</span>{% endif %}</span>
-                <div class="checks" role="group" aria-labelledby="s-{{ t.code }}-{{ f.name }}">{% for ov, ol in f.options %}<label><input type="checkbox" name="specs[{{ f.name }}][]" value="{{ ov }}" {{ ov in (current ?? []) ? 'checked' }}> {{ ol }}</label>{% endfor %}</div>
+                <div class="field__head"><span class="label" id="s-{{ t.code }}-{{ f.name }}">{{ f.label }}{% if f.required ?? false %} <span class="req" aria-hidden="true">*</span>{% endif %}</span>{{ tip }}</div>
+                <div class="checks" role="group" aria-labelledby="s-{{ t.code }}-{{ f.name }}" {% if tip %}aria-describedby="{{ tipId }}"{% endif %}>{% for ov, ol in f.options %}<label><input type="checkbox" name="specs[{{ f.name }}][]" value="{{ ov }}" {{ ov in (current ?? []) ? 'checked' }}> {{ ol }}</label>{% endfor %}</div>
               {% elseif f.kind == 'enum' %}
-                <label for="s-{{ t.code }}-{{ f.name }}">{{ f.label }}{% if f.required ?? false %} <span class="req" aria-hidden="true">*</span>{% endif %}</label>
-                <select id="s-{{ t.code }}-{{ f.name }}" name="specs[{{ f.name }}]"><option value="">—</option>{% for ov, ol in f.options %}<option value="{{ ov }}" {{ current == ov ? 'selected' }}>{{ ol }}</option>{% endfor %}</select>
+                <div class="field__head"><label for="s-{{ t.code }}-{{ f.name }}">{{ f.label }}{% if f.required ?? false %} <span class="req" aria-hidden="true">*</span>{% endif %}</label>{{ tip }}</div>
+                <select id="s-{{ t.code }}-{{ f.name }}" name="specs[{{ f.name }}]" {% if tip %}aria-describedby="{{ tipId }}"{% endif %}><option value="">—</option>{% for ov, ol in f.options %}<option value="{{ ov }}" {{ current == ov ? 'selected' }}>{{ ol }}</option>{% endfor %}</select>
               {% else %}
-                <label for="s-{{ t.code }}-{{ f.name }}">{{ f.label }}{% if f.unit is defined %} ({{ f.unit }}){% endif %}{% if f.required ?? false %} <span class="req" aria-hidden="true">*</span>{% endif %}</label>
-                <input id="s-{{ t.code }}-{{ f.name }}" name="specs[{{ f.name }}]" type="{{ f.kind == 'int' ? 'number' : 'text' }}" value="{{ current }}" {% if f.kind == 'int' %}min="{{ f.min }}" max="{{ f.max }}"{% else %}maxlength="{{ f.max ?? 120 }}"{% endif %}>
+                <div class="field__head"><label for="s-{{ t.code }}-{{ f.name }}">{{ f.label }}{% if f.unit is defined %} ({{ f.unit }}){% endif %}{% if f.required ?? false %} <span class="req" aria-hidden="true">*</span>{% endif %}</label>{{ tip }}</div>
+                <input id="s-{{ t.code }}-{{ f.name }}" name="specs[{{ f.name }}]" type="{{ f.kind == 'int' ? 'number' : 'text' }}" value="{{ current }}" {% if f.kind == 'int' %}min="{{ f.min }}" max="{{ f.max }}"{% else %}maxlength="{{ f.max ?? 120 }}"{% endif %} {% if tip %}aria-describedby="{{ tipId }}"{% endif %}>
               {% endif %}
               {% if f.help is defined %}<span class="hint">{{ f.help }}</span>{% endif %}
               {{ ui.field_error(errors, key) }}
@@ -141,8 +145,8 @@
         </fieldset>
       {% endfor %}
       <div class="form-grid section">
-        {{ ui.input('maint_interval_days', 'Preventiva a cada (dias)', v, errors, {type: 'number', help: 'De 7 a 730. Ao concluir uma preventiva, a próxima é agendada sozinha.'}) }}
-        {{ ui.input('installed_on', 'Data de instalação', v, errors, {type: 'date', help: 'Veículo e patinete: data em que entrou em operação.'}) }}
+        {{ ui.input('maint_interval_days', 'Preventiva a cada (dias)', v, errors, {type: 'number', help: 'De 7 a 730. Ao concluir uma preventiva, a próxima é agendada sozinha.', help_tip: ajuda.maint_interval()}) }}
+        {{ ui.input('installed_on', 'Data de instalação', v, errors, {type: 'date', help: 'Veículo e patinete: data em que entrou em operação.', help_tip: ajuda.installed_on()}) }}
         {{ ui.input('notes', 'Observações', v, errors, {type: 'textarea', max: 500, class: 'span-2'}) }}
       </div>
     </fieldset>
