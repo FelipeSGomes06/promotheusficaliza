@@ -3,7 +3,19 @@
 Ambiente: Windows 11 + Docker Desktop 29.7.2; contêineres `php:8.5.11-apache-trixie` (PDO_FIREBIRD, fbclient 4.0.5)
 e `firebirdsql/firebird:5.0.4-trixie`. Data: 18/10/2026. Só está listado aqui o que de fato rodou.
 
-## Revisão de lógica e fluxos R01–R08 (24/10/2026)
+## Ajuda contextual "?" em todas as telas (24/10/2026)
+
+Projeto Compose `pf-rev` (porta 8097; PHP 8.5.11, Firebird 5.0.4) sobre esta pasta, a partir de `main` em `ea9b5ab`.
+
+| Verificação | Resultado |
+|---|---|
+| `vendor/bin/phpunit` | **283 testes, 1914 asserções, OK** |
+| Testes novos e alterados | `HelpTipTest` (`ui.input`/`ui.select` sem `help_tip` geram o mesmo HTML de antes; "?" com `aria-label`, `role="tooltip"` e `aria-describedby` no botão e no campo; situações, transições e características lidas do domínio; todo campo do catálogo com ajuda). `AgentsHttpTest`: a asserção "Bairro: <strong>…" passou a procurar o bairro sem o rótulo, que agora tem o "?" |
+| `phpstan analyse` (nível 6) · `php-cs-fixer fix --dry-run` · `npm run build` (Node 24) | 0 erros · 0 de 133 · sem erros |
+| Navegador (`scripts/verificacao-interface/ajuda.cjs`, Chromium headless do Playwright 1.63) | 21 verificações OK, 0 erros de console e de CSP: 134 ajudas em 16 telas; mouse (passar abre, sair fecha, clique fixa, clique fora fecha); teclado (Tab abre, Esc fecha e o foco fica no "?", Enter fixa, Tab adiante fecha); descrição acessível no "?" e no campo (árvore de acessibilidade do Chromium); toque em 375 e 360 px; caixinha dentro da tela em 1440, 375 e 360 px; dentro do menu de filtros da central; movimento reduzido; sem JavaScript |
+| Leitor de tela real (NVDA, VoiceOver) · outros navegadores · site publicado | **não verificados** |
+
+
 
 Projeto Compose isolado `pf-rev` (porta 8097; PHP 8.5.11, Firebird 5.0.4, perfil completo) sobre
 `claude/revisao-logica-fluxos-1024`, a partir de `main` em `6dd9eea`. [Evidência](evidencias/2026-10-24-revisao-logica-e-fluxos.md),

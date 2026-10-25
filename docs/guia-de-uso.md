@@ -104,6 +104,10 @@ data de instalação e observações. Ao trocar o tipo, só aparecem as caracter
 Com erro, a página volta com **tudo o que você digitou**, um resumo no topo (cada item leva ao campo) e a mensagem ao
 lado do campo.
 
+**Ajuda "?" (todas as telas).** O círculo com "?" ao lado de um rótulo explica o campo, com exemplos. Abre ao passar o
+mouse, ao chegar nele com Tab ou ao tocar; fecha ao sair, com `Esc` ou ao tocar fora. Clicar deixa a caixinha aberta.
+Os textos ficam em `templates/_ajuda.twig`; situações e características vêm do domínio.
+
 **Envio de formulários (todas as telas).** Ao enviar, o botão troca o rótulo por "Salvando…", "Iniciando…",
 "Concluindo…" etc. e ignora cliques repetidos. O resultado aparece depois que o servidor responde, como aviso no canto
 da tela (verde some sozinho; vermelho fica até você fechar). Sem JavaScript, a mesma mensagem aparece no topo da
