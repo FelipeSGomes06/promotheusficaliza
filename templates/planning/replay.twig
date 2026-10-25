@@ -1,5 +1,6 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
+{% import '_ajuda.twig' as ajuda %}
 {% block title %}Retrospecto da previsão{% endblock %}
 {% block content %}
 <div class="page">
@@ -58,7 +59,7 @@
         <div class="score__value"><strong>{{ sc.rate is null ? '—' : pct|number_format(0, ',', '.') ~ '%' }}</strong><span>de acerto</span></div>
       </div>
       <dl class="score__facts">
-        <div><dt>Semanas com a prioridade certa</dt><dd><strong>{{ sc.hits }}</strong> de {{ sc.counted }}</dd></div>
+        <div><dt>Semanas com a prioridade certa {{ ui.help('ajuda-acerto', 'prioridade certa', ajuda.hit_rate()) }}</dt><dd><strong>{{ sc.hits }}</strong> de {{ sc.counted }}</dd></div>
         <div><dt>Se escolhesse ao acaso</dt><dd><strong>~25%</strong> (1 entre 4 setores)</dd></div>
         <div><dt>Semanas reveladas</dt><dd>{{ sc.weeks }} de {{ total_weeks }}</dd></div>
       </dl>
@@ -147,10 +148,10 @@
   <section class="section section--spaced" aria-labelledby="global-titulo">
     <div class="list-head"><h2 id="global-titulo">Resultado no teste inteiro</h2><p class="hint">{{ ev.baseline.weeks }} semanas completas, {{ ev.baseline.from|br_date }} a {{ ev.baseline.until|br_date }} (fim exclusivo), {{ ev.baseline.rows }} linhas setor × semana.</p></div>
     <div class="table-wrap"><table class="data">
-      <thead><tr><th scope="col">Medida</th><th scope="col">Média simples</th></tr></thead>
+      <thead><tr><th scope="col">Medida</th><th scope="col">Média simples {{ ui.help('ajuda-metodo', 'média simples', ajuda.method()) }}</th></tr></thead>
       <tbody>
         <tr><th scope="row">Registros no setor priorizado (1 por semana)</th><td class="num">{{ ev.baseline.top_budget_captured }} de {{ ev.baseline.observed_count }} · {{ (ev.baseline.top_budget_capture_fraction * 100)|number_format(1, ',', '.') }}%</td></tr>
-        <tr><th scope="row">Erro médio por setor e semana</th><td class="num">{{ ev.baseline.mae|number_format(1, ',', '.') }} registro</td></tr>
+        <tr><th scope="row">Erro médio por setor e semana {{ ui.help('ajuda-erro', 'erro médio', ajuda.mae()) }}</th><td class="num">{{ ev.baseline.mae|number_format(1, ',', '.') }} registro</td></tr>
         <tr><th scope="row">Total previsto × registrado</th><td class="num">{{ ev.baseline.predicted_count|number_format(0, ',', '.') }} × {{ ev.baseline.observed_count }}</td></tr>
       </tbody>
     </table></div>

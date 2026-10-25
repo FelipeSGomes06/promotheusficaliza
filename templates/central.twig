@@ -1,5 +1,6 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
+{% import '_ajuda.twig' as ajuda %}
 {% set k = snapshot.kpis.equipment %}
 {% set ag = snapshot.kpis.agents %}
 {% block title %}Visão geral de Marília{% endblock %}
@@ -12,8 +13,10 @@
      data-csrf="{{ app.csrf }}" data-can-edit="{{ app.user ? '1' : '0' }}"{% endblock %}
 
 {% macro kpis(k, snapshot, cls) %}
+{% import '_ui.twig' as ui %}
+{% import '_ajuda.twig' as ajuda %}
 <ul class="kpis {{ cls }}" aria-label="Resumo do filtro atual">
-  <li class="kpi"><span class="kpi__n"><span data-kpi="operational" x-text="kpi.operational">{{ k.operational }}</span><span class="muted">/</span><span data-kpi="in_service" x-text="kpi.in_service">{{ k.in_service }}</span></span><span class="kpi__label">operacionais<br><span data-kpi="operational_confirmed" x-text="kpi.operational_confirmed">{{ k.operational_confirmed }}</span> com sinal</span></li>
+  <li class="kpi"><span class="kpi__n"><span data-kpi="operational" x-text="kpi.operational">{{ k.operational }}</span><span class="muted">/</span><span data-kpi="in_service" x-text="kpi.in_service">{{ k.in_service }}</span></span><span class="kpi__label">operacionais<br><span data-kpi="operational_confirmed" x-text="kpi.operational_confirmed">{{ k.operational_confirmed }}</span> com sinal</span>{{ ui.help('ajuda-kpi-' ~ cls|split(' ')|last, 'operacionais e com sinal', ajuda.kpi_operational()) }}</li>
   <li><a class="kpi" href="{{ url('/', {atencao: '1'}) }}" @click.prevent="showAttention"><span class="kpi__n kpi__n--fail" data-kpi="needs_attention" x-text="kpi.needs_attention">{{ snapshot.needs_attention }}</span><span class="kpi__label">precisam<br>de atenção</span></a></li>
   <li><a class="kpi" href="{{ url('/manutencao') }}#urgentes"><span class="kpi__n kpi__n--warn" data-kpi="urgent" x-text="kpi.urgent">{{ snapshot.maintenance.urgent|length }}</span><span class="kpi__label">manutenções<br>urgentes</span></a></li>
 </ul>
@@ -102,7 +105,7 @@
       <summary class="chip">{{ ui.icon('i-signal') }}<span>Situação</span><span class="count-pill" data-menu-count="situacao[]" {{ statusCount == 0 ? 'hidden' }}>{{ statusCount }}</span>{{ ui.icon('i-chevron-down', null, 'icon icon--caret') }}</summary>
       <div class="popover popover--left menu__panel" role="group" aria-label="Filtrar por situação">
         {% for group in ['Equipamentos', 'Agentes'] %}
-          <p class="menu__group">{{ group }}</p>
+          <div class="menu__group field__head">{{ group }} {{ ui.help('ajuda-situacao-' ~ loop.index, 'situações de ' ~ group|lower, group == 'Agentes' ? ajuda.agent_status() : ajuda.equipment_status()) }}</div>
           {% for s in options.statuses|filter(s => s.group == group) %}
             <label class="option"><input type="checkbox" name="situacao[]" value="{{ s.value }}" data-label="{{ s.label }}" {{ s.value in filters.statuses ? 'checked' }}>{{ ui.status(s.value, s.label) }}</label>
           {% endfor %}
@@ -110,6 +113,7 @@
       </div>
     </details>
     <label class="chip chip--attention chip--check"><input class="visually-hidden" type="checkbox" name="atencao" value="1" data-label="Só o que precisa de atenção" {{ filters.attention ? 'checked' }}>{{ ui.icon('i-flag') }}<span>Precisa de atenção</span></label>
+    {{ ui.help('ajuda-atencao', 'Precisa de atenção', ajuda.attention()) }}
     <details class="menu" data-popover>
       <summary class="chip">{{ ui.icon('i-filter') }}<span>Mais filtros</span><span class="count-pill" data-menu-count="bairro[],orgao[]" {{ moreCount == 0 ? 'hidden' }}>{{ moreCount }}</span>{{ ui.icon('i-chevron-down', null, 'icon icon--caret') }}</summary>
       <div class="popover popover--left menu__panel stack">

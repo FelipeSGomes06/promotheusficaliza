@@ -1,5 +1,6 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
+{% import '_ajuda.twig' as ajuda %}
 {% block title %}Revisões recomendadas{% endblock %}
 {% block content %}
 {% set groups = {
@@ -23,6 +24,7 @@
   </div>
 
   <div class="callout">
+    <div class="field__head"><strong>Prioridade sugerida</strong> {{ ui.help('ajuda-prioridade', 'prioridade sugerida', ajuda.score()) }}</div>
     <p><strong>Como ler:</strong> a prioridade sugerida, de 0 a 100, soma sinais do histórico de cada equipamento (falhas recentes e antigas, preventiva atrasada). <strong>Não é a chance de falhar.</strong> O histórico desta demonstração é sintético, e o método acerta pouco: veja o retrospecto no fim da página.</p>
   </div>
 
@@ -111,7 +113,7 @@
         <p>O limiar de "revisar primeiro" foi escolhido <strong>só</strong> com cortes semanais de {{ ev.fit_window.from|local_dt('d/m') }} a {{ ev.fit_window.to|local_dt('d/m') }} ({{ ev.fit_window.cutoffs }} cortes): <strong>{{ ev.chosen_threshold }}</strong>{{ ev.fit_note ?? null ? ' — ' ~ ev.fit_note : '' }}. Depois foi medido em {{ ev.eval_window.cutoffs }} cortes de {{ ev.eval_window.from|local_dt('d/m') }} a {{ ev.eval_window.to|local_dt('d/m') }}. Cada corte usa apenas o que o sistema já tinha recebido até ali, inclusive a periodicidade vigente; o acerto é "houve falha nos 7 dias seguintes".</p>
         <div class="table-wrap"><table class="data">
           <caption>{{ ev.model.pairs }} pares equipamento × corte, {{ ev.model.positives }} com falha (prevalência {{ ev.model.prevalence is null ? '—' : ev.model.prevalence|pct }})</caption>
-          <thead><tr><th scope="col">Regra</th><th scope="col">Alertas</th><th scope="col">Acertos</th><th scope="col">Falsos alertas</th><th scope="col">Falhas não antecipadas</th><th scope="col">Precisão</th><th scope="col">Revocação</th><th scope="col">F1</th></tr></thead>
+          <thead><tr><th scope="col">Regra</th><th scope="col">Alertas</th><th scope="col">Acertos</th><th scope="col">Falsos alertas</th><th scope="col">Falhas não antecipadas</th><th scope="col">Precisão {{ ui.help('ajuda-precisao', 'Precisão', ajuda.precision()) }}</th><th scope="col">Revocação {{ ui.help('ajuda-revocacao', 'Revocação', ajuda.recall()) }}</th><th scope="col">F1 {{ ui.help('ajuda-f1', 'F1', ajuda.f1()) }}</th></tr></thead>
           <tbody>
             {% for label, m in {'Prioridade (revisar primeiro)': ev.model, 'Referência: falhou nos últimos 30 dias': ev.baseline_recent_failure} %}
               <tr><th scope="row">{{ label }}</th><td>{{ m.flagged }}</td><td>{{ m.tp }}</td><td>{{ m.fp }}</td><td>{{ m.fn }}</td><td>{{ m.precision is null ? '—' : m.precision|pct }}</td><td>{{ m.recall is null ? '—' : m.recall|pct }}</td><td>{{ m.f1 is defined and m.f1 is not null ? m.f1|pct : '—' }}</td></tr>

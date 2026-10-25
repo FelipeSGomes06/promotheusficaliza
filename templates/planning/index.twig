@@ -1,5 +1,6 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
+{% import '_ajuda.twig' as ajuda %}
 {% block title %}Planejar reforço{% endblock %}
 {% block page %}planejar{% endblock %}
 {% block head %}<link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}">{% endblock %}
@@ -39,9 +40,9 @@
       {% endif %}
     </div>
     <dl class="week-summary__facts">
-      <div><dt>Dados até</dt><dd>{{ run.data_reference_through|br_date }}<span class="week-summary__note">os 2 meses mais recentes ainda estão incompletos no Infosiga</span></dd></div>
+      <div><dt>Dados até {{ ui.help('ajuda-dados-ate', 'Dados até', ajuda.data_through()) }}</dt><dd>{{ run.data_reference_through|br_date }}<span class="week-summary__note">os 2 meses mais recentes ainda estão incompletos no Infosiga</span></dd></div>
       <div><dt>Previsão</dt><dd>{{ run.files is empty ? 'calculada pelo sistema' : 'pacote inicial' }}<span class="week-summary__note">arquivo do Infosiga de {{ run.provenance.source.snapshot_date|br_date }}</span></dd></div>
-      <div><dt>Cálculo</dt><dd>média do último ano</dd></div>
+      <div><dt>Cálculo {{ ui.help('ajuda-metodo', 'método de cálculo', ajuda.method()) }}</dt><dd>média do último ano</dd></div>
     </dl>
   </section>
 
@@ -67,6 +68,7 @@
   {# ---------------- Passo 1: onde ---------------- #}
   <section class="section panel step" id="quadrados" aria-labelledby="passo-1">
     <h2 class="step__title" id="passo-1"><span class="step__n" aria-hidden="true">1</span>Onde reforçar</h2>
+    <div class="hint field__head">Quadrados de 2 km {{ ui.help('ajuda-quadrados', 'quadrados de 2 km', ajuda.grid()) }} · Sinistros esperados {{ ui.help('ajuda-esperados', 'sinistros esperados', ajuda.expected()) }}</div>
     {% if week.cells is empty %}
       <p class="hint">Os quadrados de 2 km ainda não foram calculados (rode <code>php bin/fiscaliza urban:import</code>). Por enquanto, o alvo é o setor com mais registros: <strong>{{ s.name }}</strong>.</p>
     {% else %}
