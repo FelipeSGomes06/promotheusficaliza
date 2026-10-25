@@ -1,0 +1,1242 @@
+{
+ "multa-nova@1440": {
+  "worst": 70.2,
+  "rows": [
+   {
+    "delta": 18.8,
+    "fields": [
+     "Tipo de infração * [select:select-one h44]",
+     "Data e hora da ocorrência * [input:datetime-local h44]"
+    ]
+   },
+   {
+    "delta": 49.1,
+    "fields": [
+     "Enquadramento informado * [input:text h44]",
+     "Órgão autuador * [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.1,
+    "fields": [
+     "Número ou referência (opcional) [input:text h44]",
+     "Bairro (opcional) [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 70.2,
+    "fields": [
+     "Placa * [input:text h44]",
+     "UF de registro * [select:select-one h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova@768": {
+  "worst": 70.2,
+  "rows": [
+   {
+    "delta": 18.8,
+    "fields": [
+     "Tipo de infração * [select:select-one h44]",
+     "Data e hora da ocorrência * [input:datetime-local h44]"
+    ]
+   },
+   {
+    "delta": 49.2,
+    "fields": [
+     "Enquadramento informado * [input:text h44]",
+     "Órgão autuador * [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "Número ou referência (opcional) [input:text h44]",
+     "Bairro (opcional) [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 70.2,
+    "fields": [
+     "Placa * [input:text h44]",
+     "UF de registro * [select:select-one h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova@390": {
+  "worst": 22,
+  "rows": [
+   {
+    "delta": 22,
+    "fields": [
+     "Código (opcional) [input:text h44]",
+     "Desdobramento (opcional) [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova@360": {
+  "worst": 22,
+  "rows": [
+   {
+    "delta": 22,
+    "fields": [
+     "Código (opcional) [input:text h44]",
+     "Desdobramento (opcional) [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova-radar-velocidade@1440": {
+  "worst": 70.1,
+  "rows": [
+   {
+    "delta": 18.8,
+    "fields": [
+     "Tipo de infração * [select:select-one h44]",
+     "Data e hora da ocorrência * [input:datetime-local h44]"
+    ]
+   },
+   {
+    "delta": 49.1,
+    "fields": [
+     "Enquadramento informado * [input:text h44]",
+     "Órgão autuador * [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.1,
+    "fields": [
+     "Número ou referência (opcional) [input:text h44]",
+     "Bairro (opcional) [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 70.1,
+    "fields": [
+     "Placa * [input:text h44]",
+     "UF de registro * [select:select-one h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova-radar-velocidade@768": {
+  "worst": 70.2,
+  "rows": [
+   {
+    "delta": 18.8,
+    "fields": [
+     "Tipo de infração * [select:select-one h44]",
+     "Data e hora da ocorrência * [input:datetime-local h44]"
+    ]
+   },
+   {
+    "delta": 49.2,
+    "fields": [
+     "Enquadramento informado * [input:text h44]",
+     "Órgão autuador * [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "Número ou referência (opcional) [input:text h44]",
+     "Bairro (opcional) [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 70.2,
+    "fields": [
+     "Placa * [input:text h44]",
+     "UF de registro * [select:select-one h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova-radar-velocidade@390": {
+  "worst": 22,
+  "rows": [
+   {
+    "delta": 22,
+    "fields": [
+     "Código (opcional) [input:text h44]",
+     "Desdobramento (opcional) [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova-radar-velocidade@360": {
+  "worst": 22,
+  "rows": [
+   {
+    "delta": 22,
+    "fields": [
+     "Código (opcional) [input:text h44]",
+     "Desdobramento (opcional) [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova-radar-outra@1440": {
+  "worst": 70.1,
+  "rows": [
+   {
+    "delta": 18.8,
+    "fields": [
+     "Tipo de infração * [select:select-one h44]",
+     "Data e hora da ocorrência * [input:datetime-local h44]"
+    ]
+   },
+   {
+    "delta": 49.1,
+    "fields": [
+     "Enquadramento informado * [input:text h44]",
+     "Órgão autuador * [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "Número ou referência (opcional) [input:text h44]",
+     "Bairro (opcional) [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 70.1,
+    "fields": [
+     "Placa * [input:text h44]",
+     "UF de registro * [select:select-one h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova-radar-outra@768": {
+  "worst": 70.2,
+  "rows": [
+   {
+    "delta": 18.8,
+    "fields": [
+     "Tipo de infração * [select:select-one h44]",
+     "Data e hora da ocorrência * [input:datetime-local h44]"
+    ]
+   },
+   {
+    "delta": 49.2,
+    "fields": [
+     "Enquadramento informado * [input:text h44]",
+     "Órgão autuador * [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "Número ou referência (opcional) [input:text h44]",
+     "Bairro (opcional) [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 70.2,
+    "fields": [
+     "Placa * [input:text h44]",
+     "UF de registro * [select:select-one h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova-radar-outra@390": {
+  "worst": 22,
+  "rows": [
+   {
+    "delta": 22,
+    "fields": [
+     "Código (opcional) [input:text h44]",
+     "Desdobramento (opcional) [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova-radar-outra@360": {
+  "worst": 22,
+  "rows": [
+   {
+    "delta": 22,
+    "fields": [
+     "Código (opcional) [input:text h44]",
+     "Desdobramento (opcional) [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova-agente@1440": {
+  "worst": 70.1,
+  "rows": [
+   {
+    "delta": 18.8,
+    "fields": [
+     "Tipo de infração * [select:select-one h44]",
+     "Data e hora da ocorrência * [input:datetime-local h44]"
+    ]
+   },
+   {
+    "delta": 49.1,
+    "fields": [
+     "Enquadramento informado * [input:text h44]",
+     "Órgão autuador * [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "Número ou referência (opcional) [input:text h44]",
+     "Bairro (opcional) [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 70.1,
+    "fields": [
+     "Placa * [input:text h44]",
+     "UF de registro * [select:select-one h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova-agente@768": {
+  "worst": 70.2,
+  "rows": [
+   {
+    "delta": 18.8,
+    "fields": [
+     "Tipo de infração * [select:select-one h44]",
+     "Data e hora da ocorrência * [input:datetime-local h44]"
+    ]
+   },
+   {
+    "delta": 49.2,
+    "fields": [
+     "Enquadramento informado * [input:text h44]",
+     "Órgão autuador * [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "Número ou referência (opcional) [input:text h44]",
+     "Bairro (opcional) [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 70.2,
+    "fields": [
+     "Placa * [input:text h44]",
+     "UF de registro * [select:select-one h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova-agente@390": {
+  "worst": 22,
+  "rows": [
+   {
+    "delta": 22,
+    "fields": [
+     "Código (opcional) [input:text h44]",
+     "Desdobramento (opcional) [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova-agente@360": {
+  "worst": 22,
+  "rows": [
+   {
+    "delta": 22,
+    "fields": [
+     "Código (opcional) [input:text h44]",
+     "Desdobramento (opcional) [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova-erros@1440": {
+  "worst": 70.1,
+  "rows": [
+   {
+    "delta": 18.8,
+    "fields": [
+     "Tipo de infração * [select:select-one h44]",
+     "Data e hora da ocorrência * [input:datetime-local h44]"
+    ]
+   },
+   {
+    "delta": 49.1,
+    "fields": [
+     "Enquadramento informado * [input:text h44]",
+     "Órgão autuador * [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "Número ou referência (opcional) [input:text h44]",
+     "Bairro (opcional) [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 70.1,
+    "fields": [
+     "Placa * [input:text h46 erro]",
+     "UF de registro * [select:select-one h44]"
+    ]
+   }
+  ]
+ },
+ "multa-nova-erros@390": {
+  "worst": 22.1,
+  "rows": [
+   {
+    "delta": 22.1,
+    "fields": [
+     "Código (opcional) [input:text h44]",
+     "Desdobramento (opcional) [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "multa-completar@1440": {
+  "worst": 70.2,
+  "rows": [
+   {
+    "delta": 18.8,
+    "fields": [
+     "Tipo de infração * [select:select-one h44]",
+     "Data e hora da ocorrência * [input:datetime-local h44]"
+    ]
+   },
+   {
+    "delta": 49.1,
+    "fields": [
+     "Enquadramento informado * [input:text h44]",
+     "Órgão autuador * [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.1,
+    "fields": [
+     "Número ou referência (opcional) [input:text h44]",
+     "Bairro (opcional) [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 70.2,
+    "fields": [
+     "Placa * [input:text h44]",
+     "UF de registro * [select:select-one h44]"
+    ]
+   }
+  ]
+ },
+ "multa-completar@768": {
+  "worst": 70.2,
+  "rows": [
+   {
+    "delta": 18.8,
+    "fields": [
+     "Tipo de infração * [select:select-one h44]",
+     "Data e hora da ocorrência * [input:datetime-local h44]"
+    ]
+   },
+   {
+    "delta": 49.2,
+    "fields": [
+     "Enquadramento informado * [input:text h44]",
+     "Órgão autuador * [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "Número ou referência (opcional) [input:text h44]",
+     "Bairro (opcional) [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 70.2,
+    "fields": [
+     "Placa * [input:text h44]",
+     "UF de registro * [select:select-one h44]"
+    ]
+   }
+  ]
+ },
+ "multa-completar@390": {
+  "worst": 22,
+  "rows": [
+   {
+    "delta": 22,
+    "fields": [
+     "Código (opcional) [input:text h44]",
+     "Desdobramento (opcional) [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "multa-completar@360": {
+  "worst": 22.1,
+  "rows": [
+   {
+    "delta": 22.1,
+    "fields": [
+     "Código (opcional) [input:text h44]",
+     "Desdobramento (opcional) [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "multa-retificar@1440": {
+  "worst": 70.2,
+  "rows": [
+   {
+    "delta": 18.8,
+    "fields": [
+     "Tipo de infração * [select:select-one h44]",
+     "Data e hora da ocorrência * [input:datetime-local h44]"
+    ]
+   },
+   {
+    "delta": 49.1,
+    "fields": [
+     "Enquadramento informado * [input:text h44]",
+     "Órgão autuador * [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "Número ou referência (opcional) [input:text h44]",
+     "Bairro (opcional) [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 70.2,
+    "fields": [
+     "Placa * [input:text h44]",
+     "UF de registro * [select:select-one h44]"
+    ]
+   }
+  ]
+ },
+ "multa-retificar@768": {
+  "worst": 70.2,
+  "rows": [
+   {
+    "delta": 18.8,
+    "fields": [
+     "Tipo de infração * [select:select-one h44]",
+     "Data e hora da ocorrência * [input:datetime-local h44]"
+    ]
+   },
+   {
+    "delta": 49.2,
+    "fields": [
+     "Enquadramento informado * [input:text h44]",
+     "Órgão autuador * [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "Número ou referência (opcional) [input:text h44]",
+     "Bairro (opcional) [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 70.2,
+    "fields": [
+     "Placa * [input:text h44]",
+     "UF de registro * [select:select-one h44]"
+    ]
+   }
+  ]
+ },
+ "multa-retificar@390": {
+  "worst": 22,
+  "rows": [
+   {
+    "delta": 22,
+    "fields": [
+     "Código (opcional) [input:text h44]",
+     "Desdobramento (opcional) [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "multa-retificar@360": {
+  "worst": 22,
+  "rows": [
+   {
+    "delta": 22,
+    "fields": [
+     "Código (opcional) [input:text h44]",
+     "Desdobramento (opcional) [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "multa-ficha-conferencia-posterior@1440": {
+  "worst": 48.1,
+  "rows": [
+   {
+    "delta": 48.1,
+    "fields": [
+     "A conferência se refere a * [select:select-one h44]",
+     "Data a que se refere (conferência poster [input:date h44]"
+    ]
+   },
+   {
+    "delta": 47,
+    "fields": [
+     "Fonte * [select:select-one h44]",
+     "Referência da fonte (opcional) [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "multa-ficha-conferencia-posterior@768": {
+  "worst": 48.1,
+  "rows": [
+   {
+    "delta": 48.1,
+    "fields": [
+     "A conferência se refere a * [select:select-one h44]",
+     "Data a que se refere (conferência poster [input:date h44]"
+    ]
+   },
+   {
+    "delta": 47,
+    "fields": [
+     "Fonte * [select:select-one h44]",
+     "Referência da fonte (opcional) [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "multa-ficha-conferencia-posterior@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-conferencia-posterior@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-conferencia-nao-verificada@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-conferencia-nao-verificada@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-conferencia-nao-verificada@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-conferencia-nao-verificada@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-situacao@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-situacao@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-situacao@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-situacao@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-radar@1440": {
+  "worst": 26,
+  "rows": [
+   {
+    "delta": 26,
+    "fields": [
+     "Órgão responsável * [select:select-one h44]",
+     "Série do fabricante (opcional) [input:text h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "CEP (opcional) [input:text h44]",
+     "Cidade [input:text h44]"
+    ]
+   },
+   {
+    "delta": 21,
+    "fields": [
+     "Preventiva a cada (dias) (opcional) [input:number h44]",
+     "Data de instalação (opcional) [input:date h44]"
+    ]
+   }
+  ]
+ },
+ "equip-novo-radar@768": {
+  "worst": 26,
+  "rows": [
+   {
+    "delta": 26,
+    "fields": [
+     "Órgão responsável * [select:select-one h44]",
+     "Série do fabricante (opcional) [input:text h44]"
+    ]
+   },
+   {
+    "delta": 2.1,
+    "fields": [
+     "CEP (opcional) [input:text h44]",
+     "Cidade [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "equip-novo-radar@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-radar@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-camera@1440": {
+  "worst": 26,
+  "rows": [
+   {
+    "delta": 26,
+    "fields": [
+     "Órgão responsável * [select:select-one h44]",
+     "Série do fabricante (opcional) [input:text h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "CEP (opcional) [input:text h44]",
+     "Cidade [input:text h44]"
+    ]
+   },
+   {
+    "delta": 21,
+    "fields": [
+     "Preventiva a cada (dias) (opcional) [input:number h44]",
+     "Data de instalação (opcional) [input:date h44]"
+    ]
+   }
+  ]
+ },
+ "equip-novo-camera@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-balanca@1440": {
+  "worst": 26,
+  "rows": [
+   {
+    "delta": 26,
+    "fields": [
+     "Órgão responsável * [select:select-one h44]",
+     "Série do fabricante (opcional) [input:text h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "CEP (opcional) [input:text h44]",
+     "Cidade [input:text h44]"
+    ]
+   },
+   {
+    "delta": 21,
+    "fields": [
+     "Preventiva a cada (dias) (opcional) [input:number h44]",
+     "Data de instalação (opcional) [input:date h44]"
+    ]
+   }
+  ]
+ },
+ "equip-novo-balanca@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-cancela@1440": {
+  "worst": 26,
+  "rows": [
+   {
+    "delta": 26,
+    "fields": [
+     "Órgão responsável * [select:select-one h44]",
+     "Série do fabricante (opcional) [input:text h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "CEP (opcional) [input:text h44]",
+     "Cidade [input:text h44]"
+    ]
+   },
+   {
+    "delta": 21,
+    "fields": [
+     "Preventiva a cada (dias) (opcional) [input:number h44]",
+     "Data de instalação (opcional) [input:date h44]"
+    ]
+   }
+  ]
+ },
+ "equip-novo-cancela@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-totem@1440": {
+  "worst": 26,
+  "rows": [
+   {
+    "delta": 26,
+    "fields": [
+     "Órgão responsável * [select:select-one h44]",
+     "Série do fabricante (opcional) [input:text h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "CEP (opcional) [input:text h44]",
+     "Cidade [input:text h44]"
+    ]
+   },
+   {
+    "delta": 21,
+    "fields": [
+     "Preventiva a cada (dias) (opcional) [input:number h44]",
+     "Data de instalação (opcional) [input:date h44]"
+    ]
+   }
+  ]
+ },
+ "equip-novo-totem@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-veiculo@1440": {
+  "worst": 26,
+  "rows": [
+   {
+    "delta": 26,
+    "fields": [
+     "Órgão responsável * [select:select-one h44]",
+     "Série do fabricante (opcional) [input:text h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "CEP (opcional) [input:text h44]",
+     "Cidade [input:text h44]"
+    ]
+   },
+   {
+    "delta": 21,
+    "fields": [
+     "Preventiva a cada (dias) (opcional) [input:number h44]",
+     "Data de instalação (opcional) [input:date h44]"
+    ]
+   }
+  ]
+ },
+ "equip-novo-veiculo@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-patinete@1440": {
+  "worst": 26,
+  "rows": [
+   {
+    "delta": 26,
+    "fields": [
+     "Órgão responsável * [select:select-one h44]",
+     "Série do fabricante (opcional) [input:text h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "CEP (opcional) [input:text h44]",
+     "Cidade [input:text h44]"
+    ]
+   },
+   {
+    "delta": 21,
+    "fields": [
+     "Preventiva a cada (dias) (opcional) [input:number h44]",
+     "Data de instalação (opcional) [input:date h44]"
+    ]
+   }
+  ]
+ },
+ "equip-novo-patinete@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-editar@1440": {
+  "worst": 26,
+  "rows": [
+   {
+    "delta": 26,
+    "fields": [
+     "Órgão responsável * [select:select-one h44]",
+     "Série do fabricante (opcional) [input:text h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "CEP (opcional) [input:text h44]",
+     "Cidade [input:text h44]"
+    ]
+   },
+   {
+    "delta": 21,
+    "fields": [
+     "Preventiva a cada (dias) (opcional) [input:number h44]",
+     "Data de instalação (opcional) [input:date h44]"
+    ]
+   }
+  ]
+ },
+ "equip-editar@768": {
+  "worst": 26,
+  "rows": [
+   {
+    "delta": 26,
+    "fields": [
+     "Órgão responsável * [select:select-one h44]",
+     "Série do fabricante (opcional) [input:text h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "CEP (opcional) [input:text h44]",
+     "Cidade [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "equip-editar@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-editar@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-ficha@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-ficha@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-ficha@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-ficha@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "manutencao@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "manutencao@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "manutencao@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "manutencao@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-novo@1440": {
+  "worst": 2.2,
+  "rows": [
+   {
+    "delta": 2.2,
+    "fields": [
+     "Órgão * [select:select-one h44]",
+     "Situação inicial * [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "CEP (opcional) [input:text h44]",
+     "Cidade [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "agente-novo@768": {
+  "worst": 2.2,
+  "rows": [
+   {
+    "delta": 2.2,
+    "fields": [
+     "Órgão * [select:select-one h44]",
+     "Situação inicial * [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "CEP (opcional) [input:text h44]",
+     "Cidade [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "agente-novo@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-novo@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-editar@1440": {
+  "worst": 2.2,
+  "rows": [
+   {
+    "delta": 2.2,
+    "fields": [
+     "CEP (opcional) [input:text h44]",
+     "Cidade [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "agente-editar@768": {
+  "worst": 2.1,
+  "rows": [
+   {
+    "delta": 2.1,
+    "fields": [
+     "CEP (opcional) [input:text h44]",
+     "Cidade [input:text h44]"
+    ]
+   }
+  ]
+ },
+ "agente-editar@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-editar@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-ficha@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-ficha@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-ficha@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-ficha@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "planejar@1440": {
+  "worst": 47,
+  "rows": [
+   {
+    "delta": 47,
+    "fields": [
+     "Ponto de apoio (opcional) [input:text h44]",
+     "Observação (opcional) [textarea:textarea h96]"
+    ]
+   }
+  ]
+ },
+ "planejar@768": {
+  "worst": 47,
+  "rows": [
+   {
+    "delta": 47,
+    "fields": [
+     "Ponto de apoio (opcional) [input:text h44]",
+     "Observação (opcional) [textarea:textarea h96]"
+    ]
+   }
+  ]
+ },
+ "planejar@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "planejar@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "contas@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "contas@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "contas@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "contas@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-equip@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-equip@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-equip@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-equip@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-agentes@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-agentes@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-agentes@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-agentes@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-multas@1440": {
+  "worst": 30.3,
+  "rows": [
+   {
+    "delta": 22,
+    "fields": [
+     "Ocorrência a partir de [input:date h44]",
+     "Ocorrência até [input:date h44]",
+     "Órgão autuador [select:select-one h44]",
+     "Radar [select:select-one h44]",
+     "Agente (da constatação ou operador do ra [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 30.3,
+    "fields": [
+     "Documentação na ocorrência [select:select-one h44]",
+     "Pagamento [select:select-one h44]",
+     "Cadastro [select:select-one h44]",
+     "Ordenar por [select:select-one h44]"
+    ]
+   }
+  ]
+ },
+ "filtros-multas@768": {
+  "worst": 30.2,
+  "rows": [
+   {
+    "delta": 30.2,
+    "fields": [
+     "Radar [select:select-one h44]",
+     "Agente (da constatação ou operador do ra [select:select-one h44]",
+     "Documentação na ocorrência [select:select-one h44]"
+    ]
+   },
+   {
+    "delta": 2.2,
+    "fields": [
+     "Pagamento [select:select-one h44]",
+     "Cadastro [select:select-one h44]",
+     "Ordenar por [select:select-one h44]"
+    ]
+   }
+  ]
+ },
+ "filtros-multas@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-multas@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "central@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "central@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "revisoes@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "revisoes@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "retrospecto@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "retrospecto@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "sobre@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "sobre@390": {
+  "worst": 0,
+  "rows": []
+ }
+}

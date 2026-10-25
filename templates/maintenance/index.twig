@@ -59,10 +59,9 @@
               {% else %}
                 <details><summary>Concluir esta intervenção</summary>
                   <form method="post" action="{{ url('/manutencoes/' ~ o.id ~ '/concluir') }}" class="complete-form">{{ ui.csrf(app.csrf) }}<input type="hidden" name="voltar" value="/manutencao#em-andamento">
-                    <div class="field"><label for="res-{{ o.id }}">O que foi feito</label><textarea id="res-{{ o.id }}" name="resolution" required maxlength="500"></textarea></div>
-                    <div class="field"><div class="field__head"><label for="rs-{{ o.id }}">Como o equipamento ficou?</label>{{ ui.help('rs-' ~ o.id ~ '-tip', 'Como o equipamento ficou', ajuda.maint_result()) }}</div>
-                      <span class="hint" id="rs-{{ o.id }}-h">Esta situação passa a valer para o equipamento. Informe o resultado real, mesmo que o problema continue.</span>
-                      <select id="rs-{{ o.id }}" name="result_status" required aria-describedby="rs-{{ o.id }}-h rs-{{ o.id }}-tip"><option value="">Escolha o resultado</option><option value="OPERACIONAL">Operacional (testado e funcionando)</option><option value="FALHA">Continua com mau funcionamento</option><option value="DESATIVADO">Desativado (retirado de uso)</option></select></div>
+                    <div class="field"><div class="field__head"><label for="res-{{ o.id }}">O que foi feito <span class="req" aria-hidden="true">*</span></label></div><textarea id="res-{{ o.id }}" name="resolution" required maxlength="500"></textarea></div>
+                    <div class="field"><div class="field__head"><label for="rs-{{ o.id }}">Como o equipamento ficou? <span class="req" aria-hidden="true">*</span></label>{{ ui.help('rs-' ~ o.id ~ '-tip', 'Como o equipamento ficou', ajuda.maint_result()) }}</div>
+                      <select id="rs-{{ o.id }}" name="result_status" required aria-describedby="rs-{{ o.id }}-tip"><option value="">Escolha o resultado</option><option value="OPERACIONAL">Operacional (testado e funcionando)</option><option value="FALHA">Continua com mau funcionamento</option><option value="DESATIVADO">Desativado (retirado de uso)</option></select></div>
                     <div><button class="btn btn--primary" type="submit">{{ ui.icon('i-check') }}<span>Concluir ordem</span></button></div>
                   </form>
                 </details>

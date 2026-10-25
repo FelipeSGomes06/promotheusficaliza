@@ -25,15 +25,15 @@ final class HelpTipTest extends TestCase
         return $twig->render('t', ['types' => EquipmentCatalog::all()]);
     }
 
-    public function testFieldsWithoutHelpTipRenderTheSameHtmlAsBefore(): void
+    public function testFieldsWithoutHelpTipKeepTheSharedStructure(): void
     {
-        // Saída de ui.input/ui.select gravada antes da ajuda contextual existir.
+        // Saída de ui.input/ui.select sem "?": mesmo cabeçalho (rótulo e marcador) e corpo (controle e erro) dos campos com ajuda.
         $html = self::render(<<<'TWIG'
             {% import '_ui.twig' as ui %}
             {{ ui.input('address_ref', 'Número ou referência', {address_ref: '181'}, {}, {max: 160, placeholder: 'Ex.: 1200'}) }}
-            {{ ui.input('cep', 'CEP', {}, {cep: 'CEP inválido.'}, {required: true, help: 'Só números.', inputmode: 'numeric'}) }}
+            {{ ui.input('cep', 'CEP', {}, {cep: 'CEP inválido.'}, {required: true, inputmode: 'numeric'}) }}
             {{ ui.input('notes', 'Observações', {}, {}, {type: 'textarea', max: 500, class: 'span-2'}) }}
-            {{ ui.select('role', 'Função', {A: 'Um', B: 'Dois'}, 'B', {}, {required: true, help: 'Escolha.'}) }}
+            {{ ui.select('role', 'Função', {A: 'Um', B: 'Dois'}, 'B', {}, {required: true}) }}
             {{ ui.select('kind', 'Tipo', {A: 'Um'}, '', {kind: 'Obrigatório.'}, {empty: 'Escolha…'}) }}
 
             TWIG);
@@ -44,7 +44,7 @@ final class HelpTipTest extends TestCase
     {
         $html = self::render(<<<'TWIG'
             {% import '_ui.twig' as ui %}{% import '_ajuda.twig' as ajuda %}
-            {{ ui.input('address_ref', 'Número ou referência', {}, {cep: 'x'}, {max: 160, help: 'Fixo.', help_tip: ajuda.address_ref()}) }}
+            {{ ui.input('address_ref', 'Número ou referência', {}, {cep: 'x'}, {max: 160, help_tip: ajuda.address_ref()}) }}
             {{ ui.select('role', 'Função', {A: 'Um'}, 'A', {}, {help_tip: ajuda.agent_role()}) }}
             TWIG);
         $doc = new \DOMDocument();
@@ -61,8 +61,9 @@ final class HelpTipTest extends TestCase
         foreach (['181', 'oposto ao número 181', 'KM 203', 'S/N', 'em frente ao Mercado do Tio'] as $example) {
             self::assertStringContainsString($example, (string) $box?->textContent);
         }
-        // O campo também é descrito pela ajuda (leitor de tela), sem perder o texto fixo.
-        self::assertSame('f-address_ref-help f-address_ref-tip', $doc->getElementById('f-address_ref')?->getAttribute('aria-describedby'));
+        // O campo é descrito pela ajuda (leitor de tela); nenhuma explicação fica entre o rótulo e o controle.
+        self::assertSame(0, $xp->query('//*[contains(@class, "hint")]')->length);
+        self::assertSame('f-address_ref-tip', $doc->getElementById('f-address_ref')?->getAttribute('aria-describedby'));
         self::assertSame('f-role-tip', $doc->getElementById('f-role')?->getAttribute('aria-describedby'));
         self::assertStringContainsString('Guarda municipal', (string) $doc->getElementById('f-role-tip')?->textContent);
     }
@@ -87,6 +88,9 @@ final class HelpTipTest extends TestCase
 
         self::assertStringContainsString('Conversão proibida: quem vira onde a placa proíbe', $text('functions'));
         self::assertStringContainsString('Aceita de 20 a 120 km/h', $text('speed_limit_kmh'));
+        // A orientação do catálogo (help) também vai para o "?", em vez de ficar embaixo do campo.
+        self::assertStringContainsString('Obrigatório quando fiscaliza velocidade', $text('speed_limit_kmh'));
+        self::assertStringContainsString('bairro → centro', $text('direction'));
         self::assertStringContainsString('infravermelha', $text('night_vision'));
         self::assertStringContainsString('preto e branco', $text('color_image'));
     }

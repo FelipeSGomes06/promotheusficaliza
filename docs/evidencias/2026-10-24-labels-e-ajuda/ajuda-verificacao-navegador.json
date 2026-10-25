@@ -1,0 +1,775 @@
+{
+  "base": "http://127.0.0.1:8097/promotheusfiscaliza",
+  "quando": "2026-10-25T02:56:40.099Z",
+  "capturas": [
+    "d1440-hover-numero-ou-referencia",
+    "d1440-numero-ou-referencia",
+    "d375-numero-ou-referencia",
+    "d360-numero-ou-referencia",
+    "d375-central-situacoes"
+  ],
+  "verificacoes": {
+    "presenca_em_todas_as_telas": {
+      "ok": true,
+      "detalhe": {
+        "total": 152,
+        "sem_ajuda": []
+      }
+    },
+    "ids_unicos_ultima_tela": {
+      "ok": true,
+      "detalhe": null
+    },
+    "mouse_passar_abre_e_sair_fecha": {
+      "ok": true,
+      "detalhe": null
+    },
+    "texto_numero_ou_referencia": {
+      "ok": true,
+      "detalhe": "Informe o número do imóvel ou um ponto de referência.\n\nExemplos: 181, oposto ao número 181, KM 203, S/N (sem número), em frente ao Mercado do Tio."
+    },
+    "clique_fixa_e_clique_fora_fecha": {
+      "ok": true,
+      "detalhe": null
+    },
+    "teclado_foco_abre_esc_fecha_tab_sai": {
+      "ok": true,
+      "detalhe": {
+        "focusOpen": true,
+        "escClosed": true,
+        "focusKept": "f-address_ref-tip",
+        "enterOpen": true
+      }
+    },
+    "leitor_de_tela_le_o_texto": {
+      "ok": true,
+      "detalhe": {
+        "axBtn": {
+          "name": "Ajuda sobre Número ou referência",
+          "description": "Informe o número do imóvel ou um ponto de referência. Exemplos: 181 , oposto ao número 181 , KM 203 , S/N (sem número), em frente ao Mercado do Tio ."
+        },
+        "axInput": {
+          "name": "Número ou referência (opcional)",
+          "description": "Informe o número do imóvel ou um ponto de referência. Exemplos: 181 , oposto ao número 181 , KM 203 , S/N (sem número), em frente ao Mercado do Tio ."
+        }
+      }
+    },
+    "caracteristicas_do_catalogo": {
+      "ok": true,
+      "detalhe": {
+        "camTips": [
+          "Marque se a câmera enxerga no escuro com luz infravermelha (IR). À noite a imagem costuma sair em preto e branco.",
+          "Marque se a imagem é colorida. Sem marcar, a câmera grava em preto e branco.",
+          "A nitidez da imagem gravada. Quanto maior, mais detalhe se vê de longe, como uma placa de carro.HD 720p: básica; boa para ver o movimento.Full HD 1080p: a mais comum; dá para ler placas de perto.4 MP: um pouco mais nítida que Full HD.4K UHD: a mais nítida; ajuda a ler detalhes de longe."
+        ],
+        "radTips": [
+          "O que o radar fiscaliza. Pode marcar mais de uma função.Velocidade: quem passa do limite da via (informe o limite abaixo).Avanço de semáforo: quem cruza com o sinal vermelho.Parada sobre a faixa: quem para em cima da faixa de pedestres.Conversão proibida: quem vira onde a placa proíbe.Faixa exclusiva de ônibus: carro comum andando na faixa só de ônibus.",
+          "A velocidade máxima permitida na via onde o radar mede, como está na placa. Ex.: 40, 50 ou 60 km/h.Obrigatório quando fiscaliza velocidade.Aceita de 20 a 120 km/h."
+        ]
+      }
+    },
+    "situacoes_do_equipment_status": {
+      "ok": true,
+      "detalhe": "A situação de agora. Muda pela ficha, sempre com motivo, e fica no histórico.\n◌ Não instalado: ainda vai ser instalado (veículo e patinete: ainda vai entrar em operação). Fica fora da conta de disponibilidade.✓ Operacional: instalado e funcionando. Conta como disponível.! Mau funcionamento: instalado, mas com defeito: abre um alerta e pede manutenção corretiva imediata. Conta como indisponível.⚙ Em manutenção: com uma intervenção em andamento. Conta como indisponível.– Desativado: retirado de uso; o histórico continua guardado. Fica fora da conta de disponibilidade.✕ Furtado: foi levado do local; o ponto mostra de onde saiu. Depois decida reposição ou baixa. Conta como indisponível.\n"
+    },
+    "caixinha_dentro_da_tela_1440px": {
+      "ok": true,
+      "detalhe": []
+    },
+    "sem_rolagem_horizontal_1440px": {
+      "ok": true,
+      "detalhe": null
+    },
+    "caixinha_dentro_da_tela_375px": {
+      "ok": true,
+      "detalhe": []
+    },
+    "sem_rolagem_horizontal_375px": {
+      "ok": true,
+      "detalhe": null
+    },
+    "toque_abre_e_toque_fora_fecha_375px": {
+      "ok": true,
+      "detalhe": null
+    },
+    "caixinha_dentro_da_tela_360px": {
+      "ok": true,
+      "detalhe": []
+    },
+    "sem_rolagem_horizontal_360px": {
+      "ok": true,
+      "detalhe": null
+    },
+    "toque_abre_e_toque_fora_fecha_360px": {
+      "ok": true,
+      "detalhe": null
+    },
+    "ajuda_dentro_do_menu_da_central": {
+      "ok": true,
+      "detalhe": {
+        "ok": true,
+        "r": [
+          8,
+          374,
+          375,
+          771
+        ]
+      }
+    },
+    "movimento_reduzido_sem_animacao": {
+      "ok": true,
+      "detalhe": "1"
+    },
+    "sem_javascript_details_nativo": {
+      "ok": true,
+      "detalhe": null
+    },
+    "console_sem_erros_nem_csp": {
+      "ok": true,
+      "detalhe": []
+    }
+  },
+  "telas": {
+    "/": [
+      {
+        "label": "Ajuda sobre operacionais e com sinal",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre situações de equipamentos",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre situações de agentes",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Precisa de atenção",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre operacionais e com sinal",
+        "ok": true
+      }
+    ],
+    "/equipamentos": [
+      {
+        "label": "Ajuda sobre Situação",
+        "ok": true
+      }
+    ],
+    "/equipamentos/novo": [
+      {
+        "label": "Ajuda sobre Tipo",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Situação inicial",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Órgão responsável",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Série do fabricante",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Patrimônio",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Este ponto é",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre local no mapa e coordenadas",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Bairro",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre CEP",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Rua",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Número ou referência",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Funções fiscalizadas",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Modalidade",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Limite de velocidade",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Faixas monitoradas",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Sentido",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Resolução",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Visão noturna (IR)",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Imagem colorida",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Movimento PTZ",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Campo de visão",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Modo de pesagem",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Capacidade",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Faixas",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Controle de acesso",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Comprimento da haste",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Sensor antiesmagamento",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Serviços",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Tela",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Altura acessível",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Uso",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Prefixo (fictício)",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Lugares",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Energia",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Autonomia",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Velocidade máxima",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Preventiva a cada (dias)",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Data de instalação",
+        "ok": true
+      }
+    ],
+    "/equipamentos/723": [
+      {
+        "label": "Ajuda sobre Tipo de manutenção",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Quando: imediata ou programada",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Data programada",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Nova situação",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Motivo",
+        "ok": true
+      }
+    ],
+    "/equipamentos/723/editar": [
+      {
+        "label": "Ajuda sobre Tipo",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Situação",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Órgão responsável",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Série do fabricante",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Patrimônio",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Este ponto é",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre local no mapa e coordenadas",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Bairro",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre CEP",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Rua",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Número ou referência",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Funções fiscalizadas",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Modalidade",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Limite de velocidade",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Faixas monitoradas",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Sentido",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Resolução",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Visão noturna (IR)",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Imagem colorida",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Movimento PTZ",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Campo de visão",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Modo de pesagem",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Capacidade",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Faixas",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Controle de acesso",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Comprimento da haste",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Sensor antiesmagamento",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Serviços",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Tela",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Altura acessível",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Uso",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Prefixo (fictício)",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Lugares",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Energia",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Autonomia",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Velocidade máxima",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Preventiva a cada (dias)",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Data de instalação",
+        "ok": true
+      }
+    ],
+    "/equipamentos/716": [
+      {
+        "label": "Ajuda sobre reposição ou baixa",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Motivo",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Tipo de manutenção",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Quando: imediata ou programada",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Data programada",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Nova situação",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Motivo",
+        "ok": true
+      }
+    ],
+    "/agentes": [
+      {
+        "label": "Ajuda sobre Função",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Situação",
+        "ok": true
+      }
+    ],
+    "/agentes/novo": [
+      {
+        "label": "Ajuda sobre Nome de exibição (fictício)",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Função",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Situação inicial",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Nome da base",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre ponto da base e coordenadas",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Bairro",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre CEP",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Rua",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Número",
+        "ok": true
+      }
+    ],
+    "/agentes/303": [
+      {
+        "label": "Ajuda sobre responsável pelo acompanhamento",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Próxima conferência",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Relato",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Nova situação",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Motivo",
+        "ok": true
+      }
+    ],
+    "/multas": [
+      {
+        "label": "Ajuda sobre Etapa administrativa",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Agente",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Documentação na ocorrência",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Cadastro",
+        "ok": true
+      }
+    ],
+    "/multas/novo": [
+      {
+        "label": "Ajuda sobre rascunho, registro e retificação",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Tipo de infração",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Data e hora da ocorrência",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Enquadramento informado",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Órgão autuador",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Número do AIT (externo)",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Por que o AIT não está disponível",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Logradouro",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Número ou referência",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Descrição curta",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Relato factual",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Origem principal",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Radar do inventário",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Agente operador associado",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre velocidades",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Referência da evidência",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Agente da constatação",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Observação sobre a origem",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Placa",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Espécie",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre RENAVAM",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Por que o RENAVAM não está disponível",
+        "ok": true
+      }
+    ],
+    "/manutencao": [
+      {
+        "label": "Ajuda sobre Como o equipamento ficou",
+        "ok": true
+      }
+    ],
+    "/antecipacao": [
+      {
+        "label": "Ajuda sobre prioridade sugerida",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Precisão",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Revocação",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre F1",
+        "ok": true
+      }
+    ],
+    "/planejar": [
+      {
+        "label": "Ajuda sobre Dados até",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre método de cálculo",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre quadrados de 2 km",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre sinistros esperados",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Por que escolheu este agente e não o sugerido?",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Ponto de apoio",
+        "ok": true
+      }
+    ],
+    "/planejar/retrospecto": [
+      {
+        "label": "Ajuda sobre prioridade certa",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre média simples",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre erro médio",
+        "ok": true
+      }
+    ],
+    "/contas": [
+      {
+        "label": "Ajuda sobre Usuário",
+        "ok": true
+      },
+      {
+        "label": "Ajuda sobre Papel",
+        "ok": true
+      }
+    ]
+  },
+  "console": []
+}

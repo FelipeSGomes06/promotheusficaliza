@@ -30,8 +30,8 @@
 
   <form class="stack section" method="get" action="{{ url('/multas') }}" role="search" aria-label="Filtrar multas">
     <div class="filters">
-      <div class="field field--search"><label for="q">Buscar</label><input id="q" type="search" name="q" value="{{ f.q }}" placeholder="Código interno, AIT, placa ou RENAVAM" maxlength="60"></div>
-      <div class="field"><label for="origem">Origem</label>
+      <div class="field field--search"><div class="field__head"><label for="q">Buscar</label></div><input id="q" type="search" name="q" value="{{ f.q }}" placeholder="Código interno, AIT, placa ou RENAVAM" maxlength="60"></div>
+      <div class="field"><div class="field__head"><label for="origem">Origem</label></div>
         <select id="origem" name="origem"><option value="">Radar ou agente</option>{% for k, l in source_kinds %}<option value="{{ k }}" {{ f.source == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
       <div class="field"><div class="field__head"><label for="etapa">Etapa administrativa</label>{{ ui.help('etapa-tip', 'Etapa administrativa', ajuda.fine_stage()) }}</div>
         <select id="etapa" name="etapa" aria-describedby="etapa-tip"><option value="">Todas as etapas</option>{% for k, l in stages %}<option value="{{ k }}" {{ f.stage == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
@@ -41,21 +41,21 @@
       <details class="more-filters more-filters--inline" {{ more > 0 or f.errors is not empty ? 'open' }}>
         <summary class="chip">{{ ui.icon('i-layers') }}<span>Mais filtros</span> {% if more %}<span class="count-pill">{{ more }}</span>{% endif %}</summary>
         <div class="more-filters__body">
-          <div class="field"><label for="de">Ocorrência a partir de</label><input id="de" type="date" name="de" value="{{ raw.de }}" {% if f.errors.de is defined %}aria-invalid="true"{% endif %}></div>
-          <div class="field"><label for="ate">Ocorrência até</label><input id="ate" type="date" name="ate" value="{{ raw.ate }}" {% if f.errors.ate is defined %}aria-invalid="true"{% endif %}></div>
-          <div class="field"><label for="orgao">Órgão autuador</label>
+          <div class="field"><div class="field__head"><label for="de">Ocorrência a partir de</label></div><input id="de" type="date" name="de" value="{{ raw.de }}" {% if f.errors.de is defined %}aria-invalid="true"{% endif %}></div>
+          <div class="field"><div class="field__head"><label for="ate">Ocorrência até</label></div><input id="ate" type="date" name="ate" value="{{ raw.ate }}" {% if f.errors.ate is defined %}aria-invalid="true"{% endif %}></div>
+          <div class="field"><div class="field__head"><label for="orgao">Órgão autuador</label></div>
             <select id="orgao" name="orgao"><option value="">Todos os órgãos</option>{% for a in agencies %}<option value="{{ a.id }}" {{ f.agency == a.id ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select></div>
-          <div class="field"><label for="radar">Radar</label>
+          <div class="field"><div class="field__head"><label for="radar">Radar</label></div>
             <select id="radar" name="radar"><option value="">Todos os radares</option>{% for r in sources.radars %}<option value="{{ r.id }}" {{ f.radar == r.id ? 'selected' }}>{{ r.code }} · {{ r.street ?? r.model }}{{ r.archived_at ? ' (arquivado)' }}</option>{% endfor %}</select></div>
-          <div class="field"><label for="agente">Agente (da constatação ou operador do radar)</label>
-            <select id="agente" name="agente"><option value="">Todos os agentes</option>{% for g in sources.agents %}<option value="{{ g.id }}" {{ f.agent == g.id ? 'selected' }}>{{ g.code }} · {{ g.call_sign }}{{ g.archived_at ? ' (arquivado)' }}</option>{% endfor %}</select></div>
+          <div class="field"><div class="field__head"><label for="agente">Agente</label>{{ ui.help('agente-tip', 'Agente', ajuda.fine_agent_filter()) }}</div>
+            <select id="agente" name="agente" aria-describedby="agente-tip"><option value="">Todos os agentes</option>{% for g in sources.agents %}<option value="{{ g.id }}" {{ f.agent == g.id ? 'selected' }}>{{ g.code }} · {{ g.call_sign }}{{ g.archived_at ? ' (arquivado)' }}</option>{% endfor %}</select></div>
           <div class="field"><div class="field__head"><label for="documentacao">Documentação na ocorrência</label>{{ ui.help('documentacao-tip', 'Documentação na ocorrência', ajuda.fine_documents()) }}</div>
             <select id="documentacao" name="documentacao" aria-describedby="documentacao-tip"><option value="">Qualquer situação</option>{% for k, l in doc_labels %}<option value="{{ k }}" {{ f.document == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
-          <div class="field"><label for="pagamento">Pagamento</label>
+          <div class="field"><div class="field__head"><label for="pagamento">Pagamento</label></div>
             <select id="pagamento" name="pagamento"><option value="">Qualquer situação</option>{% for k, l in payments %}<option value="{{ k }}" {{ f.payment == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
           <div class="field"><div class="field__head"><label for="cadastro">Cadastro</label>{{ ui.help('cadastro-tip', 'Cadastro', ajuda.fine_record()) }}</div>
             <select id="cadastro" name="cadastro" aria-describedby="cadastro-tip">{% for k, l in {ativo: 'Rascunhos e registrados', rascunho: 'Só rascunhos', registrado: 'Só registrados', cancelado: 'Só cancelados internamente', todos: 'Todos, inclusive cancelados'} %}<option value="{{ k }}" {{ f.record == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
-          <div class="field"><label for="ordem">Ordenar por</label>
+          <div class="field"><div class="field__head"><label for="ordem">Ordenar por</label></div>
             <select id="ordem" name="ordem">{% for k, l in sorts %}<option value="{{ k }}" {{ f.sort == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
           <div class="checks"><label><input type="checkbox" name="conferir" value="1" {{ f.attention ? 'checked' }}> Só as que estão a conferir</label></div>
         </div>

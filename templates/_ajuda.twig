@@ -36,7 +36,7 @@
 <ul>
   <li><strong>Local de instalação:</strong> onde o equipamento já está funcionando.</li>
   <li><strong>Local planejado:</strong> onde ele vai ser instalado.</li>
-  <li><strong>Base:</strong> onde o veículo ou patinete fica guardado; a posição na rua vem do rádio.</li>
+  <li><strong>Base:</strong> onde o veículo ou patinete fica guardado. Os dois sempre usam a base como endereço; a posição na rua vem do rádio e aparece à parte.</li>
 </ul>
 <p>A situação limita a escolha para o mapa não mostrar um aparelho onde ele ainda não está: "Não instalado" usa local planejado; operacional, mau funcionamento, em manutenção e furtado usam local de instalação; desativado aceita os dois.</p>
 {% endmacro %}
@@ -68,12 +68,12 @@
 {% endmacro %}
 
 {% macro serial() %}
-<p>O número que o fabricante grava no aparelho, geralmente numa etiqueta. Não pode repetir na mesma marca, para não haver dois cadastros do mesmo aparelho.</p>
+<p>O número que o fabricante grava no aparelho, geralmente numa etiqueta. Não pode repetir na mesma marca, para não haver dois cadastros do mesmo aparelho. Não sabe? Deixe em branco.</p>
 {{ _self.ex(['MOB-2-0041', 'SN 48213']) }}
 {% endmacro %}
 
 {% macro asset_tag() %}
-<p>O número da plaqueta de patrimônio que a prefeitura cola no aparelho. Serve para achá-lo no inventário; é único.</p>
+<p>O número da plaqueta de patrimônio que a prefeitura cola no aparelho. Serve para achá-lo no inventário; é único. Sem plaqueta, deixe em branco.</p>
 {{ _self.ex(['PM-004512', '2026/0187']) }}
 {% endmacro %}
 
@@ -88,9 +88,11 @@
 <p>Ao registrar a instalação pela ficha, a data de hoje entra sozinha.</p>
 {% endmacro %}
 
-{# Características por tipo: frase do catálogo (tip), uma linha por opção explicada (optionTips) e a faixa aceita. #}
+{# Características por tipo: frase do catálogo (tip), orientação do catálogo (help), uma linha por opção explicada
+   (optionTips) e a faixa aceita. #}
 {% macro spec(f) %}
 {% if f.tip is defined %}<p>{{ f.tip }}</p>{% endif %}
+{% if f.help is defined %}<p>{{ f.help }}</p>{% endif %}
 {% if f.optionTips is defined %}<ul>{% for ov, text in f.optionTips %}<li><strong>{{ f.options[ov] }}:</strong> {{ text }}</li>{% endfor %}</ul>{% endif %}
 {% if f.kind == 'int' %}<p>Aceita de {{ f.min }} a {{ f.max }}{{ f.unit is defined ? ' ' ~ f.unit }}.</p>{% endif %}
 {% endmacro %}
@@ -106,7 +108,7 @@
   FURTADO: 'abre um alerta de furto; depois a ficha pede a decisão de repor ou dar baixa.',
   NAO_INSTALADO: 'prepara a reposição: o local de instalação volta a ser o local planejado da nova instalação.'
 } %}
-<p>A partir de "{{ status.label }}", dá para mudar para:</p>
+<p>Só aparecem as mudanças possíveis a partir de "{{ status.label }}". Cada uma fica no histórico com o motivo:</p>
 <ul>{% for t in status.allowedTransitions %}<li><strong>{{ t.label }}:</strong> {{ effect[t.value] ?? '' }}</li>{% else %}<li>nenhuma outra situação.</li>{% endfor %}</ul>
 {% endmacro %}
 
@@ -135,7 +137,7 @@
 {% endmacro %}
 
 {% macro maint_result() %}
-<p>A situação que o equipamento passa a ter quando você conclui a ordem. Informe o que aconteceu de verdade:</p>
+<p>Esta situação passa a valer para o equipamento quando você conclui a ordem. Concluir não prova que ele voltou a funcionar: informe o resultado real, mesmo que o problema continue.</p>
 <ul>
   <li><strong>Operacional:</strong> foi testado e está funcionando.</li>
   <li><strong>Continua com mau funcionamento:</strong> o problema não foi resolvido; o alerta continua.</li>
@@ -166,6 +168,29 @@
 <ul>{% for s in enum_cases('Fiscaliza\\Domain\\AgentStatus') %}<li><span aria-hidden="true">{{ s.glyph }}</span> <strong>{{ s.label }}:</strong> {{ meaning[s.value] ?? '' }} {{ s.onShift ? 'Em turno: o rádio deve mandar posição.' : 'Fora de turno: não se espera posição.' }}</li>{% endfor %}</ul>
 {% endmacro %}
 
+{# Na ficha: o efeito de mudar a situação sobre o alerta de posição. #}
+{% macro agent_status_change() %}
+{{ _self.agent_status() }}
+<p>Indisponível ou fora de serviço tira de turno: um alerta sem posição deixa de se aplicar, sem indicar que a comunicação voltou.</p>
+{% endmacro %}
+
+{% macro ack_note() %}
+<p>Fica junto da ciência, com seu nome e o horário. Registrar ciência não atribui o acompanhamento.</p>
+{% endmacro %}
+
+{% macro assignee() %}
+<p>Quem vai acompanhar o alerta. A lista mostra as contas ativas cadastradas em Contas; a troca fica registrada com seu nome e o horário.</p>
+{% endmacro %}
+
+{% macro next_check() %}
+<p>Quando conferir de novo, pela hora de Marília, em até 7 dias. Em branco: sem conferência marcada.</p>
+{% endmacro %}
+
+{% macro followup_note() %}
+<p>O que aconteceu, em poucas palavras. Obrigatório em "Outra providência".</p>
+<p>Contato confirmado não atualiza a localização: a posição continua vindo do rádio.</p>
+{% endmacro %}
+
 {% macro agent_reason() %}
 <p>O motivo fica no histórico do agente, com seu nome e a hora, para quem acompanhar a equipe saber o que aconteceu.</p>
 {{ _self.ex(['início do turno', 'pausa para almoço', 'viatura quebrou']) }}
@@ -177,7 +202,8 @@
 {% endmacro %}
 
 {% macro base_name() %}
-<p>O lugar fixo de onde o agente sai e para onde volta. Aparece no mapa quando não há posição recente do rádio.</p>
+<p>O lugar fixo de onde o agente sai para trabalhar e para onde volta (posto, sede, ponto de apoio). Aparece no mapa quando não há posição recente do rádio.</p>
+<p>É diferente da posição atual, que não é digitada: vem do rádio enquanto o agente está em turno.</p>
 {{ _self.ex(['Base Norte', 'Posto do Terminal Urbano']) }}
 {% endmacro %}
 
@@ -199,9 +225,20 @@
 </ul>
 {% endmacro %}
 
-{% macro occurred_at() %}
-<p>Quando a infração aconteceu, como está no documento, pelo horário de Marília.</p>
+{# minFact: na edição, a data mais antiga já anotada na situação da multa (FineService::FACT_DATES). #}
+{% macro occurred_at(minFact = null) %}
+<p>Quando a infração aconteceu, como está no documento, pelo horário de Marília. Não pode estar no futuro{{ minFact ? ' nem depois do que já está anotado na situação da multa: a data mais antiga anotada é ' ~ minFact|br_date }}.</p>
 {{ _self.ex(['12/10/2026 07:45', '03/09/2026 18:10']) }}
+{% endmacro %}
+
+{% macro infraction_kind() %}
+<p>A categoria da infração nesta demonstração, não o catálogo nacional. O código oficial, se o documento trouxer, vai em "Código da infração no documento".</p>
+<p>Excesso de velocidade pede as velocidades, no bloco do radar.</p>
+{% endmacro %}
+
+{% macro fine_agency() %}
+<p>O órgão que emitiu a autuação, como está no documento.</p>
+<p>Se for diferente do órgão do radar ou do agente escolhido em "Como foi constatada", a observação sobre a origem passa a ser exigida.</p>
 {% endmacro %}
 
 {% macro legal_reference() %}
@@ -210,18 +247,62 @@
 {% endmacro %}
 
 {% macro ait() %}
-<p>AIT é o Auto de Infração de Trânsito: o número que o órgão põe no documento da multa. É diferente do código interno que o sistema gera (DEMO-MUL-…).</p>
+<p>AIT é o Auto de Infração de Trânsito: o número que o órgão põe no documento da multa, se houver. É diferente do código interno que o sistema gera (DEMO-MUL-…).</p>
+<p>Sem o número, explique o motivo em "Não tem o número do AIT?".</p>
 {{ _self.ex(['AB1234567', 'S0012345']) }}
 {% endmacro %}
 
 {% macro plate() %}
 <p>A placa do carro multado. Vale o formato antigo (3 letras e 4 números) ou o Mercosul (uma letra no lugar do segundo número). Use placas inventadas.</p>
+<p>Obrigatória desde o rascunho quando a origem é radar (lida na imagem). Só o formato é conferido.</p>
 {{ _self.ex(['ABC1234', 'BRA2E19']) }}
 {% endmacro %}
 
 {% macro renavam() %}
 <p>O número de registro do veículo que está no documento do carro (CRLV): 11 dígitos, com os zeros do começo.</p>
+<p>O formato não confirma o cadastro nem a regularidade do veículo. Sem o número, explique o motivo em "Não tem o RENAVAM?".</p>
 {{ _self.ex(['00123456789']) }}
+{% endmacro %}
+
+{# what: AIT ou RENAVAM; a ausência só é exigida para registrar (FineRules::missingForRegistration). #}
+{% macro missing_reason(what, examples) %}
+<p>Exigido para registrar sem {{ what }}: diga por que ele não está disponível.</p>
+{{ _self.ex(examples) }}
+{% endmacro %}
+
+{% macro vehicle_species() %}
+<p>A espécie do veículo como consta na informação disponível.</p>
+{{ _self.ex(['passageiro', 'carga']) }}
+{% endmacro %}
+
+{% macro fine_description() %}
+<p>Identifica o registro na lista, de 5 a 240 caracteres. Com o tipo e o local preenchidos, vem uma sugestão que pode ser mudada.</p>
+{{ _self.ex(['Excesso de velocidade na Av. Sampaio Vidal']) }}
+{% endmacro %}
+
+{% macro fine_notes() %}
+<p>O que foi observado, sem dados pessoais reais nem interpretação jurídica.</p>
+{% endmacro %}
+
+{% macro fine_radar() %}
+<p>O radar do inventário que registrou a infração. Arquivados aparecem no fim, para registro histórico: o cadastro atual pode diferir do que valia na ocorrência.</p>
+{% endmacro %}
+
+{% macro fine_operator() %}
+<p>Para medidor portátil operado por um agente. A origem principal continua sendo o radar.</p>
+{% endmacro %}
+
+{% macro fine_agent() %}
+<p>O agente que constatou a infração. Só agentes de trânsito do cadastro aparecem (guarda e polícia ficam de fora).</p>
+<p>Não é a conta de quem está lançando.</p>
+{% endmacro %}
+
+{% macro evidence_reference() %}
+<p>Identificação, em texto, da imagem ou do documento fictício. Não é envio de arquivo nem link.</p>
+{% endmacro %}
+
+{% macro source_note() %}
+<p>Exigida quando o órgão autuador difere do órgão do radar ou do agente, ou quando o cadastro do radar não combina com o fato: sem a função desta infração, nunca instalado ou fixo com agente operador.</p>
 {% endmacro %}
 
 {% macro speeds() %}
@@ -230,6 +311,7 @@
   <li><strong>Medida:</strong> o que o radar marcou.</li>
   <li><strong>Considerada:</strong> a medida menos a margem de erro do aparelho; é a que vale para a multa. O sistema calcula.</li>
 </ul>
+<p>Informe em km/h o limite da via e o que o radar mediu. A margem de erro é de 7 km/h até 107 km/h e de 7% acima disso.</p>
 <p>Exemplo: limite 60, medida 75 → considerada 68 km/h.</p>
 {% endmacro %}
 
@@ -239,6 +321,42 @@
   <li><strong>Penalidade:</strong> a multa foi aplicada e há valor a pagar ou recurso possível.</li>
   <li><strong>Encerrada:</strong> o órgão informou que o caso terminou.</li>
 </ul>
+{% endmacro %}
+
+{% macro fine_agent_filter() %}
+<p>Mostra as multas em que o agente constatou a infração ou operou o radar portátil.</p>
+{% endmacro %}
+
+{# ---------- Ficha da multa: conferência e situação ---------- #}
+
+{% macro check_effective() %}
+<p>O dia a que a conferência posterior se refere: entre a data da ocorrência e hoje.</p>
+{% endmacro %}
+
+{% macro source_reference() %}
+<p>Como identificar o que foi visto, sem dado pessoal.</p>
+{{ _self.ex(['CRLV-e exibido no local, exercício 2026']) }}
+{% endmacro %}
+
+{% macro pending_items() %}
+<p>Obrigatório quando o resultado for "Com pendência": o que estava errado nos documentos.</p>
+{% endmacro %}
+
+{% macro check_reason() %}
+<p>Obrigatório para registrar "Não verificada", por exemplo para retirar uma conclusão anterior.</p>
+{% endmacro %}
+
+{% macro doc_review() %}
+<p>A partir do dia escolhido (data de Marília), a multa passa a mostrar "Documentos: precisam ser conferidos de novo" e entra em "A conferir".</p>
+<p>Vale o lembrete da conferência anotada por último. É um lembrete seu, não é prazo legal.</p>
+{% endmacro %}
+
+{% macro review_on() %}
+<p>Obrigatória com "Escolher data". A partir desse dia (data de Marília), a multa entra em "A conferir".</p>
+{% endmacro %}
+
+{% macro progress_reason() %}
+<p>Obrigatório ao corrigir pagamento, resultado ou encerramento já informados. O anterior fica no histórico.</p>
 {% endmacro %}
 
 {% macro fine_documents() %}
@@ -300,6 +418,15 @@
 
 {% macro mae() %}
 <p>Em média, quantos registros a previsão errou para mais ou para menos, por setor e por semana. Quanto menor, melhor.</p>
+{% endmacro %}
+
+{% macro justification() %}
+<p>Obrigatório só se você escolher outro agente. Fica registrado na missão, junto da escolha.</p>
+{% endmacro %}
+
+{% macro support_point() %}
+<p>Onde o agente deve ficar durante a ronda.</p>
+<p>O centro do quadrado no mapa não é um local seguro de parada: indique um ponto real.</p>
 {% endmacro %}
 
 {# ---------- Contas ---------- #}

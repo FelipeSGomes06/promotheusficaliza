@@ -231,7 +231,8 @@
 
   /* Ajuda contextual (ui.help): "?" ao lado do rótulo. Com script, popovers.js prende a caixinha à tela
      (position: fixed), fora do corte de qualquer overflow; sem script, abre logo abaixo do "?". */
-  .field__head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  /* Mesma altura com e sem "?" (o botão tem 22 px): rótulos simples e com ajuda ficam na mesma linha de base. */
+  .field__head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-height: 24px; }
   .help { position: relative; display: inline-flex; vertical-align: middle; }
   .help summary { list-style: none; }
   .help summary::-webkit-details-marker { display: none; }
@@ -403,8 +404,16 @@
   .checks { display: flex; flex-wrap: wrap; gap: 8px 16px; }
   .checks label { display: inline-flex; gap: 8px; align-items: center; font-weight: 400; min-height: 32px; }
   input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; accent-color: var(--color-brand-600); }
+  .field__body { display: grid; gap: 5px; align-content: start; min-width: 0; }
   .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 20px; }
   .form-grid .span-2 { grid-column: 1 / -1; }
+  /* Cada item da grade ocupa duas faixas: cabeçalho e corpo. O campo (ou o invólucro que só contém um campo) herda
+     essas faixas (subgrid), então os controles de uma linha começam na mesma altura mesmo que um rótulo quebre em
+     duas linhas, um erro apareça embaixo de um deles ou só um tenha "?". */
+  .form-grid > * { grid-row: span 2; }
+  .form-grid > .field, .form-grid > div:has(> .field:only-child), .form-grid > div > .field:only-child { display: grid; grid-template-rows: subgrid; grid-row: span 2; }
+  .form-grid .field__head { align-self: end; }
+  .form-grid + .picker, .advanced[open] + .form-grid { margin-top: 16px; }
   @media (max-width: 680px) { .form-grid { grid-template-columns: 1fr; } }
   .form-step { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-lg); padding: 22px; margin: 0; min-width: 0; }
   /* float tira a legenda da borda do fieldset (onde o navegador a desenha) e a põe dentro do cartão. */
@@ -546,7 +555,7 @@
   .more-filters > summary { list-style: none; cursor: pointer; }
   .more-filters > summary::-webkit-details-marker { display: none; }
   .more-filters--inline[open] { flex-basis: 100%; order: 10; }
-  .more-filters--inline .more-filters__body { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; padding: 16px; margin-top: 10px; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-lg); }
+  .more-filters--inline .more-filters__body { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: end; padding: 16px; margin-top: 10px; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-lg); }
   .result-count { margin: 0; display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; color: var(--color-muted); font-size: 0.95rem; }
   .result-count strong { color: var(--color-ink); font-variant-numeric: tabular-nums; }
   @media (max-width: 900px) { .filters { grid-template-columns: 1fr 1fr; } .filters .field--search { grid-column: 1 / -1; } }
@@ -772,9 +781,6 @@
   .follow-facts dd { margin: 0; display: grid; gap: 2px; overflow-wrap: anywhere; }
   .follow-facts dd .hint { font-size: 0.8rem; }
   @media (max-width: 680px) { .follow-facts { grid-template-columns: 1fr; } }
-  /* Rótulos no topo e campos na mesma linha de base, mesmo quando só um dos lados tem dica. */
-  .follow-form > .field:not(.span-2) { display: flex; flex-direction: column; gap: 5px; }
-  .follow-form > .field:not(.span-2) > :is(input, select) { margin-top: auto; }
   .follow-quote { margin: 10px 0 0; padding: 8px 12px; border-left: 3px solid var(--color-line-strong); font-size: 0.92rem; }
   .assign-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: end; }
   @media (max-width: 480px) { .assign-form { grid-template-columns: 1fr; } .assign-form .btn { justify-self: start; } }
@@ -1225,7 +1231,6 @@
   .fine-checks li { padding: 10px 12px; border: 1px solid var(--color-line); border-radius: var(--radius-md); overflow-wrap: anywhere; }
   .fine-checks li.is-stale { border-style: dashed; background: var(--color-sunken); }
   .form-sub { font-size: 1rem; margin: 18px 0 6px; }
-  .form-grid--pair { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
   .form-grid--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   @media (max-width: 680px) { .form-grid--three { grid-template-columns: 1fr; } }
   .checks--inline label { min-height: 44px; padding-right: 6px; }

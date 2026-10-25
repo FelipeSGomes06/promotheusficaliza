@@ -230,6 +230,6 @@ final class ReviewFlowsHttpTest extends FirebirdTestCase
         self::assertStringContainsString('>Data relida no auto</textarea>', $html, 'o motivo digitado continua');
         self::assertStringContainsString('value="2026-10-16T09:10"', $html, 'a data digitada continua, para corrigir');
         self::assertStringContainsString("/multas/{$id}#andamento", $html);
-        self::assertStringContainsString('(a data mais antiga anotada é 14/10/2026)', $html, 'o limite aparece antes do erro, junto do campo');
+        self::assertStringContainsString('a data mais antiga anotada é 14/10/2026.', $html, 'o limite aparece no "?" do campo');
     }
 }

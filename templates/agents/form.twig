@@ -20,18 +20,13 @@
       <div class="form-grid">
         {{ ui.input('call_sign', 'Nome de exibição (fictício)', v, errors, {required: true, max: 40, placeholder: 'Ex.: Hermes 09', help_tip: ajuda.call_sign()}) }}
         {{ ui.select('role', 'Função', {TRANSITO: 'Agente de trânsito', GUARDA: 'Guarda municipal', POLICIA: 'Policial'}, v.role ?? 'TRANSITO', errors, {required: true, help_tip: ajuda.agent_role()}) }}
-        <div class="field {{ errors.agency_id is defined ? 'has-error' }}">
-          <label for="f-agency_id">Órgão <span class="req" aria-hidden="true">*</span></label>
-          <select id="f-agency_id" name="agency_id" required {% if errors.agency_id is defined %}aria-invalid="true" aria-describedby="err-agency_id"{% endif %}><option value="">Escolha…</option>{% for a in agencies %}<option value="{{ a.id }}" {{ ((v.agency_id ?? '') ~ '') == (a.id ~ '') ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select>
-          {{ ui.field_error(errors, 'agency_id') }}
-        </div>
+        {{ ui.select('agency_id', 'Órgão', agencies|column('name', 'id'), v.agency_id ?? '', errors, {empty: 'Escolha…', required: true}) }}
         {% if not existing %}
           {{ ui.select('status', 'Situação inicial', {EM_ATIVIDADE: 'Em atividade', EM_PAUSA: 'Em pausa', INDISPONIVEL: 'Indisponível', FORA_DE_SERVICO: 'Fora de serviço'}, v.status ?? 'FORA_DE_SERVICO', errors, {required: true, help_tip: ajuda.agent_status()}) }}
         {% endif %}
       </div>
     </fieldset>
     <fieldset class="form-step"><legend><span class="form-step__n" aria-hidden="true">2</span> Base de trabalho</legend>
-      <p class="hint">A base é o lugar fixo de onde o agente sai para trabalhar e para onde volta (posto, sede, ponto de apoio). É diferente da posição atual, que não é digitada: vem do rádio enquanto o agente está em turno.</p>
       {{ ui.input('base_name', 'Nome da base', v, errors, {required: true, max: 80, placeholder: 'Ex.: Base Norte (fictícia)', help_tip: ajuda.base_name()}) }}
       <p class="hint" data-without-map="picker">Sem o mapa (JavaScript desligado ou mapa que não carregou): preencha o endereço abaixo e, ao salvar, a base vai para ele.</p>
       <div class="picker-howto" id="picker-howto" hidden data-needs-map="picker">{{ ui.icon('i-pin') }}<span><strong>Clique no mapa para marcar ou mudar a base.</strong> Não achou o lugar? Use o endereço logo abaixo. {{ ui.help('ajuda-ponto', 'ponto da base e coordenadas', ajuda.map_point('a base')) }}</span></div>
@@ -43,12 +38,12 @@
       {% set pointError = errors.base_lat ?? errors.base_lng ?? null %}
       {% if pointError %}<p class="error base-point-error" id="err-base_lat" role="alert">{{ pointError }}</p>{% endif %}
       <div class="hint base-region">Bairro {{ ui.help('ajuda-bairro', 'Bairro', ajuda.region()) }}: {% if existing and existing.region_name %}<strong>{{ existing.region_name }}</strong> (muda sozinho se você mudar o ponto){% else %}definido pelo ponto, ao salvar{% endif %}.</div>
-      <p class="hint base-address__intro">Endereço: com o CEP, a rua é preenchida sozinha e pode ser corrigida. Se não marcar no mapa, a base vai para este endereço.</p>
+      <p class="hint base-address__intro">Endereço: se não marcar no mapa, a base vai para este endereço.</p>
       <div class="form-grid base-address" data-cep-lookup data-cep="f-base_cep" data-street="f-base_street" data-number="f-base_ref"
            data-url="{{ url('/api/cep/') }}" data-locate-url="{{ url('/api/localizar') }}" data-lat="f-base_lat" data-lng="f-base_lng" data-map="picker">
         {{ ui.input('base_cep', 'CEP', v, errors, {max: 9, inputmode: 'numeric', placeholder: '17500-000', autocomplete: 'off', help_tip: ajuda.cep()}) }}
         {# Sistema de Marília: a cidade é fixa, mostrada como campo travado (não é enviada). #}
-        <div class="field"><label for="f-base_city">Cidade</label><input id="f-base_city" type="text" value="Marília / SP" readonly class="input-fixed"></div>
+        <div class="field"><div class="field__head"><label for="f-base_city">Cidade</label></div><div class="field__body"><input id="f-base_city" type="text" value="Marília / SP" readonly class="input-fixed"></div></div>
         {{ ui.input('base_street', 'Rua', v, errors, {max: 120, placeholder: 'Ex.: Avenida Sampaio Vidal', help_tip: ajuda.street()}) }}
         {{ ui.input('base_ref', 'Número', v, errors, {max: 160, placeholder: 'Ex.: 1200 ou s/n', help_tip: ajuda.address_ref()}) }}
         <p class="cep-street__status span-2" data-cep-status aria-live="polite"></p>

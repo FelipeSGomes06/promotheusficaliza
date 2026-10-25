@@ -1,5 +1,6 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
+{% import '_ajuda.twig' as ajuda %}
 {% import 'fines/_fine.twig' as fine %}
 {% set kindLabel = kinds[f.infraction_kind] ?? 'Infração a classificar' %}
 {% block title %}{{ f.code }} · {{ kindLabel }}{% endblock %}
@@ -158,7 +159,7 @@
               <p class="hint">Anote o que foi visto. Este sistema não consulta o Detran: se precisar, consulte no site oficial e registre aqui o resultado.</p>
               <div class="form-grid">
                 {{ ui.select('scope', 'A conferência se refere a', doc_scopes, cv.scope ?? 'OCORRENCIA', ce, {required: true, dataAttr: 'check-scope'}) }}
-                <div data-check-effective>{{ ui.input('effective_on', 'Data a que se refere (conferência posterior)', cv, ce, {type: 'date', help: 'Entre a data da ocorrência e hoje.'}) }}</div>
+                <div data-check-effective>{{ ui.input('effective_on', 'Data a que se refere', cv, ce, {type: 'date', help_tip: ajuda.check_effective()}) }}</div>
                 {{ ui.select('document_status', 'Resultado', doc_labels, cv.document_status ?? '', ce, {required: true, empty: 'Escolha…'}) }}
                 {# Já vem com "agora": recolhido, abre com erro. #}
                 <details class="advanced span-2" {{ ce.checked_at is defined ? 'open' }}>
@@ -168,16 +169,18 @@
                 {# Divulgação progressiva (multas.js): cada bloco aparece com o resultado que o servidor exige dele (FineService::addCheck). #}
                 <div class="form-grid span-2" data-show-if="document_status=REGULARIDADE_INFORMADA PENDENCIA_INFORMADA">
                   {{ ui.select('source_type', 'Fonte', doc_sources, cv.source_type ?? 'NAO_INFORMADA', ce, {required: true}) }}
-                  {{ ui.input('source_reference', 'Referência da fonte', cv, ce, {max: 240, help: 'Ex.: "CRLV-e exibido no local, exercício 2026" (sem dado pessoal).'}) }}
+                  {{ ui.input('source_reference', 'Referência da fonte', cv, ce, {max: 240, help_tip: ajuda.source_reference()}) }}
                   <div data-show-if="source_type=CRLV_APRESENTADO CONSULTA_OFICIAL_INFORMADA">{{ ui.input('crlv_exercise', 'Exercício do CRLV', cv, ce, {type: 'number', inputmode: 'numeric'}) }}</div>
                 </div>
-                <div class="span-2" data-show-if="document_status=PENDENCIA_INFORMADA">{{ ui.input('pending_items', 'O que estava errado', cv, ce, {type: 'textarea', max: 500, help: 'Obrigatório quando o resultado for "Com pendência".'}) }}</div>
-                <div class="span-2" data-show-if="document_status=NAO_VERIFICADA">{{ ui.input('check_reason', 'Motivo / observação', cv, ce, {type: 'textarea', max: 300, help: 'Obrigatório para registrar "Não verificada" (por exemplo, retirar uma conclusão anterior).'}) }}</div>
+                <div class="span-2" data-show-if="document_status=PENDENCIA_INFORMADA">{{ ui.input('pending_items', 'O que estava errado', cv, ce, {type: 'textarea', max: 500, mark: true, help_tip: ajuda.pending_items()}) }}</div>
+                <div class="span-2" data-show-if="document_status=NAO_VERIFICADA">{{ ui.input('check_reason', 'Motivo / observação', cv, ce, {type: 'textarea', max: 300, mark: true, help_tip: ajuda.check_reason()}) }}</div>
                 {# Pergunta feita depois do resultado: com JavaScript ela só aparece quando o resultado é escolhido (multas.js). #}
                 <details class="advanced span-2" data-check-review open>
                   <summary id="lbl-review_choice">Quer ser lembrado de conferir de novo?<span data-review-answer></span></summary>
                   <div class="stack">
-                    <p class="hint">A partir do dia escolhido (data de Marília), a multa passa a mostrar "Documentos: precisam ser conferidos de novo" e entra em "A conferir". Vale o lembrete da conferência anotada por último: esta substitui {{ f.doc_review_on ? 'o atual, de ' ~ f.doc_review_on|br_date : 'qualquer lembrete anterior' }}. É um lembrete seu, não é prazo legal.</p>
+                    {# A explicação geral fica no "?"; o lembrete atual desta multa continua à vista. #}
+                    {# div, não p: o <details> do "?" fecharia o parágrafo. #}
+                    <div class="hint">Esta conferência substitui {{ f.doc_review_on ? 'o lembrete atual, de ' ~ f.doc_review_on|br_date : 'qualquer lembrete anterior' }}. {{ ui.help('ajuda-lembrete', 'lembrete de conferência', ajuda.doc_review()) }}</div>
                     <div class="field {{ ce.review_choice is defined ? 'has-error' }}">
                       <div class="checks checks--inline" role="radiogroup" aria-labelledby="lbl-review_choice" {% if ce.review_choice is defined %}aria-describedby="err-review_choice"{% endif %}>
                         {% for value, text in review_choices %}<label><input type="radio" {{ loop.first ? 'id=f-review_choice' }} name="review_choice" value="{{ value }}" data-review-choice {{ (cv.review_choice ?? '') == value ? 'checked' }}> {{ text }}</label>{% endfor %}
@@ -185,7 +188,7 @@
                       {{ ui.field_error(ce, 'review_choice') }}
                     </div>
                     <p class="hint" data-review-nojs>Use só uma resposta: marque uma opção ou, em "Escolher data", preencha a data abaixo.</p>
-                    <div data-review-date>{{ ui.input('review_on', 'Lembrar de conferir de novo em', cv, ce, {type: 'date', mark: true, help: 'Obrigatória com "Escolher data".'}) }}</div>
+                    <div data-review-date>{{ ui.input('review_on', 'Lembrar de conferir de novo em', cv, ce, {type: 'date', mark: true, help_tip: ajuda.review_on()}) }}</div>
                   </div>
                 </details>
               </div>
@@ -226,7 +229,7 @@
                  valor ou erro; escondido, continua sendo enviado. Os exigidos seguem FineService::updateProgress e os CHECK de FINE. #}
               {% set later = ['AUTUACAO', 'PENALIDADE_NOTIFICADA', 'ENCERRAMENTO_INFORMADO'] %}
               <div class="form-grid">
-                {{ ui.select('process_stage', 'Fase', stages, pv.process_stage ?? 'NAO_INFORMADA', pe, {required: true}) }}
+                {{ ui.select('process_stage', 'Fase', stages, pv.process_stage ?? 'NAO_INFORMADA', pe, {required: true, help_tip: ajuda.fine_stage()}) }}
                 <div data-show-if="process_stage={{ later|join(' ') }};payment_status=EM_ABERTO PAGAMENTO_INFORMADO">{{ ui.input('nominal_amount', 'Valor da multa (R$)', pv, pe, {max: 20, inputmode: 'decimal', placeholder: '293,47'}) }}</div>
                 <div class="form-grid span-2" data-show-if="process_stage={{ later|join(' ') }}">
                   {{ ui.input('autuation_issued_on', labels.autuation_issued_on, pv, pe, {type: 'date'}) }}
@@ -262,7 +265,7 @@
                 </div>
                 {# Exigido só ao corrigir algo já informado: sem nada a corrigir, aparece só se tiver valor ou erro. #}
                 {% set correctable = [f.paid_on, f.paid_amount_cents, f.payment_reference, f.contest_decided_on, f.contest_result_note, f.closed_on, f.closure_reference, f.closure_note]|filter(x => x is not null) is not empty %}
-                <div class="span-2" {% if not correctable %}data-show-if=""{% endif %}>{{ ui.input('progress_reason', 'Motivo da correção', pv, pe, {type: 'textarea', max: 300, help: 'Obrigatório ao corrigir pagamento, resultado ou encerramento já informados; o anterior fica no histórico.'}) }}</div>
+                <div class="span-2" {% if not correctable %}data-show-if=""{% endif %}>{{ ui.input('progress_reason', 'Motivo da correção', pv, pe, {type: 'textarea', max: 300, mark: true, help_tip: ajuda.progress_reason()}) }}</div>
               </div>
               <div><button class="btn btn--primary" type="submit">Salvar situação</button></div>
             </form>

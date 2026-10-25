@@ -16,7 +16,7 @@
 
   <form class="stack section" method="get" action="{{ url('/agentes') }}" role="search" aria-label="Filtrar agentes">
     <div class="filters">
-      <div class="field field--search"><label for="q">Buscar</label><input id="q" type="search" name="q" value="{{ q }}" placeholder="Nome, código ou base" maxlength="60"></div>
+      <div class="field field--search"><div class="field__head"><label for="q">Buscar</label></div><input id="q" type="search" name="q" value="{{ q }}" placeholder="Nome, código ou base" maxlength="60"></div>
       <div class="field"><div class="field__head"><label for="fn">Função</label>{{ ui.help('fn-tip', 'Função', ajuda.agent_role()) }}</div>
         <select id="fn" name="categoria[]" aria-describedby="fn-tip"><option value="">Todas as funções</option>{% for c in options.categories|filter(c => c.group == 'Agentes') %}<option value="{{ c.value }}" {{ c.value in filters.categories ? 'selected' }}>{{ c.label }}</option>{% endfor %}</select></div>
       <div class="field"><div class="field__head"><label for="sit">Situação</label>{{ ui.help('sit-tip', 'Situação', ajuda.agent_status()) }}</div>
@@ -27,9 +27,9 @@
       <details class="more-filters more-filters--inline" {{ moreActive > 0 ? 'open' }}>
         <summary class="chip">{{ ui.icon('i-layers') }}<span>Mais filtros</span> {% if moreActive %}<span class="count-pill">{{ moreActive }}</span>{% endif %}</summary>
         <div class="more-filters__body">
-          <div class="field"><label for="org">Órgão</label>
+          <div class="field"><div class="field__head"><label for="org">Órgão</label></div>
             <select id="org" name="orgao[]"><option value="">Todos os órgãos</option>{% for a in options.agencies %}<option value="{{ a.id }}" {{ a.id in filters.agencies ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select></div>
-          <div class="field"><label for="ord">Ordenar por</label>
+          <div class="field"><div class="field__head"><label for="ord">Ordenar por</label></div>
             <select id="ord" name="ordem">{% for k, l in {codigo: 'Código', nome: 'Nome', funcao: 'Função', situacao: 'Situação', bairro: 'Bairro da base'} %}<option value="{{ k }}" {{ sort == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
           <div class="checks"><label><input type="checkbox" name="arquivados" value="1" {{ archived ? 'checked' }}> Mostrar só arquivados</label></div>
         </div>

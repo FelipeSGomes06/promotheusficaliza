@@ -15,8 +15,8 @@
 
   <form class="stack" method="get" action="{{ url('/equipamentos') }}" role="search" aria-label="Filtrar equipamentos">
     <div class="filters">
-      <div class="field field--search"><label for="q">Buscar</label><input id="q" type="search" name="q" value="{{ q }}" placeholder="Rua, código, série, marca ou patrimônio" maxlength="60"></div>
-      <div class="field"><label for="tipo">Tipo</label>
+      <div class="field field--search"><div class="field__head"><label for="q">Buscar</label></div><input id="q" type="search" name="q" value="{{ q }}" placeholder="Rua, código, série, marca ou patrimônio" maxlength="60"></div>
+      <div class="field"><div class="field__head"><label for="tipo">Tipo</label></div>
         <select id="tipo" name="categoria[]"><option value="">Todos os tipos</option>{% for t in types %}<option value="{{ t.code }}" {{ t.code in filters.categories ? 'selected' }}>{{ t.label }}</option>{% endfor %}</select></div>
       <div class="field"><div class="field__head"><label for="sit">Situação</label>{{ ui.help('sit-tip', 'Situação', ajuda.equipment_status()) }}</div>
         <select id="sit" name="situacao[]" aria-describedby="sit-tip"><option value="">Todas as situações</option>{% for s in options.statuses|filter(s => s.group == 'Equipamentos') %}<option value="{{ s.value }}" {{ s.value in filters.statuses ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select></div>
@@ -26,11 +26,11 @@
       <details class="more-filters more-filters--inline" {{ moreActive > 0 ? 'open' }}>
         <summary class="chip">{{ ui.icon('i-layers') }}<span>Mais filtros</span> {% if moreActive %}<span class="count-pill">{{ moreActive }}</span>{% endif %}</summary>
         <div class="more-filters__body">
-          <div class="field"><label for="bai">Bairro</label>
+          <div class="field"><div class="field__head"><label for="bai">Bairro</label></div>
             <select id="bai" name="bairro[]"><option value="">Todos os bairros</option>{% for r in options.regions %}<option value="{{ r.id }}" {{ r.id in filters.regions ? 'selected' }}>{{ r.name }}</option>{% endfor %}</select></div>
-          <div class="field"><label for="org">Órgão responsável</label>
+          <div class="field"><div class="field__head"><label for="org">Órgão responsável</label></div>
             <select id="org" name="orgao[]"><option value="">Todos os órgãos</option>{% for a in options.agencies %}<option value="{{ a.id }}" {{ a.id in filters.agencies ? 'selected' }}>{{ a.name }}</option>{% endfor %}</select></div>
-          <div class="field"><label for="ord">Ordenar por</label>
+          <div class="field"><div class="field__head"><label for="ord">Ordenar por</label></div>
             <select id="ord" name="ordem">{% for k, l in {codigo: 'Código', tipo: 'Tipo', situacao: 'Situação', bairro: 'Bairro', atualizado: 'Alterados recentemente'} %}<option value="{{ k }}" {{ sort == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
           <div class="checks"><label><input type="checkbox" name="arquivados" value="1" {{ archived ? 'checked' }}> Mostrar só arquivados (fora da operação)</label></div>
         </div>

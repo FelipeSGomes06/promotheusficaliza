@@ -1,0 +1,510 @@
+{
+ "multa-nova@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-radar-velocidade@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-radar-velocidade@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-radar-velocidade@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-radar-velocidade@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-radar-velocidade@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-radar-outra@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-radar-outra@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-radar-outra@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-radar-outra@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-radar-outra@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-agente@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-agente@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-agente@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-agente@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-agente@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-erros@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-nova-erros@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-completar@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-completar@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-completar@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-completar@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-completar@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-retificar@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-retificar@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-retificar@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-retificar@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-retificar@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-conferencia-posterior@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-conferencia-posterior@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-conferencia-posterior@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-conferencia-posterior@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-conferencia-posterior@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-conferencia-nao-verificada@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-conferencia-nao-verificada@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-conferencia-nao-verificada@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-conferencia-nao-verificada@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-conferencia-nao-verificada@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-situacao@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-situacao@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-situacao@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-situacao@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "multa-ficha-situacao@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-radar@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-radar@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-radar@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-radar@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-radar@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-camera@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-camera@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-balanca@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-balanca@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-cancela@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-cancela@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-totem@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-totem@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-veiculo@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-veiculo@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-patinete@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-novo-patinete@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-editar@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-editar@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-editar@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-editar@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-editar@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-ficha@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-ficha@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-ficha@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-ficha@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "equip-ficha@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "manutencao@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "manutencao@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "manutencao@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "manutencao@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "manutencao@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-novo@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-novo@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-novo@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-novo@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-novo@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-editar@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-editar@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-editar@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-editar@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-editar@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-ficha@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-ficha@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-ficha@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-ficha@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "agente-ficha@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "planejar@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "planejar@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "planejar@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "planejar@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "planejar@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "contas@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "contas@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "contas@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "contas@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "contas@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-equip@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-equip@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-equip@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-equip@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-equip@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-agentes@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-agentes@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-agentes@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-agentes@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-agentes@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-multas@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-multas@768": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-multas@720": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-multas@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "filtros-multas@360": {
+  "worst": 0,
+  "rows": []
+ },
+ "central@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "central@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "revisoes@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "revisoes@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "retrospecto@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "retrospecto@390": {
+  "worst": 0,
+  "rows": []
+ },
+ "sobre@1440": {
+  "worst": 0,
+  "rows": []
+ },
+ "sobre@390": {
+  "worst": 0,
+  "rows": []
+ }
+}

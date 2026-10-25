@@ -169,11 +169,11 @@
         <h2 class="step__title section" id="passo-3"><span class="step__n" aria-hidden="true">3</span>Confirmar a missão</h2>
         {{ ui.error_summary(form.errors, {agent_id: 'Agente', justification: 'Por que este agente', support_point: 'Ponto de apoio', note: 'Observação', confirm: 'Confirmação'}) }}
         {# Sem JavaScript o campo fica sempre visível; com JavaScript, só aparece (e é obrigatório) se outro agente for escolhido. #}
-        {{ ui.input('justification', 'Por que escolheu este agente e não o sugerido?', v, form.errors, {type: 'textarea', max: 300, mark: true, class: 'js-justification', help: 'Obrigatório só se você escolher outro agente.'}) }}
+        {{ ui.input('justification', 'Por que escolheu este agente e não o sugerido?', v, form.errors, {type: 'textarea', max: 300, mark: true, class: 'js-justification', help_tip: ajuda.justification()}) }}
         <details class="more-actions" {% if (v.support_point ?? '') or (v.note ?? '') or form.errors.support_point is defined or form.errors.note is defined %}open{% endif %}>
           <summary>Adicionar ponto de apoio ou observação (opcional)</summary>
           <div class="form-grid section">
-            {{ ui.input('support_point', 'Ponto de apoio', v, form.errors, {max: 160, help: 'Onde o agente deve ficar. O centro do quadrado no mapa não é um local seguro de parada.'}) }}
+            {{ ui.input('support_point', 'Ponto de apoio', v, form.errors, {max: 160, help_tip: ajuda.support_point()}) }}
             {{ ui.input('note', 'Observação', v, form.errors, {type: 'textarea', max: 300}) }}
           </div>
         </details>

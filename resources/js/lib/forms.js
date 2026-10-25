@@ -86,7 +86,6 @@ export function initForms() {
       document.querySelectorAll('[data-location-kind] option').forEach((o) => { o.disabled = !allowed.includes(o.value); });
       const kind = document.querySelector('[data-location-kind]');
       if (kind && !allowed.includes(kind.value)) kind.value = allowed[0];
-      document.querySelectorAll('[data-mobile-note]').forEach((n) => { n.hidden = !mobile; });
     };
     typeSelect.addEventListener('change', update);
     statusSelect?.addEventListener('change', update);

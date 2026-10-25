@@ -60,9 +60,8 @@
           {% set ackErr = form.name == 'ciencia' and fe.note is defined %}
           <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/alertas/' ~ current.id ~ '/ciencia') }}" class="next-action__form">{{ ui.csrf(app.csrf) }}
             <div class="field {{ ackErr ? 'has-error' }}">
-              <label for="f-ack-note">Nota da ciência <span class="optional">(opcional)</span></label>
-              <span class="hint" id="f-ack-note-help">Fica junto da ciência, com seu nome e o horário. Registrar ciência não atribui o acompanhamento.</span>
-              <textarea id="f-ack-note" name="note" maxlength="300" rows="2" aria-describedby="f-ack-note-help">{{ form.name == 'ciencia' ? fv.note ?? '' }}</textarea>
+              <div class="field__head"><label for="f-ack-note">Nota da ciência <span class="optional">(opcional)</span></label>{{ ui.help('f-ack-note-tip', 'Nota da ciência', ajuda.ack_note()) }}</div>
+              <textarea id="f-ack-note" name="note" maxlength="300" rows="2" aria-describedby="f-ack-note-tip">{{ form.name == 'ciencia' ? fv.note ?? '' }}</textarea>
             </div>
             <div class="btn-row">
               <button class="btn btn--primary" type="submit">{{ ui.icon('i-check') }}Registrar ciência</button>
@@ -123,9 +122,8 @@
             {% else %}
               {% set picked = form.name == 'responsavel' and mine ? fv.assignee ?? '' : '' %}
               <div class="field {{ ae.assignee is defined ? 'has-error' }}">
-                <label for="f-assignee">{{ current.assignee_id ? 'Reatribuir para' : 'Atribuir a' }} <span class="req" aria-hidden="true">*</span></label>
-                <span class="hint" id="f-assignee-help">Contas ativas cadastradas em Contas. A troca fica registrada com seu nome e o horário.</span>
-                <select id="f-assignee" name="assignee" required aria-describedby="f-assignee-help{{ ae.assignee is defined ? ' err-assignee' }}" {% if ae.assignee is defined %}aria-invalid="true"{% endif %}>
+                <div class="field__head"><label for="f-assignee">{{ current.assignee_id ? 'Reatribuir para' : 'Atribuir a' }} <span class="req" aria-hidden="true">*</span></label>{{ ui.help('f-assignee-tip', 'responsável pelo acompanhamento', ajuda.assignee()) }}</div>
+                <select id="f-assignee" name="assignee" required aria-describedby="f-assignee-tip{{ ae.assignee is defined ? ' err-assignee' }}" {% if ae.assignee is defined %}aria-invalid="true"{% endif %}>
                   <option value="">Escolha uma conta…</option>
                   {% for u in assignees %}<option value="{{ u.id }}" {{ (picked ~ '') == (u.id ~ '') ? 'selected' }} {{ u.id == current.assignee_id ? 'disabled' }}>{{ u.display_name }} ({{ u.username }}){{ u.id == app.user.id ? ' · você' }}{{ u.id == current.assignee_id ? ' · responsável atual' }}</option>{% endfor %}
                 </select>
@@ -143,11 +141,11 @@
             {% set pv = form.name == 'providencia' and mine ? fv : {} %}
             {% set pe = form.name == 'providencia' and mine ? fe|filter((m, k) => k != '_form') : {} %}
             {{ ui.error_summary(pe, {action: 'O que foi feito', note: 'Relato', next_check: 'Próxima conferência'}) }}
-            <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/alertas/' ~ current.id ~ '/providencias') }}" class="form-grid follow-form">{{ ui.csrf(app.csrf) }}
+            <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/alertas/' ~ current.id ~ '/providencias') }}" class="form-grid">{{ ui.csrf(app.csrf) }}
               <input type="hidden" name="version" value="{{ current.followup_no }}">
               {{ ui.select('action', 'O que foi feito', actions, pv.action ?? '', pe, {required: true, empty: 'Escolha…'}) }}
-              {{ ui.input('next_check', 'Próxima conferência', pv, pe, {type: 'datetime-local', help: 'Hora de Marília, em até 7 dias. Vazio: sem conferência marcada.'}) }}
-              {{ ui.input('note', 'Relato', pv, pe, {type: 'textarea', max: 500, class: 'span-2', help: 'O que aconteceu, em poucas palavras. Obrigatório em "Outra providência". Contato confirmado não atualiza a localização.'}) }}
+              {{ ui.input('next_check', 'Próxima conferência', pv, pe, {type: 'datetime-local', help_tip: ajuda.next_check()}) }}
+              {{ ui.input('note', 'Relato', pv, pe, {type: 'textarea', max: 500, class: 'span-2', mark: true, help_tip: ajuda.followup_note()}) }}
               <div class="span-2 btn-row">
                 <button class="btn btn--primary" type="submit">{{ ui.icon('i-check') }}Registrar providência</button>
                 <span class="hint">Seu nome, a data e a hora entram no registro. Os registros anteriores são mantidos.</span>
@@ -186,9 +184,8 @@
         <h2 id="situacao-titulo">Mudar situação</h2>
         <p class="m-0">{{ ui.agent_status(a.status) }} <span class="hint">desde {{ a.status_changed_at|local_dt }}</span></p>
         <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/situacao') }}" class="stack">{{ ui.csrf(app.csrf) }}
-          <div class="field"><div class="field__head"><label for="ns">Nova situação</label>{{ ui.help('ns-tip', 'Nova situação', ajuda.agent_status()) }}</div>
-            <select id="ns" name="status" aria-describedby="ns-help ns-tip">{% for s in statuses %}<option value="{{ s.value }}" {{ s.value == (form.name == 'situacao' ? fv.status ?? status.value : status.value) ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select>
-            <span class="hint" id="ns-help">Atividade e pausa contam como "em turno": a posição é esperada. Indisponível ou fora de serviço tira de turno: um alerta sem posição deixa de se aplicar, sem indicar que a comunicação voltou.</span></div>
+          <div class="field"><div class="field__head"><label for="ns">Nova situação</label>{{ ui.help('ns-tip', 'Nova situação', ajuda.agent_status_change()) }}</div>
+            <select id="ns" name="status" aria-describedby="ns-tip">{% for s in statuses %}<option value="{{ s.value }}" {{ s.value == (form.name == 'situacao' ? fv.status ?? status.value : status.value) ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select></div>
           <div class="field {{ se.note is defined ? 'has-error' }}"><div class="field__head"><label for="f-st-note">Motivo <span class="req" aria-hidden="true">*</span></label>{{ ui.help('f-st-note-tip', 'Motivo', ajuda.agent_reason()) }}</div>
             <input id="f-st-note" name="note" required maxlength="300" value="{{ form.name == 'situacao' ? fv.note ?? '' }}" {% if se.note is defined %}aria-invalid="true"{% endif %} aria-describedby="{{ se.note is defined ? 'err-st-note ' }}f-st-note-tip">
             {% if se.note is defined %}<span class="error" id="err-st-note">{{ se.note }}</span>{% endif %}</div>
@@ -258,7 +255,7 @@
           <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/arquivar') }}" class="stack" data-confirm="Arquivar este agente? O histórico é preservado.">{{ ui.csrf(app.csrf) }}
             <h3>Arquivar</h3>
             <p class="hint">Arquivar retira o agente da operação; o histórico continua consultável.</p>
-            <div class="field"><label for="ar">Motivo do arquivamento</label><input id="ar" name="reason" required maxlength="300"></div>
+            <div class="field"><div class="field__head"><label for="ar">Motivo do arquivamento <span class="req" aria-hidden="true">*</span></label></div><input id="ar" name="reason" required maxlength="300"></div>
             <div><button class="btn btn--danger btn--small" type="submit">Arquivar agente</button></div>
           </form>
         </div>
