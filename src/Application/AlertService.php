@@ -189,7 +189,8 @@ final class AlertService
         }
         $local = DateTimeImmutable::createFromFormat('!Y-m-d\TH:i', trim($value), Time::local());
         $now = $this->clock->now();
-        if ($local === false) {
+        // Ida e volta: 31/02 ou 24:30 seriam normalizados para outro dia em vez de recusados.
+        if ($local === false || $local->format('Y-m-d\TH:i') !== trim($value)) {
             $errors['next_check'] = 'Informe data e hora válidas.';
         } elseif ($local <= $now) {
             $errors['next_check'] = 'Escolha um horário depois de agora.';

@@ -170,7 +170,9 @@ final class AuthService
             if (!$active && $id === $actorId) {
                 throw new RuleViolation('Você não pode desativar a própria conta.');
             }
-            if (!$active && $user['role'] === 'ADMIN' && $user['active'] === true && $this->users->countActiveAdmins() <= 1) {
+            // Trava as contas de administrador ativas antes de contar: duas desativações cruzadas disputam as mesmas
+            // linhas e a segunda recebe conflito, em vez de decidir com uma contagem que a outra já tornou falsa.
+            if (!$active && $user['role'] === 'ADMIN' && $user['active'] === true && $this->users->lockActiveAdmins() <= 1) {
                 throw new RuleViolation('É preciso manter ao menos um administrador ativo.');
             }
             $this->users->setActive($id, $active);

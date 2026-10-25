@@ -79,6 +79,29 @@ final class UrbanUpdaterTest extends FirebirdTestCase
         self::assertStringContainsString('Download mensal já feito neste mês', $update['messages'][0], 'só um download por mês');
     }
 
+    /**
+     * A07 da auditoria de 25/10/2026: no mês seguinte o Infosiga ainda pode servir os mesmos bytes. O download
+     * bem-sucedido conta como checagem do mês, e a rodada seguinte (6 h depois) não baixa de novo; falha não conta.
+     */
+    public function testIdenticalFileInTheNextMonthCountsAsThatMonthsCheck(): void
+    {
+        $this->importReference();
+        $zip = $this->zipFromGrid();
+        $this->today->urbanUpdater()->ingestDownloaded($zip, 'download de outubro');
+        $november = fn(string $utc): Services => $this->services->withClock(new Clock(new DateTimeImmutable($utc, Time::utc())));
+        $unreachable = 'https://127.0.0.1:9/dados_infosiga.zip';
+
+        $failed = $november('2026-11-03 09:00:00')->urbanUpdater()->update($unreachable, sys_get_temp_dir());
+        self::assertStringContainsString('Não foi possível baixar', $failed['messages'][0]);
+        $retry = $november('2026-11-03 15:00:00')->urbanUpdater()->update($unreachable, sys_get_temp_dir());
+        self::assertStringContainsString('Não foi possível baixar', $retry['messages'][0], 'falha não marca o mês: a rodada seguinte tenta de novo');
+
+        self::assertStringContainsString('Arquivo igual', $november('2026-11-03 15:00:00')->urbanUpdater()->ingestDownloaded($zip, 'download de novembro'));
+        $next = $november('2026-11-03 21:00:00')->urbanUpdater()->update($unreachable, sys_get_temp_dir());
+        self::assertStringContainsString('Download mensal já feito neste mês', $next['messages'][0]);
+        self::assertSame(1, (int) $this->services->database()->value('SELECT COUNT(*) FROM URBAN_SNAPSHOT'), 'uma cópia só das contagens');
+    }
+
     public function testFiltersKeepOnlyEligibleMariliaRecordsOfTheLastTwelveMonths(): void
     {
         $this->importReference();

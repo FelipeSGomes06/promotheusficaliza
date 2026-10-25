@@ -106,6 +106,15 @@ final class AlertFollowUpTest extends FirebirdTestCase
         } catch (ValidationFailed $e) {
             self::assertArrayHasKey('next_check', $e->errors);
         }
+        // Data ou hora inexistente é recusada, e não normalizada para outro dia dentro do prazo (A12 da auditoria de 25/10/2026).
+        foreach (['2026-10-18T24:30', '2026-10-19T10:75'] as $invalid) {
+            try {
+                $this->services->alerts()->recordFollowUp($alert, ['action' => 'CONTATO_TENTADO', 'next_check' => $invalid, 'version' => $this->version($alert)], $user);
+                self::fail("{$invalid} não existe");
+            } catch (ValidationFailed $e) {
+                self::assertSame('Informe data e hora válidas.', $e->errors['next_check'] ?? null, $invalid);
+            }
+        }
         self::assertSame([], $this->services->alertRepository()->followUps([$alert]));
     }
 

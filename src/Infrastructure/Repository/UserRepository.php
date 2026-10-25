@@ -70,9 +70,10 @@ final class UserRepository
         $this->db->execute('UPDATE APP_USER SET ACTIVE = ? WHERE ID = ?', [$active, $id]);
     }
 
-    public function countActiveAdmins(): int
+    /** Trava (até o fim da transação) e conta as contas de administrador ativas. WITH LOCK não aceita agregação. */
+    public function lockActiveAdmins(): int
     {
-        return (int) $this->db->value("SELECT COUNT(*) FROM APP_USER WHERE ROLE = 'ADMIN' AND ACTIVE = TRUE");
+        return count($this->db->all("SELECT ID FROM APP_USER WHERE ROLE = 'ADMIN' AND ACTIVE = TRUE WITH LOCK"));
     }
 
     /**

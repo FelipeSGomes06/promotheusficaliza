@@ -431,17 +431,33 @@ function central() {
         const keys = g.members.map(keyOf).sort();
         const k = `grupo:${keys.join(',')}`;
         seen.add(k);
-        if (layers.has(k)) continue;
         const attention = g.members.filter((r) => r.attention.length > 0).length;
         const lat = g.members.reduce((s, r) => s + Number(r.position.lat), 0) / g.members.length;
         const lng = g.members.reduce((s, r) => s + Number(r.position.lng), 0) / g.members.length;
         const html = `<span class="cluster${attention ? ' cluster--attention' : ''}">${g.members.length}</span>`;
+        const label = `${g.members.length} recursos próximos${attention ? `, ${attention} precisam de atenção` : ''}. Ative para aproximar ou escolher.`;
+        // Mesmo grupo (mesmos membros) no polling seguinte: posição, aparência e rótulo vêm do instantâneo novo, e o
+        // popup lê os membros guardados aqui, não os do instantâneo em que o grupo nasceu.
+        const existing = layers.get(k);
+        if (existing) {
+          existing.members = g.members;
+          existing.marker.setLatLng([lat, lng]);
+          if (existing.html !== html) {
+            existing.marker.setIcon(L.divIcon({ className: 'cluster-wrap', html, iconSize: [42, 42], iconAnchor: [21, 21] }));
+            existing.html = html;
+            this.asButton(existing.marker, label, existing.activate);
+            existing.label = label;
+          }
+          if (existing.label !== label) { existing.marker.getElement()?.setAttribute('aria-label', label); existing.label = label; }
+          continue;
+        }
         const marker = L.marker([lat, lng], { icon: L.divIcon({ className: 'cluster-wrap', html, iconSize: [42, 42], iconAnchor: [21, 21] }), keyboard: true, title: `${g.members.length} recursos próximos` });
-        const activate = () => this.openGroup(g.members, marker);
-        marker.on('click', activate);
+        const entry = { marker, html, label, members: g.members };
+        entry.activate = () => this.openGroup(entry.members, marker);
+        marker.on('click', entry.activate);
         marker.addTo(map);
-        this.asButton(marker, `${g.members.length} recursos próximos${attention ? `, ${attention} precisam de atenção` : ''}. Ative para aproximar ou escolher.`, activate);
-        layers.set(k, { marker, html, label: '' });
+        this.asButton(marker, label, entry.activate);
+        layers.set(k, entry);
       }
       for (const [k, m] of layers) {
         if (!seen.has(k)) { gsap.killTweensOf(m.marker.getElement()?.querySelectorAll('.pin, .pin__ring') || []); m.marker.remove(); layers.delete(k); }

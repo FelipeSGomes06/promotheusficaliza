@@ -167,6 +167,14 @@ final class UrbanImportTest extends TestCase
         yield 'retrospecto adulterado' => ['retrospecto.json', $json(static function (array &$d): void {
             $d['rows'][0]['observed_count'] += 1;
         }), 'retrospecto.json.rows'];
+        // A08 da auditoria de 25/10/2026: total previsto e desvio também precisam bater com as linhas do retrospecto.
+        yield 'total previsto que as linhas não somam' => ['avaliacao.json', $json(static function (array &$d): void {
+            $d['baseline']['predicted_count'] += 500;
+        }), 'retrospecto.json.rows'];
+        yield 'desvios multiplicados na mesma proporção' => ['avaliacao.json', $json(static function (array &$d): void {
+            $d['poisson']['mean_poisson_deviance'] *= 2;
+            $d['baseline']['mean_poisson_deviance'] *= 2;
+        }), 'retrospecto.json.rows'];
         yield 'execução piloto' => ['status.json', $json(static function (array &$d): void {
             $d['status'] = 'piloto';
         }), 'status.json.status'];

@@ -330,7 +330,7 @@ final class Services
 
     public function urbanUpdater(): UrbanUpdater
     {
-        return new UrbanUpdater($this->database(), $this->urbanRepository(), $this->clock());
+        return new UrbanUpdater($this->database(), $this->urbanRepository(), $this->clock(), $this->metaRepository());
     }
 
     public function planning(): PlanningService

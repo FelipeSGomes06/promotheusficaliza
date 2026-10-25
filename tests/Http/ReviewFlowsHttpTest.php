@@ -6,6 +6,7 @@ namespace Fiscaliza\Tests\Http;
 
 use Fiscaliza\Application\FineService;
 use Fiscaliza\Application\UrbanImporter;
+use Fiscaliza\Domain\Time;
 use Fiscaliza\Http\WebApp;
 use Fiscaliza\Tests\Support\ArraySession;
 use Fiscaliza\Tests\Support\FirebirdTestCase;
@@ -83,6 +84,32 @@ final class ReviewFlowsHttpTest extends FirebirdTestCase
         self::assertStringContainsString('O equipamento será reposto?', $html);
         self::assertStringContainsString('name="status" value="NAO_INSTALADO"', $html);
         self::assertStringContainsString('name="status" value="DESATIVADO"', $html);
+    }
+
+    /** A09 da auditoria de 25/10/2026: em falha, a ficha usa a corretiva já agendada e nunca nega uma ordem que existe. */
+    public function testFailureNextActionUsesTheScheduledCorrectiveOrder(): void
+    {
+        $user = $this->loginAs('OPERADOR');
+        $next = fn(int $id): string => (string) preg_replace('/\s+/', ' ', strip_tags((string) preg_replace('#^.*?<section class="next-action[^"]*" aria-labelledby="prox">(.*?)</section>.*$#s', '$1', $this->page("/equipamentos/{$id}"))));
+        $tomorrow = Time::localDate($this->clock->now()->modify('+1 day'));
+        $equipment = function (string $serial, ?string $kind, ?string $due) use ($user): array {
+            $id = $this->createEquipment(['serial_number' => $serial]);
+            $order = $kind === null ? null : $this->services->maintenance()->open($id, ['kind' => $kind, 'priority' => 'PROGRAMADA', 'due_date' => $due, 'reason' => 'agendada antes da falha'], $user);
+            $this->services->equipment()->changeStatus($id, 'FALHA', 'falha de teste', $user);
+
+            return [$id, $order];
+        };
+
+        foreach (['amanhã' => $tomorrow, 'hoje' => Time::localDate($this->clock->now())] as $when => $due) {
+            [$id, $order] = $equipment("A09-C-{$when}", 'CORRETIVA', $due);
+            $text = $next($id);
+            self::assertStringContainsString("Iniciar a ordem #{$order}: corretiva agendada", $text, $when);
+            self::assertStringNotContainsString('não há ordem aberta', $text, $when);
+        }
+        [$id, $order] = $equipment('A09-P', 'PREVENTIVA', $tomorrow);
+        self::assertStringContainsString("Abrir uma ordem corretiva Está em mau funcionamento e só há a preventiva #{$order} agendada", $next($id));
+        [$id] = $equipment('A09-N', null, null);
+        self::assertStringContainsString('Abrir uma ordem corretiva Está em mau funcionamento e não há ordem aberta.', $next($id));
     }
 
     /** R02: a próxima ação e o quadro só oferecem iniciar quando o serviço aceita; o pré-requisito aparece junto. */

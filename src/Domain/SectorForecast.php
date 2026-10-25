@@ -42,16 +42,24 @@ final class SectorForecast
      * observado e erro absoluto médio por setor/semana. A fração é sobre registros elegíveis na área de estudo.
      *
      * @param list<array<string, mixed>> $rows linhas do retrospecto (week_from, sector_id, expected_*, observed_count)
-     * @return array{captured: int, observed: int, weeks: int, rows: int, mae: float}
+     * O desvio é o desvio médio de Poisson do treino (sklearn mean_poisson_deviance, previsão limitada a 1e-12).
+     *
+     * @return array{captured: int, observed: int, weeks: int, rows: int, mae: float, predicted: float, deviance: float}
      */
     public static function replayMetrics(array $rows, string $method): array
     {
         $column = self::COLUMN[$method] ?? throw new \InvalidArgumentException("Método desconhecido: {$method}");
         $weeks = [];
         $error = 0.0;
+        $predicted = 0.0;
+        $deviance = 0.0;
         foreach ($rows as $row) {
             $weeks[(string) $row['week_from']][(string) $row['sector_id']] = $row;
-            $error += abs((float) $row[$column] - (int) $row['observed_count']);
+            $mu = max((float) $row[$column], 1e-12);
+            $y = (int) $row['observed_count'];
+            $error += abs((float) $row[$column] - $y);
+            $predicted += (float) $row[$column];
+            $deviance += 2 * (($y > 0 ? $y * log($y / $mu) : 0.0) - $y + $mu);
         }
         $captured = 0;
         foreach ($weeks as $sectors) {
@@ -65,6 +73,8 @@ final class SectorForecast
             'weeks' => count($weeks),
             'rows' => count($rows),
             'mae' => $rows === [] ? 0.0 : $error / count($rows),
+            'predicted' => $predicted,
+            'deviance' => $rows === [] ? 0.0 : $deviance / count($rows),
         ];
     }
 
@@ -181,10 +191,5 @@ final class SectorForecast
         }
 
         return exp($linear);
-    }
-
-    public static function methodLabel(string $method): string
-    {
-        return self::METHODS[$method] ?? $method;
     }
 }

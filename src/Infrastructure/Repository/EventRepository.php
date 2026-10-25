@@ -101,11 +101,6 @@ final class EventRepository
         ));
     }
 
-    public function countLateSince(string $since): int
-    {
-        return (int) $this->db->value("SELECT COUNT(*) FROM RESOURCE_EVENT WHERE OUTCOME = 'HISTORICO' AND RECEIVED_AT >= ?", [$since]);
-    }
-
     /**
      * @param array<string, mixed> $row
      * @return array<string, mixed>

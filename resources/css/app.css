@@ -1087,14 +1087,6 @@
 /* Planejar reforço: formas SVG do Leaflet coloridas por classe (CSS vence os atributos que o Leaflet grava). */
 .plan-map.leaflet-container { font: inherit; }
 .plan-map .leaflet-tile-pane { filter: saturate(0.55) contrast(0.97) brightness(1.03); }
-.sector-shape { stroke: var(--color-brand-800); stroke-width: 2; fill: var(--color-brand-500); fill-opacity: 0.08; }
-.sector-shape--1 { fill: var(--color-brand-600); fill-opacity: 0.32; stroke-width: 3; }
-.sector-shape--2 { fill-opacity: 0.2; }
-.sector-shape--3 { fill-opacity: 0.12; stroke-dasharray: 8 5; }
-.sector-shape--4 { fill: var(--color-graphite-300); fill-opacity: 0.14; stroke: var(--color-graphite-600); stroke-dasharray: 2 5; }
-.sector-shape.is-selected { stroke: var(--color-graphite-950); stroke-width: 4; stroke-dasharray: none; }
-.leaflet-tooltip.sector-label { padding: 3px 9px; border: 1px solid var(--color-line-strong); border-radius: 8px; background: var(--color-surface); color: var(--color-ink); font: 700 0.82rem/1.35 var(--font-sans); box-shadow: var(--shadow-raise); }
-.leaflet-tooltip.sector-label.is-selected { background: var(--color-graphite-900); border-color: var(--color-graphite-900); color: #fff; }
 /* Mapa de calor: 5 faixas de uma só família (claro → vermelho); semitransparente para as ruas aparecerem por baixo. */
 .plan-map, .heat-legend { --heat-0: #ffffb2; --heat-1: #fecc5c; --heat-2: #fd8d3c; --heat-3: #f03b20; --heat-4: #bd0026; }
 .heat { stroke: var(--color-graphite-600); stroke-width: 1; stroke-opacity: 0.4; fill-opacity: 0.55; }
@@ -1113,9 +1105,6 @@
 .leaflet-tooltip.cell-label.is-selected { background: var(--color-teal-700); color: #fff; }
 .leaflet-tooltip.cell-label { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 2px solid var(--color-teal-700); border-radius: 50%; background: var(--color-surface); color: var(--color-teal-700); font: 800 0.9rem/1 var(--font-sans); box-shadow: var(--shadow-raise); }
 .leaflet-tooltip.cell-label::before { display: none; }
-.agent-dot { fill: var(--color-teal-400); fill-opacity: 0.95; stroke: var(--color-graphite-900); stroke-width: 2.5; }
-.agent-dot--1 { stroke-dasharray: 4 2; }
-.agent-dot--2 { fill: var(--color-surface); stroke-dasharray: 3 3; }
 
 /* ---------- Movimento: preferência da pessoa (rodapé do menu) ou do sistema ---------- */
 @layer components {

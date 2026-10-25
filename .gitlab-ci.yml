@@ -26,8 +26,9 @@ qualidade-e-testes:
         FIREBIRD_DATABASE: fiscaliza_test.fdb
         FIREBIRD_DATABASE_DEFAULT_CHARSET: UTF8
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends firebird-dev libfbclient2 unzip git
-    - docker-php-ext-install -j"$(nproc)" pdo_firebird
+    # Mesmas extensões do Dockerfile e da CI do GitHub: zip lê o arquivo mensal do Infosiga (UrbanUpdater).
+    - apt-get update && apt-get install -y --no-install-recommends firebird-dev libfbclient2 unzip git libzip-dev
+    - docker-php-ext-install -j"$(nproc)" pdo_firebird zip
     - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
     - composer install --no-interaction --no-progress
   script:

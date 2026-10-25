@@ -103,12 +103,6 @@ final readonly class Filters
             'q' => $this->text, 'atencao' => $this->attention ? '1' : ''];
     }
 
-    /** Query string equivalente (para links e paginação). */
-    public function toQueryString(): string
-    {
-        return http_build_query(array_filter($this->toArray()), '', '&', PHP_QUERY_RFC3986);
-    }
-
     /**
      * @param list<string> $allowed
      * @return list<string>

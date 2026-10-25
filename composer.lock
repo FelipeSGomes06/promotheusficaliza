@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e6a506f82ce3d7d3415e9dad444e4ee5",
+    "content-hash": "7642bdaea8783e2256db247be16889e2",
     "packages": [
         {
             "name": "fig/http-message-util",
@@ -5203,6 +5203,7 @@
         "php": ">=8.4",
         "ext-pdo": "*",
         "ext-pdo_firebird": "*",
+        "ext-zip": "*",
         "ext-mbstring": "*"
     },
     "platform-dev": {},

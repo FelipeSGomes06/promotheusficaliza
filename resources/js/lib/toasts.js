@@ -104,6 +104,12 @@ export function show({ type = 'info', title, body = '', key = null, actions = []
   announce(body ? `${title}. ${body}` : title, type === 'error');
   const ms = timeout === false || type === 'error' ? 0 : (timeout ?? TIMEOUT[type] ?? 6000);
   if (existing) {
+    // Mesma chave com outro tipo (erro e depois sucesso): troca classe e ícone antes do texto (fill lê a classe).
+    if (existing.type !== type) {
+      existing.el.classList.replace(`toast--${existing.type}`, `toast--${type}`);
+      existing.el.querySelector('.toast__icon').replaceChildren(icon(ICONS[type] || 'i-info'));
+      existing.type = type;
+    }
     fill(existing.el, title, body, actions);
     existing.timeout = ms;
     existing.remaining = ms;
@@ -148,10 +154,6 @@ export function dismiss(key, instant = false) {
   if (instant || motion.reduced()) { gsap.killTweensOf(entry.el); remove(); return; }
   gsap.killTweensOf(entry.el);
   gsap.to(entry.el, { autoAlpha: 0, x: 28, duration: 0.18, ease: 'power2.out', onComplete: remove });
-}
-
-export function has(key) {
-  return live.has(key);
 }
 
 /** Mensagens do servidor (depois de um POST com redirecionamento) viram avisos animados; sem script continuam na página. */

@@ -14,7 +14,9 @@ export function animarRolagem() {
   const montar = () => {
     mm?.revert();
     mm = gsap.matchMedia();
-    mm.add({ largo: '(min-width: 900px)', sistemaReduz: '(prefers-reduced-motion: reduce)' }, (contexto) => {
+    // "estreito" completa as condições: o GSAP só roda o callback quando alguma casa, e sem ela o celular com
+    // movimento normal ficava sem cenas ativas nem animações.
+    mm.add({ largo: '(min-width: 900px)', estreito: '(max-width: 899px)', sistemaReduz: '(prefers-reduced-motion: reduce)' }, (contexto) => {
       const { largo } = contexto.conditions;
       const cenas = gsap.utils.toArray('[data-cena]');
       cenas.forEach((cena) => ScrollTrigger.create({ trigger: cena, start: 'top 65%', end: 'bottom 35%', toggleClass: 'is-ativa' }));

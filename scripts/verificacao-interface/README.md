@@ -18,6 +18,7 @@ node scripts/verificacao-interface/agentes.cjs /tmp/agentes # cadastro de agente
 PF_AGENTE=<id> node scripts/verificacao-interface/acompanhamento.cjs /tmp/acomp # alerta de agente: ciência → responsável de Contas → providência → conflito → conta desativada → posição simulada (central, 390/360 px, teclado)
 php scripts/verificacao-interface/preparar-revisao.php <usuario> > /tmp/preparo.json   # (no contêiner) volumes da revisão de 24/10: ordem antiga + 31 encerradas, não instalado, 22 missões; --limpar desfaz
 PF_PREPARO=/tmp/preparo.json PF_MULTA_PAGA=<id> PF_MULTA_CONFERIR=<id> node scripts/verificacao-interface/revisao-fluxos.cjs /tmp/revisao # R01–R08 (ADR-0023), 1440/390/360 px
+node scripts/verificacao-interface/auditoria.cjs /tmp/aud  # regressões da auditoria de 25/10 (A01 grupo do mapa no polling, A10 aviso erro→sucesso, A11 cenas da landing < 900 px); respostas simuladas, só lê
 node scripts/verificacao-interface/ajuda.cjs  /tmp/ajuda   # ajuda contextual ("?"): presença em 16 telas, mouse, teclado, toque, Esc, bordas 1440/375/360 px, leitor de tela, movimento reduzido, sem JS (só lê)
 ```
 

@@ -51,10 +51,10 @@ final class EquipmentRepository
         return self::hydrate($this->db->one('SELECT * FROM EQUIPMENT WHERE ID = ? WITH LOCK', [$id]));
     }
 
+    /** Maior número já usado no prefixo, comparado como número (em texto, CAM-9999 viria depois de CAM-10000 e o código se repetiria). */
     public function nextCode(string $prefix): string
     {
-        $last = (string) $this->db->value('SELECT MAX(CODE) FROM EQUIPMENT WHERE CODE STARTING WITH ?', [$prefix . '-']);
-        $number = $last === '' ? 0 : (int) substr($last, strlen($prefix) + 1);
+        $number = (int) $this->db->value('SELECT MAX(CAST(SUBSTRING(CODE FROM ' . (strlen($prefix) + 2) . ') AS BIGINT)) FROM EQUIPMENT WHERE CODE STARTING WITH ?', [$prefix . '-']);
 
         return sprintf('%s-%04d', $prefix, $number + 1);
     }

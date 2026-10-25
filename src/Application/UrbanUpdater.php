@@ -12,6 +12,7 @@ use Fiscaliza\Domain\Time;
 use Fiscaliza\Domain\ValidationFailed;
 use Fiscaliza\Infrastructure\ConstraintViolation;
 use Fiscaliza\Infrastructure\Database;
+use Fiscaliza\Infrastructure\Repository\MetaRepository;
 use Fiscaliza\Infrastructure\Repository\UrbanRepository;
 
 /**
@@ -33,8 +34,10 @@ final class UrbanUpdater
     /** "MARILIA", "MARÍLIA" e "MARíLIA" depois de strtoupper (o arquivo vem em Windows-1252). */
     private const MARILIA = ['MARILIA', "MAR\xCDLIA", "MAR\xEDLIA"];
     private const REFUSED = 'Arquivo do Infosiga recusado; nada foi gravado.';
+    /** Último download bem-sucedido (APP_META), mesmo quando o arquivo veio igual e não gerou snapshot novo. */
+    public const LAST_CHECK = 'infosiga_ultima_checagem';
 
-    public function __construct(private readonly Database $db, private readonly UrbanRepository $urban, private readonly Clock $clock) {}
+    public function __construct(private readonly Database $db, private readonly UrbanRepository $urban, private readonly Clock $clock, private readonly MetaRepository $meta) {}
 
     /**
      * Rotina para agendar várias vezes ao dia: download só se ainda não houve neste mês (ou se forçado / arquivo local),
@@ -48,12 +51,14 @@ final class UrbanUpdater
         $ok = true;
         $latest = $this->urban->latestSnapshot();
         $thisMonth = substr(Time::localDate($this->clock->now()), 0, 7);
+        // Mês da última checagem: o marcador (vale também para arquivo igual, que não cria snapshot) ou o snapshot mais novo.
+        $checked = max($this->meta->text(self::LAST_CHECK) ?? '', $latest['downloaded_at'] ?? '');
         try {
             $messages[] = match (true) {
                 $localZip !== null => $this->ingest($localZip, 'arquivo local ' . basename($localZip)),
-                $forceDownload || $latest === null || substr(Time::localDate(Time::fromDb($latest['downloaded_at']) ?? $this->clock->now()), 0, 7) !== $thisMonth
+                $forceDownload || $checked === '' || substr(Time::localDate(Time::fromDb($checked) ?? $this->clock->now()), 0, 7) !== $thisMonth
                     => $this->download($url, $workDir),
-                default => 'Download mensal já feito neste mês (snapshot #' . $latest['id'] . ').',
+                default => 'Download mensal já feito neste mês (snapshot #' . ($latest['id'] ?? '?') . ').',
             };
         } catch (ValidationFailed $e) {
             $ok = false;
@@ -92,10 +97,22 @@ final class UrbanUpdater
                 throw new \RuntimeException('Não foi possível baixar o arquivo do Infosiga-SP agora (' . ($error ?: 'resposta vazia') . '); a previsão segue com os dados anteriores.');
             }
 
-            return $this->ingest($tmp, $url);
+            return $this->ingestDownloaded($tmp, $url);
         } finally {
             @unlink($tmp);
         }
+    }
+
+    /**
+     * Arquivo baixado com sucesso: guarda (ou reconhece como igual) e marca o mês como checado. Arquivo recusado não
+     * marca, e a próxima rodada tenta de novo.
+     */
+    public function ingestDownloaded(string $zipPath, string $source): string
+    {
+        $message = $this->ingest($zipPath, $source);
+        $this->meta->set(self::LAST_CHECK, Time::toDb($this->clock->now()), null, Time::toDb($this->clock->now()));
+
+        return $message;
     }
 
     /** Lê o ZIP do Infosiga e grava os últimos 12 meses de contagens por quadrado e dia. */

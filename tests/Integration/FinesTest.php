@@ -14,6 +14,7 @@ use Fiscaliza\Infrastructure\ConcurrencyConflict;
 use Fiscaliza\Infrastructure\Migrator;
 use Fiscaliza\Services;
 use Fiscaliza\Tests\Support\FirebirdTestCase;
+use Fiscaliza\Tests\Support\Interleaving;
 use Fiscaliza\Tests\Support\Parallel;
 
 /** Aba Multas no Firebird real, com a identidade da aplicação: casos de uso, integridade, histórico e concorrência. */
@@ -426,6 +427,71 @@ final class FinesTest extends FirebirdTestCase
             } catch (RuleViolation) {
             }
         }
+    }
+
+    /**
+     * A03 da auditoria de 25/10/2026: o mesmo comando chega por duas conexões e as duas consultam a chave antes de a
+     * primeira confirmar. A segunda devolve o resultado gravado (replay), sem segundo efeito; outros dados, conflito.
+     */
+    public function testSameCommandSentTwiceAtTheSameTimeIsAReplayNotAConflict(): void
+    {
+        $fines = $this->services->fines();
+        $id = $fines->create(['command_uid' => FineService::newCommandUid(), 'description' => 'Rascunho'], $this->user);
+        $fines->update($id, $this->cmd($id, $this->radarFine()), $this->user);
+        $race = function (callable $command, ?callable $other = null) use ($id): array {
+            $events = $this->rows('FINE_EVENT', $id);
+            $one = Interleaving::connect($this->newServices());
+            $two = Interleaving::connect($this->newServices());
+            [$first, $r1] = Interleaving::case(fn() => $command($one), '/FROM FINE_EVENT WHERE EVENT_UID/');
+            [$second, $r2] = Interleaving::case(fn() => ($other ?? $command)($two), '/FROM FINE_EVENT WHERE EVENT_UID/');
+            $first->start();
+            $second->start(); // as duas ainda não acham o evento da chave
+            $first->resume(); // a primeira trava, grava e confirma
+            $second->resume(); // a segunda só agora trava a multa
+
+            return [$r1, $r2, $this->rows('FINE_EVENT', $id) - $events];
+        };
+
+        foreach ([
+            'registrar' => function () use ($id) {
+                $c = $this->cmd($id);
+
+                return [$c, fn($s) => $s->fines()->register($id, $c, $this->user)];
+            },
+            'editar' => function () use ($id) {
+                $c = $this->cmd($id, ['reason' => 'Descrição relida', 'description' => 'Descrição relida', 'command_uid' => FineService::newCommandUid()] + $this->radarFine());
+
+                return [$c, fn($s) => $s->fines()->update($id, $c, $this->user)];
+            },
+            'conferir' => function () use ($id) {
+                $c = $this->cmd($id, ['scope' => 'OCORRENCIA', 'document_status' => 'NAO_VERIFICADA', 'source_type' => 'NAO_INFORMADA', 'check_reason' => 'teste',
+                    'checked_at' => '2026-10-18T10:00', 'review_choice' => 'NAO']);
+
+                return [$c, fn($s) => $s->fines()->addCheck($id, $c, $this->user)];
+            },
+            'cancelar' => function () use ($id) {
+                $c = $this->cmd($id, ['reason' => 'Lançado em duplicidade']);
+
+                return [$c, fn($s) => $s->fines()->cancel($id, $c, $this->user)];
+            },
+        ] as $name => $make) {
+            if ($name === 'cancelar') {
+                // Mesma chave e outros dados continua conflito (antes de cancelar, enquanto a multa aceita edição).
+                $c = $this->cmd($id, ['scope' => 'OCORRENCIA', 'document_status' => 'NAO_VERIFICADA', 'source_type' => 'NAO_INFORMADA', 'check_reason' => 'um',
+                    'checked_at' => '2026-10-18T10:00', 'review_choice' => 'NAO']);
+                [$r1, $r2, $new] = $race(fn($s) => $s->fines()->addCheck($id, $c, $this->user), fn($s) => $s->fines()->addCheck($id, ['check_reason' => 'outro'] + $c, $this->user));
+                self::assertTrue($r1['ok'], (string) $r1['message']);
+                self::assertSame('ConcurrencyConflict', $r2['error'], 'outros dados com a mesma chave');
+                self::assertStringContainsString('já foi usado para outra operação', (string) $r2['message']);
+                self::assertSame(1, $new);
+            }
+            [, $run] = $make();
+            [$r1, $r2, $new] = $race($run);
+            self::assertTrue($r1['ok'], "{$name}: " . $r1['message']);
+            self::assertTrue($r2['ok'], "{$name}: o reenvio devolve o resultado gravado, e não " . $r2['error'] . ': ' . $r2['message']);
+            self::assertSame(1, $new, "{$name}: um único efeito");
+        }
+        self::assertSame('CANCELADO', $this->services->fineRepository()->find($id)['record_state']);
     }
 
     public function testVersionAndCommandKeyProtectAgainstLostUpdatesAndReplays(): void

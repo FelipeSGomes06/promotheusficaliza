@@ -543,7 +543,8 @@ final class UrbanImporter
             $got = SectorForecast::replayMetrics($rows, $method);
             $want = $metrics[$method];
             if ($got['rows'] !== $want['rows'] || $got['weeks'] !== $want['weeks'] || $got['observed'] !== $want['observed']
-                || $got['captured'] !== $want['captured'] || !self::close($got['mae'], $want['mae'])) {
+                || $got['captured'] !== $want['captured'] || !self::close($got['mae'], $want['mae'])
+                || !self::close($got['predicted'], $want['predicted']) || !self::close($got['deviance'], $want['deviance'])) {
                 self::fail("{$p}.rows", "As linhas não reproduzem as métricas do método {$method} na avaliação.");
             }
         }

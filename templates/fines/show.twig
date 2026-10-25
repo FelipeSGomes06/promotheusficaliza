@@ -138,7 +138,6 @@
         {% if f.doc_review_on %}
           <p class="hint">Lembrete em vigor: conferir de novo a partir de {{ f.doc_review_on|br_date }}{{ f.doc_review_on <= today ? ' (a data chegou: a multa está em "A conferir")' }}, marcado na conferência {{ f.doc_review_scope == 'POSTERIOR' ? 'de depois da multa' : 'do dia da multa' }}.</p>
         {% endif %}
-        {% set stale = checks|filter(c => c.subject_version != f.subject_version) %}
         {% if checks is not empty %}
           <details class="more-actions"><summary>Ver todas as conferências ({{ checks|length }})</summary>
             <ul class="fine-checks">{% for c in checks %}

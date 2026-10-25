@@ -24,6 +24,28 @@ final class InventoryTest extends FirebirdTestCase
         self::assertSame('Marília', $row['city']);
     }
 
+    /** A05 da auditoria de 25/10/2026: a largura mínima do número não limita a contagem (999 → 1000 → 1001). */
+    public function testCodesKeepCountingPastTheMinimumWidth(): void
+    {
+        $db = $this->services->database();
+        $agent = $this->createAgent(['call_sign' => 'Fronteira 1']);
+        $db->execute("UPDATE AGENT SET CODE = 'AGT-999' WHERE ID = ?", [$agent]);
+        $codes = [];
+        foreach (['Fronteira 2', 'Fronteira 3'] as $callSign) {
+            $codes[] = $this->services->agentRepository()->find($this->createAgent(['call_sign' => $callSign]))['code'];
+        }
+        self::assertSame(['AGT-1000', 'AGT-1001'], $codes);
+
+        $first = $this->createEquipment();
+        $prefix = explode('-', (string) $this->services->equipmentRepository()->find($first)['code'])[0];
+        $db->execute('UPDATE EQUIPMENT SET CODE = ? WHERE ID = ?', ["{$prefix}-9999", $first]);
+        $codes = [];
+        foreach (['S-2', 'S-3'] as $serial) {
+            $codes[] = $this->services->equipmentRepository()->find($this->createEquipment(['serial_number' => $serial]))['code'];
+        }
+        self::assertSame(["{$prefix}-10000", "{$prefix}-10001"], $codes);
+    }
+
     public function testSerialIsUniquePerManufacturerAndUnknownSerialsDoNotCollide(): void
     {
         $this->createEquipment(['serial_number' => 'ABC-1']);

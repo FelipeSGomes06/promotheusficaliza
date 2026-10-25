@@ -79,10 +79,18 @@
           {% if editable %}<a class="btn btn--primary" href="#ordem-{{ urgent.id }}">Ver a ordem</a>{% endif %}
         </section>
       {% elseif e.status == 'FALHA' %}
+        {# Corretiva já agendada: usar essa (pode começar antes da data). Só preventiva: a corretiva é outra ordem. #}
+        {% set corrective = scheduled|filter(o => o.kind == 'CORRETIVA')|sort((a, b) => (a.due_date ?? '') <=> (b.due_date ?? ''))|first %}
         <section class="next-action next-action--urgent" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>
-          <p class="next-action__what">Abrir uma ordem corretiva</p>
-          <p class="muted">Está em mau funcionamento e não há ordem aberta.</p>
-          {% if editable %}<a class="btn btn--primary" href="#nova-ordem">Abrir ordem</a>{% endif %}
+          {% if corrective %}
+            <p class="next-action__what">Iniciar a ordem #{{ corrective.id }}: corretiva agendada para {{ corrective.due_date|br_date }}</p>
+            <p class="muted">Está em mau funcionamento: a ordem pode ser iniciada antes da data. Motivo: {{ corrective.reason }}</p>
+            {% if editable %}<a class="btn btn--primary" href="#ordem-{{ corrective.id }}">Ver a ordem</a>{% endif %}
+          {% else %}
+            <p class="next-action__what">Abrir uma ordem corretiva</p>
+            <p class="muted">Está em mau funcionamento e {{ nextOrder ? 'só há a preventiva #' ~ nextOrder.id ~ ' agendada, para ' ~ nextOrder.due_date|br_date ~ '.' : 'não há ordem aberta.' }}</p>
+            {% if editable %}<a class="btn btn--primary" href="#nova-ordem">Abrir ordem</a>{% endif %}
+          {% endif %}
         </section>
       {% elseif e.status == 'NAO_INSTALADO' %}
         <section class="next-action" aria-labelledby="prox"><h2 id="prox">Próxima ação</h2>

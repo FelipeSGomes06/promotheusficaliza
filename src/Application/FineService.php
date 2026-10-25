@@ -755,9 +755,10 @@ final class FineService
         }
         try {
             return $work();
-        } catch (ConstraintViolation|ValidationFailed $e) {
-            // Outra requisição com a mesma chave terminou primeiro (a corrida pode aparecer como chave de evento ou como
-            // AIT repetido): esta foi desfeita por inteiro e vale o resultado já gravado.
+        } catch (ConstraintViolation|ValidationFailed|ConcurrencyConflict|RuleViolation $e) {
+            // Outra requisição com a mesma chave terminou primeiro (a corrida pode aparecer como chave de evento, AIT
+            // repetido, versão já avançada ou registro já cancelado por ela): esta foi desfeita por inteiro e vale o
+            // resultado já gravado. Sem evento da mesma chave, o erro é desta requisição e segue.
             $existing = $this->fines->eventByUid($uid);
             if ($existing === null) {
                 throw $e;
