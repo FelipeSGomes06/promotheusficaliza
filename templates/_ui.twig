@@ -38,17 +38,25 @@ Já existe a ordem <a href="{{ href }}">#{{ o.id }}, {{ o.kind == 'PREVENTIVA' ?
 {% macro origin_real() %}<span class="origin origin--real"><span class="origin__g" aria-hidden="true">◆</span>Real agregado · Infosiga-SP</span>{% endmacro %}
 {% macro origin_demo() %}<span class="origin origin--demo"><span class="origin__g" aria-hidden="true">◇</span>Fictício</span>{% endmacro %}
 
+{# Ajuda contextual: "?" ao lado do rótulo. Abre ao passar o mouse, ao focar pelo teclado ou ao tocar; fecha ao sair,
+   com Esc ou com clique fora (popovers.js). Sem script, o <details> abre a caixinha pelo CSS. A caixinha fica fora do
+   <details>: o Chrome não lê como descrição o texto de um <details> fechado. body: macro de _ajuda.twig. #}
+{% macro help(id, title, body) %}
+<span class="help"><details data-popover data-help><summary class="help__btn" aria-label="Ajuda sobre {{ title }}" aria-describedby="{{ id }}"><span aria-hidden="true">?</span></summary></details><div class="popover help__box" role="tooltip" id="{{ id }}" tabindex="-1">{{ body }}</div></span>
+{%- endmacro %}
+
 {% macro field_error(errors, name) %}
 {% if errors[name] is defined %}<span class="error" id="err-{{ name|replace({'.': '-'}) }}">{{ errors[name] }}</span>{% endif %}
 {%- endmacro %}
 
 {% macro input(name, label, values, errors, opts = {}) %}
 {% set id = 'f-' ~ name|replace({'.': '-', '[': '-', ']': ''}) %}
-{% set described = (errors[name] is defined ? 'err-' ~ name|replace({'.': '-'}) : '') ~ (opts.help is defined ? ' ' ~ id ~ '-help' : '') %}
+{% set described = (errors[name] is defined ? 'err-' ~ name|replace({'.': '-'}) : '') ~ (opts.help is defined ? ' ' ~ id ~ '-help' : '') ~ (opts.help_tip is defined ? ' ' ~ id ~ '-tip' : '') %}
 <div class="field {{ opts.class ?? '' }} {{ errors[name] is defined ? 'has-error' }}">
-  {# opts.mark: obrigatório só em certas escolhas (diz quais em opts.help); mostra o marcador sem o atributo required. #}
-  <label for="{{ id }}">{{ label }}{% if (opts.required ?? false) or (opts.mark ?? false) %} <span class="req" aria-hidden="true">*</span>{% else %} <span class="optional">(opcional)</span>{% endif %}</label>
-  {% if opts.help is defined %}<span class="hint" id="{{ id }}-help">{{ opts.help }}</span>{% endif %}
+  {# opts.mark: obrigatório só em certas escolhas (diz quais em opts.help); mostra o marcador sem o atributo required.
+     opts.help_tip: corpo de uma macro de _ajuda.twig, no "?" ao lado do rótulo (ui.help). #}
+  {% if opts.help_tip is defined %}<div class="field__head">{% endif %}<label for="{{ id }}">{{ label }}{% if (opts.required ?? false) or (opts.mark ?? false) %} <span class="req" aria-hidden="true">*</span>{% else %} <span class="optional">(opcional)</span>{% endif %}</label>
+{% if opts.help_tip is defined %}{{ _self.help(id ~ '-tip', label, opts.help_tip) }}</div>{% endif %}  {% if opts.help is defined %}<span class="hint" id="{{ id }}-help">{{ opts.help }}</span>{% endif %}
   {% if opts.type ?? 'text' == 'textarea' %}
     <textarea id="{{ id }}" name="{{ opts.fieldName ?? name }}" maxlength="{{ opts.max ?? 500 }}" {% if opts.required ?? false %}required{% endif %} {% if errors[name] is defined %}aria-invalid="true"{% endif %} {% if described|trim %}aria-describedby="{{ described|trim }}"{% endif %}>{{ values[name] ?? '' }}</textarea>
   {% else %}
@@ -64,10 +72,11 @@ Já existe a ordem <a href="{{ href }}">#{{ o.id }}, {{ o.kind == 'PREVENTIVA' ?
 
 {% macro select(name, label, options, selected, errors, opts = {}) %}
 {% set id = 'f-' ~ name|replace({'.': '-'}) %}
+{% set described = (errors[name] is defined ? 'err-' ~ name|replace({'.': '-'}) : (opts.help is defined ? id ~ '-help' : '')) ~ (opts.help_tip is defined ? ' ' ~ id ~ '-tip' : '') %}
 <div class="field {{ opts.class ?? '' }} {{ errors[name] is defined ? 'has-error' }}">
-  <label for="{{ id }}">{{ label }}{% if opts.required ?? false %} <span class="req" aria-hidden="true">*</span>{% endif %}</label>
-  {% if opts.help is defined %}<span class="hint" id="{{ id }}-help">{{ opts.help }}</span>{% endif %}
-  <select id="{{ id }}" name="{{ opts.fieldName ?? name }}" {% if opts.required ?? false %}required{% endif %} {% if opts.dataAttr is defined %}data-{{ opts.dataAttr }}{% endif %} {% if errors[name] is defined %}aria-invalid="true" aria-describedby="err-{{ name|replace({'.': '-'}) }}"{% elseif opts.help is defined %}aria-describedby="{{ id }}-help"{% endif %}>
+  {% if opts.help_tip is defined %}<div class="field__head">{% endif %}<label for="{{ id }}">{{ label }}{% if opts.required ?? false %} <span class="req" aria-hidden="true">*</span>{% endif %}</label>
+{% if opts.help_tip is defined %}{{ _self.help(id ~ '-tip', label, opts.help_tip) }}</div>{% endif %}  {% if opts.help is defined %}<span class="hint" id="{{ id }}-help">{{ opts.help }}</span>{% endif %}
+  <select id="{{ id }}" name="{{ opts.fieldName ?? name }}" {% if opts.required ?? false %}required{% endif %} {% if opts.dataAttr is defined %}data-{{ opts.dataAttr }}{% endif %} {% if errors[name] is defined %}aria-invalid="true" {% endif %}{% if described|trim %}aria-describedby="{{ described|trim }}"{% endif %}>
     {% if opts.empty is defined %}<option value="">{{ opts.empty }}</option>{% endif %}
     {% for value, text in options %}<option value="{{ value }}" {{ (selected ~ '') == (value ~ '') ? 'selected' }}>{{ text }}</option>{% endfor %}
   </select>

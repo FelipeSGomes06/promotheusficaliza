@@ -229,6 +229,32 @@
   .popover--left { left: 0; right: auto; transform-origin: top left; }
   .popover p:last-child { margin: 0; }
 
+  /* Ajuda contextual (ui.help): "?" ao lado do rótulo. Com script, popovers.js prende a caixinha à tela
+     (position: fixed), fora do corte de qualquer overflow; sem script, abre logo abaixo do "?". */
+  .field__head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .help { position: relative; display: inline-flex; vertical-align: middle; }
+  .help summary { list-style: none; }
+  .help summary::-webkit-details-marker { display: none; }
+  .help__btn {
+    position: relative; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; cursor: help;
+    border: 1.5px solid var(--color-brand-600); background: var(--color-surface); color: var(--color-brand-700);
+    font: 800 0.78rem/1 var(--font-sans); transition: background-color var(--t-hover) ease, color var(--t-hover) ease;
+  }
+  .help__btn::after { content: ""; position: absolute; inset: -9px; } /* alvo de toque de 40 px sem mudar o desenho */
+  .help__btn:hover, .help details[open] > .help__btn { background: var(--color-brand-600); color: #fff; }
+  .help__btn:focus-visible { border-radius: 50%; }
+  .help__box { display: none; }
+  .help details[open] + .help__box { display: block; }
+  .help__box {
+    left: -8px; right: auto; transform-origin: top left; width: min(340px, calc(100vw - 24px)); max-height: min(70vh, 460px); overflow: auto;
+    padding: 12px 14px; font-size: 0.875rem; line-height: 1.45; font-weight: 400; text-align: left; white-space: normal; cursor: auto;
+  }
+  .help__box p { margin: 0 0 6px; }
+  .help__box ul { margin: 4px 0 6px; padding: 0; list-style: none; display: grid; gap: 4px; }
+  .help__box ul:last-child { margin-bottom: 0; }
+  .help__box strong { font-weight: 700; }
+  .help__ex code { font: 650 0.82rem var(--font-mono); padding: 0 4px; border-radius: 4px; background: var(--color-brand-50); color: var(--color-brand-800); white-space: nowrap; }
+
   @media (max-width: 1099px) {
     .shell { grid-template-columns: minmax(0, 1fr); background: none; }
     /* Gaveta: só a visibilidade fica no CSS; o deslocamento é do GSAP (um dono por propriedade). */
