@@ -1,5 +1,6 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
+{% import '_ajuda.twig' as ajuda %}
 {% block title %}Contas{% endblock %}
 {% block content %}
 <div class="page">
@@ -29,9 +30,9 @@
     <section class="panel">
       <h2>Nova conta</h2>
       <form method="post" action="{{ url('/contas') }}" class="stack">{{ ui.csrf(app.csrf) }}
-        {{ ui.input('username', 'Usuário', values ?? {}, errors, {required: true, max: 40, help: '3 a 40 letras, números, ponto, hífen ou sublinhado.'}) }}
+        {{ ui.input('username', 'Usuário', values ?? {}, errors, {required: true, max: 40, help: '3 a 40 letras, números, ponto, hífen ou sublinhado.', help_tip: ajuda.username()}) }}
         {{ ui.input('display_name', 'Nome de exibição', values ?? {}, errors, {required: true, max: 80}) }}
-        {{ ui.select('role', 'Papel', {OPERADOR: 'Operador', ADMIN: 'Administrador'}, (values ?? {}).role ?? 'OPERADOR', errors) }}
+        {{ ui.select('role', 'Papel', {OPERADOR: 'Operador', ADMIN: 'Administrador'}, (values ?? {}).role ?? 'OPERADOR', errors, {help_tip: ajuda.account_role()}) }}
         <p class="hint">A senha é gerada aleatoriamente e mostrada uma única vez, nesta tela. Entregue-a à pessoa por um canal seguro. Se ela se perder, use <strong>Redefinir senha</strong> na lista: não cadastre a pessoa de novo.</p>
         <button class="btn btn--primary" type="submit">Criar conta</button>
       </form>

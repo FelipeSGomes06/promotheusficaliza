@@ -1,5 +1,6 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
+{% import '_ajuda.twig' as ajuda %}
 {% block title %}Agentes{% endblock %}
 {% block content %}
 {% set moreActive = (filters.agencies|length > 0 ? 1 : 0) + (archived ? 1 : 0) + (sort != 'codigo' ? 1 : 0) %}
@@ -16,10 +17,10 @@
   <form class="stack section" method="get" action="{{ url('/agentes') }}" role="search" aria-label="Filtrar agentes">
     <div class="filters">
       <div class="field field--search"><label for="q">Buscar</label><input id="q" type="search" name="q" value="{{ q }}" placeholder="Nome, código ou base" maxlength="60"></div>
-      <div class="field"><label for="fn">Função</label>
-        <select id="fn" name="categoria[]"><option value="">Todas as funções</option>{% for c in options.categories|filter(c => c.group == 'Agentes') %}<option value="{{ c.value }}" {{ c.value in filters.categories ? 'selected' }}>{{ c.label }}</option>{% endfor %}</select></div>
-      <div class="field"><label for="sit">Situação</label>
-        <select id="sit" name="situacao[]"><option value="">Todas as situações</option>{% for s in options.statuses|filter(s => s.group == 'Agentes') %}<option value="{{ s.value }}" {{ s.value in filters.statuses ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select></div>
+      <div class="field"><div class="field__head"><label for="fn">Função</label>{{ ui.help('fn-tip', 'Função', ajuda.agent_role()) }}</div>
+        <select id="fn" name="categoria[]" aria-describedby="fn-tip"><option value="">Todas as funções</option>{% for c in options.categories|filter(c => c.group == 'Agentes') %}<option value="{{ c.value }}" {{ c.value in filters.categories ? 'selected' }}>{{ c.label }}</option>{% endfor %}</select></div>
+      <div class="field"><div class="field__head"><label for="sit">Situação</label>{{ ui.help('sit-tip', 'Situação', ajuda.agent_status()) }}</div>
+        <select id="sit" name="situacao[]" aria-describedby="sit-tip"><option value="">Todas as situações</option>{% for s in options.statuses|filter(s => s.group == 'Agentes') %}<option value="{{ s.value }}" {{ s.value in filters.statuses ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select></div>
     </div>
     <div class="filter-bar">
       <button class="btn btn--primary" type="submit">{{ ui.icon('i-filter') }}<span>Filtrar</span></button>

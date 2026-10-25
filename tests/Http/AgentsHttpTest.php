@@ -228,7 +228,7 @@ final class AgentsHttpTest extends FirebirdTestCase
         $html = (string) $edit->getBody();
         self::assertStringContainsString('name="base_street" type="text" value="Rua Antiga"', $html, 'a edição traz a rua gravada');
         self::assertStringContainsString('value="17501-000"', $html);
-        self::assertStringContainsString('Bairro: <strong>Centro</strong>', $html);
+        self::assertStringContainsString(': <strong>Centro</strong> (muda sozinho se você mudar o ponto)', $html, 'bairro da base (o rótulo agora tem o "?" de ajuda)');
         self::assertStringContainsString('name="base_ref" type="text" value="Endereço de base ilustrativo"', $html, 'texto antigo aparece no campo Número');
         preg_match('/name="version" value="(\d+)"/', $html, $v);
 

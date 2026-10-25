@@ -1,5 +1,6 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
+{% import '_ajuda.twig' as ajuda %}
 {% set registered = existing and existing.record_state == 'REGISTRADO' %}
 {% set heading = existing ? (registered ? 'Retificar ' : 'Completar ') ~ existing.code : 'Cadastrar multa' %}
 {% block title %}{{ heading }}{% endblock %}
@@ -14,7 +15,7 @@
 <div class="page page--narrow">
   <p class="crumbs"><a href="{{ url('/multas') }}">Multas</a>{% if existing %} · <a href="{{ url('/multas/' ~ existing.id) }}">{{ existing.code }}</a>{% endif %}</p>
   <h1>{{ heading }}</h1>
-  <p class="lead">Use só dados fictícios. {{ registered ? 'O registro já foi conferido: mudar os dados cria uma retificação com motivo, e o original continua no histórico.' : 'Rascunho aceita campos em branco; o que for preenchido precisa estar bem formado. Os campos com * são exigidos para registrar.' }}</p>
+  <div class="lead">Use só dados fictícios. {{ registered ? 'O registro já foi conferido: mudar os dados cria uma retificação com motivo, e o original continua no histórico.' : 'Rascunho aceita campos em branco; o que for preenchido precisa estar bem formado. Os campos com * são exigidos para registrar.' }} {{ ui.help('ajuda-registro', 'rascunho, registro e retificação', ajuda.fine_record()) }}</div>
 
   {% if changes is not null %}
     <section class="conflict section" role="alert" aria-labelledby="conflito">
@@ -46,11 +47,11 @@
         {{ ui.select('infraction_kind', 'Tipo de infração', kinds, v.infraction_kind ?? '', errors, {empty: 'A definir', required: true, dataAttr: 'fine-kind', help: 'Categoria desta demonstração, não o catálogo nacional.'}) }}
         {# Fatos já anotados na situação da multa (FineService::FACT_DATES): a ocorrência não pode ficar depois deles. #}
         {% set facts = existing ? [existing.autuation_issued_on, existing.autuation_received_on, existing.penalty_issued_on, existing.penalty_received_on, existing.paid_on, existing.contest_submitted_on, existing.contest_decided_on, existing.closed_on]|filter(d => d) : [] %}
-        {{ ui.input('occurred_at', 'Data e hora da ocorrência', v, errors, {type: 'datetime-local', required: true, help: facts is empty ? 'Horário de Marília. Não pode estar no futuro.' : 'Horário de Marília. Não pode estar no futuro nem depois do que já está anotado na situação da multa (a data mais antiga anotada é ' ~ min(facts)|br_date ~ ').'}) }}
+        {{ ui.input('occurred_at', 'Data e hora da ocorrência', v, errors, {type: 'datetime-local', required: true, help_tip: ajuda.occurred_at(), help: facts is empty ? 'Horário de Marília. Não pode estar no futuro.' : 'Horário de Marília. Não pode estar no futuro nem depois do que já está anotado na situação da multa (a data mais antiga anotada é ' ~ min(facts)|br_date ~ ').'}) }}
         {% if facts is not empty and errors.occurred_at is defined %}
           <p class="hint span-2"><a href="{{ url('/multas/' ~ existing.id) }}#andamento" target="_blank" rel="noopener">Abrir a situação da multa em outra aba</a>: esta página continua com o que você digitou.</p>
         {% endif %}
-        {{ ui.input('legal_reference', 'Enquadramento informado', v, errors, {required: true, max: 120, help: 'Transcreva do documento. O sistema não sugere nem confere o enquadramento.'}) }}
+        {{ ui.input('legal_reference', 'Enquadramento informado', v, errors, {required: true, max: 120, help: 'Transcreva do documento. O sistema não sugere nem confere o enquadramento.', help_tip: ajuda.legal_reference()}) }}
         {{ ui.select('agency_id', 'Órgão autuador', agencyNames, v.agency_id ?? '', errors, {empty: 'Escolha…', required: true}) }}
         {# Opcionais e só transcritos: recolhidos, abertos quando já têm valor ou erro. #}
         <details class="advanced span-2" {{ (v.infraction_code ?? '') or (v.infraction_detail ?? '') or errors.infraction_code is defined or errors.infraction_detail is defined ? 'open' }}>
@@ -60,7 +61,7 @@
             {{ ui.input('infraction_detail', 'Desdobramento', v, errors, {max: 10}) }}
           </div>
         </details>
-        {{ ui.input('external_ait', 'Número do AIT (externo)', v, errors, {max: 40, class: 'span-2', help: 'Número do auto emitido pelo órgão, se houver. Não é o código interno DEMO-MUL-….'}) }}
+        {{ ui.input('external_ait', 'Número do AIT (externo)', v, errors, {max: 40, class: 'span-2', help: 'Número do auto emitido pelo órgão, se houver. Não é o código interno DEMO-MUL-….', help_tip: ajuda.ait()}) }}
         {# Alternativa ao AIT para registrar (FineRules::missingForRegistration); com JavaScript some quando o AIT é digitado. #}
         <details class="advanced span-2" data-show-if="external_ait=" {{ (v.ait_missing_reason ?? '') or errors.external_ait is defined or errors.ait_missing_reason is defined ? 'open' }}>
           <summary>Não tem o número do AIT?</summary>
@@ -70,8 +71,8 @@
       <h3 class="form-sub">Onde</h3>
       <p class="hint">Endereço ou referência bastam. O ponto no mapa é opcional e ilustrativo.</p>
       <div class="form-grid">
-        {{ ui.input('street', 'Logradouro', v, errors, {max: 120, placeholder: 'Ex.: Avenida Sampaio Vidal', class: 'span-2'}) }}
-        {{ ui.input('address_ref', 'Número ou referência', v, errors, {max: 160}) }}
+        {{ ui.input('street', 'Logradouro', v, errors, {max: 120, placeholder: 'Ex.: Avenida Sampaio Vidal', class: 'span-2', help_tip: ajuda.street()}) }}
+        {{ ui.input('address_ref', 'Número ou referência', v, errors, {max: 160, placeholder: 'Ex.: 1200, S/N, km 3 ou em frente à praça', help_tip: ajuda.address_ref()}) }}
         <div class="field {{ errors.region_id is defined ? 'has-error' }}">
           <label for="f-region_id">Bairro <span class="optional">(opcional)</span></label>
           <select id="f-region_id" name="region_id"><option value="">Sem bairro</option>{% for r in regions %}<option value="{{ r.id }}" {{ ((v.region_id ?? '') ~ '') == (r.id ~ '') ? 'selected' }}>{{ r.name }}</option>{% endfor %}</select>
@@ -98,8 +99,8 @@
     <fieldset class="form-step">
       <legend><span class="form-step__n" aria-hidden="true">2</span> Como foi constatada</legend>
       <div class="field {{ errors.source_kind is defined ? 'has-error' }}">
-        <span class="label" id="lbl-source">Origem principal <span class="req" aria-hidden="true">*</span></span>
-        <div class="checks checks--inline" role="radiogroup" aria-labelledby="lbl-source" {% if errors.source_kind is defined %}aria-describedby="err-source_kind"{% endif %}>
+        <div class="field__head"><span class="label" id="lbl-source">Origem principal <span class="req" aria-hidden="true">*</span></span>{{ ui.help('f-source_kind-tip', 'Origem principal', ajuda.fine_source()) }}</div>
+        <div class="checks checks--inline" role="radiogroup" aria-labelledby="lbl-source" aria-describedby="{{ errors.source_kind is defined ? 'err-source_kind ' }}f-source_kind-tip">
           <label><input type="radio" id="f-source_kind" name="source_kind" value="RADAR" data-fine-source {{ source == 'RADAR' ? 'checked' }}> Radar</label>
           <label><input type="radio" name="source_kind" value="AGENTE" data-fine-source {{ source == 'AGENTE' ? 'checked' }}> Agente de trânsito</label>
           <label><input type="radio" name="source_kind" value="" data-fine-source {{ source == '' ? 'checked' }}> Ainda não sei</label>
@@ -132,7 +133,7 @@
           </div>
         </details>
         <div class="speed-block" data-speed-block>
-          <h3 class="form-sub">Velocidades (só para excesso de velocidade)</h3>
+          <div class="field__head"><h3 class="form-sub">Velocidades (só para excesso de velocidade)</h3>{{ ui.help('ajuda-velocidades', 'velocidades', ajuda.speeds()) }}</div>
           <p class="hint">Informe o limite da via e a velocidade que o radar mediu, em km/h. A velocidade considerada é calculada pelo sistema: a medida menos a margem de erro do aparelho (7 km/h até 107 km/h; 7% acima disso).</p>
           <div class="form-grid form-grid--three">
             {{ ui.input('speed_limit_kmh', 'Regulamentada', v, errors, {type: 'number', inputmode: 'numeric', required: true}) }}
@@ -173,7 +174,7 @@
       {# A antiga etapa "Documentação na ocorrência" era só texto: o que importa para quem preenche ficou aqui. #}
       <p class="hint">É o veículo da ocorrência, não uma viatura do inventário. Use placas e números fictícios. Os documentos do carro são conferidos na ficha, depois de salvar{% if existing %} (hoje: <strong>{{ doc_labels[existing.occ_doc_status] }}</strong>); mudar placa, UF, RENAVAM, marca, modelo, espécie ou a data/hora da ocorrência pede uma nova conferência{% endif %}.</p>
       <div class="form-grid">
-        {{ ui.input('vehicle_plate', 'Placa', v, errors, {required: true, max: 10, autocomplete: 'off', placeholder: 'AAA1A23', help: 'Formato antigo ou Mercosul. Obrigatória desde o rascunho quando a origem é radar (lida na imagem). Só o formato é conferido.'}) }}
+        {{ ui.input('vehicle_plate', 'Placa', v, errors, {required: true, max: 10, autocomplete: 'off', placeholder: 'AAA1A23', help_tip: ajuda.plate(), help: 'Formato antigo ou Mercosul. Obrigatória desde o rascunho quando a origem é radar (lida na imagem). Só o formato é conferido.'}) }}
         {{ ui.select('vehicle_uf', 'UF de registro', ufs|reduce((carry, u) => carry|merge({(u): u}), {}), v.vehicle_uf ?? '', errors, {empty: 'Escolha…', required: true}) }}
         {{ ui.input('vehicle_manufacturer', 'Marca', v, errors, {required: true, max: 80}) }}
         {{ ui.input('vehicle_model', 'Modelo', v, errors, {required: true, max: 80}) }}
@@ -185,7 +186,7 @@
             {{ ui.input('vehicle_year', 'Ano', v, errors, {type: 'number', inputmode: 'numeric'}) }}
           </div>
         </details>
-        {{ ui.input('vehicle_renavam', 'RENAVAM', v, errors, {max: 11, inputmode: 'numeric', autocomplete: 'off', class: 'span-2', help: '11 dígitos, com os zeros à esquerda. O formato do RENAVAM não confirma o cadastro nem a regularidade do veículo.'}) }}
+        {{ ui.input('vehicle_renavam', 'RENAVAM', v, errors, {max: 11, inputmode: 'numeric', autocomplete: 'off', class: 'span-2', help_tip: ajuda.renavam(), help: '11 dígitos, com os zeros à esquerda. O formato do RENAVAM não confirma o cadastro nem a regularidade do veículo.'}) }}
         {# Alternativa ao RENAVAM para registrar, como a do AIT. #}
         <details class="advanced span-2" data-show-if="vehicle_renavam=" {{ (v.renavam_missing_reason ?? '') or errors.vehicle_renavam is defined or errors.renavam_missing_reason is defined ? 'open' }}>
           <summary>Não tem o RENAVAM?</summary>
@@ -196,7 +197,7 @@
 
     {% if registered %}
       <div class="form-step">
-        {{ ui.input('reason', 'Motivo da retificação', v, errors, {type: 'textarea', max: 300, required: true, help: 'Fica no histórico junto com o antes e o depois de cada campo.'}) }}
+        {{ ui.input('reason', 'Motivo da retificação', v, errors, {type: 'textarea', max: 300, required: true, help: 'Fica no histórico junto com o antes e o depois de cada campo.', help_tip: ajuda.fine_record()}) }}
       </div>
     {% endif %}
     {# A antiga etapa "Revisão" era quase só texto: o aviso ficou junto do botão. #}

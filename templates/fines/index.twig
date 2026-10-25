@@ -1,5 +1,6 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
+{% import '_ajuda.twig' as ajuda %}
 {% import 'fines/_fine.twig' as fine %}
 {% block title %}Multas{% endblock %}
 {% block page %}multas{% endblock %}
@@ -32,8 +33,8 @@
       <div class="field field--search"><label for="q">Buscar</label><input id="q" type="search" name="q" value="{{ f.q }}" placeholder="Código interno, AIT, placa ou RENAVAM" maxlength="60"></div>
       <div class="field"><label for="origem">Origem</label>
         <select id="origem" name="origem"><option value="">Radar ou agente</option>{% for k, l in source_kinds %}<option value="{{ k }}" {{ f.source == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
-      <div class="field"><label for="etapa">Etapa administrativa</label>
-        <select id="etapa" name="etapa"><option value="">Todas as etapas</option>{% for k, l in stages %}<option value="{{ k }}" {{ f.stage == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
+      <div class="field"><div class="field__head"><label for="etapa">Etapa administrativa</label>{{ ui.help('etapa-tip', 'Etapa administrativa', ajuda.fine_stage()) }}</div>
+        <select id="etapa" name="etapa" aria-describedby="etapa-tip"><option value="">Todas as etapas</option>{% for k, l in stages %}<option value="{{ k }}" {{ f.stage == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
     </div>
     <div class="filter-bar">
       <button class="btn btn--primary" type="submit">{{ ui.icon('i-filter') }}<span>Filtrar</span></button>
@@ -48,12 +49,12 @@
             <select id="radar" name="radar"><option value="">Todos os radares</option>{% for r in sources.radars %}<option value="{{ r.id }}" {{ f.radar == r.id ? 'selected' }}>{{ r.code }} · {{ r.street ?? r.model }}{{ r.archived_at ? ' (arquivado)' }}</option>{% endfor %}</select></div>
           <div class="field"><label for="agente">Agente (da constatação ou operador do radar)</label>
             <select id="agente" name="agente"><option value="">Todos os agentes</option>{% for g in sources.agents %}<option value="{{ g.id }}" {{ f.agent == g.id ? 'selected' }}>{{ g.code }} · {{ g.call_sign }}{{ g.archived_at ? ' (arquivado)' }}</option>{% endfor %}</select></div>
-          <div class="field"><label for="documentacao">Documentação na ocorrência</label>
-            <select id="documentacao" name="documentacao"><option value="">Qualquer situação</option>{% for k, l in doc_labels %}<option value="{{ k }}" {{ f.document == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
+          <div class="field"><div class="field__head"><label for="documentacao">Documentação na ocorrência</label>{{ ui.help('documentacao-tip', 'Documentação na ocorrência', ajuda.fine_documents()) }}</div>
+            <select id="documentacao" name="documentacao" aria-describedby="documentacao-tip"><option value="">Qualquer situação</option>{% for k, l in doc_labels %}<option value="{{ k }}" {{ f.document == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
           <div class="field"><label for="pagamento">Pagamento</label>
             <select id="pagamento" name="pagamento"><option value="">Qualquer situação</option>{% for k, l in payments %}<option value="{{ k }}" {{ f.payment == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
-          <div class="field"><label for="cadastro">Cadastro</label>
-            <select id="cadastro" name="cadastro">{% for k, l in {ativo: 'Rascunhos e registrados', rascunho: 'Só rascunhos', registrado: 'Só registrados', cancelado: 'Só cancelados internamente', todos: 'Todos, inclusive cancelados'} %}<option value="{{ k }}" {{ f.record == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
+          <div class="field"><div class="field__head"><label for="cadastro">Cadastro</label>{{ ui.help('cadastro-tip', 'Cadastro', ajuda.fine_record()) }}</div>
+            <select id="cadastro" name="cadastro" aria-describedby="cadastro-tip">{% for k, l in {ativo: 'Rascunhos e registrados', rascunho: 'Só rascunhos', registrado: 'Só registrados', cancelado: 'Só cancelados internamente', todos: 'Todos, inclusive cancelados'} %}<option value="{{ k }}" {{ f.record == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
           <div class="field"><label for="ordem">Ordenar por</label>
             <select id="ordem" name="ordem">{% for k, l in sorts %}<option value="{{ k }}" {{ f.sort == k ? 'selected' }}>{{ l }}</option>{% endfor %}</select></div>
           <div class="checks"><label><input type="checkbox" name="conferir" value="1" {{ f.attention ? 'checked' }}> Só as que estão a conferir</label></div>

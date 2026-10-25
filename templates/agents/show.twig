@@ -1,5 +1,6 @@
 {% extends 'layout.twig' %}
 {% import '_ui.twig' as ui %}
+{% import '_ajuda.twig' as ajuda %}
 {% block title %}{{ role.label }} · {{ a.call_sign }}{% endblock %}
 {% block content %}
 {% set eventLabels = {CADASTRO: 'Cadastro', ALTERACAO: 'Alteração do cadastro', SITUACAO: 'Situação', ARQUIVAMENTO: 'Arquivamento', POSICAO: 'Posição'} %}
@@ -185,11 +186,11 @@
         <h2 id="situacao-titulo">Mudar situação</h2>
         <p class="m-0">{{ ui.agent_status(a.status) }} <span class="hint">desde {{ a.status_changed_at|local_dt }}</span></p>
         <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/situacao') }}" class="stack">{{ ui.csrf(app.csrf) }}
-          <div class="field"><label for="ns">Nova situação</label>
-            <select id="ns" name="status" aria-describedby="ns-help">{% for s in statuses %}<option value="{{ s.value }}" {{ s.value == (form.name == 'situacao' ? fv.status ?? status.value : status.value) ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select>
+          <div class="field"><div class="field__head"><label for="ns">Nova situação</label>{{ ui.help('ns-tip', 'Nova situação', ajuda.agent_status()) }}</div>
+            <select id="ns" name="status" aria-describedby="ns-help ns-tip">{% for s in statuses %}<option value="{{ s.value }}" {{ s.value == (form.name == 'situacao' ? fv.status ?? status.value : status.value) ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select>
             <span class="hint" id="ns-help">Atividade e pausa contam como "em turno": a posição é esperada. Indisponível ou fora de serviço tira de turno: um alerta sem posição deixa de se aplicar, sem indicar que a comunicação voltou.</span></div>
-          <div class="field {{ se.note is defined ? 'has-error' }}"><label for="f-st-note">Motivo <span class="req" aria-hidden="true">*</span></label>
-            <input id="f-st-note" name="note" required maxlength="300" value="{{ form.name == 'situacao' ? fv.note ?? '' }}" {% if se.note is defined %}aria-invalid="true" aria-describedby="err-st-note"{% endif %}>
+          <div class="field {{ se.note is defined ? 'has-error' }}"><div class="field__head"><label for="f-st-note">Motivo <span class="req" aria-hidden="true">*</span></label>{{ ui.help('f-st-note-tip', 'Motivo', ajuda.agent_reason()) }}</div>
+            <input id="f-st-note" name="note" required maxlength="300" value="{{ form.name == 'situacao' ? fv.note ?? '' }}" {% if se.note is defined %}aria-invalid="true"{% endif %} aria-describedby="{{ se.note is defined ? 'err-st-note ' }}f-st-note-tip">
             {% if se.note is defined %}<span class="error" id="err-st-note">{{ se.note }}</span>{% endif %}</div>
           <div><button class="btn" type="submit">Registrar situação</button></div>
         </form>
