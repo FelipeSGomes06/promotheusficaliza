@@ -8,10 +8,12 @@ namespace Fiscaliza\Domain;
  * Tipo de equipamento e o esquema das suas características próprias (gravadas como JSON validado em EQUIPMENT.SPECS).
  *
  * Cada campo: name, label, kind (int|bool|enum|multi|text), required, min/max/unit (int), options (enum/multi),
- * max (text, em caracteres), requiredIf [campo => opção] para obrigatoriedade condicional, help.
+ * max (text, em caracteres), requiredIf [campo => opção] para obrigatoriedade condicional, help (texto fixo abaixo do
+ * rótulo), tip e optionTips [opção => texto] (só interface: a ajuda do "?").
  *
  * @phpstan-type SpecField array{name: string, label: string, kind: string, required?: bool, min?: int, max?: int,
- *     unit?: string, options?: array<string, string>, requiredIf?: array<string, string>, help?: string}
+ *     unit?: string, options?: array<string, string>, requiredIf?: array<string, string>, help?: string, tip?: string,
+ *     optionTips?: array<string, string>}
  */
 final readonly class EquipmentType
 {

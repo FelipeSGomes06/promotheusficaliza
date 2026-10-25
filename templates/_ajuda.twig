@@ -1,0 +1,317 @@
+{# Textos da ajuda contextual (o "?" de ui.help), todos aqui. Cada macro devolve o corpo da caixinha: uma frase de
+   "para que serve" e, quando ajuda, exemplos de Marília. Rótulos, transições e características vêm do domínio
+   (EquipmentStatus, AgentRole, AgentStatus, EquipmentCatalog, FineRules): aqui fica só a explicação. #}
+
+{% macro ex(items) %}<p class="help__ex">Exemplos: {% for i in items %}<code>{{ i }}</code>{{ not loop.last ? ', ' }}{% endfor %}.</p>{% endmacro %}
+
+{# ---------- Endereço e local (equipamento, base do agente, multa) ---------- #}
+
+{% macro address_ref() %}
+<p>Informe o número do imóvel ou um ponto de referência.</p>
+<p class="help__ex">Exemplos: <code>181</code>, <code>oposto ao número 181</code>, <code>KM 203</code>, <code>S/N</code> (sem número), <code>em frente ao Mercado do Tio</code>.</p>
+{% endmacro %}
+
+{% macro cep() %}
+<p>Os 8 números do CEP. Com ele, a rua é preenchida sozinha e você pode corrigi-la. Não sabe o CEP? Deixe em branco e escreva a rua.</p>
+{{ _self.ex(['17500-000', '17515-430']) }}
+{% endmacro %}
+
+{% macro street() %}
+<p>Nome da rua, avenida ou rodovia, sem o número (ele vai no campo ao lado).</p>
+{{ _self.ex(['Avenida Sampaio Vidal', 'Rua São Luiz', 'Avenida das Esmeraldas']) }}
+{% endmacro %}
+
+{% macro region() %}
+<p>O bairro não é digitado: o sistema descobre pelo ponto marcado ao salvar. Se você mudar o ponto, o bairro muda junto.</p>
+{{ _self.ex(['Centro', 'Fragata', 'Jardim Cavallari']) }}
+{% endmacro %}
+
+{% macro map_point(what = 'o local') %}
+<p>O ponto no mapa guarda a latitude e a longitude (as coordenadas GPS) de {{ what }}. Não é preciso digitar números: clique no mapa ou preencha o endereço e use "Levar até este endereço".</p>
+<p>Só vale ponto dentro de Marília/SP.</p>
+{% endmacro %}
+
+{% macro location_kind() %}
+<p>Diz o que este ponto representa:</p>
+<ul>
+  <li><strong>Local de instalação:</strong> onde o equipamento já está funcionando.</li>
+  <li><strong>Local planejado:</strong> onde ele vai ser instalado.</li>
+  <li><strong>Base:</strong> onde o veículo ou patinete fica guardado; a posição na rua vem do rádio.</li>
+</ul>
+<p>A situação limita a escolha para o mapa não mostrar um aparelho onde ele ainda não está: "Não instalado" usa local planejado; operacional, mau funcionamento, em manutenção e furtado usam local de instalação; desativado aceita os dois.</p>
+{% endmacro %}
+
+{# ---------- Equipamento ---------- #}
+
+{% macro equipment_type(types) %}
+<p>Escolha o que é o aparelho. As características do passo 3 mudam conforme o tipo.</p>
+<ul>{% for t in types %}<li><strong>{{ t.label }}:</strong> {{ t.description }}</li>{% endfor %}</ul>
+{% endmacro %}
+
+{# Uma linha por situação, na ordem do EquipmentStatus; a disponibilidade vem de isInService() e isUnavailable(). #}
+{% macro equipment_status() %}
+{% set meaning = {
+  NAO_INSTALADO: 'ainda vai ser instalado (veículo e patinete: ainda vai entrar em operação).',
+  OPERACIONAL: 'instalado e funcionando.',
+  FALHA: 'instalado, mas com defeito: abre um alerta e pede manutenção corretiva imediata.',
+  MANUTENCAO: 'com uma intervenção em andamento.',
+  DESATIVADO: 'retirado de uso; o histórico continua guardado.',
+  FURTADO: 'foi levado do local; o ponto mostra de onde saiu. Depois decida reposição ou baixa.'
+} %}
+<p>A situação de agora. Muda pela ficha, sempre com motivo, e fica no histórico.</p>
+<ul>{% for s in enum_cases('Fiscaliza\\Domain\\EquipmentStatus') %}<li><span aria-hidden="true">{{ s.glyph }}</span> <strong>{{ s.label }}:</strong> {{ meaning[s.value] ?? '' }} {{ not s.inService ? 'Fica fora da conta de disponibilidade.' : (s.unavailable ? 'Conta como indisponível.' : 'Conta como disponível.') }}</li>{% endfor %}</ul>
+{% endmacro %}
+
+{% macro agency() %}
+<p>O órgão da prefeitura que cuida do aparelho e responde por ele. É quem recebe as ordens de manutenção.</p>
+{{ _self.ex(['Departamento de Mobilidade e Trânsito', 'Guarda Civil', 'Serviço de Manutenção Viária']) }}
+{% endmacro %}
+
+{% macro serial() %}
+<p>O número que o fabricante grava no aparelho, geralmente numa etiqueta. Não pode repetir na mesma marca, para não haver dois cadastros do mesmo aparelho.</p>
+{{ _self.ex(['MOB-2-0041', 'SN 48213']) }}
+{% endmacro %}
+
+{% macro asset_tag() %}
+<p>O número da plaqueta de patrimônio que a prefeitura cola no aparelho. Serve para achá-lo no inventário; é único.</p>
+{{ _self.ex(['PM-004512', '2026/0187']) }}
+{% endmacro %}
+
+{% macro maint_interval() %}
+<p>Preventiva é a revisão feita antes de quebrar. Informe de quantos em quantos dias ela deve acontecer, de 7 a 730 (de uma semana a dois anos).</p>
+<p>Ao concluir uma preventiva, a próxima é agendada sozinha para daqui a esse número de dias. Em branco: sem revisão periódica.</p>
+{{ _self.ex(['30 (todo mês)', '90 (a cada três meses)', '180']) }}
+{% endmacro %}
+
+{% macro installed_on() %}
+<p>O dia em que o aparelho foi instalado e começou a funcionar. Em veículo e patinete, o dia em que entrou em operação.</p>
+<p>Ao registrar a instalação pela ficha, a data de hoje entra sozinha.</p>
+{% endmacro %}
+
+{# Características por tipo: frase do catálogo (tip), uma linha por opção explicada (optionTips) e a faixa aceita. #}
+{% macro spec(f) %}
+{% if f.tip is defined %}<p>{{ f.tip }}</p>{% endif %}
+{% if f.optionTips is defined %}<ul>{% for ov, text in f.optionTips %}<li><strong>{{ f.options[ov] }}:</strong> {{ text }}</li>{% endfor %}</ul>{% endif %}
+{% if f.kind == 'int' %}<p>Aceita de {{ f.min }} a {{ f.max }}{{ f.unit is defined ? ' ' ~ f.unit }}.</p>{% endif %}
+{% endmacro %}
+
+{# ---------- Situação e manutenção (ficha do equipamento, Manutenção) ---------- #}
+
+{% macro status_change(status) %}
+{% set effect = {
+  OPERACIONAL: status.value == 'NAO_INSTALADO' ? 'registra a instalação: o local planejado vira local de instalação e a data de hoje entra no cadastro.' : 'volta a contar como funcionando.',
+  FALHA: 'abre um alerta e o equipamento aparece em "precisam de atenção". Depois abra uma ordem corretiva.',
+  MANUTENCAO: 'indica que alguém está mexendo no aparelho; o simulador deixa de mudar a situação.',
+  DESATIVADO: 'tira de uso e da disponibilidade, sem apagar nada.',
+  FURTADO: 'abre um alerta de furto; depois a ficha pede a decisão de repor ou dar baixa.',
+  NAO_INSTALADO: 'prepara a reposição: o local de instalação volta a ser o local planejado da nova instalação.'
+} %}
+<p>A partir de "{{ status.label }}", dá para mudar para:</p>
+<ul>{% for t in status.allowedTransitions %}<li><strong>{{ t.label }}:</strong> {{ effect[t.value] ?? '' }}</li>{% else %}<li>nenhuma outra situação.</li>{% endfor %}</ul>
+{% endmacro %}
+
+{% macro reason() %}
+<p>O motivo é obrigatório porque fica no histórico, com seu nome e a hora: quem abrir a ficha depois entende por que a situação mudou.</p>
+{{ _self.ex(['câmera sem imagem desde a chuva', 'poste derrubado por caminhão', 'boletim de ocorrência 123/2026']) }}
+{% endmacro %}
+
+{% macro maint_kind() %}
+<ul>
+  <li><strong>Corretiva:</strong> consertar algo que já quebrou ou está falhando.</li>
+  <li><strong>Preventiva:</strong> revisar antes de quebrar (limpeza, ajuste, troca de peça gasta).</li>
+</ul>
+{% endmacro %}
+
+{% macro maint_priority() %}
+<ul>
+  <li><strong>Imediata:</strong> precisa começar já, como num mau funcionamento. Entra em "Urgentes".</li>
+  <li><strong>Programada:</strong> marcada para um dia, como as revisões periódicas. Se a data passar sem começar, vira urgente (vencida).</li>
+</ul>
+{% endmacro %}
+
+{% macro maint_due() %}
+<p>O dia marcado para a próxima manutenção, pelo calendário de Marília. Só vale para ordem programada.</p>
+<p>Agendar não tira o equipamento de operação: ele continua funcionando até a intervenção começar.</p>
+{% endmacro %}
+
+{% macro maint_result() %}
+<p>A situação que o equipamento passa a ter quando você conclui a ordem. Informe o que aconteceu de verdade:</p>
+<ul>
+  <li><strong>Operacional:</strong> foi testado e está funcionando.</li>
+  <li><strong>Continua com mau funcionamento:</strong> o problema não foi resolvido; o alerta continua.</li>
+  <li><strong>Desativado:</strong> foi retirado de uso.</li>
+</ul>
+{% endmacro %}
+
+{% macro stolen_decision(mobile) %}
+<p>Depois de um furto, a ficha pede uma decisão:</p>
+<ul>
+  <li><strong>Repor:</strong> passa a "Não instalado" {{ mobile ? 'na mesma base' : 'com o mesmo ponto como local planejado' }}. Quando o aparelho novo {{ mobile ? 'entrar em operação' : 'for instalado' }}, registre pela ficha.</li>
+  <li><strong>Dar baixa:</strong> passa a "Desativado". Sai de uso e o histórico continua guardado.</li>
+</ul>
+<p>Ordens de manutenção agendadas não podem começar enquanto ele estiver furtado.</p>
+{% endmacro %}
+
+{# ---------- Agentes ---------- #}
+
+{% macro agent_role() %}
+{% set meaning = {TRANSITO: 'orienta o trânsito e pode registrar multas.', GUARDA: 'cuida de praças, prédios e serviços da prefeitura.', POLICIA: 'policiamento e segurança pública.'} %}
+<p>A função define o ícone no mapa e o que o agente pode fazer no sistema.</p>
+<ul>{% for r in enum_cases('Fiscaliza\\Domain\\AgentRole') %}<li><strong>{{ r.label }}:</strong> {{ meaning[r.value] ?? '' }}</li>{% endfor %}</ul>
+<p>Só agentes de trânsito aparecem como autores de multa e nas missões de Planejar.</p>
+{% endmacro %}
+
+{% macro agent_status() %}
+{% set meaning = {EM_ATIVIDADE: 'trabalhando agora.', EM_PAUSA: 'parado por um tempo (almoço, descanso), mas ainda no turno.', INDISPONIVEL: 'não pode atender agora (doente, em treinamento).', FORA_DE_SERVICO: 'fora do horário de trabalho.'} %}
+<ul>{% for s in enum_cases('Fiscaliza\\Domain\\AgentStatus') %}<li><span aria-hidden="true">{{ s.glyph }}</span> <strong>{{ s.label }}:</strong> {{ meaning[s.value] ?? '' }} {{ s.onShift ? 'Em turno: o rádio deve mandar posição.' : 'Fora de turno: não se espera posição.' }}</li>{% endfor %}</ul>
+{% endmacro %}
+
+{% macro agent_reason() %}
+<p>O motivo fica no histórico do agente, com seu nome e a hora, para quem acompanhar a equipe saber o que aconteceu.</p>
+{{ _self.ex(['início do turno', 'pausa para almoço', 'viatura quebrou']) }}
+{% endmacro %}
+
+{% macro call_sign() %}
+<p>Como o agente é chamado no rádio e aparece no mapa. Use um nome inventado: nada de nomes, matrículas ou documentos reais.</p>
+{{ _self.ex(['Hermes 09', 'Apoio Norte 2']) }}
+{% endmacro %}
+
+{% macro base_name() %}
+<p>O lugar fixo de onde o agente sai e para onde volta. Aparece no mapa quando não há posição recente do rádio.</p>
+{{ _self.ex(['Base Norte', 'Posto do Terminal Urbano']) }}
+{% endmacro %}
+
+{# ---------- Multas ---------- #}
+
+{% macro fine_record() %}
+<ul>
+  <li><strong>Rascunho:</strong> pode salvar com campos em branco e completar depois. A ficha mostra o que falta para registrar.</li>
+  <li><strong>Registrado:</strong> conferido e completo.</li>
+  <li><strong>Retificação:</strong> mudar um registro já registrado. Pede motivo e guarda o antes e o depois de cada campo.</li>
+</ul>
+{% endmacro %}
+
+{% macro fine_source() %}
+<ul>
+  <li><strong>Radar:</strong> o aparelho fotografou a infração. Escolha qual radar do inventário.</li>
+  <li><strong>Agente de trânsito:</strong> um agente viu e anotou na rua.</li>
+  <li><strong>Ainda não sei:</strong> só vale no rascunho; escolha antes de registrar.</li>
+</ul>
+{% endmacro %}
+
+{% macro occurred_at() %}
+<p>Quando a infração aconteceu, como está no documento, pelo horário de Marília.</p>
+{{ _self.ex(['12/10/2026 07:45', '03/09/2026 18:10']) }}
+{% endmacro %}
+
+{% macro legal_reference() %}
+<p>O artigo da lei de trânsito que o documento cita, copiado como está. O sistema não sugere nem confere.</p>
+{{ _self.ex(['Art. 218, I', 'Art. 208']) }}
+{% endmacro %}
+
+{% macro ait() %}
+<p>AIT é o Auto de Infração de Trânsito: o número que o órgão põe no documento da multa. É diferente do código interno que o sistema gera (DEMO-MUL-…).</p>
+{{ _self.ex(['AB1234567', 'S0012345']) }}
+{% endmacro %}
+
+{% macro plate() %}
+<p>A placa do carro multado. Vale o formato antigo (3 letras e 4 números) ou o Mercosul (uma letra no lugar do segundo número). Use placas inventadas.</p>
+{{ _self.ex(['ABC1234', 'BRA2E19']) }}
+{% endmacro %}
+
+{% macro renavam() %}
+<p>O número de registro do veículo que está no documento do carro (CRLV): 11 dígitos, com os zeros do começo.</p>
+{{ _self.ex(['00123456789']) }}
+{% endmacro %}
+
+{% macro speeds() %}
+<ul>
+  <li><strong>Regulamentada:</strong> o limite da placa na via.</li>
+  <li><strong>Medida:</strong> o que o radar marcou.</li>
+  <li><strong>Considerada:</strong> a medida menos a margem de erro do aparelho; é a que vale para a multa. O sistema calcula.</li>
+</ul>
+<p>Exemplo: limite 60, medida 75 → considerada 68 km/h.</p>
+{% endmacro %}
+
+{% macro fine_stage() %}
+<ul>
+  <li><strong>Autuação:</strong> o dono do carro recebeu o aviso de que houve infração e pode se defender.</li>
+  <li><strong>Penalidade:</strong> a multa foi aplicada e há valor a pagar ou recurso possível.</li>
+  <li><strong>Encerrada:</strong> o órgão informou que o caso terminou.</li>
+</ul>
+{% endmacro %}
+
+{% macro fine_documents() %}
+<p>Se os documentos do carro (licenciamento, CRLV) estavam em dia no dia da multa, pelo que alguém conferiu e anotou na ficha. O sistema não consulta o Detran.</p>
+{% endmacro %}
+
+{# ---------- Visão geral, revisões e planejamento ---------- #}
+
+{% macro attention() %}
+<p>Mostra só o que pede uma ação: aparelho com mau funcionamento, furtado ou sem sinal recente, manutenção imediata ou vencida e agente em turno sem posição recente.</p>
+<p>"Sem sinal recente" pede conferência, mas não quer dizer que o aparelho quebrou.</p>
+{% endmacro %}
+
+{% macro kpi_operational() %}
+<p>Primeiro número: equipamentos operacionais. Segundo: todos os que deveriam estar funcionando (em serviço).</p>
+<p>"Com sinal" são os operacionais que mandaram sinal nos últimos {{ constant('Fiscaliza\\Domain\\Freshness::SIGNAL_CURRENT') // 60 }} minutos. Sem sinal não quer dizer quebrado.</p>
+{% endmacro %}
+
+{% macro score() %}
+<p>Nota de 0 a 100 que soma sinais do histórico: falhas recentes, falhas antigas e preventiva atrasada. Quanto maior, mais cedo vale inspecionar.</p>
+<p>Não é a chance de quebrar: é só uma ordem para montar a rota.</p>
+{% endmacro %}
+
+{% macro precision() %}
+<p>De cada 100 alertas que o método deu, quantos eram de equipamentos que falharam mesmo nos 7 dias seguintes. Alta = poucos alarmes falsos.</p>
+{% endmacro %}
+
+{% macro recall() %}
+<p>De cada 100 falhas que aconteceram, quantas o método tinha avisado antes. Alta = poucas falhas pegam a equipe de surpresa.</p>
+{% endmacro %}
+
+{% macro f1() %}
+<p>Uma nota só que junta precisão e revocação. Só é alta quando as duas são altas.</p>
+{% endmacro %}
+
+{% macro expected() %}
+<p>Quantos sinistros de trânsito devem ser registrados na semana nesse lugar, pela média do último ano. Não é a chance de um acidente acontecer.</p>
+<p>Exemplo: 2,5 = em média dois ou três registros por semana.</p>
+{% endmacro %}
+
+{% macro method() %}
+<p>A previsão é a média simples: quantos registros houve por semana no último ano, em cada lugar. É a referência ("baseline").</p>
+{# O nome do modelo testado fica fora da tela de propósito (ADR-0016, adendo "tela só com a média simples"). #}
+<p>Um modelo estatístico mais elaborado também foi testado: escolheu os mesmos quadrados e errou mais na quantidade, por isso a tela usa a média.</p>
+{% endmacro %}
+
+{% macro grid() %}
+<p>A área de Marília foi dividida em quadrados iguais de 2 km de lado, como num tabuleiro. Cada quadrado soma os sinistros registrados dentro dele.</p>
+<p>Quadrados pequenos apontam melhor onde reforçar do que um setor inteiro da cidade.</p>
+{% endmacro %}
+
+{% macro data_through() %}
+<p>Até que dia os registros do Infosiga já estavam no arquivo. Os dois meses mais recentes chegam incompletos e por isso ficam de fora.</p>
+{% endmacro %}
+
+{% macro hit_rate() %}
+<p>Semana com acerto = o setor que a previsão mandou priorizar foi o que mais teve registros. Escolhendo ao acaso entre 4 setores, acertaria 1 em 4 (25%).</p>
+{% endmacro %}
+
+{% macro mae() %}
+<p>Em média, quantos registros a previsão errou para mais ou para menos, por setor e por semana. Quanto menor, melhor.</p>
+{% endmacro %}
+
+{# ---------- Contas ---------- #}
+
+{% macro username() %}
+<p>O nome que a pessoa digita para entrar. De 3 a 40 caracteres: letras sem acento, números, ponto, hífen ou sublinhado; sem espaço.</p>
+{{ _self.ex(['maria.silva', 'operador-02', 'joao_m']) }}
+{% endmacro %}
+
+{% macro account_role() %}
+<ul>
+  <li><strong>Operador:</strong> consulta, cadastra, registra manutenção, alertas e multas.</li>
+  <li><strong>Administrador:</strong> faz o mesmo e também cria, desativa e redefine contas.</li>
+</ul>
+{% endmacro %}

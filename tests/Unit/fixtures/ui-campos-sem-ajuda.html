@@ -1,0 +1,29 @@
+<div class="field  ">
+    <label for="f-address_ref">Número ou referência <span class="optional">(opcional)</span></label>
+        <input id="f-address_ref" name="address_ref" type="text" value="181"
+      maxlength="160"       placeholder="Ex.: 1200"               >
+    
+</div>
+<div class="field  has-error">
+    <label for="f-cep">CEP <span class="req" aria-hidden="true">*</span></label>
+  <span class="hint" id="f-cep-help">Só números.</span>      <input id="f-cep" name="cep" type="text" value=""
+       inputmode="numeric"       required             aria-invalid="true" aria-describedby="err-cep f-cep-help">
+    <span class="error" id="err-cep">CEP inválido.</span>
+</div>
+<div class="field span-2 ">
+    <label for="f-notes">Observações <span class="optional">(opcional)</span></label>
+        <textarea id="f-notes" name="notes" maxlength="500"   ></textarea>
+    
+</div>
+<div class="field  ">
+  <label for="f-role">Função <span class="req" aria-hidden="true">*</span></label>
+  <span class="hint" id="f-role-help">Escolha.</span>  <select id="f-role" name="role" required  aria-describedby="f-role-help">
+        <option value="A" >Um</option><option value="B" selected>Dois</option>  </select>
+  
+</div>
+<div class="field  has-error">
+  <label for="f-kind">Tipo</label>
+    <select id="f-kind" name="kind"   aria-invalid="true" aria-describedby="err-kind">
+    <option value="">Escolha…</option>    <option value="A" >Um</option>  </select>
+  <span class="error" id="err-kind">Obrigatório.</span>
+</div>
