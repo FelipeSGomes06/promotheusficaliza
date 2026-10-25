@@ -21,10 +21,10 @@ return [
     // "Vídeo de apresentação em breve." e não pede nenhum arquivo. Caminhos começando com "/" são arquivos desta
     // landing, relativos a landing/public (ex.: '/landing-assets/promotheus/video/apresentacao.mp4').
     'video' => [
-        'src' => null,
+        'src' => '/landing-assets/promotheus/video/apresentacao.mp4',
         'tipo' => 'video/mp4',
         'legendas' => null, // ex.: '/landing-assets/promotheus/video/apresentacao.pt-BR.vtt'
-        'capa' => null,     // ex.: '/landing-assets/promotheus/video/capa.webp' (16:9)
+        'capa' => '/landing-assets/promotheus/video/capa.webp', // 16:9
     ],
 
     // Ajustes da marca 3D da hero.
