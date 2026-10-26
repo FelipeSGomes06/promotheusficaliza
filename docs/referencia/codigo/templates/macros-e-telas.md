@@ -77,11 +77,12 @@ CSS e o GSAP só gira e anima por cima ([`pages/sobre.js`](../frontend/paginas.m
 | Macro | Contrato |
 |---|---|
 | `_autoria.caixa` | `caixa(cls, olhos = false)` — caixa 3D de seis faces (`.vx`), com olhos opcionais. |
-| `_autoria.mascote` | `mascote()` — primeiro personagem, em blocos (corpo, braços, quatro pernas, sombra). |
-| `_autoria.codex` | `codex()` — segundo personagem: nuvem extrudada em sete camadas, face em degradê e ">_". |
+| `_autoria.mascote` | `mascote()` — mascote do Claude Code em blocos (corpo, braços, quatro pernas, sombra). |
+| `_autoria.codex` | `codex()` — símbolo do Codex: nuvem extrudada em sete camadas, face em degradê e ">_". |
 | `_autoria.defs` | `defs()` — desenhos compartilhados (`#pf-nuvem`, `#pf-nuvem-degrade`) fora do cartão, para não duplicar ids. |
 
-Créditos dos desenhos: [licenças](../../../licencas-e-fontes.md).
+As marcas são da Anthropic e da OpenAI; o desenho é do projeto e o uso é nominativo
+([licenças](../../../licencas-e-fontes.md)).
 
 ## `central.twig`
 

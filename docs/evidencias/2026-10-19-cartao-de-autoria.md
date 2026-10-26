@@ -45,7 +45,7 @@ reduzido. Vídeos ([pasta](2026-10-19-cartao-de-autoria/videos)): sequência com
 
 ## Segunda rodada: foto em círculo e personagens 3D
 
-Pedido: foto em círculo e, junto dela, dois personagens em 3D, todos
+Pedido: foto em círculo e, junto dela, o mascote do Claude Code e o símbolo do Codex (OpenAI) em 3D, todos
 interagindo com o mouse. Feito em CSS 3D + SVG ([`templates/_autoria.twig`](../../templates/_autoria.twig)) e GSAP,
 sem WebGL nem biblioteca nova; valores no [adendo da ADR-0012](../adr/0012-identidade-motion-e-build-de-assets.md#adendo-19102026--cartão-de-autoria-na-página-sobre).
 

@@ -108,11 +108,11 @@ Pedido do autor: a foto dele no espaço vazio da coluna da esquerda, com "Desenv
 clique e levando a <https://devfelipegomes.com.br/> com uma transição "cinematográfica" que expande o cartão. Feito
 só com o que o projeto já usa (Twig, CSS em `app.css`, GSAP do pacote `gsap@3.15.0`), seguindo a documentação oficial do
 GSAP. Nenhuma biblioteca nova. Na segunda rodada do mesmo dia: foto em círculo e, no
-palco, dois personagens em 3D, todos reagindo ao mouse.
+palco, o mascote do Claude Code e o símbolo do Codex em 3D, todos reagindo ao mouse.
 
 - **Personagens 3D** ([`_autoria.twig`](../../templates/_autoria.twig)): sem WebGL nem biblioteca 3D. O mascote é feito
   de caixas CSS 3D (`preserve-3d`, seis faces por peça: corpo, dois braços, quatro pernas, olhos na face da frente); a
-  nuvem do segundo personagem é extrudada em sete camadas SVG cada vez mais escuras, com a face em degradê e o ">_" na frente. A
+  nuvem do Codex é extrudada em sete camadas SVG cada vez mais escuras, com a face em degradê e o ">_" na frente. A
   pose de repouso vem do CSS (aparece sem JavaScript e com movimento reduzido); o GSAP gira só os invólucros de
   dentro. O palco é medido em `em`: a tela cheia só aumenta a fonte do palco.
 

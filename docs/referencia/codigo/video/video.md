@@ -16,7 +16,7 @@ na ordem da narração), sincronizada com a narração WAV (211,570 s); render d
 | Etapa | Script | Efeito |
 |---|---|---|
 | Capturar | `capturar.mjs` (`--desde=central|preditiva|mapa`) | entra no sistema com conta de teste e **grava uma missão fictícia** (passo 3 de Planejar reforço); recusa seguir com missão vigente — antes, `demo:seed --reset` num ambiente de demonstração isolado (ex.: projeto Compose `pf-video`, porta 8095) |
-| Personagens | `php video/autoria.php > video/capturas/autoria.json` | renderiza as macros reais de `templates/_autoria.twig` (personagens e `defs`) |
+| Personagens | `php video/autoria.php > video/capturas/autoria.json` | renderiza as macros reais de `templates/_autoria.twig` (mascote, Codex, `defs`) |
 | Sons | `sons.mjs` (com `servidor.mjs` no ar) | sintetiza os efeitos dos eventos da linha do tempo → `midia/efeitos.wav` e `midia/mix.wav` |
 | Prévia | `servidor.mjs` → `http://127.0.0.1:5180/` | só leitura |
 | Conferir | `quadros.mjs <pasta> <t…>`, `caixas.mjs <estado> "<texto>" [tag]` | PNG de instantes · consulta de caixas medidas |
@@ -67,7 +67,7 @@ na ordem da narração), sincronizada com a narração WAV (211,570 s); render d
 | `roteiro` | `(v)` — monta toda a apresentação: `abertura`, `tecnologias`, `inventario`, `central`, `preditiva`, `encerramento`, cada bloco com o tempo e a palavra da narração que o comanda. |
 | `letras` / `sobre` / `aparecer` / `sumir` / `capitulo` / `rodape` / `recorte2D` / `linha` / `sobreA` | texto letra a letra · camada sobre a tela · entrada e saída · título de capítulo · rodapé · recorte plano · linha de legenda · posiciona sobre um recorte. |
 | `tecnologias.placa` / `tecnologias.etiqueta` / `inventario.linhasDe` / `central.marc` / `preditiva.diag` | placa de tecnologia · etiqueta · linhas de um tipo · marcador · diagrama. |
-| `vida` | `(tl, [h, s, o, c], reduzido, som)` — personagens vivos sem mudar o desenho; parados com movimento reduzido. |
+| `vida` | `(tl, [h, s, o, c], reduzido, som)` — personagens vivos (Haiku, Sonnet, Opus, Codex) sem mudar o desenho; parados com movimento reduzido. |
 | `vida.ev` / `vida.piscar` / `vida.olhar` / `vida.olhos` / `vida.pular` / `vida.respirar` / `vida.acenar` | evento sonoro · piscar · virar · olhos · pulo · respiração · aceno. |
 | `json` / `decodificar` / `quadro` | lê JSON · decodifica imagens entre `t` e `t + 4 s` · busca `t` e espera as imagens (exposto em `window.__video.quadro`). |
 | `iniciarPrevia` | prévia: o tempo vem do `<audio>` da narração; espaço, ← →, `,` `.`; `?t=` começa num instante; caixa "Efeitos sonoros" alterna `mix.wav`. |
