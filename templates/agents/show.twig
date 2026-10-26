@@ -177,50 +177,7 @@
       {{ not current ? where }}
     </div>
 
-    <div class="stack">
-      {% if editable %}
-      {% set se = form.name == 'situacao' ? fe : {} %}
-      <section class="panel" id="situacao" aria-labelledby="situacao-titulo">
-        <h2 id="situacao-titulo">Mudar situação</h2>
-        <p class="m-0">{{ ui.agent_status(a.status) }} <span class="hint">desde {{ a.status_changed_at|local_dt }}</span></p>
-        <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/situacao') }}" class="stack">{{ ui.csrf(app.csrf) }}
-          <div class="field"><div class="field__head"><label for="ns">Nova situação</label>{{ ui.help('ns-tip', 'Nova situação', ajuda.agent_status_change()) }}</div>
-            <select id="ns" name="status" aria-describedby="ns-tip">{% for s in statuses %}<option value="{{ s.value }}" {{ s.value == (form.name == 'situacao' ? fv.status ?? status.value : status.value) ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select></div>
-          <div class="field {{ se.note is defined ? 'has-error' }}"><div class="field__head"><label for="f-st-note">Motivo <span class="req" aria-hidden="true">*</span></label>{{ ui.help('f-st-note-tip', 'Motivo', ajuda.agent_reason()) }}</div>
-            <input id="f-st-note" name="note" required maxlength="300" value="{{ form.name == 'situacao' ? fv.note ?? '' }}" {% if se.note is defined %}aria-invalid="true"{% endif %} aria-describedby="{{ se.note is defined ? 'err-st-note ' }}f-st-note-tip">
-            {% if se.note is defined %}<span class="error" id="err-st-note">{{ se.note }}</span>{% endif %}</div>
-          <div><button class="btn" type="submit">Registrar situação</button></div>
-        </form>
-      </section>
-      {% endif %}
-
-      {{ current ? where }}
-    </div>
-  </div>
-
-  <div class="split section">
-    <section aria-labelledby="historico">
-      <h2 id="historico">{{ ui.icon('i-clock') }} Histórico</h2>
-      <p class="hint">Linha tracejada: registro que não alterou o estado atual (por exemplo, posição mais antiga que a atual).</p>
-      {% set main = events|filter(ev => ev.event_type != 'POSICAO') %}
-      {% set samples = events|filter(ev => ev.event_type == 'POSICAO') %}
-      <ol class="timeline">
-        {% for ev in main %}
-          <li class="{{ ev.outcome == 'APLICADO' ? 'is-applied' : 'is-historical' }}"><time datetime="{{ ev.occurred_at }}">{{ ev.occurred_at|local_dt('d/m/Y H:i') }}</time> · <strong>{{ eventLabels[ev.event_type] ?? ev.event_type|lower }}</strong> <span class="small muted">{{ ev.actor_name ? 'por ' ~ ev.actor_name : (sourceLabels[ev.source] ?? ev.source|lower) }}</span><p>{{ ev.summary }}</p></li>
-        {% else %}<li>Sem registros de cadastro ou situação entre os mais recentes.</li>{% endfor %}
-      </ol>
-      {% if samples is not empty %}
-        <details class="more-actions"><summary>Ver amostras de posição ({{ samples|length }})</summary>
-          <ol class="timeline">
-            {% for ev in samples %}
-              <li class="{{ ev.outcome == 'APLICADO' ? 'is-applied' : 'is-historical' }}"><time datetime="{{ ev.occurred_at }}">{{ ev.occurred_at|local_dt('d/m/Y H:i') }}</time> · <strong>Posição</strong> <span class="small muted">{{ ev.actor_name ? 'por ' ~ ev.actor_name : (sourceLabels[ev.source] ?? ev.source|lower) }}</span><p>{{ ev.summary }}</p></li>
-            {% endfor %}
-          </ol>
-        </details>
-      {% endif %}
-    </section>
-
-    <div class="stack">
+    {% set bottomSide %}
       <section class="panel" aria-labelledby="encerrados">
         <h2 id="encerrados">{{ ui.icon('i-check-circle') }} Alertas encerrados</h2>
         {% if closed is empty %}
@@ -261,7 +218,52 @@
         </div>
       </details>
       {% endif %}
+    {% endset %}
+
+    <div class="stack">
+      {% if editable %}
+      {% set se = form.name == 'situacao' ? fe : {} %}
+      <section class="panel" id="situacao" aria-labelledby="situacao-titulo">
+        <h2 id="situacao-titulo">Mudar situação</h2>
+        <p class="m-0">{{ ui.agent_status(a.status) }} <span class="hint">desde {{ a.status_changed_at|local_dt }}</span></p>
+        <form method="post" action="{{ url('/agentes/' ~ a.id ~ '/situacao') }}" class="stack">{{ ui.csrf(app.csrf) }}
+          <div class="field"><div class="field__head"><label for="ns">Nova situação</label>{{ ui.help('ns-tip', 'Nova situação', ajuda.agent_status_change()) }}</div>
+            <select id="ns" name="status" aria-describedby="ns-tip">{% for s in statuses %}<option value="{{ s.value }}" {{ s.value == (form.name == 'situacao' ? fv.status ?? status.value : status.value) ? 'selected' }}>{{ s.label }}</option>{% endfor %}</select></div>
+          <div class="field {{ se.note is defined ? 'has-error' }}"><div class="field__head"><label for="f-st-note">Motivo <span class="req" aria-hidden="true">*</span></label>{{ ui.help('f-st-note-tip', 'Motivo', ajuda.agent_reason()) }}</div>
+            <input id="f-st-note" name="note" required maxlength="300" value="{{ form.name == 'situacao' ? fv.note ?? '' }}" {% if se.note is defined %}aria-invalid="true"{% endif %} aria-describedby="{{ se.note is defined ? 'err-st-note ' }}f-st-note-tip">
+            {% if se.note is defined %}<span class="error" id="err-st-note">{{ se.note }}</span>{% endif %}</div>
+          <div><button class="btn" type="submit">Registrar situação</button></div>
+        </form>
+      </section>
+      {% endif %}
+
+      {{ current ? where : bottomSide }}
     </div>
+  </div>
+
+  <div class="split section">
+    <section aria-labelledby="historico">
+      <h2 id="historico">{{ ui.icon('i-clock') }} Histórico</h2>
+      <p class="hint">Linha tracejada: registro que não alterou o estado atual (por exemplo, posição mais antiga que a atual).</p>
+      {% set main = events|filter(ev => ev.event_type != 'POSICAO') %}
+      {% set samples = events|filter(ev => ev.event_type == 'POSICAO') %}
+      <ol class="timeline">
+        {% for ev in main %}
+          <li class="{{ ev.outcome == 'APLICADO' ? 'is-applied' : 'is-historical' }}"><time datetime="{{ ev.occurred_at }}">{{ ev.occurred_at|local_dt('d/m/Y H:i') }}</time> · <strong>{{ eventLabels[ev.event_type] ?? ev.event_type|lower }}</strong> <span class="small muted">{{ ev.actor_name ? 'por ' ~ ev.actor_name : (sourceLabels[ev.source] ?? ev.source|lower) }}</span><p>{{ ev.summary }}</p></li>
+        {% else %}<li>Sem registros de cadastro ou situação entre os mais recentes.</li>{% endfor %}
+      </ol>
+      {% if samples is not empty %}
+        <details class="more-actions"><summary>Ver amostras de posição ({{ samples|length }})</summary>
+          <ol class="timeline">
+            {% for ev in samples %}
+              <li class="{{ ev.outcome == 'APLICADO' ? 'is-applied' : 'is-historical' }}"><time datetime="{{ ev.occurred_at }}">{{ ev.occurred_at|local_dt('d/m/Y H:i') }}</time> · <strong>Posição</strong> <span class="small muted">{{ ev.actor_name ? 'por ' ~ ev.actor_name : (sourceLabels[ev.source] ?? ev.source|lower) }}</span><p>{{ ev.summary }}</p></li>
+            {% endfor %}
+          </ol>
+        </details>
+      {% endif %}
+    </section>
+
+    {% if current %}<div class="stack">{{ bottomSide }}</div>{% endif %}
   </div>
 </div>
 {% endblock %}

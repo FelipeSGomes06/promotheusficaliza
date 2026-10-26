@@ -770,6 +770,11 @@
   .next-action__form textarea { min-height: 64px; }
   .next-action__note { display: flex; gap: 8px; align-items: flex-start; margin: 10px 0 0; font-size: 0.9rem; }
   .next-action__note .icon { flex: none; margin-top: 2px; color: var(--color-brand-600); }
+  /* Botão "Mudar situação" aponta para o painel ao lado: brilho ao passar/focar e ao clicar (:target). */
+  @keyframes panel-glow { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 35% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand-600) 35%, transparent); border-color: var(--color-brand-600); } }
+  #situacao.panel { transition: box-shadow 0.2s, border-color 0.2s; }
+  #situacao.panel:target { animation: panel-glow 1.4s ease-out 2; }
+  .page:has(a.btn[href="#situacao"]:is(:hover, :focus-visible)) #situacao.panel { box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand-600) 35%, transparent); border-color: var(--color-brand-600); }
   .next-action--compact { padding: 12px 14px 12px 18px; margin-bottom: 12px; }
   .next-action--compact::before { width: 4px; }
   .next-action--compact .next-action__what { font-size: 1rem; margin-bottom: 4px; }
