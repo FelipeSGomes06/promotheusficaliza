@@ -4,18 +4,15 @@ Monólito modular em PHP 8.5: uma aplicação web, uma CLI e um banco Firebird 5
 `src/` com dependências num só sentido: **Http → Application → Domain**, e **Application → Infrastructure** (SQL).
 O domínio não conhece HTTP, Twig nem Firebird.
 
-```
-Navegador ──HTTPS──► Apache (/promotheusfiscaliza) ──► public/index.php ──► Slim (Http)
-                                                                      │
-   simulador (CLI) ──► bin/fiscaliza ──► Console ─────────────────────┤
-                                                                      ▼
-                                              Application (casos de uso, transações)
-                                                │                   │
-                                         Domain (regras puras)   Infrastructure (PDO_FIREBIRD, SQL)
-                                                                      │
-                                                                 Firebird 5 (rede interna)
-Navegador ──► provedor de tiles (somente imagens do mapa, origem liberada na CSP)
-```
+Esta página é o resumo da arquitetura. Os contratos de cada classe e função estão na
+[referência de código](referencia/codigo/README.md); o esquema, no [dicionário de dados](referencia/dicionario-de-dados.md);
+a visão de ponta a ponta, no [manual](MANUAL-DO-PROJETO.md).
+
+- Navegador → HTTPS → Apache (`/promotheusfiscaliza`) → `public/index.php` → Slim (`Http`).
+- Simulador (CLI) → `bin/fiscaliza` → `Console`.
+- `Http` e `Console` → `Application` (casos de uso, transações) → `Domain` (regras puras) e `Infrastructure`
+  (PDO_FIREBIRD, SQL) → Firebird 5 (rede interna).
+- Navegador → provedor de tiles (só imagens do mapa, origem liberada na CSP).
 
 ## Fluxos principais
 

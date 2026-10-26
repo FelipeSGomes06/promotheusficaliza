@@ -4,6 +4,8 @@ Para quem vai usar a demonstração pela primeira vez. Tudo é fictício (ver "D
 **Só entra quem tem conta cadastrada pelo administrador**: sem conta, qualquer endereço leva à tela de login e não
 há cadastro aberto. Peça sua conta a quem administra o sistema.
 
+Para cada aba há um guia mais completo (estados, regras e como funciona no código) em [guias](guias/README.md).
+
 Situações usadas em todas as telas, sempre com texto e símbolo além da cor:
 
 | Selo | Significa |
@@ -195,8 +197,8 @@ protocolado ([ADR-0017](adr/0017-aba-multas.md)). Use só dados fictícios.
 
 - **Lista:** três resumos do mesmo filtro da lista — registros, **a conferir** (rascunhos, documentação não verificada
   ou com pendência sem regularização informada depois, lembrete de conferir de novo que passou, dados do medidor ou
-  evidência a conferir em excesso de velocidade) e **pagamento informado**
-  (lançado à mão; não é arrecadação). **Ver só as N a conferir**, ao lado dos resumos (ou "Só as que estão a conferir"
+  evidência a conferir em excesso de velocidade) e **pagas**
+  (as anotadas aqui com pagamento informado, lançado à mão; não é arrecadação). **Ver só as N a conferir**, ao lado dos resumos (ou "Só as que estão a conferir"
   em Mais filtros), mostra só essas, pela mesma regra do resumo. Busca por código interno (`DEMO-MUL-000023`), AIT, placa ou RENAVAM; origem e
   etapa à mão; em **Mais filtros**, período da ocorrência, órgão autuador, radar, agente (da constatação ou operador do
   radar), documentação, pagamento, rascunhos/cancelados e ordem. A URL guarda os filtros, e a ficha volta para eles.
@@ -315,8 +317,8 @@ Planejamento preventivo semanal ([método e resultados](planejamento-por-setores
 Faixa tracejada grafite/turquesa = **histórico**, não a previsão atual. Escolha a semana do teste de 2025 (ou use
 semana anterior/próxima). O método foi **escolhido e fixado em 01/01/2025**, antes do teste; cada semana é
 calculada com os registros que já estariam publicados no início dela (ex.: semana de 10/11/2025 → registros até
-31/08/2025), e a faixa mostra essas duas datas; a coluna "Registrado" fica **oculta** até **Revelar o que foi registrado** (os números nem
-são enviados antes). Depois, a página diz quantos registros houve e quantos caíram no setor priorizado por cada
+31/08/2025), e a faixa mostra essas duas datas; ao escolher uma semana, a coluna "Registrado" fica **oculta** até **Revelar o que aconteceu** (os números nem
+são enviados antes); a primeira abertura, sem semana escolhida, mostra a 45ª semana do teste já revelada. Depois, a página diz quantos registros houve e quantos caíram no setor priorizado por cada
 método. Abaixo, sempre, o resultado do teste inteiro e os limites — uma semana isolada não prova nada.
 
 ## Entrar e contas

@@ -21,6 +21,7 @@ Valores reais ficam só no ambiente; o repositório traz [`.env.example`](../.en
 | `MAP_TILE_URL`, `MAP_TILE_ATTRIBUTION` | Provedor de tiles e atribuição obrigatória; a origem entra na CSP `img-src`. |
 | `CEP_LOOKUP_URL` | Provedor da consulta de CEP do cadastro de agente (padrão `https://viacep.com.br/ws`; só `https`). Exige saída HTTPS do contêiner `app`; fora do ar, a tela pede a rua ([ADR-0021](adr/0021-base-do-agente-pelo-mapa-e-rua-pelo-cep.md)). |
 | `GEOCODER_URL` | Provedor do ponto pela rua, para quem não consegue marcar a base no mapa (padrão `https://nominatim.openstreetmap.org`; só `https`; no máximo 1 consulta/s, espaçadas pelo servidor). Exige saída HTTPS do contêiner `app`; fora do ar, o caminho sem mapa para e a tela explica. |
+| `INFOSIGA_URL` | Arquivo mensal do Infosiga-SP lido por `urban:update` (padrão `https://infosiga.detran.sp.gov.br/painel/download/file/dados_infosiga.zip`, `UrbanUpdater::SOURCE_URL`). Exige saída HTTPS do processo que roda o comando (serviço `atualizador` ou cron). |
 | `DEMO_ALLOW_RESET` | `true` só em ambientes de demonstração descartáveis. |
 | `DEMO_PROFILE` | `compacto` (padrão: 17 equipamentos e 7 agentes) ou `completo` (48 e 21). Vale para `demo:seed` e `scripts/avaliar-sementes.php` ([ADR-0013](adr/0013-perfil-compacto-de-demonstracao.md)). |
 | `SIM_SEED`, `SIM_INTERVAL_SECONDS`, `POLL_INTERVAL_SECONDS` | Semente do cenário, intervalo do simulador e intervalo de consulta da visão geral (independentes). |

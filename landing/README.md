@@ -27,7 +27,7 @@ landing/
       build/          CSS, JS e fontes gerados pelo Vite (versionados; produção não precisa de Node)
       img/            capturas reais do sistema (WebP, com recorte de celular), foto de Marília (Pedro Monteiro),
                       imagem de compartilhamento e favicon
-      video/          onde entra o vídeo do avaliador
+      video/          vídeo do avaliador (apresentacao.mp4, capa.webp) e LEIA-ME.txt
   src/                fontes do CSS e do JS: pagina.js (entrada), palco.js + cena3d.js (marca 3D da hero),
                       planos.js + planos3d.js (plano 3D noturno, renderer próprio), enfeites.js + enfeites3d.js
                       (objetos 3D junto das capturas, renderer próprio), rolagem.js, navegacao.js, movimento.js,
@@ -66,10 +66,10 @@ O PHP encontra os nomes com hash pelo `build/manifest.json`; não é preciso mex
 |---|---|---|
 | `sistema_url` | `/promotheusfiscaliza/` | destino dos três botões "Acessar sistema" |
 | `url_publica` | `https://fiscaliza.devfelipegomes.com.br/` | `canonical`, `og:url` e endereço absoluto da imagem de compartilhamento |
-| `video.src` | `null` | vídeo da seção "Para o avaliador"; `null` mostra "Vídeo de apresentação em breve." |
+| `video.src` | `/landing-assets/promotheus/video/apresentacao.mp4` | vídeo da seção "Para o avaliador"; `null` (ou arquivo ausente) mostra "Vídeo de apresentação em breve." |
 | `video.tipo` | `video/mp4` | tipo do arquivo (`video/webm` para WebM) |
 | `video.legendas` | `null` | arquivo WebVTT em português (faixa `captions`, ligada por padrão) |
-| `video.capa` | `null` | imagem 16:9 mostrada antes do play |
+| `video.capa` | `/landing-assets/promotheus/video/capa.webp` | imagem 16:9 mostrada antes do play (`null` = sem capa) |
 | `hero.montagem` | `true` | `false` mostra a marca 3D já pronta, sem a sequência |
 | `hero.duracao` | `4.0` | duração total da montagem, em segundos (as etapas mantêm a proporção) |
 | `hero.ponteiro` | `true` | depois de montada, a marca gira um pouco e a foto de Marília se desloca até ±12 × ±8 px com o mouse (nunca no toque nem com movimento reduzido) |
@@ -191,3 +191,8 @@ php -l landing/public/index.php
 Com o servidor local no ar: título e botões aparecem sem JavaScript; a marca em SVG e os cartazes dos planos ficam no
 lugar quando não há WebGL (os enfeites somem); "Reduzir movimento" mostra a marca pronta, um quadro parado no plano e
 nos enfeites e desliga as entradas; nada de erro no console.
+
+## Referência do código
+
+Cada função PHP e JavaScript da landing (palco, marca 3D, plano noturno, enfeites, rolagem, navegação, ampliação e
+preferência de movimento): [referência — landing](../docs/referencia/codigo/landing/landing.md).

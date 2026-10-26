@@ -28,3 +28,9 @@ node scripts/verificacao-interface/ajuda.cjs  /tmp/ajuda   # ajuda contextual ("
 `PF_CHROMIUM` aponta um executável do Chromium já instalado quando a versão do Playwright não traz o seu.
 `acompanhamento.cjs` cadastra uma conta de teste (e a desativa), registra ciência e providências e simula posição: use só em banco de demonstração, com um agente que tenha alerta `SEM_POSICAO` aberto.
 `revisao-fluxos.cjs` abre ordens, anota conferências, simula uma falha (com a resposta interrompida de propósito), cria e desativa uma conta de teste e conclui uma missão: use só em banco de demonstração. `PF_MULTA_PAGA` é uma multa registrada com aviso de infração em 04/09/2026 (a 573 da carga completa) e `PF_MULTA_CONFERIR` uma registrada sem pagamento.
+
+## Referência
+
+O que cada script verifica, o que ele grava e as funções auxiliares (`entrar`, `sessao`, `instantaneo`, `check`,
+`shot`…) estão em [referência: scripts](../../docs/referencia/codigo/scripts/scripts.md#verificação-da-interface-scriptsverificacao-interface).
+As evidências produzidas por eles ficam em [`docs/evidencias/`](../../docs/evidencias/README.md).
