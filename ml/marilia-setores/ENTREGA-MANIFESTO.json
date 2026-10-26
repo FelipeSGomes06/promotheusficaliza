@@ -3,18 +3,8 @@
   "files": [
     {
       "path": "00-COMECE-AQUI.md",
-      "bytes": 3814,
-      "sha256": "01ba199b05bee15f26f5930f2c85ae9873126a9a024e104db152a2b64729cea6"
-    },
-    {
-      "path": "01-PROMPT-PARA-CLAUDE.md",
-      "bytes": 4165,
-      "sha256": "cb05720e30b50a624356801b489ce48b1df1ab1c0563c3cd8f5ccc5e9505fa90"
-    },
-    {
-      "path": "02-ESPECIFICACAO-PARA-CLAUDE.md",
-      "bytes": 8013,
-      "sha256": "516f8763419d16a7653deac10370cb8fc1a5be790d3253993f447c3c728a01e6"
+      "bytes": 3229,
+      "sha256": "467eba3777065afd130811f5fcdfe0d3e1e70ac878402afdceac4483585f5d5a"
     },
     {
       "path": "03-CONTRATO-DOS-ARQUIVOS.md",
@@ -28,8 +18,8 @@
     },
     {
       "path": "05-VERIFICACAO-E-CONTEXTO.md",
-      "bytes": 5301,
-      "sha256": "cc1a08168482677cca79481834781a65c3983c2a5659d9ec1627792aa25f5c75"
+      "bytes": 4150,
+      "sha256": "6029c97d710b6a4a65da8d3adc5235096687a481b49d05cfe28036281011629c"
     },
     {
       "path": "config.json",

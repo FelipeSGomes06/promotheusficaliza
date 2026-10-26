@@ -114,7 +114,7 @@ Cada fluxo abaixo está detalhado, com rota → controlador → serviço → reg
 - **Demonstração:** `demo:seed` gera um cenário reproduzível pela semente (`SIM_SEED`), com 240 dias de histórico, perfil
   compacto (17 equipamentos, 7 agentes) ou completo (48, 21); `--reset` apaga o domínio mas **preserva contas e dados
   do Infosiga** → [demonstração e simulação](guias/demonstracao-e-simulacao.md).
-- **Dados reais:** pacote de treino em `ml/marilia-setores/` (entregue pelo Codex, conferido byte a byte),
+- **Dados reais:** pacote de treino em `ml/marilia-setores/` (conferido byte a byte pelo manifesto),
   experimento da grade em `ml/marilia-grade-2km/`, importação por `urban:import` e atualização por `urban:update` →
   [dados reais e ML](guias/dados-e-ml.md) e [`ml/README.md`](../ml/README.md).
 - **Identificadores com zeros à esquerda** são texto em todo lugar: CEP `'17500-000'`, RENAVAM `'00123456789'`,
@@ -167,9 +167,7 @@ As 23 ADRs ([índice](adr/README.md)) registram por que o projeto é assim: cont
 (0002), consulta periódica (0004), estado × histórico (0005), heurística preventiva (0007), uma intervenção por vez
 (0009), versão do cadastro (0010), cota de login (0011), identidade e movimento (0012), acesso só com conta (0014),
 planejamento por setores (0016), multas (0017), base do agente (0021), acompanhamento de alertas (0022), revisão de
-fluxos (0023) e as da landing (0015, 0018–0020). O planejamento original do Codex está preservado em
-[`planejamento-codex-2026-10-18/`](planejamento-codex-2026-10-18/00-LEIA-PRIMEIRO.md). Autoria e uso de IA:
-[IA e autoria](ia-e-autoria.md).
+fluxos (0023) e as da landing (0015, 0018–0020).
 
 ## 10. Escopo
 

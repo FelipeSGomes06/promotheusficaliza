@@ -8,7 +8,7 @@ preservadas — nenhum teste antigo foi alterado além do ajuste de `var/` descr
 
 ## Ambiente
 
-Contêiner de nuvem do Claude Code (Linux), Docker 29.8.2, projeto Compose isolado `fiscaliza-claude` (porta 8091,
+Contêiner Linux de desenvolvimento, Docker 29.8.2, projeto Compose isolado separado (porta 8091,
 volume próprio), banco novo com dados sintéticos e contas de teste descartáveis. Diferenças em relação ao ambiente do
 autor, todas fora do repositório:
 
@@ -101,6 +101,6 @@ O cursor não aparece nas gravações; o hover aparece pela mudança do próprio
 - Sem leitor de tela real, sem axe/Lighthouse e sem teste com pessoa iniciante; contraste calculado sobre os tokens.
 - Quadros medidos só em headless; nada medido em aparelho real.
 - Termos da licença do GSAP não puderam ser lidos deste ambiente (página bloqueada): conferir antes de publicar.
-- Os documentos de pesquisa do Codex (pasta fora do repositório) não estavam acessíveis no contêiner de nuvem; a
-  implementação seguiu o texto do pedido e as skills lidas diretamente dos repositórios citados.
+- Os documentos de pesquisa (pasta fora do repositório) não estavam acessíveis no contêiner; a
+  implementação seguiu o texto do pedido e a documentação oficial das bibliotecas.
 - Nada foi publicado; nenhuma configuração de produção foi alterada.

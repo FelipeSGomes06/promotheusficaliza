@@ -131,7 +131,7 @@ Auxiliar: `HelpTipTest::render` (renderiza um trecho Twig com as macros reais).
 
 | Caso | Prova |
 |---|---|
-| `UrbanImportTest::testReferenceCopyIsByteIdenticalToTheCodexManifest` | os 28 arquivos de `ml/marilia-setores` batem byte a byte com o SHA-256 de `ENTREGA-MANIFESTO.json` |
+| `UrbanImportTest::testReferenceCopyIsByteIdenticalToItsManifest` | os 26 arquivos de `ml/marilia-setores` batem byte a byte com o SHA-256 de `ENTREGA-MANIFESTO.json` |
 | `UrbanImportTest::testReferenceRunIsValidAndKeepsEveryDigit` | a execução de referência é válida e mantém todos os dígitos |
 | `UrbanImportTest::testReplayRowsReproduceTheDeclaredTestMetrics` | as linhas do retrospecto reproduzem as métricas declaradas |
 | `UrbanImportTest::testGridCellsMatchTheRunAndRankTheCityCentreFirst` | os quadrados batem com a execução e o centro fica em primeiro |

@@ -15,10 +15,10 @@ pessoa, veículo ou linha bruta sai do ZIP. Agentes e missões da tela são fict
 avaliado, perdeu na escolha feita **antes** do teste e aparece só como comparação experimental nos dados importados. Na
 grade de 2 km, o Poisson foi apenas experimentado e descartado (ver abaixo).
 
-## `ml/marilia-setores/` — pacote do Codex (20/10/2026)
+## `ml/marilia-setores/` — pacote de treino (20/10/2026)
 
-Entregue pelo Codex e mantido **byte a byte** como recebido: `UrbanImportTest::testReferenceCopyIsByteIdenticalToTheCodexManifest`
-confere os 28 arquivos contra `ENTREGA-MANIFESTO.json`. Não edite esses arquivos; uma mudança exige novo pacote e
+Mantido **byte a byte**: `UrbanImportTest::testReferenceCopyIsByteIdenticalToItsManifest`
+confere os 26 arquivos contra `ENTREGA-MANIFESTO.json`. Não edite esses arquivos; uma mudança exige novo pacote e
 novo manifesto. Os documentos `00-…` a `05-…` são o planejamento e o contrato originais (histórico).
 
 ### `preparar_dados.py`
@@ -94,7 +94,7 @@ Essas execuções são **evidência histórica**: não são regravadas. Execuç�
 
 ## `ml/marilia-grade-2km/` — experimento da grade (20/10/2026)
 
-Experimento do projeto, separado do pacote do Codex, com [protocolo registrado antes de rodar](../../../../ml/marilia-grade-2km/PROTOCOLO.md)
+Experimento do projeto, separado do pacote dos setores, com [protocolo registrado antes de rodar](../../../../ml/marilia-grade-2km/PROTOCOLO.md)
 e [resultado](../../../../ml/marilia-grade-2km/RESULTADO.md). Pergunta: quadrados de ~2 km concentram melhor o reforço
 que os 4 setores? Uso: `python experimento.py preparar --zip <ZIP>`, `validar`, `testar` (o teste **recusa rodar uma
 segunda vez**: "O teste já foi executado uma vez; não se repete").

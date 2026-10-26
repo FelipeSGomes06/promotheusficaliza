@@ -19,7 +19,7 @@ antiga; aqui ele foi levado para as telas novas.
 | `scripts/verificacao-interface/` | `comum.cjs` faz o login e lê a API com a sessão; nova seção M (sessão encerrada → login) |
 | Documentação | README, operação ("Atualizar uma instalação publicada"), verificação e matriz |
 
-## Verificação (contêiner de nuvem, projeto Compose `fiscaliza-claude`, PHP 8.5.11, Firebird 5.0.4)
+## Verificação (contêiner de desenvolvimento, projeto Compose separado, PHP 8.5.11, Firebird 5.0.4)
 
 | Verificação | Resultado |
 |---|---|

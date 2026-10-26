@@ -1,11 +1,11 @@
 # Correções da auditoria e redesenho — 18/10/2026
 
 Ambiente: Windows 11 + Docker Desktop 29.7.2; contêineres `php:8.5.11-apache-trixie` (PDO_FIREBIRD) e
-`firebirdsql/firebird:5.0.4-trixie` (Firebird 5.0.4). Tudo rodou num **projeto Compose isolado** (`-p fiscaliza-claude`,
+`firebirdsql/firebird:5.0.4-trixie` (Firebird 5.0.4). Tudo rodou num **projeto Compose isolado** (projeto separado,
 porta 8091, volume próprio), sem tocar no banco de demonstração do projeto padrão. Dados sintéticos e conta de teste
 descartável criada só nesse ambiente.
 
-A auditoria (Codex, 18/10/2026) partiu de 62 testes / 218 asserções verdes e reproduziu, fora do projeto, cinco
+A auditoria (18/10/2026) partiu de 62 testes / 218 asserções verdes e reproduziu, fora do projeto, cinco
 defeitos funcionais e um achado de segurança de baixa gravidade. Linha de base reproduzida aqui antes de alterar:
 **62 testes, 218 asserções, OK**; os 164 arquivos próprios coincidiam com o manifesto da auditoria.
 
@@ -62,7 +62,7 @@ Banco novo com só a 0001, três falhas de login antigas para a mesma chave e, e
 ## Verificação no navegador
 
 Chrome headless pelo DevTools Protocol ([`scripts/capturar-telas.mjs`](../../scripts/capturar-telas.mjs)) e navegador
-embutido do Claude Code. Playwright, pressuposto pela skill `webapp-testing`, não estava instalado; o script cumpre o
+embutido do ambiente de desenvolvimento. Playwright não estava instalado; o script cumpre o
 mesmo papel (navegar, agir, medir o DOM, capturar, ler o console) sem dependências.
 
 | Critério | Medida |
@@ -96,7 +96,7 @@ sistema, e registrei o que a tela oferece em cada passo:
 
 [`capturas-2026-10-18/antes`](capturas-2026-10-18/antes) (9 telas, mesma base de dados e viewports, antes do
 redesenho) e [`capturas-2026-10-18/depois`](capturas-2026-10-18/depois) (22 telas). Mapa de fundo © colaboradores do
-OpenStreetMap. Dados e nomes fictícios; a conta "Operador de teste (Claude)" existia só no ambiente isolado.
+OpenStreetMap. Dados e nomes fictícios; a conta "Operador de teste" existia só no ambiente isolado.
 
 ## Limites
 

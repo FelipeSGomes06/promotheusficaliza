@@ -1,11 +1,11 @@
 # Acompanhamento dos alertas de agentes (24/10/2026)
 
-Pedido do autor com a análise do Codex (`~/.codex/entregas-para-claude/promotheus-atendimento-alertas-agentes-2026-10-24/`).
-Decisões: [ADR-0022](../adr/0022-acompanhamento-dos-alertas-de-agentes.md). Branch `claude/acompanhamento-alertas-agentes`,
-a partir de `claude/revisao-auditoria-codex-1023` em `b893aae`.
+Pedido do autor.
+Decisões: [ADR-0022](../adr/0022-acompanhamento-dos-alertas-de-agentes.md). Branch de trabalho
+a partir de `b893aae`.
 
 Ambiente: projeto Compose isolado `pf-rev` (porta 8097; PHP 8.5.11, Firebird 5.0.4, perfil completo), com a migração
-0009 aplicada sobre o banco já populado. Conta de teste descartável `claude.teste` (administrador) criada pelo
+0009 aplicada sobre o banco já populado. Conta de teste descartável `teste` (administrador) criada pelo
 `user:create`; a conta do acompanhamento foi cadastrada pela própria tela Contas durante o roteiro.
 
 ## O que mudou na tela

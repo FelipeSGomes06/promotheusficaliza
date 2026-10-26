@@ -104,12 +104,11 @@ node scripts/documentacao/inventario.mjs --verificar
 | `--verificar` | falha (código 1) se faltar página de referência para um arquivo de código, símbolo na sua página, README ou linha na [matriz de cobertura](../../../cobertura-documentacao.md) para uma pasta, ou se um link relativo/âncora de Markdown estiver quebrado |
 
 Regras: arquivos vêm de `git ls-files --cached --others --exclude-standard` (o que o `.gitignore` exclui, como
-`vendor/` e `node_modules/`, já fica de fora), excluindo `.claude/`, `.playwright-mcp/` e, da contagem de símbolos, os
+`vendor/` e `node_modules/`, já fica de fora), excluindo da contagem de símbolos os
 arquivos gerados (`build/`, `public/assets/vendor/`). Cada página de referência declara no topo
 `<!-- fontes: … -->`; um símbolo conta como documentado quando o nome qualificado aparece na página do seu arquivo entre
 crases, seguido de `(` ou num título. Âncoras seguem a regra do GitHub (minúsculas, sem pontuação, acentos mantidos,
-espaço → hífen, sufixo `-1`, `-2` em repetições). Os Markdown copiados de fora (`docs/planejamento-codex-*`,
-`ml/marilia-setores/0*`) não têm links verificados: são histórico.
+espaço → hífen, sufixo `-1`, `-2` em repetições).
 
 | Função | Contrato |
 |---|---|

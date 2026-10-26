@@ -70,7 +70,7 @@ Pastas sem README próprio, com o destino documental e a justificativa:
 | `landing/public/landing-assets/promotheus/img/` | capturas reais e foto | [landing](referencia/codigo/landing/landing.md#capturas-e-mídia) | capturas do sistema com dados de demonstração; foto © Pedro Monteiro |
 | `landing/public/landing-assets/promotheus/video/` | mídia | idem | `apresentacao.mp4`, `capa.webp`, `LEIA-ME.txt` |
 | `landing/src/` | fonte da landing | [referência da landing](referencia/codigo/landing/landing.md) | coberta pelo README da landing e pela referência |
-| `ml/marilia-setores/` | pacote de dados e treino | [`ml/README.md`](../ml/README.md), [referência](referencia/codigo/ml/treino-e-experimento.md) | **pacote imutável** do Codex (28 arquivos conferidos pelo manifesto); `00-COMECE-AQUI.md` faz o papel de README; nada foi acrescentado dentro dele |
+| `ml/marilia-setores/` | pacote de dados e treino | [`ml/README.md`](../ml/README.md), [referência](referencia/codigo/ml/treino-e-experimento.md) | **pacote imutável** (26 arquivos conferidos pelo manifesto); `00-COMECE-AQUI.md` faz o papel de README; nada foi acrescentado dentro dele |
 | `ml/marilia-setores/dados/` | dados agregados | [`ml/README.md`](../ml/README.md#contrato-dos-dados) | origem, esquema e licença lá |
 | `ml/marilia-setores/runs/` | execuções | [referência](referencia/codigo/ml/treino-e-experimento.md#execuções-versionadas-runs) | evidência histórica |
 | `ml/marilia-setores/runs/piloto-verificado/` | execução | idem | modo piloto |
@@ -81,7 +81,6 @@ Pastas sem README próprio, com o destino documental e a justificativa:
 | `ml/marilia-grade-2km/resultados/` | resultados | [referência](referencia/codigo/ml/treino-e-experimento.md#mlmarilia-grade-2km--experimento-da-grade-20102026) | teste único, não se repete |
 | `video/capturas/` | capturas autênticas | [`video/README.md`](../video/README.md), [referência](referencia/codigo/video/video.md) | trabalho em andamento, não versionado |
 | `video/midia/` | narração e efeitos | idem | idem |
-| `docs/planejamento-codex-2026-10-18/` | histórico | [índice de `docs/`](README.md#histórico-e-contexto) | planejamento recebido, não reescrito; `00-LEIA-PRIMEIRO.md` é a entrada |
 | `docs/referencia/codigo/application/` | referência | [índice da referência](referencia/codigo/README.md#application) | agregado |
 | `docs/referencia/codigo/cli/` | referência | [índice](referencia/codigo/README.md#cli) | agregado |
 | `docs/referencia/codigo/demo/` | referência | [índice](referencia/codigo/README.md#demo) | agregado |
@@ -143,8 +142,8 @@ Não são documentadas arquivo a arquivo; aqui fica por quê e como reproduzi-la
 | `ml/marilia-setores/.venv/`, `fonte/` | ambiente e arquivo bruto do treino | ignorados; recriados por `TREINAR.cmd` / `preparar_dados.py` |
 | `video/saida/`, `video/midia/efeitos.wav`, `video/midia/mix.wav` | saídas do vídeo | ignoradas pelo `.gitignore` da pasta; geradas por `render.mjs` e `sons.mjs` |
 | `docs/privado/` | notas privadas, ignorado | excluído: não faz parte da documentação publicada |
-| `.claude/` | configuração e worktrees do Claude Code | excluído: privado; preservado sem alteração |
-| `.playwright-mcp/` | registros locais de ferramenta | excluído |
+| `.claude/` | configuração local de ferramenta de desenvolvimento, ignorada pelo Git | excluído |
+| `.playwright-mcp/` | registros locais de ferramenta, ignorados pelo Git | excluído |
 | `.env` | configuração real com segredos | **não lido**; documentado só pelo `.env.example` |
 | `landingpage/` | pasta vazia na raiz, sem arquivos nem referência no código | registrada como residual; nada a documentar |
 

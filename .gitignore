@@ -25,3 +25,7 @@
 # Ambiente e caches do treino Python (ml/marilia-setores/TREINAR.cmd); execuções novas ficam em runs/ até decidir versioná-las
 /ml/marilia-setores/.venv/
 __pycache__/
+
+# Ferramentas locais de desenvolvimento (não fazem parte do projeto)
+/.claude/
+/.playwright-mcp/

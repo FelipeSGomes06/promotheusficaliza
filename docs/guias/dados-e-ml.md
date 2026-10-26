@@ -78,7 +78,7 @@ O Poisson portátil (`exp(intercepto + Σ c·(x − média)/escala)`) é recalcu
 
 `UrbanImportTest` (8; inclui os 28 arquivos do pacote byte a byte), `UrbanUpdaterTest` (6), `PlanningTest` (importação),
 `ml/marilia-setores/tests/test_protocolo.py` (4) — [catálogo](../referencia/codigo/testes/casos.md). Evidência:
-[20/10/2026](../evidencias/2026-10-20-planejar-reforco.md) (download real idêntico ao do Codex; o cálculo em PHP reproduziu a
+[20/10/2026](../evidencias/2026-10-20-planejar-reforco.md) (download real idêntico ao do pacote; o cálculo em PHP reproduziu a
 execução de referência). Esta documentação não baixou nem importou nada.
 
 ## Limites

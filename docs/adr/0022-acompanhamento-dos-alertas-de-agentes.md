@@ -7,8 +7,7 @@ Data: 24/10/2026 · Situação: aceita · Relacionadas: [ADR-0005](0005-estado-a
 
 Quando um agente fica sem posição recente, o operador registrava ciência e não tinha mais o que fazer na ficha: não
 havia onde anotar o que foi feito, quem acompanha nem quando conferir de novo; "Mudar situação" ficava abaixo de muitos
-alertas antigos, e o limite de 20 alertas podia esconder uma pendência antiga. Análise e critérios de aceite do Codex:
-`~/.codex/entregas-para-claude/promotheus-atendimento-alertas-agentes-2026-10-24/` (fora do repositório).
+alertas antigos, e o limite de 20 alertas podia esconder uma pendência antiga.
 
 Havia também uma divergência: `AlertRules` usava `isActive()` (só "Em atividade") para `SEM_POSICAO`, enquanto ficha e
 central usam `isOnShift()` (atividade e pausa). Entrar em pausa encerrava o alerta sem posição nova e o retorno abria

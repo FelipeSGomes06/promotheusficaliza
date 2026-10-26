@@ -10,7 +10,7 @@ Todas as telas funcionam sem JavaScript. Macros e mapa das telas:
 | `layout.twig` | moldura: menu (trilho/gaveta), barra, aviso "Demonstração", avisos do servidor, botão Animações |
 | `_ui.twig` | macros de formulário e interface (campos, ícones, selos, ajuda "?") — [referência](../docs/referencia/codigo/templates/macros-e-telas.md#_uitwig) |
 | `_ajuda.twig` | textos da ajuda contextual (situações e características vêm do domínio) — [referência](../docs/referencia/codigo/templates/macros-e-telas.md#_ajudatwig) |
-| `_autoria.twig` | cartão de autoria da página Sobre (mascote, Codex, definições SVG) — [referência](../docs/referencia/codigo/templates/macros-e-telas.md#_autoriatwig) |
+| `_autoria.twig` | cartão de autoria da página Sobre (personagens 3D e definições SVG) — [referência](../docs/referencia/codigo/templates/macros-e-telas.md#_autoriatwig) |
 | `central.twig` | Visão geral — [guia](../docs/guias/visao-geral.md) |
 | `about.twig` | Sobre — [guia](../docs/guias/sobre-e-interface.md) |
 | `error.twig` | página de erro com mensagem segura e código de referência |

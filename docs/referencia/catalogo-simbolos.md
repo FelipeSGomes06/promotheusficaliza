@@ -641,22 +641,22 @@ Fonte: [`scripts/documentacao/inventario.mjs`](../../scripts/documentacao/invent
 | Símbolo | Tipo | Visibilidade | Assinatura | Linha | Ref. |
 |---|---|---|---|---:|:---:|
 | [`git`](codigo/scripts/scripts.md) | function | local | `git(...a)` | 20 | ✓ |
-| [`isCode`](codigo/scripts/scripts.md) | function | local | `isCode(f)` | 24 | ✓ |
-| [`generated`](codigo/scripts/scripts.md) | function | local | `generated(f)` | 26 | ✓ |
-| [`lines`](codigo/scripts/scripts.md) | function | local | `lines(out)` | 34 | ✓ |
-| [`jsSymbols`](codigo/scripts/scripts.md) | function | local | `jsSymbols(file)` | 48 | ✓ |
-| [`jsSymbols.lineOf`](codigo/scripts/scripts.md) | function | local | `lineOf(offset)` | 50 | ✓ |
-| [`jsSymbols.add`](codigo/scripts/scripts.md) | function | local | `add(node, name, kind, exported, params)` | 53 | ✓ |
-| [`jsSymbols.isFn`](codigo/scripts/scripts.md) | function | local | `isFn(n)` | 58 | ✓ |
-| [`jsSymbols.keyName`](codigo/scripts/scripts.md) | function | local | `keyName(k)` | 59 | ✓ |
-| [`jsSymbols.visit`](codigo/scripts/scripts.md) | function | local | `visit(node, scope, exported = false)` | 61 | ✓ |
-| [`walkDocs`](codigo/scripts/scripts.md) | function | local | `walkDocs(dir)` | 134 | ✓ |
-| [`anchor`](codigo/scripts/scripts.md) | function | local | `anchor(text)` | 147 | ✓ |
-| [`writeCatalog`](codigo/scripts/scripts.md) | function | local | `writeCatalog()` | 168 | ✓ |
-| [`writeCatalog.rel`](codigo/scripts/scripts.md) | function | local | `rel(to)` | 171 | ✓ |
-| [`writeCatalog.esc`](codigo/scripts/scripts.md) | function | local | `esc(t)` | 172 | ✓ |
-| [`verify`](codigo/scripts/scripts.md) | function | local | `verify()` | 215 | ✓ |
-| [`verify.anchorsIn`](codigo/scripts/scripts.md) | function | local | `anchorsIn(f)` | 231 | ✓ |
+| [`isCode`](codigo/scripts/scripts.md) | function | local | `isCode(f)` | 23 | ✓ |
+| [`generated`](codigo/scripts/scripts.md) | function | local | `generated(f)` | 25 | ✓ |
+| [`lines`](codigo/scripts/scripts.md) | function | local | `lines(out)` | 33 | ✓ |
+| [`jsSymbols`](codigo/scripts/scripts.md) | function | local | `jsSymbols(file)` | 47 | ✓ |
+| [`jsSymbols.lineOf`](codigo/scripts/scripts.md) | function | local | `lineOf(offset)` | 49 | ✓ |
+| [`jsSymbols.add`](codigo/scripts/scripts.md) | function | local | `add(node, name, kind, exported, params)` | 52 | ✓ |
+| [`jsSymbols.isFn`](codigo/scripts/scripts.md) | function | local | `isFn(n)` | 57 | ✓ |
+| [`jsSymbols.keyName`](codigo/scripts/scripts.md) | function | local | `keyName(k)` | 58 | ✓ |
+| [`jsSymbols.visit`](codigo/scripts/scripts.md) | function | local | `visit(node, scope, exported = false)` | 60 | ✓ |
+| [`walkDocs`](codigo/scripts/scripts.md) | function | local | `walkDocs(dir)` | 133 | ✓ |
+| [`anchor`](codigo/scripts/scripts.md) | function | local | `anchor(text)` | 146 | ✓ |
+| [`writeCatalog`](codigo/scripts/scripts.md) | function | local | `writeCatalog()` | 167 | ✓ |
+| [`writeCatalog.rel`](codigo/scripts/scripts.md) | function | local | `rel(to)` | 170 | ✓ |
+| [`writeCatalog.esc`](codigo/scripts/scripts.md) | function | local | `esc(t)` | 171 | ✓ |
+| [`verify`](codigo/scripts/scripts.md) | function | local | `verify()` | 214 | ✓ |
+| [`verify.anchorsIn`](codigo/scripts/scripts.md) | function | local | `anchorsIn(f)` | 230 | ✓ |
 
 ### simbolos-py.py
 
@@ -3004,7 +3004,7 @@ Fonte: [`tests/Unit/UrbanImportTest.php`](../../tests/Unit/UrbanImportTest.php) 
 |---|---|---|---|---:|:---:|
 | [`UrbanImportTest`](codigo/testes/casos.md#urbanimporttest--pacote-do-planejamento-importaçãoapplicationimportacao-urbanamd-setoresdomainsetores-e-regioesmd) | class | undefined | `` | 14 | ✓ |
 | [`UrbanImportTest::tearDown`](codigo/testes/casos.md) | method | protected | `tearDown(): void` | 20 | ✓ |
-| [`UrbanImportTest::testReferenceCopyIsByteIdenticalToTheCodexManifest`](codigo/testes/casos.md) | method | public | `testReferenceCopyIsByteIdenticalToTheCodexManifest(): void` | 28 | ✓ |
+| [`UrbanImportTest::testReferenceCopyIsByteIdenticalToItsManifest`](codigo/testes/casos.md) | method | public | `testReferenceCopyIsByteIdenticalToItsManifest(): void` | 28 | ✓ |
 | [`UrbanImportTest::testReferenceRunIsValidAndKeepsEveryDigit`](codigo/testes/casos.md) | method | public | `testReferenceRunIsValidAndKeepsEveryDigit(): void` | 37 | ✓ |
 | [`UrbanImportTest::testReplayRowsReproduceTheDeclaredTestMetrics`](codigo/testes/casos.md) | method | public | `testReplayRowsReproduceTheDeclaredTestMetrics(): void` | 54 | ✓ |
 | [`UrbanImportTest::testGridCellsMatchTheRunAndRankTheCityCentreFirst`](codigo/testes/casos.md) | method | public | `testGridCellsMatchTheRunAndRankTheCityCentreFirst(): void` | 66 | ✓ |

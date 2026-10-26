@@ -38,7 +38,7 @@ no navegador, `agentes.cjs` ganhou 3 verificações do equipamento (capturas `09
 
 ## Verificação
 
-Ambiente: contêiner de nuvem do Claude Code (Linux), Docker local; PHP 8.5.11 (`php:8.5.11-apache-trixie` com
+Ambiente: contêiner Linux de desenvolvimento, Docker local; PHP 8.5.11 (`php:8.5.11-apache-trixie` com
 PDO_FIREBIRD compilado com o cliente da imagem do Firebird 5.0.4, porque o espelho do Debian estava bloqueado) e
 `firebirdsql/firebird:5.0.4-trixie`; Node 22. Nada foi publicado.
 

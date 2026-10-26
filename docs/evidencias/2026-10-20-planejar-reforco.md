@@ -1,8 +1,8 @@
 # Evidência — Planejar reforço (20/10/2026)
 
 Extensão descrita no [ADR-0016](../adr/0016-planejamento-preventivo-por-setores.md) e em
-[planejamento-por-setores.md](../planejamento-por-setores.md). Base: `main` em `132dc7f` (mesmo commit da inspeção do
-Codex). Ambiente: Windows 11 + Docker Desktop 29.7.2, projeto Compose isolado `fiscaliza-marilia` (PHP 8.5.11,
+[planejamento-por-setores.md](../planejamento-por-setores.md). Base: `main` em `132dc7f` (mesmo commit da inspeção
+inicial). Ambiente: Windows 11 + Docker Desktop 29.7.2, projeto Compose isolado `fiscaliza-marilia` (PHP 8.5.11,
 Firebird 5.0.4), porta local 8093. Só está listado o que de fato rodou.
 
 ## Demonstração reproduzível
@@ -50,8 +50,8 @@ sudoeste. Resultado do teste inteiro na mesma página (Poisson 246/626 = 39,3%; 
 | `phpstan analyse` (nível 6) | 0 erros |
 | `php-cs-fixer fix --dry-run` | 0 arquivos a corrigir |
 | `npm run build` local (Node 24.16) × `node:22-bookworm` (versão do CI) | 11 arquivos com SHA-256 idênticos |
-| Cópia `ml/marilia-setores/` × `ENTREGA-MANIFESTO.json` do Codex | 28 de 28 arquivos idênticos (teste automatizado) |
-| Treino a partir da cópia do repositório (`treino.py --modo completo --as-of 2026-10-20 --saida var/treino-repro`, Python 3.14.6 do ambiente preparado pelo Codex) | `previsao`, `avaliacao`, `retrospecto`, `modelo` e `vetores_paridade` **idênticos** à execução de referência (fora o carimbo `generated_at_utc`); 4 testes do protocolo OK; `verificar_paridade.php`: 20 vetores, erro máximo 2,7e-15 |
+| Cópia `ml/marilia-setores/` × `ENTREGA-MANIFESTO.json` | 28 de 28 arquivos idênticos (teste automatizado) |
+| Treino a partir da cópia do repositório (`treino.py --modo completo --as-of 2026-10-20 --saida var/treino-repro`, Python 3.14.6 do ambiente do pacote) | `previsao`, `avaliacao`, `retrospecto`, `modelo` e `vetores_paridade` **idênticos** à execução de referência (fora o carimbo `generated_at_utc`); 4 testes do protocolo OK; `verificar_paridade.php`: 20 vetores, erro máximo 2,7e-15 |
 | Celular 375 px | sem rolagem horizontal da página (`scrollWidth` = 375); tabelas largas rolam dentro do próprio quadro |
 
 Testes novos: `tests/Unit/UrbanImportTest.php` (cópia imutável, execução de referência com todos os dígitos, métricas
@@ -83,7 +83,7 @@ entrada escondida no celular para o "Registrado" caber.
 
 Leitor de tela real; teclado no mapa (os retângulos do Leaflet não recebem foco — a lista ao lado tem os mesmos
 links); publicação na VPS (não feita); `TREINAR.cmd` em si (que cria um `.venv` novo e baixa as dependências) não foi
-executado — o treino rodou com o Python do ambiente já preparado pelo Codex. A saída de `var/treino-repro` não foi
+executado — o treino rodou com o Python do ambiente do pacote. A saída de `var/treino-repro` não foi
 importada nem versionada.
 
 ## Adendo — quadrados de 2 km (20/10/2026)
@@ -106,7 +106,7 @@ numerados (1–4) e bairros de referência na lista (capturas `18` e `19`). Veri
 ## Adendo — atualização automática (20/10/2026)
 
 ```
-$ php bin/fiscaliza urban:update --arquivo=var/dados_infosiga.zip --semana=2026-10-20     # mesmo arquivo do Codex
+$ php bin/fiscaliza urban:update --arquivo=var/dados_infosiga.zip --semana=2026-10-20     # mesmo arquivo do pacote
 Snapshot #1: 912 registros elegíveis de 2025-08-02 a 2026-09-30 guardados (12 meses usados na conta).
 Previsão da semana de 2026-10-20 calculada (execução #2, dados até 2026-07-31).
 $ php bin/fiscaliza urban:update --forcar-download                                          # download real, 12 s

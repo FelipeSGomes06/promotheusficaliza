@@ -5,7 +5,7 @@ equipamentos), [ADR-0010](0010-versao-do-cadastro-separada-da-telemetria.md) (ca
 
 ## Contexto
 
-A Cidade Preditiva tinha só a antecipação de falhas de equipamentos, sobre histórico sintético. O Codex entregou um
+A Cidade Preditiva tinha só a antecipação de falhas de equipamentos, sobre histórico sintético. Foi preparado um
 pacote (`ml/marilia-setores/`) com contagens diárias **reais e agregadas** de sinistros do Infosiga-SP/Detran-SP
 (CC BY 4.0) em quatro quadrantes experimentais de Marília, um treino Python separado (referência de 52 semanas ×
 Poisson regularizado, escolha no ajuste de 2024, teste de 2025) e uma execução completa em JSON. Pedido: prever a

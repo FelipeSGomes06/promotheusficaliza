@@ -8,7 +8,7 @@ consome os arquivos daqui por `php bin/fiscaliza urban:import` e, depois, se atu
 
 | Pasta | Origem | O que tem | Usado pela aplicação |
 |---|---|---|---|
-| `marilia-setores/` | pacote entregue pelo Codex em 20/10/2026 — **não editar** (o `UrbanImportTest` confere os 28 arquivos contra `ENTREGA-MANIFESTO.json`) | preparo dos dados, treino Poisson × referência por 4 setores, testes de protocolo, paridade PHP, duas execuções verificadas; leia primeiro `00-COMECE-AQUI.md` | `runs/primeiro-treino-verificado/` é a execução padrão de `urban:import` |
+| `marilia-setores/` | pacote de treino de 20/10/2026 — **não editar** (o `UrbanImportTest` confere os 26 arquivos contra `ENTREGA-MANIFESTO.json`) | preparo dos dados, treino Poisson × referência por 4 setores, testes de protocolo, paridade PHP, duas execuções verificadas; leia primeiro `00-COMECE-AQUI.md` | `runs/primeiro-treino-verificado/` é a execução padrão de `urban:import` |
 | `marilia-grade-2km/` | experimento do projeto, protocolo registrado antes de rodar | grade 8 × 8 de ~2 km, contagens por quadrado e dia, validação e teste únicos | `dados/contagens_grade.csv` é a grade padrão de `urban:import` |
 
 ## Contrato dos dados

@@ -14,4 +14,4 @@ painel de hospedagem ou dado pessoal na tela. A duração é sugestão deste rot
 | 3:05 | Manutenção | Lista por andamento e urgência; iniciar uma urgente (efeito escrito ao lado); mostrar que outra ordem do mesmo equipamento fica "Aguardando"; concluir informando "Continua com mau funcionamento". |
 | 3:35 | Revisões recomendadas | "Revisar primeiro" com o porquê e o que fazer; abrir o retrospecto e dizer: "prioridade heurística, histórico sintético, cerca de 2× o acaso, revocação baixa". |
 | 4:10 | Engenharia | Terminal: `docker compose exec app vendor/bin/phpunit` (testes no Firebird real, inclusive concorrência com processos separados). Abrir README e docs. |
-| 4:30 | Fecho | Publicação proposta em origem dedicada; IA declarada (Codex no plano e na auditoria, Claude na implementação). |
+| 4:30 | Fecho | Publicação proposta em origem dedicada. |

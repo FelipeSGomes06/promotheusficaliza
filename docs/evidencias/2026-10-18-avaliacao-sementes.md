@@ -31,7 +31,7 @@ Referência = "falhou nos últimos 30 dias". 1.681 pares (equipamento × corte),
 
 ## Reavaliação após as correções OP-04 e OP-05 (18/10/2026)
 
-Mesmo comando e mesmas sementes, em Compose isolado (projeto `fiscaliza-claude`, banco de demonstração descartável),
+Mesmo comando e mesmas sementes, em Compose isolado (projeto Compose separado, banco de demonstração descartável),
 PHP 8.5.11 e Firebird 5.0.4, depois de: cortes que só conhecem eventos **recebidos** antes deles, periodicidade
 vigente reconstruída pelo histórico, população que inclui quem foi arquivado depois do corte, métricas calculadas
 direto das contagens e "não avaliado" para fora de serviço. O método `atencao-v1` (pesos, janelas, grade de limiares)

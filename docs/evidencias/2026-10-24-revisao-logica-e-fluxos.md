@@ -1,10 +1,9 @@
 # Evidência — revisão de lógica e fluxos (R01–R08), 24/10/2026
 
-Decisões: [ADR-0023](../adr/0023-revisao-de-logica-e-fluxos.md). Relatório de origem (Codex, fora do repositório, mantido
-intacto): `~/.codex/entregas-para-claude/promotheus-revisao-logica-fluxos-2026-10-24/00-RELATORIO.md`.
+Decisões: [ADR-0023](../adr/0023-revisao-de-logica-e-fluxos.md).
 
 Ambiente: Windows 11, Docker Desktop 29.7.2, projeto Compose isolado `pf-rev` (porta 8097; PHP 8.5.11, Firebird 5.0.4)
-sobre esta pasta, branch `claude/revisao-logica-fluxos-1024` criada de `main` em `6dd9eea` (que já contém o
+sobre esta pasta, branch de trabalho criada de `main` em `6dd9eea` (que já contém o
 acompanhamento de alertas de agentes, ADR-0022, preservado). Banco de verificação com o perfil completo (48
 equipamentos, 21 agentes, 40 multas). Navegador: Chromium 1248 headless via Playwright 1.56.1
 ([`revisao-fluxos.cjs`](../../scripts/verificacao-interface/revisao-fluxos.cjs)), com conta de teste descartável criada
@@ -13,7 +12,7 @@ por `user:create` nesta rodada; nenhuma conta existente teve a senha alterada.
 ## Avaliação de cada achado
 
 Todos foram reproduzidos no código de `6dd9eea` antes de mudar qualquer linha (leitura dos caminhos citados; as
-sondagens em memória do Codex foram usadas só para localizar os gatilhos). Nenhum já estava corrigido.
+sondagens em memória foram usadas só para localizar os gatilhos). Nenhum já estava corrigido.
 
 | ID | Avaliação | Mudança | Validação | Limite restante |
 |---|---|---|---|---|

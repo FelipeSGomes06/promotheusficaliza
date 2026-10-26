@@ -95,7 +95,7 @@ def prepare(zip_path: Path) -> None:
         writer.writerow(["date", "cell", "count"])
         for (day, cell), n in sorted(counts.items()):
             writer.writerow([day, cell, n])
-    # Conferência: os quadrados somam exatamente as contagens diárias dos 4 setores do pacote do Codex.
+    # Conferência: os quadrados somam exatamente as contagens diárias dos 4 setores do pacote ml/marilia-setores.
     sectors: dict[tuple[str, str], int] = {}
     for (day, cell), n in counts.items():
         sectors[(day, sector_of(cell))] = sectors.get((day, sector_of(cell)), 0) + n

@@ -47,7 +47,7 @@ JavaScript, a lista ao lado tem a mesma informação. Texto do servidor entra po
 
 Cartão de autoria da página Sobre (adendo da [ADR-0012](../../../adr/0012-identidade-motion-e-build-de-assets.md#adendo-19102026--cartão-de-autoria-na-página-sobre)).
 É um **link comum** para o portal do autor; sem JavaScript ou com movimento reduzido, o clique só navega. No palco: a
-foto em círculo, o mascote do Claude Code e o símbolo do Codex em CSS 3D (`templates/_autoria.twig`). Usa GSAP com Flip,
+foto em círculo, dois personagens em CSS 3D (`templates/_autoria.twig`). Usa GSAP com Flip,
 CustomEase, CustomWiggle e SplitText.
 
 | Símbolo | Contrato |

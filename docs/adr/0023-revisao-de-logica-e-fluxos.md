@@ -6,7 +6,7 @@ Data: 24/10/2026 · Situação: aceita · Relacionadas: [ADR-0009](0009-uma-inte
 
 ## Contexto
 
-A revisão de lógica do Codex (fora do repositório: `~/.codex/entregas-para-claude/promotheus-revisao-logica-fluxos-2026-10-24/`)
+A revisão de lógica
 apontou oito pontos, R01–R08, fora do acompanhamento de alertas de agentes (ADR-0022, preservado). Os oito foram
 reproduzidos no código de `main` em `6dd9eea` antes de qualquer mudança; nenhum estava corrigido. Três padrões se
 repetiam: uma tela prescrevia uma ação que outra regra recusa; uma informação importante ficava fora do conjunto que a

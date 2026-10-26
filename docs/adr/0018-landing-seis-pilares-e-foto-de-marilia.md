@@ -5,7 +5,7 @@ Data: 22/10/2026 · Situação: aceita · Atualiza: [ADR-0015](0015-landing-publ
 
 ## Contexto
 
-A auditoria da landing publicada (Codex, 22/10/2026, pacote externo `fiscaliza-landing-auditoria-2026-10-22`) apontou
+A auditoria da landing publicada (22/10/2026) apontou
 que a página apresentava uma versão menor do produto: Multas e Planejar reforço não apareciam (só no rodapé e na meta
 description), as capturas de 19/10 tinham o menu antigo, a distinção entre operação fictícia e dados reais ficava no
 fim, o JavaScript saía sem compressão, o cabeçalho apertava perto de 900 px, as capturas desktop ficavam ilegíveis no

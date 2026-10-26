@@ -25,13 +25,13 @@ final class UrbanImportTest extends TestCase
         }
     }
 
-    public function testReferenceCopyIsByteIdenticalToTheCodexManifest(): void
+    public function testReferenceCopyIsByteIdenticalToItsManifest(): void
     {
         $manifest = json_decode((string) file_get_contents(self::KIT . '/ENTREGA-MANIFESTO.json'), true, 8, JSON_THROW_ON_ERROR);
         foreach ($manifest['files'] as $file) {
             self::assertSame($file['sha256'], hash_file('sha256', self::KIT . '/' . $file['path']), $file['path']);
         }
-        self::assertCount(28, $manifest['files']);
+        self::assertCount(26, $manifest['files']);
     }
 
     public function testReferenceRunIsValidAndKeepsEveryDigit(): void

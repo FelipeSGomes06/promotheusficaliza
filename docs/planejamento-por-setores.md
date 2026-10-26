@@ -81,7 +81,7 @@ cd ml/marilia-setores
 php verificar_paridade.php runs/<nova-pasta>/vetores_paridade.json   # paridade PHP × Python do Poisson
 ```
 
-`ml/marilia-setores/` é a cópia imutável do pacote entregue pelo Codex (bytes conferidos contra
+`ml/marilia-setores/` é a cópia imutável do pacote de treino (bytes conferidos contra
 `ENTREGA-MANIFESTO.json` por `tests/Unit/UrbanImportTest.php`; `.gitattributes` impede conversão de fim de linha).
 Execuções novas vão para pastas novas em `runs/`; a de referência não muda.
 
@@ -135,9 +135,9 @@ docker compose exec app php bin/fiscaliza urban:import --sem-grade          # s�
 Método, modelo do Poisson e avaliação **não mudam** sozinhos: vêm da execução de referência (importada do treino,
 que também fornece o retrospecto). Para trocar de método é preciso um novo treino e um novo teste.
 
-Verificado em 20/10/2026: com o mesmo arquivo usado pelo Codex, o cálculo em PHP reproduziu a execução de referência
+Verificado em 20/10/2026: com o mesmo arquivo usado no treino, o cálculo em PHP reproduziu a execução de referência
 (contagens, média e os 64 quadrados idênticos; Poisson com diferença ≤ 9e-16). O download real do site levou 12 s e
-trouxe um arquivo idêntico ao do Codex, por isso não gravou nada novo.
+trouxe um arquivo idêntico ao do treino, por isso não gravou nada novo.
 
 ```bash
 docker compose --profile atualizador up -d atualizador                       # agenda (a cada 6 h)

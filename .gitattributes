@@ -2,5 +2,5 @@
 * text=auto eol=lf
 *.png binary
 *.woff2 binary
-# Cópia imutável do pacote de treino do Codex (CRLF original): os SHA-256 do manifesto e o treino dependem dos bytes.
+# Cópia imutável do pacote de treino (bytes originais): os SHA-256 do manifesto e o treino dependem dos bytes.
 ml/marilia-setores/** -text

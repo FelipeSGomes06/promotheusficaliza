@@ -8,7 +8,7 @@ Data: 21/10/2026 · Situação: aceita · Amplia: o "fora do escopo" do README (
 
 O autor pediu uma aba **Multas** para cadastrar e acompanhar infrações com origem por radar ou agente de trânsito,
 dados da ocorrência, veículo/placa/RENAVAM e conferência de documentação. O pedido veio com um pacote de planejamento do
-Codex (`promotheus-multas-2026-10-20`, análise de `main@132dc7f`); a implementação partiu de `main@3ef2904`, 25 commits
+planejamento (análise de `main@132dc7f`); a implementação partiu de `main@3ef2904`, 25 commits
 depois, preservando esse trabalho (planejamento por setores, retrospecto, migrações 0003–0006). Continua sendo uma
 demonstração manual: nada é consultado no Detran/Senatran, emitido, cobrado ou protocolado.
 
@@ -78,7 +78,7 @@ demonstração manual: nada é consultado no Detran/Senatran, emitido, cobrado o
 - Rascunhos podem ficar incompletos; o banco garante, por CHECK, os campos mínimos de um registro e a coerência da
   origem e das velocidades.
 
-## Adendo (24/10/2026) — revisão da auditoria de interface do Codex
+## Adendo (24/10/2026) — revisão da auditoria de interface
 
 - **Pendência regularizada depois:** a pendência documental no dia da multa deixa de contar em "A conferir" quando a
   última conferência "depois da multa" da mesma identidade informa "Em dia". A situação no dia da multa continua "Com

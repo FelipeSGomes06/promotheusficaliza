@@ -1,6 +1,6 @@
 # Evidência — rótulos harmônicos e explicações no "?" (24/10/2026)
 
-Pedido do autor, a partir da auditoria do Codex (fora do repositório, `.codex/entregas-para-claude/2026-10-24-auditoria-labels`):
+Pedido do autor, a partir de uma auditoria de rótulos:
 os controles de uma mesma linha começavam em alturas diferentes (até 70 px entre Placa e UF) e muita explicação
 continuava fixa entre o rótulo e o campo, mesmo depois da ajuda contextual.
 

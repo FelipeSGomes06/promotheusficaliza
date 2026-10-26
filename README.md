@@ -174,15 +174,8 @@ inicialmente era `https://devfelipegomes.com.br/promotheusfiscaliza`.
 - [Verificação executada](docs/verificacao.md) · [matriz de requisitos](docs/matriz-requisitos.md) · [evidências](docs/evidencias/README.md)
 - [Landing pública](landing/README.md) · [vídeo de apresentação](video/README.md)
 - [Decisões (ADRs)](docs/adr/README.md)
-- [IA e autoria](docs/ia-e-autoria.md) · [licenças e fontes](docs/licencas-e-fontes.md) · [roteiro do vídeo](docs/roteiro-video.md)
+- [Licenças e fontes](docs/licencas-e-fontes.md) · [roteiro do vídeo](docs/roteiro-video.md)
 - [Cobertura desta documentação](docs/cobertura-documentacao.md) · [índice de `docs/`](docs/README.md)
-- Planejamento original recebido: [docs/planejamento-codex-2026-10-18](docs/planejamento-codex-2026-10-18/00-LEIA-PRIMEIRO.md)
-
-## Uso de IA
-
-Planejamento, auditoria e o treino/dados do planejamento por setores: Codex (OpenAI). Implementação, integração,
-correções e esta documentação: Claude (Anthropic), modelo Opus 5.5, no Claude Code. Revisão, decisões e
-responsabilidade: autor do projeto. Detalhes em [IA e autoria](docs/ia-e-autoria.md).
 
 ## Licença
 

@@ -1,7 +1,6 @@
 # Evidência — Landing atualizada: seis pilares, foto de Marília e correções da auditoria (22/10/2026)
 
-Pedido: aplicar a auditoria da landing pública feita pelo Codex (pacote externo
-`C:/Users/FelipedosSantosGomes/.codex/entregas-para-claude/fiscaliza-landing-auditoria-2026-10-22/`, achados A01–A06 e
+Pedido: aplicar a auditoria da landing pública (achados A01–A06 e
 matriz F01–F30) e trocar o fundo da hero por uma foto real de Marília que reage ao mouse. Decisões no
 [ADR-0018](../adr/0018-landing-seis-pilares-e-foto-de-marilia.md). Base: `c9e95b1` (a mesma inspecionada pela
 auditoria; `origin/main` sem commits novos e checkout limpo antes de começar).

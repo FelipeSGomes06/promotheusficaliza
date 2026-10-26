@@ -1,10 +1,10 @@
 # Matriz de requisitos
 
 Requisito → onde está (fluxo/documento) → como foi verificado → o que falta. IDs do
-[planejamento original](planejamento-codex-2026-10-18/01-requisitos-e-escopo.md); `AUD-*` são os achados e critérios
+planejamento original; `AUD-*` são os achados e critérios
 da auditoria de 18/10/2026. Estado em 18/10/2026.
 
-A extensão "Planejar reforço" (`ML-*`, critérios de `ml/marilia-setores/02-ESPECIFICACAO-PARA-CLAUDE.md`) foi
+A extensão "Planejar reforço" (`ML-*`, critérios da especificação do planejamento) foi
 acrescentada em 20/10/2026, e a aba Multas (`MUL-*`) em 21/10/2026 — seções no fim.
 
 Legenda da coluna Verificação: **T** = teste automatizado (Firebird real), **N** = verificação no navegador (capturas,
@@ -104,7 +104,7 @@ medidas, console), **M** = conferência manual por comando. "Implementado" não 
 | ML-09 Simulador não remove reserva nem altera a missão | Missão fora da tabela `AGENT` | T 40 ciclos do simulador, linha da missão idêntica | — |
 | ML-10 Desktop e celular; estados vazios/erro; não depender de cor | Lista = mapa; posições escritas; selos com texto | T estado vazio; N `01`–`17`, 375 px sem rolagem lateral | Leitor de tela não testado; retângulos do mapa sem foco de teclado (a lista cobre) |
 | ML-11 Testes, estilo, análise estática, builds, capturas, importação reproduzível | — | M 140 testes / 672 asserções, PHPStan 0, CS 0, build idêntico Node 22 × 24; treino reproduzido a partir da cópia | `TREINAR.cmd` em máquina limpa não executado |
-| ML-12 Documentação, autoria, atribuição; sem promessa de probabilidade, causa ou precisão não medida | README, guia, este documento, [IA e autoria](ia-e-autoria.md), [licenças](licencas-e-fontes.md), avisos globais | M revisão do texto | — |
+| ML-12 Documentação, autoria, atribuição; sem promessa de probabilidade, causa ou precisão não medida | README, guia, este documento, [licenças](licencas-e-fontes.md), avisos globais | M revisão do texto | — |
 | Pedido de 20/10/2026 — grade de 2 km com 1 a 4 quadrados | Seção "Onde concentrar o reforço" ([método](planejamento-por-setores.md#quadrados-de-2-km-dentro-dos-setores)); experimento em `ml/marilia-grade-2km/` | T `UrbanImportTest` (grade confere com a execução; 4 arquivos fora do contrato), `PlanningTest::testGridIsAdded…`, `PlanningHttpTest` (1–4, padrão 4); N `18`, `19`; M teste único em 2026 | Missão continua por setor |
 | Pedido de 20/10/2026 — atualização mensal com 12 meses | `urban:update` + serviço `atualizador` ([método](planejamento-por-setores.md#atualização-automática-mensal-e-semanal)) | T `UrbanUpdaterTest` (PHP reproduz a referência, filtros, idempotência, recusas, falha de download, paridade do Poisson); M download real (12 s, arquivo idêntico); N `20` | Revisões grandes do Infosiga só geram aviso |
 

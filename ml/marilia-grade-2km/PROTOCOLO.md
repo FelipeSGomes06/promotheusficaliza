@@ -4,12 +4,12 @@ Pergunta: dividir a área de estudo em quadrados de ~2 km faz o reforço prevent
 registrados do que os 4 setores atuais? Experimento separado de `ml/marilia-setores/` (que não é alterado).
 
 ## Dados
-- Mesmo snapshot e mesmos filtros do pacote do Codex (Infosiga-SP/Detran-SP, CC BY 4.0, SHA-256
+- Mesmo snapshot e mesmos filtros do pacote `ml/marilia-setores/` (Infosiga-SP/Detran-SP, CC BY 4.0, SHA-256
   `009481bd…c9c8`): Marília, sinistro fatal/não fatal, vias urbanas, coordenada no retângulo
   lat −22,28 a −22,14 × long −50,02 a −49,86, 2019-01-01 a 2026-09-30.
 - Grade: 8 × 8 = 64 quadrados (0,0175° lat × 0,02° long ≈ 1,95 × 2,06 km). Cada setor atual = 4 × 4 quadrados,
   com a mesma regra de borda. Conferência obrigatória: a soma diária dos quadrados = contagem diária dos setores do
-  pacote do Codex.
+  pacote `ml/marilia-setores/`.
 - Mesmo atraso assumido: cada corte só usa dados anteriores ao 1º dia do mês, dois meses antes da emissão.
 
 ## Métodos (definidos antes de rodar)

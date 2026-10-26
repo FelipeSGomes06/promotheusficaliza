@@ -18,7 +18,7 @@ Projeto Compose `pf-rev` (porta 8097; PHP 8.5.11, Firebird 5.0.4) sobre esta pas
 
 
 Projeto Compose isolado `pf-rev` (porta 8097; PHP 8.5.11, Firebird 5.0.4, perfil completo) sobre
-`claude/revisao-logica-fluxos-1024`, a partir de `main` em `6dd9eea`. [Evidência](evidencias/2026-10-24-revisao-logica-e-fluxos.md),
+branch de trabalho a partir de `main` em `6dd9eea`. [Evidência](evidencias/2026-10-24-revisao-logica-e-fluxos.md),
 [ADR-0023](adr/0023-revisao-de-logica-e-fluxos.md).
 
 | Verificação | Resultado |
@@ -33,7 +33,7 @@ Projeto Compose isolado `pf-rev` (porta 8097; PHP 8.5.11, Firebird 5.0.4, perfil
 ## Acompanhamento dos alertas de agentes (24/10/2026)
 
 Projeto Compose isolado `pf-rev` (porta 8097; PHP 8.5.11, Firebird 5.0.4, perfil completo) sobre
-`claude/revisao-auditoria-codex-1023` em `b893aae`. [Evidência](evidencias/2026-10-24-acompanhamento-de-alertas.md),
+`b893aae`. [Evidência](evidencias/2026-10-24-acompanhamento-de-alertas.md),
 [ADR-0022](adr/0022-acompanhamento-dos-alertas-de-agentes.md).
 
 | Verificação | Resultado |
@@ -45,25 +45,24 @@ Projeto Compose isolado `pf-rev` (porta 8097; PHP 8.5.11, Firebird 5.0.4, perfil
 | Navegador (`scripts/verificacao-interface/acompanhamento.cjs`, Chromium headless) | 24 verificações OK, 0 erros de console e de CSP; 1440, 390 e 360 px, teclado, movimento reduzido |
 | Site publicado | **não verificado** (não implantado) |
 
-## Revisão da auditoria de interface do Codex (24/10/2026)
+## Revisão da auditoria de interface (24/10/2026)
 
 Projeto Compose isolado `pf-rev` (porta 8097; PHP 8.5.11, Firebird 5.0.4) sobre `main` em `a6a4aae`, perfil completo.
-Relatório da revisão fora do repositório (entrega do Codex): `~/.codex/entregas-para-claude/auditoria-logica-fiscaliza-2026-10-23/REVISAO-E-ALTERACOES-CLAUDE.md`.
 
 | Verificação | Resultado |
 |---|---|
-| `vendor/bin/phpunit` | 254 testes; falha só `OperationsTest::testSimulatorTickIsSkippedWhileAnotherTickHoldsTheLock`, porque outro projeto Compose do mesmo computador (`fiscaliza-claude`) roda `sim:run` sobre esta mesma pasta e segura `var/simulador.lock` — não depende das mudanças |
+| `vendor/bin/phpunit` | 254 testes; falha só `OperationsTest::testSimulatorTickIsSkippedWhileAnotherTickHoldsTheLock`, porque outro projeto Compose do mesmo computador (separado) roda `sim:run` sobre esta mesma pasta e segura `var/simulador.lock` — não depende das mudanças |
 | Testes novos | `FineRulesTest` (pendência × regularização posterior), `FinesTest` (contador, lista e ficha; radar sem a função), `InventoryTest` (situação × local, reposição, entrada em operação), `OperationsTest` (resumo de urgentes), `PlanningHttpTest` (aviso de semana encerrada; datas do retrospecto) |
 | `phpstan analyse` (nível 6) · `php-cs-fixer fix --dry-run` · `npm run build` (Node 24) | 0 erros · 0 de 128 · sem erros (mudam `app`, `central` e `multas`) |
 | Migração 0008 | antes: 1 multa com contador diferente da regra nova (#7); depois: 0; segunda execução sem efeito |
-| Navegador (painel do Claude Code, 800 px e 375 px) | central (ficha e marcador do furtado, código na lista, resumo de urgentes = seção Urgentes, com e sem filtro de veículo), fichas de equipamento (furtado, revisão sem ordem, ordem existente, ordem fora da janela), cadastro (situação × local; recusa no servidor), reposição de furtado, multas #3, #2, #6 e #7, formulário de multa (observação para radar sem a função), planejar (designado, missão), retrospecto e revisões (janela e cálculo antigo) |
+| Navegador (navegador embutido, 800 px e 375 px) | central (ficha e marcador do furtado, código na lista, resumo de urgentes = seção Urgentes, com e sem filtro de veículo), fichas de equipamento (furtado, revisão sem ordem, ordem existente, ordem fora da janela), cadastro (situação × local; recusa no servidor), reposição de furtado, multas #3, #2, #6 e #7, formulário de multa (observação para radar sem a função), planejar (designado, missão), retrospecto e revisões (janela e cálculo antigo) |
 | Site publicado | **não verificado** (sem conta nesta sessão) |
 | Adendo (modalidade do radar; radar nunca instalado ou fixo com operador) | `phpunit` 255 testes, 1664 asserções, OK; `FinesTest::testNeverInstalledOrFixedRadarWithAnOperatorNeedsAnExplanation`; PHPStan e estilo sem pendências; no navegador, cadastro do RAD-0001 como fixo e o formulário de multa mostrando a observação só nos casos da regra |
-| Carga `multas-v3` (modalidade dos radares; radar portátil no caso 2; compacto com 17) | `phpunit` 255 testes: passa tudo, salvo o teste do cadeado do simulador quando o `fiscaliza-claude-simulator-1` está ligado sobre esta pasta; `DemoProfileTest` (17, 5 radares) e `FinesTest` (v1 → v3 e v2 → v3 sem duplicar). Banco local carregado com a v2: `demo:seed-multas` informou a modalidade dos radares que não a tinham (inclusive o sem série, pelo endereço) e retificou o caso 2; repetir não mudou nada. Carga nova: caso 2 registrado sem observação, no portátil a 60 km/h. `avaliar-sementes.php` 2027–2031: completo igual antes e depois (8,0% / 15,4%, 1.690 pares); compacto 6,9% / 12,9% (16) → 12,0% / 33,3% (17) |
+| Carga `multas-v3` (modalidade dos radares; radar portátil no caso 2; compacto com 17) | `phpunit` 255 testes: passa tudo, salvo o teste do cadeado do simulador quando o simulador de outro projeto Compose está ligado sobre esta pasta; `DemoProfileTest` (17, 5 radares) e `FinesTest` (v1 → v3 e v2 → v3 sem duplicar). Banco local carregado com a v2: `demo:seed-multas` informou a modalidade dos radares que não a tinham (inclusive o sem série, pelo endereço) e retificou o caso 2; repetir não mudou nada. Carga nova: caso 2 registrado sem observação, no portátil a 60 km/h. `avaliar-sementes.php` 2027–2031: completo igual antes e depois (8,0% / 15,4%, 1.690 pares); compacto 6,9% / 12,9% (16) → 12,0% / 33,3% (17) |
 
 ## Cadastrar agente: base pelo mapa ou pelo endereço, rua pelo CEP (23/10/2026)
 
-Contêiner de nuvem do Claude Code, Docker local (PHP 8.5.11, Firebird 5.0.4) sobre `main` em `730e303`.
+Contêiner Linux de desenvolvimento, Docker local (PHP 8.5.11, Firebird 5.0.4) sobre `main` em `730e303`.
 [Evidência](evidencias/2026-10-23-agente-base-pelo-mapa-e-cep.md).
 
 | Verificação | Resultado |
@@ -99,7 +98,7 @@ Projeto Compose isolado `fiscaliza-marilia` (PHP 8.5.11, Firebird 5.0.4) sobre `
 | `npm run build` | Node 24 local e `node:22-bookworm` (CI) com os mesmos 11 arquivos |
 | `urban:import` duas vezes · dois conjuntos adulterados | 1 execução (4 setores, 204 linhas) · recusados, nada gravado |
 | Treino reproduzido a partir de `ml/marilia-setores/` | saídas idênticas à execução de referência; paridade PHP/Python 2,7e-15 |
-| Navegador (painel do Claude Code, desktop e 375 px) | 17 capturas; missão confirmada e retrospecto revelado pela interface |
+| Navegador (navegador embutido, desktop e 375 px) | 17 capturas; missão confirmada e retrospecto revelado pela interface |
 
 ## Cartão de autoria na página Sobre (19/10/2026)
 
@@ -112,7 +111,7 @@ Firebird nem PHP 8.4+); a asserção nova do `WebSecurityTest` foi conferida con
 ## Identidade nova com acesso somente por conta (19/10/2026)
 
 Junção da identidade de trânsito com o acesso somente por conta ([ADR-0014](adr/0014-acesso-somente-com-conta-cadastrada.md)),
-no projeto Compose isolado `fiscaliza-claude` (PHP 8.5.11, Firebird 5.0.4). Detalhes, ajustes da junção e capturas:
+no projeto Compose isolado (PHP 8.5.11, Firebird 5.0.4). Detalhes, ajustes da junção e capturas:
 [evidência](evidencias/2026-10-19-identidade-com-acesso-por-conta.md).
 
 | Verificação | Resultado |
@@ -141,7 +140,7 @@ com efeito imediato (inclusive na API da visão geral), logout para o login, ban
 
 ## Identidade, motion e perfil compacto (18/10/2026, ~23:50 UTC)
 
-Contêiner de nuvem do Claude Code, projeto Compose isolado `fiscaliza-claude` (porta 8091), PHP 8.5.11, Firebird
+Contêiner Linux de desenvolvimento, projeto Compose isolado (porta 8091), PHP 8.5.11, Firebird
 5.0.4 (cliente PDO_FIREBIRD montado localmente; ver a evidência). Detalhes, relatório do navegador, capturas e vídeos:
 [identidade e motion](evidencias/2026-10-18-identidade-e-motion.md).
 
@@ -155,7 +154,7 @@ Contêiner de nuvem do Claude Code, projeto Compose isolado `fiscaliza-claude` (
 
 ## Depois das correções da auditoria e do redesenho (18/10/2026, 21:20 UTC)
 
-Projeto Compose isolado (`-p fiscaliza-claude`, porta 8091, volume próprio), PHP 8.5.11, Firebird 5.0.4. Detalhes,
+Projeto Compose isolado (projeto separado, porta 8091, volume próprio), PHP 8.5.11, Firebird 5.0.4. Detalhes,
 contraprova e defeitos encontrados no caminho: [correções da auditoria](evidencias/2026-10-18-correcoes-da-auditoria.md).
 
 | Verificação | Resultado |
@@ -200,7 +199,7 @@ As seções abaixo registram a verificação anterior (62 testes), mantida como 
   escape de HTML/JSON com texto malicioso, mensagens de login iguais, limite de tentativas, redirecionamento externo
   descartado, parâmetros malformados, 404 sem SQL, reconhecimento de alerta via JSON com token no cabeçalho.
 
-## Manual (navegador do Claude Code e `curl`)
+## Manual (navegador e `curl`)
 
 | Verificação | Resultado |
 |---|---|

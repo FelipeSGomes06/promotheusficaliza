@@ -34,8 +34,6 @@ canônica de cada assunto (uma explicação por contrato; as demais páginas apo
 |---|---|
 | [adr/](adr/README.md) | 23 decisões de arquitetura, datadas |
 | [evidencias/](evidencias/README.md) | registros de verificação com capturas, vídeos e relatórios |
-| [planejamento-codex-2026-10-18/](planejamento-codex-2026-10-18/00-LEIA-PRIMEIRO.md) | planejamento original recebido do Codex em 18/10/2026 (histórico; não é reescrito) |
-| [prompt-ajuda-contextual.md](prompt-ajuda-contextual.md) | pedido que originou a ajuda contextual "?" (já implementada; preservado como registro) |
-| [ia-e-autoria.md](ia-e-autoria.md) · [licencas-e-fontes.md](licencas-e-fontes.md) · [roteiro-video.md](roteiro-video.md) | autoria e uso de IA · licenças e créditos · roteiro do vídeo |
+| [licencas-e-fontes.md](licencas-e-fontes.md) · [roteiro-video.md](roteiro-video.md) | licenças e créditos · roteiro do vídeo |
 
 `docs/privado/` é local e ignorado pelo Git: não faz parte da documentação publicada.

@@ -19,8 +19,7 @@ const args = new Set(process.argv.slice(2));
 
 const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 << 20 });
 const files = git('ls-files', '--cached', '--others', '--exclude-standard').split('\n').filter(Boolean);
-// Fora do inventário: pasta privada do Claude e registros locais de ferramenta (não são código do projeto).
-const own = files.filter((f) => !/^(\.claude|\.playwright-mcp)\//.test(f));
+const own = files;
 const isCode = (f) => /\.(php|js|mjs|cjs|py)$/.test(f) || f === 'bin/fiscaliza';
 // Saídas de build e bibliotecas distribuídas são documentadas pelo processo que as gera, não símbolo a símbolo.
 const generated = (f) => /(^|\/)build\//.test(f) || /^public\/assets\/vendor\//.test(f);
@@ -226,7 +225,7 @@ function verify() {
   if (uncovered.length) { ok = false; console.log(`Pastas sem README nem linha na matriz (${uncovered.length}):\n  ` + uncovered.join('\n  ')); }
 
   // Links relativos e âncoras dos Markdown do projeto (exceto histórico copiado de fora, que não é reescrito).
-  const md = own.filter((f) => f.endsWith('.md') && !f.startsWith('docs/planejamento-codex-') && !f.startsWith('ml/marilia-setores/0'));
+  const md = own.filter((f) => f.endsWith('.md'));
   const anchorsOf = new Map();
   const anchorsIn = (f) => {
     if (!anchorsOf.has(f)) {
