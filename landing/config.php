@@ -19,8 +19,8 @@ return [
 
     // Conta de demonstração mostrada, em destaque, na seção "Para o avaliador". Trocar a senha na aplicação e aqui.
     'avaliador' => [
-        'usuario' => 'AvaliadorDsin',
-        'senha' => '64sAJgcJZ2uT0EY6Mnxz',
+        'usuario' => 'AvaliadorCodeChallenger',
+        'senha' => 'iy40u2wP1AFRjV2bXNsU',
     ],
 
     // Vídeo da seção "Para o avaliador". Enquanto 'src' for null (ou o arquivo local não existir), a página mostra

@@ -66,7 +66,7 @@ O PHP encontra os nomes com hash pelo `build/manifest.json`; não é preciso mex
 |---|---|---|
 | `sistema_url` | `/promotheusfiscaliza/` | destino dos três botões "Acessar sistema" |
 | `url_publica` | `https://fiscaliza.devfelipegomes.com.br/` | `canonical`, `og:url` e endereço absoluto da imagem de compartilhamento |
-| `avaliador.usuario`, `avaliador.senha` | `AvaliadorDsin` e a senha da conta de avaliação | cartão "Acesso para avaliação", abaixo do vídeo da seção "Para o avaliador" (texto público: trocar a senha na aplicação e aqui) |
+| `avaliador.usuario`, `avaliador.senha` | `AvaliadorCodeChallenger` e a senha da conta de avaliação | cartão "Acesso para avaliação", abaixo do vídeo da seção "Para o avaliador" (texto público: trocar a senha na aplicação e aqui) |
 | `video.src` | `/landing-assets/promotheus/video/apresentacao.mp4` | vídeo da seção "Para o avaliador"; `null` (ou arquivo ausente) mostra "Vídeo de apresentação em breve." |
 | `video.tipo` | `video/mp4` | tipo do arquivo (`video/webm` para WebM) |
 | `video.legendas` | `null` | arquivo WebVTT em português (faixa `captions`, ligada por padrão) |
