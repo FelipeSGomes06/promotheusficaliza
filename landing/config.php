@@ -17,6 +17,12 @@ return [
         'url' => 'https://devfelipegomes.com.br/',
     ],
 
+    // Conta de demonstração mostrada, em destaque, na seção "Para o avaliador". Trocar a senha na aplicação e aqui.
+    'avaliador' => [
+        'usuario' => 'AvaliadorDsin',
+        'senha' => '64sAJgcJZ2uT0EY6Mnxz',
+    ],
+
     // Vídeo da seção "Para o avaliador". Enquanto 'src' for null (ou o arquivo local não existir), a página mostra
     // "Vídeo de apresentação em breve." e não pede nenhum arquivo. Caminhos começando com "/" são arquivos desta
     // landing, relativos a landing/public (ex.: '/landing-assets/promotheus/video/apresentacao.mp4').

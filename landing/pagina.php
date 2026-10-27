@@ -431,6 +431,14 @@ $dataCaptura = 'Captura da demonstração em 22/10/2026, com operação fictíci
           </div>
         <?php endif ?>
       </div>
+      <div class="acesso" role="group" aria-labelledby="acesso-titulo">
+        <p class="acesso__titulo" id="acesso-titulo"><svg class="icone" aria-hidden="true" focusable="false"><use href="#i-chave"></use></svg>Acesso para avaliação</p>
+        <dl class="acesso__campos">
+          <div class="acesso__campo"><dt>Usuário</dt><dd><code><?= e($config['avaliador']['usuario']) ?></code></dd></div>
+          <div class="acesso__campo"><dt>Senha</dt><dd><code><?= e($config['avaliador']['senha']) ?></code></dd></div>
+        </dl>
+        <a class="btn btn--primario" href="<?= e($sistema) ?>">Entrar no sistema <svg class="icone icone--seta" aria-hidden="true" focusable="false"><use href="#i-seta"></use></svg></a>
+      </div>
     </div>
   </section>
 </main>
